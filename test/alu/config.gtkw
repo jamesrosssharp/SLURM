@@ -1,0 +1,35 @@
+[*]
+[*] GTKWave Analyzer v3.3.103 (w)1999-2019 BSI
+[*] Tue Jul 27 07:29:12 2021
+[*]
+[dumpfile] "/home/jrsharp/code/FPGA/SLURM/test/alu/alu.vcd"
+[dumpfile_mtime] "Tue Jul 27 07:28:59 2021"
+[dumpfile_size] 130335
+[savefile] "/home/jrsharp/code/FPGA/SLURM/test/alu/config.gtkw"
+[timestart] 96900
+[size] 1000 600
+[pos] -1 -1
+*-16.000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] alu_tb.
+[sst_width] 234
+[signals_width] 150
+[sst_expanded] 1
+[sst_vpaned_height] 151
+@22
+alu_tb.my_alu.A[15:0]
+alu_tb.my_alu.B[15:0]
+@28
+alu_tb.my_alu.C
+alu_tb.my_alu.CLK
+alu_tb.my_alu.S
+alu_tb.my_alu.RSTb
+alu_tb.my_alu.Z
+@22
+alu_tb.aluOp[3:0]
+alu_tb.aluOut[15:0]
+@28
+alu_tb.my_alu.Z_flag_reg_next
+@29
+alu_tb.my_alu.Z_flag_reg
+[pattern_trace] 1
+[pattern_trace] 0
