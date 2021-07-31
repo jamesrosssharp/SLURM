@@ -43,7 +43,7 @@ wire [2**REG_BITS-1:0] MADDR_SEL_v_b    = {2**REG_BITS{1'b1}} ^ (1 << MADDR_SEL)
 
 wire [BITS - 1:0] aluB_wr;
 
-assign aluB_out = ALU_B_from_inP ? aluB_wr : inP; 
+assign aluB_out = ALU_B_from_inP_b ? aluB_wr : inP; 
 
 genvar j;
 generate

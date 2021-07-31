@@ -1,0 +1,30 @@
+[*]
+[*] GTKWave Analyzer v3.3.103 (w)1999-2019 BSI
+[*] Sat Jul 31 05:39:11 2021
+[*]
+[dumpfile] "/home/jrsharp/code/FPGA/SLURM/test/slurm16/slurm16.vcd"
+[dumpfile_mtime] "Sat Jul 31 05:38:56 2021"
+[dumpfile_size] 3962522
+[savefile] "/home/jrsharp/code/FPGA/SLURM/test/slurm16/config.gtkw"
+[timestart] 0
+[size] 1000 600
+[pos] -1 -1
+*-16.000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] slurm16_tb.
+[treeopen] slurm16_tb.slm0.
+[sst_width] 234
+[signals_width] 230
+[sst_expanded] 1
+[sst_vpaned_height] 151
+@28
+slurm16_tb.slm0.CLK
+slurm16_tb.slm0.RSTb
+@22
+slurm16_tb.slm0.mem_address[15:0]
+slurm16_tb.slm0.mem_data[15:0]
+slurm16_tb.slm0.pip0.pipeline_stage0_reg[15:0]
+slurm16_tb.slm0.pip0.pipeline_stage1_reg[15:0]
+@23
+slurm16_tb.slm0.pip0.pipeline_stage2_reg[15:0]
+[pattern_trace] 1
+[pattern_trace] 0

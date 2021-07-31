@@ -38,8 +38,8 @@ wire [BITS - 1 : 0] orOp = A | B;
 wire [BITS - 1 : 0] andOp = A & B; 
 wire [BITS - 1 : 0] xorOp = A ^ B;
 
-wire [BITS - 1 : 0] rolOp = {A[BITS - 2:0},C};
-wire [BITS - 1 : 0] rorOp = {C, A[BITS - 1:1}};
+wire [BITS - 1 : 0] rolOp = {A[BITS - 2:0],C};
+wire [BITS - 1 : 0] rorOp = {C, A[BITS - 1:1]};
 
 reg [BITS - 1 : 0] out;
 assign aluOut = out;
