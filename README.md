@@ -1,4 +1,4 @@
-SLURM - Simple-Logic-Used RISC Machine
+SLURM - Simple-Logic Micro RISC Machine
 ======================================
 
 A simple microcontroller core, with emphasis on simplicity of instruction set and verilog implementation. 

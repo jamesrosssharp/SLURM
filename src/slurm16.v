@@ -57,7 +57,7 @@ pipeline16 pip0
 	.LD_reg_Mb(LD_reg_Mb), 
 	.LD_reg_Pb(LD_reg_Pb), 
 	.ALU_A_SEL(ALU_A_SEL),   		
- 	.ALU_B_SEL(ALU_A_SEL),   	
+ 	.ALU_B_SEL(ALU_B_SEL),   	
 	.M_ENb(M_ENb),					  
 	.M_SEL(M_SEL), 
 	.MADDR_SEL(MADDR_SEL), 

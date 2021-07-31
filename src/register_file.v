@@ -25,7 +25,7 @@ module register_file
  	input [REG_BITS - 1 : 0] MADDR_SEL,   /* index of register driving memory 
 											  address bus */
 
-	input [2**REG_BITS : 0] INCb,  	  /* active low register increment */
+	input [2**REG_BITS - 1 : 0] INCb,  	  /* active low register increment */
 
 	input ALU_B_from_inP_b,	/* 1 = ALU B from registers, 0 = ALU B from inP (pipeline constant register) */
 

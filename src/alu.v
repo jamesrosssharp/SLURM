@@ -71,8 +71,8 @@ begin
 	out = 0;
 
 	case (aluOp)
-		4'd0:	begin /* move - pass A through to register file */
-			out = A;				
+		4'd0:	begin /* move - pass B (source) through to register file */
+			out = B;				
 		end
 		4'd1:	begin /* clear carry */
 			out = 0;		
