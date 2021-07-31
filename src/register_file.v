@@ -1,4 +1,4 @@
-/* register_file.v : a register file */
+/* register_file.v : a register file  */
 
 module register_file
 #(parameter REG_BITS = 3 /* default 2**3 = 8 registers */, parameter BITS = 16 /* default 16 bits */)
@@ -16,12 +16,7 @@ module register_file
 												register(s) from pipeline (constants in instruction words etc) */
 
 	input [REG_BITS  - 1: 0] ALU_A_SEL,   		/* index of register driving ALU A bus */
-
-	input ALU_A_0_b,						/* control line to force ALU A input to zero - move */
-	input ALU_A_1_b,						/* control line to force ALU A input to all ones - decrement */
-
- 	input [REG_BITS - 1: 0] ALU_B_SEL,   /* index of register driving ALU B
-												bus */
+ 	input [REG_BITS - 1: 0]  ALU_B_SEL,   		/* index of register driving ALU B bus */
 
 	input M_ENb,					  /* enable register to drive memory bus */
  	input [REG_BITS - 1 : 0] M_SEL,       /* index of register driving memory
@@ -31,6 +26,8 @@ module register_file
 											  address bus */
 
 	input [2**REG_BITS : 0] INCb,  	  /* active low register increment */
+
+	input ALU_B_from_inP_b,	/* 1 = ALU B from registers, 0 = ALU B from inP (pipeline constant register) */
 
  	output [BITS - 1 : 0] aluA_out,
  	output [BITS - 1 : 0] aluB_out,
@@ -43,6 +40,10 @@ wire [2**REG_BITS-1:0] ALU_A_SEL_v_b 	= {2**REG_BITS{1'b1}} ^ (1 << ALU_A_SEL);
 wire [2**REG_BITS-1:0] ALU_B_SEL_v_b 	= {2**REG_BITS{1'b1}} ^ (1 << ALU_B_SEL);
 wire [2**REG_BITS-1:0] M_SEL_v_b     	= {2**REG_BITS{1'b1}} ^ (1 << M_SEL);
 wire [2**REG_BITS-1:0] MADDR_SEL_v_b    = {2**REG_BITS{1'b1}} ^ (1 << MADDR_SEL);
+
+wire [BITS - 1:0] aluB_wr;
+
+assign aluB_out = ALU_B_from_inP ? aluB_wr : inP; 
 
 genvar j;
 generate
@@ -59,7 +60,7 @@ generate
 				LD_reg_Pb[j],
 				aluA_out,
 				ALU_A_SEL_v_b[j], 
-				aluB_out, 
+				aluB_wr, 
 				ALU_B_SEL_v_b[j],
 				m_out,
 				M_SEL_v_b[j] | M_ENb, 

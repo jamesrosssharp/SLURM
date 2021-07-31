@@ -1,0 +1,27 @@
+[*]
+[*] GTKWave Analyzer v3.3.103 (w)1999-2019 BSI
+[*] Sat Jul 31 01:27:42 2021
+[*]
+[dumpfile] "/home/jrsharp/code/FPGA/SLURM/test/memory/memory.vcd"
+[dumpfile_mtime] "Sat Jul 31 01:27:28 2021"
+[dumpfile_size] 130339
+[savefile] "/home/jrsharp/code/FPGA/SLURM/test/memory/config.gtkw"
+[timestart] 188230
+[size] 1000 600
+[pos] -1 -1
+*-14.000000 260000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] memory_tb.
+[sst_width] 234
+[signals_width] 134
+[sst_expanded] 1
+[sst_vpaned_height] 151
+@29
+memory_tb.CLK
+@22
+memory_tb.data[15:0]
+memory_tb.address[15:0]
+@28
+memory_tb.OEb
+memory_tb.WRb
+[pattern_trace] 1
+[pattern_trace] 0

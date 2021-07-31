@@ -34,9 +34,12 @@ assign S = S_flag_reg;
 wire [BITS : 0] addOp = {1'b0,A} + {1'b0,B}; 
 wire [BITS : 0] subOp = {1'b0,A} - {1'b0,B}; 
 
-wire [BITS - 1: 0] orOp = A | B;
-wire [BITS - 1: 0] andOp = A & B; 
-wire [BITS - 1: 0] xorOp = A ^ B;
+wire [BITS - 1 : 0] orOp = A | B;
+wire [BITS - 1 : 0] andOp = A & B; 
+wire [BITS - 1 : 0] xorOp = A ^ B;
+
+wire [BITS - 1 : 0] rolOp = {A[BITS - 2:0},C};
+wire [BITS - 1 : 0] rorOp = {C, A[BITS - 1:1}};
 
 reg [BITS - 1 : 0] out;
 assign aluOut = out;
@@ -101,8 +104,7 @@ begin
 			Z_flag_reg_next = (addOp[BITS - 1:0] == {BITS{1'b0}}) ? 1'b1 : 1'b0;
 			S_flag_reg_next = addOp[BITS - 1] ? 1'b1 : 1'b0;
 		end
-		4'd8,  /* sub */
-		4'd11: begin /* cmp */
+		4'd8: begin /* sub / cmp */ 
 			out = subOp;
 			C_flag_reg_next = subOp[BITS];
 			Z_flag_reg_next = (subOp[BITS - 1:0] == {BITS{1'b0}}) ? 1'b1 : 1'b0;
@@ -112,18 +114,25 @@ begin
 		4'd10: begin /* muls */
 			out = 0;
 		end
-		4'd12, /* and */
-		4'd15: begin /* test */
+		4'd11: begin /* and / test */
 			out = andOp;
 			Z_flag_reg_next = (andOp[BITS - 1:0] == {BITS{1'b0}}) ? 1'b1 : 1'b0;	
 		end
-		4'd13: begin /* or */
+		4'd12: begin /* or */
 			out = orOp;
 			Z_flag_reg_next = (orOp[BITS - 1:0] == {BITS{1'b0}}) ? 1'b1 : 1'b0;	
 		end
-		4'd14: begin /* xor */
+		4'd13: begin /* xor */
 			out = xorOp;
 			Z_flag_reg_next = (xorOp[BITS - 1:0] == {BITS{1'b0}}) ? 1'b1 : 1'b0;	
+		end
+		4'd14: begin /* rol */
+			out = rolOp;
+			C_flag_reg_next = A[BITS - 1];	
+		end
+		4'd13: begin /* eor */
+			out = rorOp;
+			C_flag_reg_next = A[0];	
 		end
 	endcase				
 end
