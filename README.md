@@ -101,4 +101,64 @@ Class 2: Register to register ALU operation
     DEST: destination and operand (alu A input)
     SRC:  source and second operand (alu B input)
 
+Class 3: immediate to register ALU operation
+-------------------------------------------
+
+|15 | 14 | 13 | 12 | 11 - 8 | 7   | 6 - 4 |   3  - 0    |
+|---|----|----|----|--------|-----|-------|-------------|
+|0  | 0  | 1  | 1  | ALU OP | SDb | DEST  |    IMM LO   |
+
+
+    ALU OP: 4 bits ALU operation
+        0 - mov : DEST <- SRC
+        1 - add : DEST <- DEST + SRC
+        2 - adc : DEST <- DEST + SRC + Carry
+        3 - sub : DEST <- DEST - SRC
+        4 - sbb : DEST <- DEST - SRC - Carry
+        5 - and : DEST <- DEST & SRC
+        6 - or  : DEST <- DEST | SRC
+        7 - xor : DEST <- DEST ^ SRC
+        8-15 - reserved
+ 
+    SDb:  if low, store result to DEST register, otherwise discard result (used for tst, cmp)
+    DEST: destination and operand (alu A input)
+    IMM LO : 4 bit immediate which can be combined with the immediate register to produce a 
+        16 bit value
+
+Class 4: branch operation
+-------------------------------------------
+
+|15 | 14 | 13 | 12 | 11 | 10 - 8 | 7   | 6- 4 |   3 - 0     |
+|---|----|----|----|----|--------|-----|------|-------------|
+|0  | 1  | 0  | 0  |  R | BRNCH  | REL | REG  | IMM LO      |
+
+    R: if 0, branch to immediate address
+       if 1, branch to address pointed to by REG
+    BRNCH:
+        0 - BZ, branch if zero
+        1 - BNZ, branch if not zero
+        2 - BS, branch if sign
+        3 - BNS, branch if not sign
+        4 - BC, branch if carry
+        5 - BNC, branch if not carry
+        6 - BA, branch always
+        7 - BL, branch and link
+    REL: if 0, branch is absolute
+         if 1, branch is relative: PC <- PC + REG (R = 1) or PC - IMM:IMMLO (R = 0)
+    REG: index register for register branch
+    IMM LO: 4 bit immediate for immediate branch
+
+Class 5: memory operation
+-------------------------------------------
+
+|15 | 14 | 13 | 12 | 11 | 10 | 9  | 8  | 7 | 6- 4 | 3 | 2 - 0 |
+|---|----|----|----|----|----|----|--- |---|------|---|-------|
+|0  | 1  | 0  | 1  |  x | PD | PI | LS | x | IDX  | x | REG   |
+
+    PD: 1 = no post decrement, 0 = post decrement
+    PI: 1 = no post increment, 0 = post increment (increment takes precedence over decrement)
+    LS: 0 = load, 1 = store
+    IDX: index register, holds address of memory location
+    REG: source for store, destination for load
+
 

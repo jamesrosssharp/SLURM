@@ -113,7 +113,7 @@ end
 function branch_taken_p0;
 input [15:0] p0;
 begin
-	case(p0[11:8])
+	case(p0[10:8])
 		3'b000:		/* 0x0 - BZ, branch if ZERO */
 			if (Z == 1'b1) branch_taken_p0 = 1'b1;
 		3'b001:		/* 0x1 - BNZ, branch if not ZERO */
@@ -167,7 +167,7 @@ endfunction
 
 function is_branch_link;
 input [15:0] ins;
-	is_branch_link = (ins[11:8] == 3'b111) ? 1'b1 : 1'b0;
+	is_branch_link = (ins[10:8] == 3'b111) ? 1'b1 : 1'b0;
 endfunction
 
 function ret_or_iret;
@@ -187,7 +187,7 @@ endfunction
 
 function memory_post_decrement;
 input [15:0] p0;
-	memory_post_decrement = p0[10]; // 0 = increment, 1 = no increment
+	memory_post_decrement = p0[10]; // 0 = decrement, 1 = no increment
 endfunction
 
 function [2:0] memory_store_source;
