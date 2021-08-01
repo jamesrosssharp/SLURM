@@ -8,7 +8,7 @@ module alu
 
 	input [BITS-1:0]  A,
 	input [BITS-1:0]  B,
-	input [3:0]       aluOp,
+	input [4:0]       aluOp,
 	output [BITS-1:0] aluOut,
 
 	output C, /* carry flag */
@@ -38,11 +38,12 @@ wire [BITS - 1 : 0] orOp = A | B;
 wire [BITS - 1 : 0] andOp = A & B; 
 wire [BITS - 1 : 0] xorOp = A ^ B;
 
-wire [BITS - 1 : 0] rolOp = {A[BITS - 2:0],C};
-wire [BITS - 1 : 0] rorOp = {C, A[BITS - 1:1]};
+wire [BITS - 1 : 0] rolcOp = {B[BITS - 2:0],C};
+wire [BITS - 1 : 0] rorcOp = {C, B[BITS - 1:1]};
 
-wire [BITS - 1 : 0] lslOp = {A[BITS - 2:0],1'b0};
-wire [BITS - 1 : 0] asrOp = {A[BITS-1], A[BITS - 1:1]};
+wire [BITS - 1 : 0] lslOp = {B[BITS - 2:0],1'b0};
+wire [BITS - 1 : 0] asrOp = {B[BITS-1], B[BITS - 1:1]};
+wire [BITS - 1 : 0] lsrOp = {1'b0, B[BITS - 1:1]};
 
 reg [BITS - 1 : 0] out;
 assign aluOut = out;
@@ -72,71 +73,103 @@ begin
 	out = 0;
 
 	case (aluOp)
-		4'd0:	begin /* move - pass B (source) through to register file */
+		5'd0:	begin /* move - pass B (source) through to register file */
 			out = B;				
 		end
-		4'd1:	begin /* clear carry */
-			out = 0;		
-			C_flag_reg_next = 1'b0;
-		end
-		4'd2:	begin /* set carry */
-			out = 0;		
-			C_flag_reg_next = 1'b1;
-		end
-		4'd3:	begin /* clear zero */
-			out = 0;		
-			Z_flag_reg_next = 1'b0;
-		end
-		4'd4:	begin /* set zero */
-			out = 0;		
-			Z_flag_reg_next = 1'b1;
-		end
-		4'd5: begin /* clear sign */
-			out = 0;
-			S_flag_reg_next = 1'b0;
-		end	
-		4'd6: begin /* set sign */
-			out = 0;
-			S_flag_reg_next = 1'b1;
-		end	
-		4'd7: begin /* add */
+		5'd1: begin /* add */
 			out = addOp;
 			C_flag_reg_next = addOp[BITS];
 			Z_flag_reg_next = (addOp[BITS - 1:0] == {BITS{1'b0}}) ? 1'b1 : 1'b0;
 			S_flag_reg_next = addOp[BITS - 1] ? 1'b1 : 1'b0;
 		end
-		4'd8: begin /* sub / cmp */ 
+		5'd2: begin /* adc */
+			out = addOp;
+			C_flag_reg_next = addOp[BITS];
+			Z_flag_reg_next = (addOp[BITS - 1:0] == {BITS{1'b0}}) ? 1'b1 : 1'b0;
+			S_flag_reg_next = addOp[BITS - 1] ? 1'b1 : 1'b0;
+		end
+		5'd3: begin /* sub */ 
 			out = subOp;
 			C_flag_reg_next = subOp[BITS];
 			Z_flag_reg_next = (subOp[BITS - 1:0] == {BITS{1'b0}}) ? 1'b1 : 1'b0;
 			S_flag_reg_next = subOp[BITS - 1] ? 1'b1 : 1'b0;
 		end
-		4'd9: begin /* asr */
-			out = asrOp;	
+		5'd4: begin /* sbb */ 
+			out = subOp;
+			C_flag_reg_next = subOp[BITS];
+			Z_flag_reg_next = (subOp[BITS - 1:0] == {BITS{1'b0}}) ? 1'b1 : 1'b0;
+			S_flag_reg_next = subOp[BITS - 1] ? 1'b1 : 1'b0;
 		end
-		4'd10: begin /* lsl */
-			out = lslOp;
-		end
-		4'd11: begin /* and / test */
+		5'd5: begin /* and */
 			out = andOp;
 			Z_flag_reg_next = (andOp[BITS - 1:0] == {BITS{1'b0}}) ? 1'b1 : 1'b0;	
 		end
-		4'd12: begin /* or */
+		5'd6: begin /* or */
 			out = orOp;
 			Z_flag_reg_next = (orOp[BITS - 1:0] == {BITS{1'b0}}) ? 1'b1 : 1'b0;	
 		end
-		4'd13: begin /* xor */
+		5'd7: begin /* xor */
 			out = xorOp;
 			Z_flag_reg_next = (xorOp[BITS - 1:0] == {BITS{1'b0}}) ? 1'b1 : 1'b0;	
 		end
-		4'd14: begin /* rol */
-			out = rolOp;
+		/* multiplier? */
+		5'd8: ; /* mul */
+		5'd9: ; /* muls */
+	
+		/* barrel shifter? */
+		5'd10: ; /* bsr */
+		5'd11: ; /* bsl */
+
+		/* 12 - 15 reserved */
+
+		/* extended ADC operations  - register only (no immediate) */
+		5'd16: begin /* asr */
+			out = asrOp;	
+		end
+		5'd17: begin /* lsr */
+			out = lsrOp;	
+		end
+		5'd18: begin /* lsl */
+			out = lslOp;
+		end
+		5'd19: begin /* rolc */
+			out = rolcOp;
 			C_flag_reg_next = A[BITS - 1];	
 		end
-		4'd13: begin /* ror */
-			out = rorOp;
+		5'd20: begin /* rorc */
+			out = rorcOp;
 			C_flag_reg_next = A[0];	
 		end
+		5'd21: ; /* rol */	
+		5'd22:	begin /* clear carry */
+			out = 0;		
+			C_flag_reg_next = 1'b0;
+		end
+		5'd23:	begin /* set carry */
+			out = 0;		
+			C_flag_reg_next = 1'b1;
+		end
+		5'd24:	begin /* clear zero */
+			out = 0;		
+			Z_flag_reg_next = 1'b0;
+		end
+		5'd25:	begin /* set zero */
+			out = 0;		
+			Z_flag_reg_next = 1'b1;
+		end
+		5'd25: begin /* clear sign */
+			out = 0;
+			S_flag_reg_next = 1'b0;
+		end	
+		5'd27: begin /* set sign */
+			out = 0;
+			S_flag_reg_next = 1'b1;
+		end
+		5'd28: ; /* negate register? */
+		5'd29: ; /* clz ? */
+		5'd30: ; /* ctz ? */
+		5'd31: ; /* is power of two? */
+		default: ; /* reserved */	
 	endcase				
 end
 

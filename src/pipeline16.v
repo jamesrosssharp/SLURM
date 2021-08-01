@@ -241,10 +241,10 @@ begin
 		mem_OEb_reg = 1'b0;
 		INCb_reg[7] = 1'b0;
 	end else begin			
-		MADDR_SEL_reg 	= 3'd7; // PC register is r7	
-		pipeline_stage0_reg_next = memoryIn;
-		INCb_reg[7] 		= 1'b0; // increment r7	
-		mem_OEb_reg = 1'b0;
+		MADDR_SEL_reg 				= 3'd7; // PC register is r7	
+		pipeline_stage0_reg_next 	= memoryIn;
+		INCb_reg[7] 				= 1'b0; // increment r7	
+		mem_OEb_reg 				= 1'b0;
 	end
 	
 	casex(pipeline_stage0_reg)
@@ -310,7 +310,7 @@ begin
 		16'h02xx: begin /* increment multiple */
 				INCb_reg[6:0] = pipeline_stage0_reg[6:0];
 				end
-		16'h02xx: begin /* decrement multiple */
+		16'h03xx: begin /* decrement multiple */
 				DECb_reg[6:0] = pipeline_stage0_reg[6:0];
 				end
 		default: ;
