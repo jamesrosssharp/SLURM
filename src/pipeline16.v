@@ -284,8 +284,11 @@ begin
 				delay_slot_reg_next = 1'b1;
 			end	
 		end
-		16'h5xxx: /* memory, reg, reg index */ 
-			pipeline_stall_reg_next = 1'b1; // We stall the pipeline so on the next cycle we can access memory
+		16'h5xxx: begin/* memory, reg, reg index */ 
+			pipeline_stall_reg_next = 1'b1; // We stall the pipeline so on the next cycle we can access memory	
+			MADDR_SEL_reg = memory_store_index(pipeline_stage0_reg);
+			INCb_reg[7] 			 = 1'b1; 			// don't increment r7
+		end
 		16'h01xx: begin /* ret / iret */
 				aluOp_reg 				 = 4'b0000; 		// move
 				ALU_B_SEL_reg			 = ret_or_iret(pipeline_stage0_reg) ? 3'b101 : 3'b110;          // move LR or ILR (interrupt link register)
@@ -293,8 +296,7 @@ begin
 				INCb_reg[7] 			 = 1'b1; 			// don't increment r7
 				pipeline_stage0_reg_next = NOP_INSTRUCTION; // feed nop
 				LD_reg_ALUb_reg 		 = 8'h7f; 	 		// load r7 from alu 
-				//delay_slot_reg_next  	 = 1'b1;
-				pipeline_stall_reg_next = 1'b1;
+				delay_slot_reg_next  	 = 1'b1;
 				end
 		16'h02xx: begin /* increment multiple */
 				INCb_reg[6:0] = pipeline_stage0_reg[6:0];
@@ -307,15 +309,14 @@ begin
 	casex(pipeline_stage1_reg)
 		16'h5xxx: /* memory reg, reg index */		
 			if (is_memory_load_or_store(pipeline_stage1_reg) == 1'b1) begin // store
+				MADDR_SEL_reg = memory_store_index(pipeline_stage0_reg);
 				M_ENb_reg  = 1'b0;
 				M_SEL_reg  = memory_store_source(pipeline_stage1_reg);
-				MADDR_SEL_reg = memory_store_index(pipeline_stage1_reg);
 				mem_OEb_reg      = 1'b1;
 				mem_WRb_reg	   = 1'b0;
 				INCb_reg[memory_store_index(pipeline_stage1_reg)] = memory_post_increment(pipeline_stage1_reg); // increment?
 			end	
 			else begin // load
-				MADDR_SEL_reg = memory_load_index(pipeline_stage1_reg);
 				mem_OEb_reg      = 1'b0;
 				mem_WRb_reg	   = 1'b1;
 				LD_reg_Mb_reg = {8{1'b1}} ^ (1 << memory_load_destination(pipeline_stage1_reg));
