@@ -41,10 +41,11 @@ wire [BITS - 1 : 0] xorOp = A ^ B;
 wire [BITS - 1 : 0] rolOp = {A[BITS - 2:0],C};
 wire [BITS - 1 : 0] rorOp = {C, A[BITS - 1:1]};
 
+wire [BITS - 1 : 0] lslOp = {A[BITS - 2:0],1'b0};
+wire [BITS - 1 : 0] asrOp = {A[BITS-1], A[BITS - 1:1]};
+
 reg [BITS - 1 : 0] out;
 assign aluOut = out;
-
-/* TODO: Multiplication */
 
 always @(posedge CLK)
 begin
@@ -110,9 +111,11 @@ begin
 			Z_flag_reg_next = (subOp[BITS - 1:0] == {BITS{1'b0}}) ? 1'b1 : 1'b0;
 			S_flag_reg_next = subOp[BITS - 1] ? 1'b1 : 1'b0;
 		end
-		4'd9, /* mul */
-		4'd10: begin /* muls */
-			out = 0;
+		4'd9: begin /* asr */
+			out = asrOp;	
+		end
+		4'd10: begin /* lsl */
+			out = lslOp;
 		end
 		4'd11: begin /* and / test */
 			out = andOp;
@@ -130,7 +133,7 @@ begin
 			out = rolOp;
 			C_flag_reg_next = A[BITS - 1];	
 		end
-		4'd13: begin /* eor */
+		4'd13: begin /* ror */
 			out = rorOp;
 			C_flag_reg_next = A[0];	
 		end
