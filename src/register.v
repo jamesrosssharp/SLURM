@@ -25,7 +25,8 @@ module register
 
 	output [BITS - 1 : 0] outMADDR, /* output to Memory Address */
 	input  OEb_MADDR, 				/* output enable         */
-	input  INCb						/* increment 			 */			
+	input  INCb,					/* increment 			 */			
+	input  DECb						/* decrement 			 */			
 );
 
 reg [BITS - 1 : 0] Reg;
@@ -56,6 +57,8 @@ begin
 		Reg_next = inP;
 	else if (INCb == 0)
 		Reg_next = Reg + 1;
+	else if (DECb == 0)
+		Reg_next = Reg - 1;
 end
 
 endmodule

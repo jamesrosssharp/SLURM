@@ -34,6 +34,7 @@ module pipeline16
  	output [2 : 0] MADDR_SEL,   		/* index of register driving memory address bus */
 
 	output [7 : 0] INCb,  	  			/* active low register increment */
+	output [7 : 0] DECb,  	  			/* active low register decrement */
 
 	output ALU_B_from_inP_b,			/* 1 = ALU B from registers, 0 = ALU B from inP (pipeline constant register) */
 
@@ -56,19 +57,20 @@ reg delay_slot_reg_next;
 
 localparam NOP_INSTRUCTION = 16'h0000;
 
-reg [3:0] aluOp_reg;
-reg [3:0] pout_reg;
-reg [11:0] imm_reg;
-reg [11:0] imm_reg_next;
-reg [7 : 0] LD_reg_ALUb_reg;
-reg [7 : 0] LD_reg_Mb_reg;
-reg [7 : 0] LD_reg_Pb_reg;
+reg [3:0]    aluOp_reg;
+reg [3:0]    pout_reg;
+reg [11:0]   imm_reg;
+reg [11:0]   imm_reg_next;
+reg [7 : 0]  LD_reg_ALUb_reg;
+reg [7 : 0]  LD_reg_Mb_reg;
+reg [7 : 0]  LD_reg_Pb_reg;
 reg [2 : 0]  ALU_A_SEL_reg;
 reg [2 : 0]  ALU_B_SEL_reg;
 reg M_ENb_reg;
 reg [2 : 0] M_SEL_reg;
 reg [2 : 0] MADDR_SEL_reg;
 reg [7 : 0] INCb_reg;
+reg [7 : 0] DECb_reg;
 reg ALU_B_from_inP_b_reg;
 reg mem_OEb_reg;
 reg mem_WRb_reg;
@@ -84,6 +86,7 @@ assign M_ENb = M_ENb_reg;
 assign M_SEL = M_SEL_reg;
 assign MADDR_SEL = MADDR_SEL_reg;
 assign INCb = INCb_reg;
+assign DECb = DECb_reg;
 assign ALU_B_from_inP_b = ALU_B_from_inP_b_reg;
 assign mem_OEb = mem_OEb_reg;
 assign mem_WRb = mem_WRb_reg;
@@ -174,12 +177,17 @@ endfunction
 
 function is_memory_load_or_store;
 input [15:0] p0;
-	is_memory_load_or_store = p0[9]; // 0 = load, 1 = store
+	is_memory_load_or_store = p0[8]; // 0 = load, 1 = store
 endfunction
 
 function memory_post_increment;
 input [15:0] p0;
-	memory_post_increment = p0[10]; // 0 = increment, 1 = no increment
+	memory_post_increment = p0[9]; // 0 = increment, 1 = no increment
+endfunction
+
+function memory_post_decrement;
+input [15:0] p0;
+	memory_post_decrement = p0[10]; // 0 = increment, 1 = no increment
 endfunction
 
 function [2:0] memory_store_source;
@@ -216,6 +224,7 @@ begin
 	M_SEL_reg 			= 3'b000;	
 	MADDR_SEL_reg 		= 3'b000;
 	INCb_reg 			= 8'hff;
+	DECb_reg 			= 8'hff;
 	ALU_B_from_inP_b_reg = 1'b1;
 	mem_OEb_reg = 1'b1;
 	mem_WRb_reg = 1'b1;
@@ -285,9 +294,9 @@ begin
 			end	
 		end
 		16'h5xxx: begin/* memory, reg, reg index */ 
-			pipeline_stall_reg_next = 1'b1; // We stall the pipeline so on the next cycle we can access memory	
+			pipeline_stall_reg_next = 1'b1; 			// We stall the pipeline so on the next cycle we can access memory	
 			MADDR_SEL_reg = memory_store_index(pipeline_stage0_reg);
-			INCb_reg[7] 			 = 1'b1; 			// don't increment r7
+			INCb_reg[7] 			 = 1'b1; 			// don't increment r7 this cycle
 		end
 		16'h01xx: begin /* ret / iret */
 				aluOp_reg 				 = 4'b0000; 		// move
@@ -301,12 +310,21 @@ begin
 		16'h02xx: begin /* increment multiple */
 				INCb_reg[6:0] = pipeline_stage0_reg[6:0];
 				end
+		16'h02xx: begin /* decrement multiple */
+				DECb_reg[6:0] = pipeline_stage0_reg[6:0];
+				end
 		default: ;
 	endcase
 
 	// Stage 1
 
 	casex(pipeline_stage1_reg)
+		16'h4xxx: /* branch */
+		begin
+			if (is_branch_link(pipeline_stage1_reg) == 1'b1) begin
+				DECb_reg[6] = 1'b0; // Decrement link register - to account for off by one in PC when loaded
+			end	
+		end
 		16'h5xxx: /* memory reg, reg index */		
 			if (is_memory_load_or_store(pipeline_stage1_reg) == 1'b1) begin // store
 				MADDR_SEL_reg = memory_store_index(pipeline_stage0_reg);
@@ -315,12 +333,14 @@ begin
 				mem_OEb_reg      = 1'b1;
 				mem_WRb_reg	   = 1'b0;
 				INCb_reg[memory_store_index(pipeline_stage1_reg)] = memory_post_increment(pipeline_stage1_reg); // increment?
+				DECb_reg[memory_store_index(pipeline_stage1_reg)] = memory_post_decrement(pipeline_stage1_reg); // decrement?
 			end	
 			else begin // load
 				mem_OEb_reg      = 1'b0;
 				mem_WRb_reg	   = 1'b1;
 				LD_reg_Mb_reg = {8{1'b1}} ^ (1 << memory_load_destination(pipeline_stage1_reg));
 				INCb_reg[memory_store_index(pipeline_stage1_reg)] = memory_post_increment(pipeline_stage1_reg); // increment?
+				DECb_reg[memory_store_index(pipeline_stage1_reg)] = memory_post_decrement(pipeline_stage1_reg); // decrement?
 			end
 		default:;
 	endcase

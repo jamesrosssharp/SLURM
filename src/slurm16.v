@@ -30,6 +30,7 @@ wire [2:0] M_SEL;
 wire [2:0] MADDR_SEL;
 
 wire [7:0] INCb;
+wire [7:0] DECb;
 
 wire ALU_B_from_inP_b;
 
@@ -62,6 +63,7 @@ pipeline16 pip0
 	.M_SEL(M_SEL), 
 	.MADDR_SEL(MADDR_SEL), 
 	.INCb(INCb),  	  
+	.DECb(DECb),  	  
 	.ALU_B_from_inP_b(ALU_B_from_inP_b),	
 	.mem_OEb(mem_OEb), 
 	.mem_WRb(mem_WRb)  
@@ -111,6 +113,7 @@ reg0
  	.M_SEL(M_SEL),    
  	.MADDR_SEL(MADDR_SEL),	
 	.INCb(INCb), 
+	.DECb(DECb), 
 	.ALU_B_from_inP_b(ALU_B_from_inP_b),	
  	.aluA_out(aluA),
  	.aluB_out(aluB),

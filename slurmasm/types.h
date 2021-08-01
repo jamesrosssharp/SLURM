@@ -1,0 +1,192 @@
+#pragma once
+
+#include <iostream>
+#include <iomanip>
+
+enum class Register : uint32_t
+{
+    r0 = 0,
+    r1,
+    r2,
+    r3,
+    r4,
+    r5,
+    r6,
+    r7,
+    r8,
+    None = 0xff
+};
+
+enum class OpCode : uint32_t
+{
+    IMM,
+    ADD,
+    ADC,
+    SUB,
+    SBB,
+    AND,
+    OR,
+    XOR,
+    SLA,
+    SLX,
+    SL0,
+    SL1,
+    RL,
+    SRA,
+    SRX,
+    SR0,
+    SR1,
+    RR,
+    CMP,
+    TEST,
+    LOAD,
+    MUL,
+    MULS,
+    DIV,
+    DIVS,
+    BSL,
+    BSR,
+    FMUL,
+    FDIV,
+    FADD,
+    FSUB,
+    FCMP,
+    FINT,
+    FFLT,
+    NOP,
+    SLEEP,
+    JUMP,
+    JUMPZ,
+    JUMPC,
+    JUMPNZ,
+    JUMPNC,
+    CALL,
+    CALLZ,
+    CALLC,
+    CALLNZ,
+    CALLNC,
+    SVC,
+    RET,
+    RETI,
+    RETE,
+    LDW,
+    STW,
+    LDSPR,
+    STSPR,
+    OUT,
+    IN,
+    INCW,
+    DECW,
+    None
+};
+
+enum class UniqueOpCode
+{
+    IMM,
+    ADD_IMM,
+    ADD_REG,
+    ADC_IMM,
+    ADC_REG,
+    SUB_IMM,
+    SUB_REG,
+    SBB_IMM,
+    SBB_REG,
+    AND_IMM,
+    AND_REG,
+    OR_IMM,
+    OR_REG,
+    XOR_IMM,
+    XOR_REG,
+    SLA,
+    SLX,
+    SL0,
+    SL1,
+    RL,
+    SRA,
+    SRX,
+    SR0,
+    SR1,
+    RR,
+    CMP_IMM,
+    CMP_REG,
+    TEST_IMM,
+    TEST_REG,
+    LOAD_IMM,
+    LOAD_REG,
+    MUL_IMM,
+    MUL_REG,
+    MULS_IMM,
+    MULS_REG,
+    DIV_IMM,
+    DIV_REG,
+    DIVS_IMM,
+    DIVS_REG,
+    BSL,
+    BSR,
+    FMUL,
+    FDIV,
+    FADD,
+    FSUB,
+    FCMP,
+    FINT,
+    FFLT,
+    NOP,
+    SLEEP,
+    JUMP,
+    JUMPZ,
+    JUMPC,
+    JUMPNZ,
+    JUMPNC,
+    CALL,
+    CALLZ,
+    CALLC,
+    CALLNZ,
+    CALLNC,
+    JUMP_REL,
+    JUMPZ_REL,
+    JUMPC_REL,
+    JUMPNZ_REL,
+    JUMPNC_REL,
+    CALL_REL,
+    CALLZ_REL,
+    CALLC_REL,
+    CALLNZ_REL,
+    CALLNC_REL,
+    SVC,
+    RET,
+    RETI,
+    RETE,
+    LDW_REG,
+    LDW_IMM,
+    STW_REG,
+    STW_IMM,
+    LDSPR,
+    STSPR,
+    OUT,
+    IN,
+    INCW,
+    DECW,
+    None
+};
+
+enum class PseudoOp : uint32_t
+{
+    ORG,
+    ALIGN,
+    DW,
+    DD,
+    None
+};
+
+inline std::ostream& operator << (std::ostream& os, const Register& r)
+{
+    if (r == Register::None)
+        os << "nil";
+    else
+    {
+        if ((uint32_t)r < 16)
+            os << "r" << std::dec << std::setw(2) << std::setfill('0') << (uint32_t)r;
+        else
+            os << "s" << std::dec << std::setw(2) << std::setfill('0') << ((uint32_t)r - 16);
+    }
+}

@@ -26,6 +26,7 @@ module register_file
 											  address bus */
 
 	input [2**REG_BITS - 1 : 0] INCb,  	  /* active low register increment */
+	input [2**REG_BITS - 1 : 0] DECb,  	  /* active low register deccrement */
 
 	input ALU_B_from_inP_b,	/* 1 = ALU B from registers, 0 = ALU B from inP (pipeline constant register) */
 
@@ -66,7 +67,8 @@ generate
 				M_SEL_v_b[j] | M_ENb, 
 				m_addr_out, 
 				MADDR_SEL_v_b[j], 
-				INCb[j]	
+				INCb[j],	
+				DECb[j]	
 			);
 		end
 endgenerate
