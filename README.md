@@ -148,17 +148,45 @@ Class 4: branch operation
     REG: index register for register branch
     IMM LO: 4 bit immediate for immediate branch
 
-Class 5: memory operation
+Class 5: index register memory operation
 -------------------------------------------
 
 |15 | 14 | 13 | 12 | 11 | 10 | 9  | 8  | 7 | 6- 4 | 3 | 2 - 0 |
 |---|----|----|----|----|----|----|--- |---|------|---|-------|
-|0  | 1  | 0  | 1  |  x | PD | PI | LS | x | IDX  | x | REG   |
+|0  | 1  | 0  | 1  |  x | PD | PI | LS | x | REG  | x | IDX   |
 
     PD: 1 = no post decrement, 0 = post decrement
     PI: 1 = no post increment, 0 = post increment (increment takes precedence over decrement)
     LS: 0 = load, 1 = store
+    REG: source for store, destination for load
+    IDX: index register, holds address of memory location
+
+Class 6: immediate memory operation
+-------------------------------------------
+
+|15 | 14 | 13 | 12 | 11 | 10 | 9  | 8  | 7 | 6- 4 | 3 - 0 |
+|---|----|----|----|----|----|----|--- |---|------|-------|
+|0  | 1  | 1  | 0  |  x | x  | x  | LS | x | REG  | IMM   |
+
+    LS: 0 = load, 1 = store
+    REG: source for store, destination for load
+    IMM: immediate address of memory location
+    
+Class 7: immediate + register memory operation
+-------------------------------------------
+
+|15 | 14 | 13 | 12 | 11 - 9  | 8  | 7 | 6- 4 | 3 - 0 |
+|---|----|----|----|---------|----|---|------|-------|
+|0  | 1  | 1  | 1  |    IDX  | LS | x | REG  | IMM   |
+
+    LS: 0 = load, 1 = store
     IDX: index register, holds address of memory location
     REG: source for store, destination for load
+    IMM: immediate address of memory location, effective address = [IDX] + IMM
+
+Classes 8 - 15 are reserved for future expansion
+
+
+
 
 
