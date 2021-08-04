@@ -4,7 +4,7 @@
 #include <cstdint>
 
 #include "types.h"
-#include "nbInstructionSet.h"
+#include "slurm16InstructionSet.h"
 
 
 

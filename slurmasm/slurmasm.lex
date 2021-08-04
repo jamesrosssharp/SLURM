@@ -1,5 +1,5 @@
 %{
-#include "nbasm.tab.h"
+#include "slurmasm.tab.h"
 using namespace std;
 #define YY_DECL extern "C" int yylex()
 int line_num = 1;

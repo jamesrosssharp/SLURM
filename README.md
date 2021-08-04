@@ -226,7 +226,90 @@ Class 10: ALU operations 0-7 with separate destination register
      
 Classes 11 - 15 are reserved for future expansion
 
-
-
-
-
+Assembler Mnemonics
+===================
+    
+    ADC REG_DEST, REG_SRC2, REG_SRC1
+    ADC REG_DST, IMM
+    ADC REG_DST, REG_SRC
+    ADD REG_DEST, REG_SRC2, REG_SRC1
+    ADD REG_DST, IMM
+    ADD REG_DST, REG_SRC
+    AND REG_DEST, REG_SRC2, REG_SRC1
+    AND REG_DST, IMM
+    AND REG_DST, REG_SRC
+    ASR REG_DST, REG_SRC
+    BA IMM
+    BA [REG]
+    BA PC + IMM
+    BA [PC + REG]
+    BC IMM
+    BC [REG]
+    BC PC +IMM
+    BC [PC +REG]
+    BL IMM
+    BL [REG]
+    BL PC + IMM
+    BL [PC + REG]
+    BNC IMM
+    BNC [REG]
+    BNC PC + IMM
+    BNC [PC + REG]
+    BNS IMM
+    BNS PC + IMM
+    BNS [PC + REG]
+    BNS [REG]
+    BNZ IMM
+    BNZ PC + IMM
+    BNZ [PC + REG]
+    BNZ [REG]
+    BS IMM
+    BS PC + IMM
+    BS [PC + REG]
+    BS [REG]
+    BZ IMM
+    BZ PC + IMM
+    BZ [PC + REG]
+    BZ [REG]
+    CC
+    CS
+    CZ
+    DECM REGS
+    IMM
+    INCM REGS
+    IRET
+    LD REG_DST, [IMM]
+    LD REG_DST, [REG_IDX+]
+    LD REG_DST, [REG_IDX-]
+    LD REG_DST, [REG_IDX]
+    LD REG_DST, [REG_IDX + IMM]
+    LSL REG_DST, REG_SRC
+    LSR REG_DST, REG_SRC
+    MOV REG_DST, IMM
+    MOV REG_DST, REG_SRC
+    NOP
+    OR  REG_DEST, REG_SRC2, REG_SRC1
+    OR  REG_DST, IMM
+    OR  REG_DST, REG_SRC
+    RET
+    ROLC REG_DST, REG_SRC
+    ROL REG_DST, REG_SRC
+    RORC REG_DST, REG_SRC
+    SBB REG_DEST, REG_SRC2, REG_SRC1
+    SBB REG_DST, IMM
+    SBB REG_DST, REG_SRC
+    SC
+    SS
+    ST [IMM], REG_DST
+    ST [REG_IDX + IMM], REG_SRC
+    ST [REG_IDX+], REG_SRC
+    ST [REG_IDX-], REG_SRC
+    ST [REG_IDX], REG_SRC
+    SUB REG_DEST, REG_SRC2, REG_SRC1
+    SUB REG_DST, IMM
+    SUB REG_DST, REG_SRC
+    SZ
+    XOR REG_DEST, REG_SRC2, REG_SRC1
+    XOR REG_DST, IMM
+    XOR REG_DST, REG_SRC
+    
