@@ -255,237 +255,145 @@ OpCode AST::convertOpCode(char* opcode)
     for (auto & c: s)
         c = toupper(c);
 
-    if (s == "IMM")
+    if (s == "ADC")
     {
-        return OpCode::IMM;
+        return OpCode::ADC;
     }
     else if (s == "ADD")
     {
         return OpCode::ADD;
     }
-    else if (s == "ADC")
-    {
-        return OpCode::ADC;
-    }
-    else if (s == "SUB")
-    {
-        return OpCode::SUB;
-    }
-    else if (s == "SBB")
-    {
-        return OpCode::SBB;
-    }
     else if (s == "AND")
     {
         return OpCode::AND;
     }
-    else if (s == "OR")
+    else if (s == "BA")
     {
-        return OpCode::OR;
+        return OpCode::BA;
     }
-    else if (s == "XOR")
+    else if (s == "BC")
     {
-        return OpCode::XOR;
+        return OpCode::BC;
     }
-    else if (s == "SLA")
+    else if (s == "BL")
     {
-        return OpCode::SLA;
+        return OpCode::BL;
     }
-    else if (s == "SLX")
+    else if (s == "BNC")
     {
-        return OpCode::SLX;
+        return OpCode::BNC;
     }
-    else if (s == "SL0")
+    else if (s == "BNS")
     {
-        return OpCode::SL0;
+        return OpCode::BNS;
     }
-    else if (s == "SL1")
+    else if (s == "BNZ")
     {
-        return OpCode::SL1;
+        return OpCode::BNZ;
     }
-    else if (s == "RL")
+    else if (s == "BS")
     {
-        return OpCode::RL;
+        return OpCode::BS;
     }
-    else if (s == "SRA")
+    else if (s == "BZ")
     {
-        return OpCode::SRA;
+        return OpCode::BZ;
     }
-    else if (s == "SRX")
+    else if (s == "CC")
     {
-        return OpCode::SRX;
+        return OpCode::CC;
     }
-    else if (s == "SR0")
+    else if (s == "CS")
     {
-        return OpCode::SR0;
+        return OpCode::CS;
     }
-    else if (s == "SR1")
+    else if (s == "CZ")
     {
-        return OpCode::SR1;
+        return OpCode::CZ;
     }
-    else if (s == "RR")
+    else if (s == "DECM")
     {
-        return OpCode::RR;
+        return OpCode::DECM;
     }
-    else if (s == "CMP")
+    else if (s == "IMM")
     {
-        return OpCode::CMP;
+        return OpCode::IMM;
     }
-    else if (s == "TEST")
+    else if (s == "INCM")
     {
-        return OpCode::TEST;
+        return OpCode::INCM;
     }
-    else if (s == "LOAD")
+    else if (s == "IRET")
     {
-        return OpCode::LOAD;
+        return OpCode::IRET;
     }
-    else if (s == "MUL")
+    else if (s == "LD")
     {
-        return OpCode::MUL;
+        return OpCode::LD;
     }
-    else if (s == "MULS")
+	else if (s == "LSL")
     {
-        return OpCode::MULS;
+        return OpCode::LSL;
     }
-    else if (s == "DIV")
+    else if (s == "LSR")
     {
-        return OpCode::DIV;
+        return OpCode::LSR;
     }
-    else if (s == "DIVS")
+    else if (s == "MOV")
     {
-        return OpCode::DIVS;
-    }
-    else if (s == "BSL")
-    {
-        return OpCode::BSL;
-    }
-    else if (s == "BSR")
-    {
-        return OpCode::BSR;
-    }
-    else if (s == "FMUL")
-    {
-        return OpCode::FMUL;
-    }
-    else if (s == "FDIV")
-    {
-        return OpCode::FDIV;
-    }
-    else if (s == "FADD")
-    {
-        return OpCode::FADD;
-    }
-    else if (s == "FSUB")
-    {
-        return OpCode::FSUB;
-    }
-    else if (s == "FCMP")
-    {
-        return OpCode::FCMP;
-    }
-    else if (s == "FINT")
-    {
-        return OpCode::FINT;
-    }
-    else if (s == "FFLT")
-    {
-        return OpCode::FFLT;
+        return OpCode::MOV;
     }
     else if (s == "NOP")
     {
         return OpCode::NOP;
     }
-    else if (s == "SLEEP")
+    else if (s == "OR")
     {
-        return OpCode::SLEEP;
-    }
-    else if (s == "JUMP")
-    {
-        return OpCode::JUMP;
-    }
-    else if (s == "JUMPZ")
-    {
-        return OpCode::JUMPZ;
-    }
-    else if (s == "JUMPC")
-    {
-        return OpCode::JUMPC;
-    }
-    else if (s == "JUMPNZ")
-    {
-        return OpCode::JUMPNZ;
-    }
-    else if (s == "JUMPNC")
-    {
-        return OpCode::JUMPNC;
-    }
-    else if (s == "CALL")
-    {
-        return OpCode::CALL;
-    }
-    else if (s == "CALLZ")
-    {
-        return OpCode::CALLZ;
-    }
-    else if (s == "CALLC")
-    {
-        return OpCode::CALLC;
-    }
-    else if (s == "CALLNZ")
-    {
-        return OpCode::CALLNZ;
-    }
-    else if (s == "CALLNC")
-    {
-        return OpCode::CALLNC;
-    }
-    else if (s == "SVC")
-    {
-        return OpCode::SVC;
+        return OpCode::OR;
     }
     else if (s == "RET")
     {
         return OpCode::RET;
     }
-    else if (s == "RETI")
+    else if (s == "ROL")
     {
-        return OpCode::RETI;
+        return OpCode::ROL;
     }
-    else if (s == "RETE")
+    else if (s == "ROLC")
     {
-        return OpCode::RETE;
+        return OpCode::ROLC;
     }
-    else if (s == "LDW")
+    else if (s == "RORC")
     {
-        return OpCode::LDW;
+        return OpCode::RORC;
     }
-    else if (s == "STW")
+    else if (s == "SBB")
     {
-        return OpCode::STW;
+        return OpCode::SBB;
     }
-    else if (s == "LDSPR")
+    else if (s == "SC")
     {
-        return OpCode::LDSPR;
+        return OpCode::SC;
     }
-    else if (s == "STSPR")
+    else if (s == "SS")
     {
-        return OpCode::STSPR;
+        return OpCode::SS;
     }
-    else if (s == "OUT")
+    else if (s == "ST")
     {
-        return OpCode::OUT;
+        return OpCode::ST;
     }
-    else if (s == "IN")
+    else if (s == "SUB")
     {
-        return OpCode::IN;
+        return OpCode::SUB;
     }
-    else if (s == "INCW")
+    else if (s == "SZ")
     {
-        return OpCode::INCW;
+        return OpCode::SZ;
     }
-    else if (s == "DECW")
+    else if (s == "XOR")
     {
-        return OpCode::DECW;
+        return OpCode::XOR;
     }
 
     return OpCode::None;

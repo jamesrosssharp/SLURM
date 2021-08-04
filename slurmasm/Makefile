@@ -14,4 +14,4 @@ install: slurmasm
 	cp slurmasm ../bin
 
 clean:
-	rm lex.yy.c slurmastm.tab.c slurmasm
+	rm lex.yy.c slurmasm.tab.c slurmasm
