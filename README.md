@@ -173,7 +173,7 @@ Class 6: immediate memory operation
     IMM: immediate address of memory location
     
 Class 7: immediate + register memory operation
--------------------------------------------
+-----------------------------------------------
 
 |15 | 14 | 13 | 12 | 11 - 9  | 8  | 7 | 6 - 4 | 3 - 0 |
 |---|----|----|----|---------|----|---|-------|-------|
@@ -208,7 +208,7 @@ Class 9: 16 bit signed multiply with 32 bit result
 
 
 Class 10: ALU operations 0-7 with separate destination register
-----------------------------------------------------
+----------------------------------------------------------------
 
 |15 | 14 | 13 | 12 | 11 - 9  | 8  - 6 | 5 - 3 | 2 - 0 |
 |---|----|----|----|---------|---- ---|-------|-------|
