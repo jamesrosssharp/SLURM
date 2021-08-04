@@ -175,16 +175,56 @@ Class 6: immediate memory operation
 Class 7: immediate + register memory operation
 -------------------------------------------
 
-|15 | 14 | 13 | 12 | 11 - 9  | 8  | 7 | 6- 4 | 3 - 0 |
-|---|----|----|----|---------|----|---|------|-------|
-|0  | 1  | 1  | 1  |    IDX  | LS | x | REG  | IMM   |
+|15 | 14 | 13 | 12 | 11 - 9  | 8  | 7 | 6 - 4 | 3 - 0 |
+|---|----|----|----|---------|----|---|-------|-------|
+|0  | 1  | 1  | 1  |    IDX  | LS | x | REG   | IMM   |
 
     LS: 0 = load, 1 = store
     IDX: index register, holds address of memory location
     REG: source for store, destination for load
     IMM: immediate address of memory location, effective address = [IDX] + IMM
 
-Classes 8 - 15 are reserved for future expansion
+Class 8: 16 bit unsigned multiply with 32 bit result
+----------------------------------------------------
+
+|15 | 14 | 13 | 12 | 11 - 9  | 8  - 6 | 5 - 3 | 2 - 0 |
+|---|----|----|----|---------|---- ---|-------|-------|
+|1  | 0  | 0  | 0  |  DEST2  |  DEST1 | SRC2  | SRC1  |
+
+    For versions of slurm16 with 16x16 multiplier
+
+    DEST2:DEST1 = SRC1 x SRC2
+
+Class 9: 16 bit signed multiply with 32 bit result
+----------------------------------------------------
+
+|15 | 14 | 13 | 12 | 11 - 9  | 8  - 6 | 5 - 3 | 2 - 0 |
+|---|----|----|----|---------|---- ---|-------|-------|
+|1  | 0  | 0  | 1  |  DEST2  |  DEST1 | SRC2  | SRC1  |
+
+    For versions of slurm16 with 16x16 multiplier
+
+    DEST2:DEST1 = SRC1 x SRC2
+
+
+Class 10: ALU operations 0-7 with separate destination register
+----------------------------------------------------
+
+|15 | 14 | 13 | 12 | 11 - 9  | 8  - 6 | 5 - 3 | 2 - 0 |
+|---|----|----|----|---------|---- ---|-------|-------|
+|1  | 0  | 1  | 0  |  ALU OP |  DEST  | SRC2  | SRC1  |
+
+     ALU OP : 3 bits ALU operation
+        0 - mov : DEST <- SRC1
+        1 - add : DEST <- SRC2 + SRC1
+        2 - adc : DEST <- SRC2 + SRC1 + Carry
+        3 - sub : DEST <- SRC2 - SRC1
+        4 - sbb : DEST <- SRC2 - SRC1 - Carry
+        5 - and : DEST <- SRC2 & SRC1
+        6 - or  : DEST <- SRC2 | SRC1
+        7 - xor : DEST <- SRC2 ^ SRC1
+     
+Classes 11 - 15 are reserved for future expansion
 
 
 
