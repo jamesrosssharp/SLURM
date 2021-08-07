@@ -38,10 +38,13 @@ void Statement::firstPassAssemble(uint32_t& curAddress, SymbolTable& syms)
 
     switch (type)
     {
-        case StatementType::STANDALONE_OPCODE:
-        case StatementType::TWO_REGISTER_OPCODE:
-        case StatementType::ONE_REGISTER_OPCODE:
-        case StatementType::INDIRECT_ADDRESSING_OPCODE:
+		case StatementType::THREE_REGISTER_OPCODE:
+		case StatementType::TWO_REGISTER_OPCODE:
+		case StatementType::STANDALONE_OPCODE:
+		case StatementType::PC_RELATIVE_REG_OPCODE:
+		case StatementType::INDIRECT_ADDRESSING_OPCODE:
+		case StatementType::INDIRECT_ADDRESSING_OPCODE_WITH_POSTINCREMENT:
+		case StatementType::INDIRECT_ADDRESSING_OPCODE_WITH_POSTDECREMENT:
         {
             // shouldn't get here - this should be assembled directly
 
@@ -59,7 +62,7 @@ void Statement::firstPassAssemble(uint32_t& curAddress, SymbolTable& syms)
 
 
             // can expression be evaluated? If so, see if it's possible to fit any immediate value into
-            // a 4 bit nibble, in which case we don't need an imm
+            // a 4 bit nibble, in which case we don't need an imm (and we don't need to relax it away later)
 
             bool expressionCanFitIn4Bits = false;
 
@@ -73,111 +76,34 @@ void Statement::firstPassAssemble(uint32_t& curAddress, SymbolTable& syms)
 
             switch (opcode)
             {
-                case OpCode::IMM:
-                case OpCode::NOP:
-                case OpCode::SLEEP:
-                    // these instructions are all single word
-                    assembledWords.resize(1 * repetitionCount);
-                    break;
-                case OpCode::ADD:
-                case OpCode::ADC:
-                case OpCode::SUB:
-                case OpCode::SBB:
-                case OpCode::AND:
-                case OpCode::OR:
-                case OpCode::XOR:
-                case OpCode::CMP:
-                case OpCode::TEST:
-                case OpCode::LOAD:
-                case OpCode::MUL:
-                case OpCode::MULS:
-                case OpCode::DIV:
-                case OpCode::DIVS:
-                    if (expressionCanFitIn4Bits)
+				case OpCode::ADC:
+				case OpCode::ADD:
+				case OpCode::AND:
+				case OpCode::BA:
+				case OpCode::BC:
+				case OpCode::BL:
+				case OpCode::BNC:
+				case OpCode::BNS:
+				case OpCode::BNZ:
+				case OpCode::BS:
+				case OpCode::BZ:
+				case OpCode::IMM:
+				case OpCode::LD:
+				case OpCode::MOV:
+				case OpCode::OR:
+				case OpCode::SBB:
+				case OpCode::SUB:
+				case OpCode::ST:
+				case OpCode::XOR:
+					if (expressionCanFitIn4Bits)
                         assembledWords.resize(1 * repetitionCount);
                     else
                         assembledWords.resize(2 * repetitionCount);
                     break;
-                case OpCode::BSL:
-                case OpCode::BSR:
-                    // barrel shift instructions are single word
-                    assembledWords.resize(1 * repetitionCount);
-                    break;
-                case OpCode::JUMP:
-                case OpCode::JUMPZ:
-                case OpCode::JUMPC:
-                case OpCode::JUMPNZ:
-                case OpCode::JUMPNC:
-                case OpCode::CALL:
-                case OpCode::CALLZ:
-                case OpCode::CALLC:
-                case OpCode::CALLNZ:
-                case OpCode::CALLNC:
-                    // jumps and calls can be made relative. For now, assign 2 words to
-                    // instruction as if it were absolute. We will optimise it to a single
-                    // byte later on.
-                    assembledWords.resize(2 * repetitionCount);
-                    break;
-                /*
-                SVC:
-                RET:
-                RETI:
-                RETE:
-                LDW:
-                STW:
-                LDSPR:
-                STSPR:
-                case OpCode::SLA:
-                case OpCode::SLX:
-                case OpCode::SL0:
-                case OpCode::SL1:
-                case OpCode::RL:
-                case OpCode::SRA:
-                case OpCode::SRX:
-                case OpCode::SR0:
-                case OpCode::SR1:
-                case OpCode::RR:
-                    break;
-                */
                 default:
                 {
                     std::stringstream ss;
                     ss << "Error: opcode cannot take expression on line " << lineNum << std::endl;
-                    throw std::runtime_error(ss.str());
-                }
-            }
-
-            break;
-        }
-        case StatementType::INDIRECT_ADDRESSING_OPCODE_WITH_EXPRESSION:
-        {
-
-            bool expressionCanFitIn4Bits = false;
-
-            int32_t exprValue = 0;
-
-            if (expression.evaluate(exprValue, syms))
-            {
-                if (exprValue >= 0 && exprValue < 16)
-                    expressionCanFitIn4Bits = true;
-            }
-
-            switch (opcode)
-            {
-                case OpCode::LDW:
-                case OpCode::STW:
-                {
-                    if (expressionCanFitIn4Bits)
-                        assembledWords.resize(1 * repetitionCount);
-                    else
-                        assembledWords.resize(2 * repetitionCount);
-
-                    break;
-                }
-                default:
-                {
-                    std::stringstream ss;
-                    ss << "Error: opcode cannot take indirect addressing on line " << lineNum << std::endl;
                     throw std::runtime_error(ss.str());
                 }
             }
@@ -256,7 +182,7 @@ void Statement::firstPassAssemble(uint32_t& curAddress, SymbolTable& syms)
             break;
     }
 
-    curAddress += assembledWords.size() * 2;
+    curAddress += assembledWords.size();
 
 }
 
@@ -279,40 +205,29 @@ void Statement::assemble(uint32_t &curAddress)
     {
         case StatementType::STANDALONE_OPCODE:
         {
-            switch (opcode)
+            words.resize(1);
+		 
+		    switch (opcode)
             {
-                case OpCode::RET:
-                {
-                    words.resize(1);
-                    words[0] =  NB_RET_INSTRUCTION;
-                    break;
-                }
-                case OpCode::RETI:
-                {
-                    words.resize(1);
-                    words[0] =  NB_RETI_INSTRUCTION;
-                    break;
-                }
-                case OpCode::RETE:
-                {
-                    words.resize(1);
-                    words[0] = NB_RETE_INSTRUCTION;
-                }
-                case OpCode::NOP:
-                {
-                    words.resize(1);
-                    words[0] =  NB_NOP_INSTRUCTION;
-                    break;
-                }
-                case OpCode::SLEEP:
-                {
-                    words.resize(1);
-                    words[0] =  NB_SLEEP_INSTRUCTION;
-                    break;
-                }
+				case OpCode::CC:
+				case OpCode::CS:
+				case OpCode::CZ:
+				case OpCode::SC:
+				case OpCode::SS:
+				case OpCode::SZ:
+					Assembly::makeArithmeticInstruction(opcode,
+                                         Register::r0,
+                                         Register::r0, words,
+                                         lineNum);
+					break;
+				case OpCode::RET:
+					words[0] = SLRM_RET_INSTRUCTION;
+					break;
                 default:
                 {
-                    std::stringstream ss;
+        
+									
+            		std::stringstream ss;
                     ss << "Error: opcode is not stand-alone on line " << lineNum << std::endl;
                     throw std::runtime_error(ss.str());
 
@@ -322,232 +237,35 @@ void Statement::assemble(uint32_t &curAddress)
 
             break;
         }
-        case StatementType::ONE_REGISTER_OPCODE:
-        {
-
-            uint16_t op;
-
-            bool useSPR = false;
-
-            switch (opcode)
-            {
-                case OpCode::INCW:
-                    op = Assembly::INCW_INSTRUCTION;
-                    useSPR = true;
-                    break;
-                case OpCode::DECW:
-                    op = Assembly::DECW_INSTRUCTION;
-                    useSPR = true;
-                    break;
-                case OpCode::SL0:
-                    op = Assembly::SL0_INSTRUCTION;
-                    break;
-                case OpCode::SL1:
-                    op = Assembly::SL1_INSTRUCTION;
-                    break;
-                case OpCode::SLA:
-                    op = Assembly::SLA_INSTRUCTION;
-                    break;
-                case OpCode::SLX:
-                    op = Assembly::SLX_INSTRUCTION;
-                    break;
-                case OpCode::RL:
-                    op = Assembly::RL_INSTRUCTION;
-                    break;
-                case OpCode::SR0:
-                    op = Assembly::SR0_INSTRUCTION;
-                    break;
-                case OpCode::SR1:
-                    op = Assembly::SR1_INSTRUCTION;
-                    break;
-                case OpCode::SRA:
-                    op = Assembly::SRA_INSTRUCTION;
-                    break;
-                case OpCode::SRX:
-                    op = Assembly::SRX_INSTRUCTION;
-                    break;
-                case OpCode::RR:
-                    op = Assembly::RR_INSTRUCTION;
-                    break;
-                default:
-                {
-                    std::stringstream ss;
-                    ss << "Error: opcode is not one register opcode on line " << lineNum << std::endl;
-                    throw std::runtime_error(ss.str());
-
-                    break;
-                }
-            }
-
-            if (((uint16_t)regDest >= 16 && ! useSPR) ||
-                    ((uint16_t)regDest < 16 && useSPR))
-            {
-                std::stringstream ss;
-                ss << "Error: illegal destination/source register on line " << lineNum << std::endl;
-                throw std::runtime_error(ss.str());
-
-                break;
-            }
-
-            if (useSPR)
-                op |= ((uint16_t)regDest - 16) << 4;
-            else
-                op |= ((uint16_t)regDest) << 4;
-
-            words.resize(1);
-            words[0] = op;
-
-        }
         case StatementType::TWO_REGISTER_OPCODE:
         {
             words.resize(1);
 
             switch (opcode)
             {
-                case OpCode::ADD:
-                    Assembly::makeArithmeticInstruction(Assembly::ADD_REG_INSTRUCTION, regDest, regSrc, words, lineNum);
-                    break;
-                case OpCode::ADC:
-                    Assembly::makeArithmeticInstruction(Assembly::ADC_REG_INSTRUCTION, regDest, regSrc, words, lineNum);
-                    break;
-                case OpCode::SUB:
-                    Assembly::makeArithmeticInstruction(Assembly::SUB_REG_INSTRUCTION, regDest, regSrc, words, lineNum);
-                    break;
-                case OpCode::SBB:
-                    Assembly::makeArithmeticInstruction(Assembly::SBB_REG_INSTRUCTION, regDest, regSrc, words, lineNum);
-                    break;
-                case OpCode::AND:
-                    Assembly::makeArithmeticInstruction(Assembly::AND_REG_INSTRUCTION, regDest, regSrc, words, lineNum);
-                    break;
-                case OpCode::OR:
-                    Assembly::makeArithmeticInstruction(Assembly::OR_REG_INSTRUCTION, regDest, regSrc, words, lineNum);
-                    break;
-                case OpCode::XOR:
-                    Assembly::makeArithmeticInstruction(Assembly::XOR_REG_INSTRUCTION, regDest, regSrc, words, lineNum);
-                    break;
-                case OpCode::CMP:
-                    Assembly::makeArithmeticInstruction(Assembly::CMP_REG_INSTRUCTION, regDest, regSrc, words, lineNum);
-                    break;
-                case OpCode::TEST:
-                    Assembly::makeArithmeticInstruction(Assembly::TEST_REG_INSTRUCTION, regDest, regSrc, words, lineNum);
-                    break;
-                case OpCode::LOAD:
-                    Assembly::makeArithmeticInstruction(Assembly::LOAD_REG_INSTRUCTION, regDest, regSrc, words, lineNum);
-                    break;
-                case OpCode::MUL:
-                    Assembly::makeArithmeticInstruction(Assembly::MUL_REG_INSTRUCTION, regDest, regSrc, words, lineNum);
-                    break;
-                case OpCode::MULS:
-                    Assembly::makeArithmeticInstruction(Assembly::MULS_REG_INSTRUCTION, regDest, regSrc, words, lineNum);
-                    break;
-                case OpCode::DIV:
-                    Assembly::makeArithmeticInstruction(Assembly::DIV_REG_INSTRUCTION, regDest, regSrc, words, lineNum);
-                    break;
-                case OpCode::DIVS:
-                    Assembly::makeArithmeticInstruction(Assembly::DIVS_REG_INSTRUCTION, regDest, regSrc, words, lineNum);
-                    break;
-                case OpCode::FMUL:
-                    break;
-                case OpCode::FDIV:
-                    break;
-                case OpCode::FADD:
-                    break;
-                case OpCode::FSUB:
-                    break;
-                case OpCode::FCMP:
-                    break;
-                case OpCode::FINT:
-                    break;
-                case OpCode::FFLT:
-                    break;
-                case OpCode::LDSPR:
+				case OpCode::ADC:
+				case OpCode::ADD:
+				case OpCode::AND:
+				case OpCode::LSL:
+				case OpCode::LSR:
+				case OpCode::MOV:
+				case OpCode::OR:
+				case OpCode::ROL:
+				case OpCode::ROLC:
+				case OpCode::RORC:
+				case OpCode::SBB:
+				case OpCode::SUB:
+				case OpCode::XOR:
+			 		Assembly::makeArithmeticInstruction(opcode,
+                                         regDest,
+                                         regSrc, words,
+                                         lineNum);
+            		break; 
+                default:
                 {
-                    uint16_t op = Assembly::LDSPR_INSTRUCTION;
-
-                    if ((uint32_t)regDest < 16)
-                    {
-                        std::stringstream ss;
-                        ss << "Error: dest register is not an SPR on line " << lineNum << std::endl;
-                        throw std::runtime_error(ss.str());
-                    }
-
-                    if ((uint32_t)regSrc > 15)
-                    {
-                        std::stringstream ss;
-                        ss << "Error: source register is not a GPR on line " << lineNum << std::endl;
-                        throw std::runtime_error(ss.str());
-                    }
-
-                    if ((uint32_t)regSrc & 1)
-                    {
-                        std::stringstream ss;
-                        ss << "Error: source register must be r0, r2, r4, r6, r8, r10, r12, or r14 on line " << lineNum << std::endl;
-                        throw std::runtime_error(ss.str());
-                    }
-
-                    op |= ((uint16_t)regDest - 16) << 4;
-                    op |= (uint16_t)regSrc & 0xe;
-
-                    words.resize(1);
-                    words[0] = op;
-
-                    break;
-                }
-                case OpCode::STSPR:
-                {
-                    uint16_t op = Assembly::STSPR_INSTRUCTION;
-
-                    if ((uint32_t)regSrc < 16)
-                    {
-                        std::stringstream ss;
-                        ss << "Error: src register is not an SPR on line " << lineNum << std::endl;
-                        throw std::runtime_error(ss.str());
-                    }
-
-                    if ((uint32_t)regDest > 15)
-                    {
-                        std::stringstream ss;
-                        ss << "Error: dest register is not a GPR on line " << lineNum << std::endl;
-                        throw std::runtime_error(ss.str());
-                    }
-
-                    if ((uint32_t)regDest & 1)
-                    {
-                        std::stringstream ss;
-                        ss << "Error: dest register must be r0, r2, r4, r6, r8, r10, r12, or r14 on line " << lineNum << std::endl;
-                        throw std::runtime_error(ss.str());
-                    }
-
-                    op |= ((uint16_t)regDest & 0x0e) << 4;
-                    op |= ((uint16_t)regSrc - 16);
-
-                    words.resize(1);
-                    words[0] = op;
-
-                    break;
-
-                }
-                case OpCode::OUT:
-                {
-                    uint16_t op = Assembly::OUT_INSTRUCTION;
-
-                    op |= ((uint16_t)regDest) << 4;
-                    op |= ((uint16_t)regSrc);
-
-                    words.resize(1);
-                    words[0] = op;
-
-                    break;
-                }
-                case OpCode::IN:
-                {
-                    uint16_t op = Assembly::IN_INSTRUCTION;
-
-                    op |= ((uint16_t)regDest) << 4;
-                    op |= ((uint16_t)regSrc);
-
-                    words.resize(1);
-                    words[0] = op;
+            		std::stringstream ss;
+                    ss << "Error: opcode does not support two register mode on line " << lineNum << std::endl;
+                    throw std::runtime_error(ss.str());
 
                     break;
                 }
@@ -559,55 +277,26 @@ void Statement::assemble(uint32_t &curAddress)
         {
             switch (opcode)
             {
-                case OpCode::ADD:
-                    Assembly::makeArithmeticInstructionWithImmediate(Assembly::ADD_IMM_INSTRUCTION, regDest, expression.value, words, lineNum);
-                    break;
-                case OpCode::ADC:
-                    Assembly::makeArithmeticInstructionWithImmediate(Assembly::ADC_IMM_INSTRUCTION, regDest, expression.value, words, lineNum);
-                    break;
-                case OpCode::SUB:
-                    Assembly::makeArithmeticInstructionWithImmediate(Assembly::SUB_IMM_INSTRUCTION, regDest, expression.value, words, lineNum);
-                    break;
-                case OpCode::SBB:
-                    Assembly::makeArithmeticInstructionWithImmediate(Assembly::SBB_IMM_INSTRUCTION, regDest, expression.value, words, lineNum);
-                    break;
-                case OpCode::AND:
-                    Assembly::makeArithmeticInstructionWithImmediate(Assembly::AND_IMM_INSTRUCTION, regDest, expression.value, words, lineNum);
-                    break;
-                case OpCode::OR:
-                    Assembly::makeArithmeticInstructionWithImmediate(Assembly::OR_IMM_INSTRUCTION, regDest, expression.value, words, lineNum);
-                    break;
-                case OpCode::XOR:
-                    Assembly::makeArithmeticInstructionWithImmediate(Assembly::XOR_IMM_INSTRUCTION, regDest, expression.value, words, lineNum);
-                    break;
-                case OpCode::CMP:
-                    Assembly::makeArithmeticInstructionWithImmediate(Assembly::CMP_IMM_INSTRUCTION, regDest, expression.value, words, lineNum);
-                    break;
-                case OpCode::TEST:
-                    Assembly::makeArithmeticInstructionWithImmediate(Assembly::TEST_IMM_INSTRUCTION, regDest, expression.value, words, lineNum);
-                    break;
-                case OpCode::LOAD:
-                    Assembly::makeArithmeticInstructionWithImmediate(Assembly::LOAD_IMM_INSTRUCTION, regDest, expression.value, words, lineNum);
-                    break;
-                case OpCode::MUL:
-                    Assembly::makeArithmeticInstructionWithImmediate(Assembly::MUL_IMM_INSTRUCTION, regDest, expression.value, words, lineNum);
-                    break;
-                case OpCode::MULS:
-                    Assembly::makeArithmeticInstructionWithImmediate(Assembly::MULS_IMM_INSTRUCTION, regDest, expression.value, words, lineNum);
-                    break;
-                case OpCode::DIV:
-                    Assembly::makeArithmeticInstructionWithImmediate(Assembly::DIV_IMM_INSTRUCTION, regDest, expression.value, words, lineNum);
-                    break;
-                case OpCode::DIVS:
-                    Assembly::makeArithmeticInstructionWithImmediate(Assembly::DIVS_IMM_INSTRUCTION, regDest, expression.value, words, lineNum);
-                    break;
-                case OpCode::BSL:
-                    Assembly::makeArithmeticInstructionWithImmediate(Assembly::BSL_INSTRUCTION, regDest, expression.value, words, lineNum);
-                    break;
-                case OpCode::BSR:
-                    Assembly::makeArithmeticInstructionWithImmediate(Assembly::BSR_INSTRUCTION, regDest, expression.value, words, lineNum);
-                    break;
-                default:
+           		case OpCode::ADC:
+				case OpCode::ADD:
+				case OpCode::AND:
+				case OpCode::LSL:
+				case OpCode::LSR:
+				case OpCode::MOV:
+				case OpCode::OR:
+				case OpCode::ROL:
+				case OpCode::ROLC:
+				case OpCode::RORC:
+				case OpCode::SBB:
+				case OpCode::SUB:
+				case OpCode::XOR:
+			 		Assembly::makeArithmeticInstructionWithImmediate(opcode,
+                                         regDest,
+                                         expression.value, words,
+                                         lineNum);
+            		break; 
+            
+			    default:
                 {
                     std::stringstream ss;
                     ss << "Error: opcode is not single register with expression on line " << lineNum << std::endl;
@@ -624,18 +313,18 @@ void Statement::assemble(uint32_t &curAddress)
 
             switch (opcode)
             {
-                case OpCode::JUMP:
-                case OpCode::JUMPZ:
-                case OpCode::JUMPC:
-                case OpCode::JUMPNZ:
-                case OpCode::JUMPNC:
-                case OpCode::CALL:
-                case OpCode::CALLZ:
-                case OpCode::CALLC:
-                case OpCode::CALLNZ:
-                case OpCode::CALLNC:
-                    Assembly::makeFlowControlInstruction(opcode, address, expression.value, lineNum, words);
-                    break;
+				case OpCode::BA:
+				case OpCode::BC:
+				case OpCode::BL:
+				case OpCode::BNC:
+				case OpCode::BNS:
+				case OpCode::BNZ:
+				case OpCode::BS:
+				case OpCode::BZ:
+					Assembly::makeFlowControlInstruction(opcode, address, expression.value, lineNum,
+                                           words);
+
+					break;
                 default:
                 {
                     std::stringstream ss;
@@ -683,24 +372,6 @@ void Statement::assemble(uint32_t &curAddress)
 
             switch (opcode)
             {
-                case OpCode::LDW:
-
-                    op = Assembly::LDW_REG_INSTRUCTION;
-
-                    op |= idx << 8;
-                    op |= (uint16_t)regDest << 4;
-                    op |= (uint16_t)regOffset;
-
-                    break;
-                case OpCode::STW:
-
-                    op = Assembly::STW_REG_INSTRUCTION;
-
-                    op |= idx << 8;
-                    op |= (uint16_t)regDest << 4;
-                    op |= (uint16_t)regOffset;
-
-                    break;
                 default:
                 {
                     std::stringstream ss;
@@ -786,7 +457,7 @@ void Statement::assemble(uint32_t &curAddress)
         }
 
 
-    curAddress += assembledWords.size() * 2;
+    curAddress += assembledWords.size();
 
 }
 

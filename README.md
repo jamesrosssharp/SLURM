@@ -16,7 +16,7 @@ register (LR), R5 = interrupt link register (ILR), R4 = stack pointer (SP), R0-R
 Instruction Set
 ===============
 
-All instructions are 16 bits wide. The highest 4 bits are the instruction class.
+All instructions are 16 bits wide. With bit 15 low, The highest 4 bits are the instruction class. With bit 15, high, the top three bits are the instruction class / 2.
 
 Class 0: General purpose
 ------------------------
@@ -41,17 +41,17 @@ Class 0 has 4 sub-classes, bits 9 - 8 of the opcode.
 2. Increment multiple
 
 
-    |15 | 14 | 13 | 12 | 11 | 10 | 9 | 8 | 7 | 6 | 5 - 0 |
-    |---|----|----|----|----|----|---|---|---|---|-------|
-    |0  | 0  | 0  | 0  | 0  | 0  | 1 | 0 | 0 | 0 | REGS  |
+    |15 | 14 | 13 | 12 | 11 | 10 | 9 | 8 | 7 | 6 - 0 |
+    |---|----|----|----|----|----|---|---|---|-------|
+    |0  | 0  | 0  | 0  | 0  | 0  | 1 | 0 | 0 | REGS  |
 
         REGS: if any bits are zero, the register will be incremented
 
 3.  Decrement multiple
 
-    |15 | 14 | 13 | 12 | 11 | 10 | 9 | 8 | 7 | 6 | 5 - 0 |
-    |---|----|----|----|----|----|---|---|---|---|-------|
-    |0  | 0  | 0  | 0  | 0  | 0  | 1 | 1 | 0 | 0 | REGS  |
+    |15 | 14 | 13 | 12 | 11 | 10 | 9 | 8 | 7 | 6 - 0 |
+    |---|----|----|----|----|----|---|---|---|-------|
+    |0  | 0  | 0  | 0  | 0  | 0  | 1 | 1 | 0 | REGS  |
 
         REGS: if any bits are zero, the register will be decremented
 
@@ -89,13 +89,15 @@ Class 2: Register to register ALU operation
         19 - rolc
         20 - rorc
         21 - rol
-        22 - cc : clear carry
-        23 - sc : set carry
-        24 - cz : clear zero
-        25 - sz : set zero
-        26 - cs : clear sign
-        27 - ss : set sign
-        28 - 31 : reserved
+        22 - ror
+        23 - cc : clear carry
+        24 - sc : set carry
+        25 - cz : clear zero
+        26 - sz : set zero
+        27 - cs : clear sign
+        28 - ss : set sign
+        29 - bswap : byte swap
+        30 - 31 : reserved
  
     SDb:  if low, store result to DEST register, otherwise discard result (used for tst, cmp)
     DEST: destination and operand (alu A input)
@@ -184,35 +186,13 @@ Class 7: immediate + register memory operation
     REG: source for store, destination for load
     IMM: immediate address of memory location, effective address = [IDX] + IMM
 
-Class 8: 16 bit unsigned multiply with 32 bit result
-----------------------------------------------------
 
-|15 | 14 | 13 | 12 | 11 - 9  | 8  - 6 | 5 - 3 | 2 - 0 |
-|---|----|----|----|---------|--------|-------|-------|
-|1  | 0  | 0  | 0  |  DEST2  |  DEST1 | SRC2  | SRC1  |
-
-    For versions of slurm16 with 16x16 multiplier
-
-    DEST2:DEST1 = SRC1 x SRC2
-
-Class 9: 16 bit signed multiply with 32 bit result
-----------------------------------------------------
-
-|15 | 14 | 13 | 12 | 11 - 9  | 8  - 6 | 5 - 3 | 2 - 0 |
-|---|----|----|----|---------|--------|-------|-------|
-|1  | 0  | 0  | 1  |  DEST2  |  DEST1 | SRC2  | SRC1  |
-
-    For versions of slurm16 with 16x16 multiplier
-
-    DEST2:DEST1 = SRC1 x SRC2
-
-
-Class 10: ALU operations 0-7 with separate destination register
+Class 8: ALU operations 0-15 with separate destination register
 ----------------------------------------------------------------
 
-|15 | 14 | 13 | 12 | 11 - 9  | 8  - 6 | 5 - 3 | 2 - 0 |
-|---|----|----|----|---------|--------|-------|-------|
-|1  | 0  | 1  | 0  |  ALU OP |  DEST  | SRC2  | SRC1  |
+|15 | 14 | 13 | 12  - 9  | 8  - 6 | 5 - 3 | 2 - 0 |
+|---|----|----|----------|--------|-------|-------|
+|1  | 0  | 0  |  ALU OP  |  DEST  | SRC2  | SRC1  |
 
      ALU OP : 3 bits ALU operation
         0 - mov : DEST <- SRC1
@@ -223,8 +203,25 @@ Class 10: ALU operations 0-7 with separate destination register
         5 - and : DEST <- SRC2 & SRC1
         6 - or  : DEST <- SRC2 | SRC1
         7 - xor : DEST <- SRC2 ^ SRC1
-     
-Classes 11 - 15 are reserved for future expansion
+        8 - 15: reserved
+        
+
+Class 10: move multiple
+-----------------------
+
+|15 | 14 | 13 | 12 | 11  - 4    |   3 - 0    |
+|---|----|----|----|------------|------------|
+|1  | 0  | 1  | RI | REGS DEST  | REG / IMM  |
+
+    RI : register or immediate source
+    REGS DEST: list of registers (including PC)
+    REG / IMM: register or immediate value
+
+Classes 12 - 14:
+----------------
+
+Reserved
+
 
 Assembler Mnemonics
 ===================

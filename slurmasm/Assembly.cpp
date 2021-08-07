@@ -3,11 +3,12 @@
 #include <sstream>
 
 
-void Assembly::makeArithmeticInstructionWithImmediate(uint16_t opcode, Register reg, int32_t value, std::vector<uint16_t>& assembledWords, uint32_t lineNum)
+void Assembly::makeArithmeticInstructionWithImmediate(OpCode opcode, Register regDest, int32_t value, std::vector<uint16_t>& assembledWords, uint32_t lineNum)
 {
-    uint16_t op = opcode;
 
-    int16_t val = value;
+	uint16_t op 	= 0;
+	uint16_t aluOp 	= 0;
+	uint16_t SDb 	= 0;
 
     if (((uint32_t)value & 0xffff) != (uint32_t)value)
     {
@@ -16,63 +17,161 @@ void Assembly::makeArithmeticInstructionWithImmediate(uint16_t opcode, Register 
         throw std::runtime_error(ss.str());
     }
 
-    if ((uint32_t)reg >= 16)
-    {
-        std::stringstream ss;
-        ss << "Error: illegal register on line " << lineNum << std::endl;
-        throw std::runtime_error(ss.str());
-    }
+	switch (opcode)
+	{
+		case OpCode::MOV:
+			aluOp = 0;
+			break;
+		case OpCode::ADD:
+			aluOp = 1;
+			break;
+		case OpCode::ADC:
+			aluOp = 2;
+			break;			
+    	case OpCode::SUB:
+			aluOp = 3;
+			break;
+		case OpCode::SBB:
+			aluOp = 4;
+			break;
+    	case OpCode::AND:
+			aluOp = 5;
+			break;
+		case OpCode::OR:
+			aluOp = 6;
+			break;
+		case OpCode::XOR:
+			aluOp = 7;
+			break;
+		default:
+		{
+	        std::stringstream ss;
+            ss << "Unsupported ALU operation for reg, immediate mode on line " << lineNum << std::endl;
+            throw std::runtime_error(ss.str());  
+		}
+	}
 
-    if (val >= 0 && val < 16)
+
+	if (value >= 0 && value < 16)
     {
-        op = op | ((uint32_t)reg << 4) | val;
+		op = SLRM_ALU_REG_IMM_INSTRUCTION |  (SDb << 7) | ((aluOp & 0xf) << 8) | ((int)regDest << 4) | ((uint16_t)value);
         assembledWords[0] = op;
 
         if (assembledWords.size() == 2)
-            assembledWords[1] = NOP_INSTRUCTION;
+            assembledWords[1] = SLRM_NOP_INSTRUCTION;
 
     }
-    else
-    {
+	else
+	{	
         if (assembledWords.size() != 2)
         {
             std::stringstream ss;
             ss << "Error: not enough space allocated for instruction on line " << lineNum << std::endl;
             throw std::runtime_error(ss.str());
         }
-
-        uint16_t imm = IMM_INSTRUCTION | (((uint16_t)val & 0xfff0) >> 4);
-        assembledWords[0] = imm;
-        op = op | ((uint32_t)reg << 4) | (val & 0x000f);
+		assembledWords[0] = SLRM_IMM_INSTRUCTION | ((uint32_t)value >> 4);
+	
+		op = SLRM_ALU_REG_IMM_INSTRUCTION |  (SDb << 7) | ((aluOp & 0xf) << 8) | ((int)regDest << 4) | ((uint16_t)value & 0xf);
         assembledWords[1] = op;
-    }
+	}
 
 }
 
 
-void Assembly::makeArithmeticInstruction(uint16_t opcode,
+void Assembly::makeArithmeticInstruction(OpCode opcode,
                                          Register regDest,
                                          Register regSrc, std::vector<uint16_t>& assembledWords,
                                          uint32_t lineNum)
 {
 
-    uint16_t op = opcode;
+	uint16_t op 	= 0;
+	uint16_t aluOp 	= 0;
+	uint16_t SDb 	= 0;
 
-    if ((uint32_t)regDest >= 16)
-    {
-        std::stringstream ss;
-        ss << "Error: illegal destination register on line " << lineNum << std::endl;
-        throw std::runtime_error(ss.str());
-    }
+	switch (opcode)
+	{
+		case OpCode::MOV:
+			aluOp = 0;
+			break;
+		case OpCode::ADD:
+			aluOp = 1;
+			break;
+		case OpCode::ADC:
+			aluOp = 2;
+			break;			
+    	case OpCode::SUB:
+			aluOp = 3;
+			break;
+		case OpCode::SBB:
+			aluOp = 4;
+			break;
+    	case OpCode::AND:
+			aluOp = 5;
+			break;
+		case OpCode::OR:
+			aluOp = 6;
+			break;
+		case OpCode::XOR:
+			aluOp = 7;
+			break;
+    	case OpCode::ASR:
+			aluOp = 16;
+			break;
+		case OpCode::LSR:
+			aluOp = 17;
+			break;
+		case OpCode::LSL:
+			aluOp = 18;
+			break;
+		case OpCode::ROLC:
+			aluOp = 19;
+			break;
+		case OpCode::RORC:
+			aluOp = 20;
+			break;
+    	case OpCode::ROL:
+			aluOp = 21;
+			break;
+		case OpCode::ROR:
+			aluOp = 22;
+			break;
+		case OpCode::CC:
+			aluOp = 23;
+			SDb = 1;
+			break;
+		case OpCode::SC:
+			aluOp = 24;
+			SDb = 1;		
+			break;
+		case OpCode::CZ:
+			aluOp = 25;
+			SDb = 1;
+			break;
+		case OpCode::SZ:
+			aluOp = 25;
+			SDb = 1;
+			break;
+		case OpCode::CS:
+			aluOp = 26;
+			SDb = 1;
+			break;
+		case OpCode::SS:
+			aluOp = 27;
+			SDb = 1;
+			break;
+		case OpCode::BSWAP:
+			aluOp = 28;
+			break;
+		default:
+		{
+	        std::stringstream ss;
+            ss << "Upsupported ALU operation on line " << lineNum << std::endl;
+            throw std::runtime_error(ss.str());  
+		}
+	}
 
-    if ((uint32_t)regSrc >= 16)
-    {
-        std::stringstream ss;
-        ss << "Error: illegal source register on line " << lineNum << std::endl;
-        throw std::runtime_error(ss.str());
-    }
+	op = SLRM_ALU_REG_REG_INSTRUCTION |  (SDb << 7) | ((aluOp & 0xf) << 8) | ((int)regDest << 4) | ((int)regSrc) | (aluOp &0x10);
 
-    op = op | ((uint16_t)regDest << 4) | ((uint16_t)regSrc);
     assembledWords[0] = op;
 
 }
@@ -81,127 +180,69 @@ void Assembly::makeArithmeticInstruction(uint16_t opcode,
 void Assembly::makeFlowControlInstruction(OpCode opcode, uint32_t address, uint32_t target, uint32_t lineNum,
                                        std::vector<uint16_t>& assembledWords)
 {
+	uint16_t branch = 0;
+	uint16_t rel = 0;
+	
+	switch (opcode)
+	{
+		case OpCode::BZ:
+			branch = 0;
+			break;
+		case OpCode::BNZ:
+			branch = 1;
+			break;
+		case OpCode::BS:
+			branch = 2;
+			break;
+		case OpCode::BNS:
+			branch = 3;
+			break;
+		case OpCode::BC:
+			branch = 4;
+			break;
+		case OpCode::BNC:
+			branch = 5;
+			break;
+		case OpCode::BA:
+			branch = 6;
+			break;
+		case OpCode::BL:
+			branch = 7;
+			break;
+		default:
+		{
+	        std::stringstream ss;
+            ss << "Upsupported branch operation on line " << lineNum << std::endl;
+            throw std::runtime_error(ss.str());  
+		}
+	}
 
-    // sanity check absolute target address
+	// For now, relative immediate branches are not supported.
 
-    if ((target & 0xffffff) != target)
+	uint16_t op;
+
+	if (target >= 0 && target < 16)
     {
-        std::stringstream ss;
-        ss << "Error: jump/call target outside of address space on " << lineNum << std::endl;
-        throw std::runtime_error(ss.str());
-    }
+		op = SLRM_BRANCH_INSTRUCTION |  (branch << 8) | (rel << 7) | ((uint16_t)target);
+        assembledWords[0] = op;
 
-    // check if relative address is possible
-
-    int32_t diff        = (target - address) / 2;
-    bool    useRelative = false;
-
-    if ((diff >= 0 && diff < 256) || (diff < 0 && diff >= -256))
-    {
-        useRelative = true;
-    }
-
-    uint16_t op = NOP_INSTRUCTION;
-
-    switch (opcode)
-    {
-        case OpCode::JUMP:
-            if (useRelative)
-                op = JUMP_REL_INSTRUCTION;
-            else
-                op = JUMP_INSTRUCTION;
-            break;
-        case OpCode::JUMPC:
-            if (useRelative)
-                op = JUMPC_REL_INSTRUCTION;
-            else
-                op = JUMPC_INSTRUCTION;
-            break;
-        case OpCode::JUMPZ:
-            if (useRelative)
-                op = JUMPZ_REL_INSTRUCTION;
-            else
-                op = JUMPZ_INSTRUCTION;
-            break;
-        case OpCode::JUMPNC:
-            if (useRelative)
-                op = JUMPNC_REL_INSTRUCTION;
-            else
-                op = JUMPNC_INSTRUCTION;
-            break;
-        case OpCode::JUMPNZ:
-            if (useRelative)
-                op = JUMPNZ_REL_INSTRUCTION;
-            else
-                op = JUMPNZ_INSTRUCTION;
-            break;
-        case OpCode::CALL:
-            if (useRelative)
-                op = CALL_REL_INSTRUCTION;
-            else
-                op = CALL_INSTRUCTION;
-            break;
-        case OpCode::CALLC:
-            if (useRelative)
-                op = CALLC_REL_INSTRUCTION;
-            else
-                op = CALLC_INSTRUCTION;
-            break;
-        case OpCode::CALLZ:
-            if (useRelative)
-                op = CALLZ_REL_INSTRUCTION;
-            else
-                op = CALLZ_INSTRUCTION;
-            break;
-        case OpCode::CALLNC:
-            if (useRelative)
-                op = CALLNC_REL_INSTRUCTION;
-            else
-                op = CALLNC_INSTRUCTION;
-            break;
-        case OpCode::CALLNZ:
-            if (useRelative)
-                op = CALLNZ_REL_INSTRUCTION;
-            else
-                op = CALLNZ_INSTRUCTION;
-            break;
-        default:
-        {
-            std::stringstream ss;
-            ss << "Error: invalid opcode on line " << lineNum << std::endl;
-            throw std::runtime_error(ss.str());
-        }
-
-    }
-
-    if (useRelative)
-    {
-        assembledWords[0] = op | (diff & 0x03ff);
         if (assembledWords.size() == 2)
-            assembledWords[1] = NOP_INSTRUCTION;
+            assembledWords[1] = SLRM_NOP_INSTRUCTION;
+
     }
-    else
-    {
+	else
+	{	
         if (assembledWords.size() != 2)
         {
             std::stringstream ss;
-            ss << "Error: not enough space for flow control opcode on line " << lineNum << std::endl;
+            ss << "Error: not enough space allocated for instruction on line " << lineNum << std::endl;
             throw std::runtime_error(ss.str());
         }
-
-        if (target < 1024)
-        {
-            assembledWords[0] = op | ((target & 0x7fe) >> 1);
-            assembledWords[1] = NOP_INSTRUCTION;
-        }
-        else
-        {
-            assembledWords[0] = IMM_INSTRUCTION | ((target & 0xfff800) >> 1);
-            assembledWords[1] = op | ((target & 0x7fe) >> 1);
-        }
-
-    }
-
+		assembledWords[0] = SLRM_IMM_INSTRUCTION | ((uint32_t)target >> 4);
+	
+		op = SLRM_BRANCH_INSTRUCTION | (branch << 8) | (rel << 7) | ((uint16_t)target & 0xf);
+        assembledWords[1] = op;
+	}
 
 }
 
@@ -209,59 +250,5 @@ void Assembly::makeLoadStoreWithExpression(OpCode opcode, uint32_t lineNum, std:
                                            Register regInd, Register regDest)
 {
 
-    uint16_t op;
-
-    int16_t idx = (int16_t)regInd - 24;
-
-    if (idx < 0 || idx > 4)
-    {
-        std::stringstream ss;
-        ss << "Error: illegal index register on line " << lineNum << std::endl;
-        throw std::runtime_error(ss.str());
-    }
-
-    if ((uint16_t)regDest >= 16)
-    {
-        std::stringstream ss;
-        ss << "Error: illegal destination/source register on line " << lineNum << std::endl;
-        throw std::runtime_error(ss.str());
-    }
-
-    bool fitsIn4Bits = false;
-
-    if (value >= 0 && value < 16)
-        fitsIn4Bits = true;
-
-    switch (opcode)
-    {
-        case OpCode::LDW:
-            op = LDW_IMM_INSTRUCTION;
-            break;
-        case OpCode::STW:
-            op = STW_IMM_INSTRUCTION;
-            break;
-        default:
-        {
-            std::stringstream ss;
-            ss << "Error: opcode cannot take indirect addressing on line " << lineNum << std::endl;
-            throw std::runtime_error(ss.str());
-
-            break;
-        }
-    }
-
-    op |= ((uint16_t)regInd & 0x03) << 8;
-    op |= ((uint16_t)regDest & 0x0f) << 4;
-
-    if (fitsIn4Bits)
-    {
-        assembledWords[0] = op | (((uint16_t)value & 0x0f) >> 1);
-        assembledWords[1] = NOP_INSTRUCTION;
-    }
-    else
-    {
-        assembledWords[0] = IMM_INSTRUCTION | (((uint16_t)value & 0xfff0) >> 4);
-        assembledWords[1] = op | ((uint16_t)value & 0x0f);
-    }
 
 }

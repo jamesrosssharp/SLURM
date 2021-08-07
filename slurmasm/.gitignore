@@ -2,3 +2,5 @@ slurmasm
 lex.yy.c
 slurmasm.tab.c
 slurmasm.tab.h
+out.bin
+out.bin.mem

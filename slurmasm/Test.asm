@@ -1,21 +1,18 @@
         .org 0h
 
-		mov r0, 3
-		mov r1, 2
-		add r0, r1
+		mov r0, 20
+		mov r1, 10
+		bl  multiply
 die:
 		ba die
 
 
-        .align 100h
-TheString:
-        dw "Hello World!\r\n"
+multiply:
+		mov r3,0
+loop:
+		add r3, r1
+		sub r0, 1
+		bnz loop
+		ret
 
-
-        .align 100h
-StackStart:
-        .times 100h dw 0x0
-StackEnd:
-
-        .end
-
+		.end

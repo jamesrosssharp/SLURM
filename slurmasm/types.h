@@ -13,15 +13,16 @@ enum class Register : uint32_t
     r5,
     r6,
     r7,
-    r8,
     None = 0xff
 };
 
 enum class OpCode : uint32_t
 {
+	None,
 	ADC,
 	ADD,
 	AND,
+	ASR,
 	BA,
 	BC,
 	BL,
@@ -29,6 +30,7 @@ enum class OpCode : uint32_t
 	BNS,
 	BNZ,
 	BS,
+	BSWAP,
 	BZ,
 	CC,
 	CS,
@@ -46,6 +48,7 @@ enum class OpCode : uint32_t
 	RET,
 	ROL,
 	ROLC,
+	ROR,	
 	RORC,
 	SBB,
 	SC,
@@ -82,4 +85,5 @@ inline std::ostream& operator << (std::ostream& os, const Register& r)
         else
             os << "s" << std::dec << std::setw(2) << std::setfill('0') << ((uint32_t)r - 16);
     }
+	return os;
 }

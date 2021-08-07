@@ -72,4 +72,5 @@ r0|r1|r2|r3|r4|r5|r6|r7 {yylval.regval = strdup(yytext); return REG; }
 \[             { return OPEN_SQUARE_BRACKET; }
 \]             { return CLOSE_SQUARE_BRACKET; }
 .              ;
+PC			   { return PC; }
 %%

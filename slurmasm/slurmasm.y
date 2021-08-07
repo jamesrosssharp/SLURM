@@ -40,7 +40,7 @@
 %token TIMES OPEN_PARENTHESIS
 %token CLOSE_PARENTHESIS PLUS MINUS MULT SHL SHR AND OR NOT XOR
 %token DIV LABEL
-%token EQU
+%token EQU PC
 %token OPEN_SQUARE_BRACKET CLOSE_SQUARE_BRACKET
 
  // define the "terminal symbol" token types I'm going to use (in CAPS
@@ -58,15 +58,20 @@
 
 asm: body_section footer { cout << "Parsed asm file" << endl; } ;
 
-op_code : op_code_1 | op_code_2 | op_code_3 | op_code_4 | op_code_5 | op_code_6 | op_code_7;
+op_code : op_code_1 | op_code_2 | op_code_3 | op_code_4 | op_code_5 | op_code_6 | op_code_7 | op_code_8 | op_code_9 | op_code_10 | op_code_11 | op_code_12;
 
-op_code_1: OPCODE REG COMMA REG ENDL { g_ast.addTwoRegisterOpcode(line_num - 1, $1,$2,$4); } ;
-op_code_2 : OPCODE REG COMMA expressions ENDL { g_ast.addOneRegisterAndExpressionOpcode(line_num - 1, $1, $2); } ;
-op_code_3 : OPCODE expressions ENDL { g_ast.addExpressionOpcode(line_num - 1, $1); } ;
-op_code_4 : OPCODE ENDL { g_ast.addStandaloneOpcode(line_num - 1, $1); } ;
-op_code_5 : OPCODE REG COMMA OPEN_SQUARE_BRACKET REG COMMA REG CLOSE_SQUARE_BRACKET ENDL { g_ast.addIndirectAddressingOpcode(line_num - 1, $1, $2, $5, $7); }
-op_code_6 : OPCODE REG COMMA OPEN_SQUARE_BRACKET REG COMMA expressions CLOSE_SQUARE_BRACKET ENDL { g_ast.addIndirectAddressingOpcodeWithExpression(line_num - 1, $1, $2, $5); }
-op_code_7 : OPCODE REG ENDL { g_ast.addOneRegisterOpcode(line_num - 1, $1, $2); }
+op_code_1 : OPCODE REG COMMA REG ENDL { g_ast.addTwoRegisterOpcode(line_num - 1, $1,$2,$4); } ;
+op_code_2 : OPCODE REG COMMA REG COMMA REG ENDL { g_ast.addThreeRegisterOpcode(line_num - 1, $1,$2,$4,$6); } ;
+op_code_3 : OPCODE REG COMMA expressions ENDL { g_ast.addOneRegisterAndExpressionOpcode(line_num - 1, $1, $2); } ;
+op_code_4 : OPCODE expressions ENDL { g_ast.addExpressionOpcode(line_num - 1, $1); } ;
+op_code_5 : OPCODE ENDL { g_ast.addStandaloneOpcode(line_num - 1, $1); } ;
+op_code_6 : OPCODE OPEN_SQUARE_BRACKET REG CLOSE_SQUARE_BRACKET ENDL { g_ast.addIndirectAddressingOpcode(line_num - 1, $1, $3); }
+op_code_7 : OPCODE OPEN_SQUARE_BRACKET REG PLUS CLOSE_SQUARE_BRACKET ENDL { g_ast.addIndirectAddressingOpcodeWithPostincrement(line_num - 1, $1, $3); }
+op_code_8 : OPCODE OPEN_SQUARE_BRACKET REG MINUS CLOSE_SQUARE_BRACKET ENDL { g_ast.addIndirectAddressingOpcodeWithPostdecrement(line_num - 1, $1, $3); }
+op_code_9 : OPCODE REG COMMA OPEN_SQUARE_BRACKET REG PLUS expressions CLOSE_SQUARE_BRACKET ENDL { g_ast.addIndirectAddressingOpcodeWithExpression(line_num - 1, $1, $2, $5); }
+op_code_10 : OPCODE OPEN_SQUARE_BRACKET REG PLUS expressions CLOSE_SQUARE_BRACKET COMMA REG ENDL { g_ast.addIndirectAddressingOpcodeWithExpression(line_num - 1, $1, $8, $3); }
+op_code_11 : OPCODE OPEN_SQUARE_BRACKET PC PLUS REG CLOSE_SQUARE_BRACKET ENDL { g_ast.addPCRelativeRegOpcode(line_num - 1, $1, $5); }
+op_code_12 : OPCODE PC PLUS expressions ENDL { g_ast.addPCRelativeExpressionOpcode(line_num - 1, $1); }
 
 expressions: expressions expression | expression ;
 expression: hexval | integer | open_parenthesis | close_parenthesis | plus | minus|
@@ -202,7 +207,7 @@ int main(int argc, char** argv) {
 
     g_ast.assemble();
 
-    //g_ast.printAssembly();
+    g_ast.printAssembly();
 
     // TODO: relaxation to remove unnecessary NOPs introduced when assembling
     // after symbols are known - how to do this?

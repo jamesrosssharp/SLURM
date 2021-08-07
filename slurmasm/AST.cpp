@@ -146,6 +146,18 @@ void AST::addTwoRegisterOpcode(int linenum, char* opcode, char* regDest, char* r
     m_currentStatement.reset();
 }
 
+void AST::addThreeRegisterOpcode(int linenum, char* opcode, char* regDest, char* regSrc1, char* regSrc2)
+{
+    m_currentStatement.lineNum = linenum;
+    m_currentStatement.opcode = convertOpCode(opcode);
+    m_currentStatement.regSrc = convertReg(regSrc1);
+    m_currentStatement.regSrc2 = convertReg(regSrc2);
+    m_currentStatement.regDest = convertReg(regDest);
+    m_currentStatement.type = StatementType::TWO_REGISTER_OPCODE;
+    m_statements.push_back(m_currentStatement);
+    m_currentStatement.reset();
+}
+
 void AST::addOneRegisterAndExpressionOpcode(int linenum, char* opcode, char* regDest)
 {
     m_currentStatement.lineNum = linenum;
@@ -176,25 +188,35 @@ void AST::addStandaloneOpcode(int linenum, char* opcode)
     m_currentStatement.reset();
 }
 
-void AST::addExpressionPseudoOp(int linenum, char* pseudoOp)
-{
-    m_currentStatement.lineNum = linenum;
-    m_currentStatement.pseudoOp = convertPseudoOp(pseudoOp);
-    m_currentStatement.expression.lineNum = linenum;
-    m_currentStatement.type = StatementType::PSEUDO_OP_WITH_EXPRESSION;
-    m_statements.push_back(m_currentStatement);
-    m_currentStatement.reset();
-}
-
-void AST::addIndirectAddressingOpcode(int linenum, char* opcode, char* regDest, char* regIdx, char* regOffset)
+void AST::addIndirectAddressingOpcode(int linenum, char* opcode, char* regIdx)
 {
     m_currentStatement.lineNum = linenum;
     m_currentStatement.opcode = convertOpCode(opcode);
     m_currentStatement.type = StatementType::INDIRECT_ADDRESSING_OPCODE;
-    m_currentStatement.regDest = convertReg(regDest);
     m_currentStatement.regInd = convertReg(regIdx);
-    m_currentStatement.regOffset = convertReg(regOffset);
     m_statements.push_back(m_currentStatement);
+    m_currentStatement.reset();
+}
+
+void AST::addIndirectAddressingOpcodeWithPostincrement(int linenum, char* opcode, char* regIdx)
+{
+    m_currentStatement.lineNum = linenum;
+    m_currentStatement.opcode = convertOpCode(opcode);
+    m_currentStatement.type = StatementType::INDIRECT_ADDRESSING_OPCODE;
+    m_currentStatement.regInd = convertReg(regIdx);
+	m_currentStatement.postIncrement = true;
+    m_statements.push_back(m_currentStatement);
+    m_currentStatement.reset();
+}
+
+void AST::addIndirectAddressingOpcodeWithPostdecrement(int linenum, char* opcode, char* regIdx)
+{
+    m_currentStatement.lineNum = linenum;
+    m_currentStatement.opcode = convertOpCode(opcode);
+    m_currentStatement.type = StatementType::INDIRECT_ADDRESSING_OPCODE;
+    m_currentStatement.regInd = convertReg(regIdx);
+	m_currentStatement.postDecrement = true;
+ 	m_statements.push_back(m_currentStatement);
     m_currentStatement.reset();
 }
 
@@ -210,13 +232,32 @@ void AST::addIndirectAddressingOpcodeWithExpression(int linenum, char* opcode, c
     m_currentStatement.reset();
 }
 
-void AST::addOneRegisterOpcode(int linenum, char* opcode, char* regDest)
+void AST::addPCRelativeRegOpcode(int linenum, char* opcode, char* reg)
 {
     m_currentStatement.lineNum = linenum;
     m_currentStatement.opcode = convertOpCode(opcode);
-    m_currentStatement.regDest = convertReg(regDest);
-    m_currentStatement.type = StatementType::ONE_REGISTER_OPCODE;
+    m_currentStatement.type = StatementType::PC_RELATIVE_REG_OPCODE;
+    m_currentStatement.regSrc = convertReg(reg);
+    m_statements.push_back(m_currentStatement);
+    m_currentStatement.reset();
+}
+
+void AST::addPCRelativeExpressionOpcode(int linenum, char* opcode)
+{
+    m_currentStatement.lineNum = linenum;
+    m_currentStatement.opcode = convertOpCode(opcode);
+    m_currentStatement.type = StatementType::PC_RELATIVE_EXPRESSION_OPCODE;
     m_currentStatement.expression.lineNum = linenum;
+    m_statements.push_back(m_currentStatement);
+    m_currentStatement.reset();
+}
+
+void AST::addExpressionPseudoOp(int linenum, char* pseudoOp)
+{
+    m_currentStatement.lineNum = linenum;
+    m_currentStatement.pseudoOp = convertPseudoOp(pseudoOp);
+    m_currentStatement.expression.lineNum = linenum;
+    m_currentStatement.type = StatementType::PSEUDO_OP_WITH_EXPRESSION;
     m_statements.push_back(m_currentStatement);
     m_currentStatement.reset();
 }
@@ -425,6 +466,8 @@ PseudoOp AST::convertPseudoOp(char* pseudoOp)
         return PseudoOp::DD;
     }
 
+	return PseudoOp::None;
+
 }
 
 Register AST::convertReg(char* reg)
@@ -492,8 +535,8 @@ std::ostream& operator << (std::ostream& os, const Statement& s)
         case StatementType::TWO_REGISTER_OPCODE:
             os << s.opcode << " " << s.regDest << " " << s.regSrc << std::endl;
         break;
-        case StatementType::ONE_REGISTER_OPCODE:
-           os << s.opcode << " " << s.regDest << std::endl;
+        case StatementType::THREE_REGISTER_OPCODE:
+           os << s.opcode << " " << s.regDest << " " << s.regSrc2 << " " << s.regSrc << std::endl;
         break;
         case StatementType::INDIRECT_ADDRESSING_OPCODE:
            os << s.opcode << " " << s.regDest << " " << s.regInd << " " << s.regOffset << std::endl;
@@ -592,234 +635,6 @@ std::ostream& operator << (std::ostream& os, const Expression& e)
 
 std::ostream& operator << (std::ostream& os, const OpCode& op)
 {
-    if (op == OpCode::IMM)
-    {
-        os << "IMM";
-    }
-    else if (op == OpCode::ADD)
-    {
-        os << "ADD";
-    }
-    else if (op == OpCode::ADC)
-    {
-        os << "ADC";
-    }
-    else if (op == OpCode::SUB)
-    {
-        os << "SUB";
-    }
-    else if (op == OpCode::SBB)
-    {
-        os << "SBB";
-    }
-    else if (op == OpCode::AND)
-    {
-        os << "AND";
-    }
-    else if (op == OpCode::OR)
-    {
-        os << "OR";
-    }
-    else if (op == OpCode::XOR)
-    {
-        os << "XOR";
-    }
-    else if (op == OpCode::SLA)
-    {
-        os << "SLA";
-    }
-    else if (op == OpCode::SLX)
-    {
-        os << "SLX";
-    }
-    else if (op == OpCode::SL0)
-    {
-        os << "SL0";
-    }
-    else if (op == OpCode::SL1)
-    {
-        os << "SL1";
-    }
-    else if (op == OpCode::RL)
-    {
-        os << "RL";
-    }
-    else if (op == OpCode::SRA)
-    {
-        os << "SRA";
-    }
-    else if (op == OpCode::SRX)
-    {
-        os << "SRX";
-    }
-    else if (op == OpCode::SR0)
-    {
-        os << "SR0";
-    }
-    else if (op == OpCode::SR1)
-    {
-        os << "SR1";
-    }
-    else if (op == OpCode::RR)
-    {
-        os << "RR";
-    }
-    else if (op == OpCode::CMP)
-    {
-        os << "CMP";
-    }
-    else if (op == OpCode::TEST)
-    {
-        os << "TEST";
-    }
-    else if (op == OpCode::LOAD)
-    {
-        os << "LOAD";
-    }
-    else if (op == OpCode::MUL)
-    {
-        os << "MUL";
-    }
-    else if (op == OpCode::MULS)
-    {
-        os << "MULS";
-    }
-    else if (op == OpCode::DIV)
-    {
-        os << "DIV";
-    }
-    else if (op == OpCode::DIVS)
-    {
-        os << "DIVS";
-    }
-    else if (op == OpCode::BSL)
-    {
-        os << "BSL";
-    }
-    else if (op == OpCode::BSR)
-    {
-        os << "BSR";
-    }
-    else if (op == OpCode::FMUL)
-    {
-        os << "FMUL";
-    }
-    else if (op == OpCode::FDIV)
-    {
-        os << "FDIV";
-    }
-    else if (op == OpCode::FADD)
-    {
-        os << "FADD";
-    }
-    else if (op == OpCode::FSUB)
-    {
-        os << "FSUB";
-    }
-    else if (op == OpCode::FCMP)
-    {
-        os << "FCMP";
-    }
-    else if (op == OpCode::FINT)
-    {
-        os << "FINT";
-    }
-    else if (op == OpCode::FFLT)
-    {
-        os << "FFLT";
-    }
-    else if (op == OpCode::NOP)
-    {
-        os << "NOP";
-    }
-    else if (op == OpCode::SLEEP)
-    {
-        os << "SLEEP";
-    }
-    else if (op == OpCode::JUMP)
-    {
-        os << "JUMP";
-    }
-    else if (op == OpCode::JUMPZ)
-    {
-        os << "JUMPZ";
-    }
-    else if (op == OpCode::JUMPC)
-    {
-        os << "JUMPC";
-    }
-    else if (op == OpCode::JUMPNZ)
-    {
-        os << "JUMPNZ";
-    }
-    else if (op == OpCode::JUMPNC)
-    {
-        os << "JUMPNC";
-    }
-    else if (op == OpCode::CALL)
-    {
-        os << "CALL";
-    }
-    else if (op == OpCode::CALLZ)
-    {
-        os << "CALLZ";
-    }
-    else if (op == OpCode::CALLC)
-    {
-        os << "CALLC";
-    }
-    else if (op == OpCode::CALLNZ)
-    {
-        os << "CALLNZ";
-    }
-    else if (op == OpCode::CALLNC)
-    {
-        os << "CALLNC";
-    }
-    else if (op == OpCode::SVC)
-    {
-        os << "SVC";
-    }
-    else if (op == OpCode::RET)
-    {
-        os << "RET";
-    }
-    else if (op == OpCode::RETI)
-    {
-        os << "RETI";
-    }
-    else if (op == OpCode::RETE)
-    {
-        os << "RETE";
-    }
-    else if (op == OpCode::LDW)
-    {
-        os << "LDW";
-    }
-    else if (op == OpCode::STW)
-    {
-        os << "STW";
-    }
-    else if (op == OpCode::LDSPR)
-    {
-        os << "LDSPR";
-    }
-    else if (op == OpCode::STSPR)
-    {
-        os << "STSPR";
-    }
-    else if (op == OpCode::OUT)
-    {
-        os << "OUT";
-    }
-    else if (op == OpCode::IN)
-    {
-        os << "IN";
-    }
-    else
-    {
-        os << "NIL";
-    }
     return os;
 }
 
@@ -957,6 +772,9 @@ void AST::firstPassAssemble()
 
     // Iterate over all statements, insert dummy assembly for each statement, so that in the next
     // stage, the symbols which refer to an address can be resolved.
+	// All register only operations can be assembled directly to a single 16-bit word.
+	// Op codes with immediate values may need the IMM instruction prefix. Insert an imm prefix
+	// so we can determine symbol values. Later, we will relax and optimise out all IMM 0 instructions (0x1000)
 
     for (Statement& s : m_statements)
     {
@@ -969,10 +787,11 @@ void AST::firstPassAssemble()
             case StatementType::EQU:
                 isTimes = false;
                 break;
-            case StatementType::ONE_REGISTER_OPCODE_AND_EXPRESSION:
-            case StatementType::OPCODE_WITH_EXPRESSION:
-            case StatementType::INDIRECT_ADDRESSING_OPCODE_WITH_EXPRESSION:
-                assemblyStarted = true;
+			case StatementType::ONE_REGISTER_OPCODE_AND_EXPRESSION:
+    		case StatementType::OPCODE_WITH_EXPRESSION:
+  			case StatementType::INDIRECT_ADDRESSING_OPCODE_WITH_EXPRESSION:
+			case StatementType::PC_RELATIVE_EXPRESSION_OPCODE:
+       			assemblyStarted = true;
 
                 if (isTimes)
                 {
@@ -982,10 +801,13 @@ void AST::firstPassAssemble()
                 s.firstPassAssemble(curAddress, m_symbolTable);
                 isTimes = false;
                 break;
-            case StatementType::ONE_REGISTER_OPCODE:
+            case StatementType::THREE_REGISTER_OPCODE:
             case StatementType::TWO_REGISTER_OPCODE:
             case StatementType::STANDALONE_OPCODE:
-            case StatementType::INDIRECT_ADDRESSING_OPCODE:
+            case StatementType::PC_RELATIVE_REG_OPCODE:
+			case StatementType::INDIRECT_ADDRESSING_OPCODE:
+    		case StatementType::INDIRECT_ADDRESSING_OPCODE_WITH_POSTINCREMENT:
+    		case StatementType::INDIRECT_ADDRESSING_OPCODE_WITH_POSTDECREMENT:
                 assemblyStarted = true;
                 // we can directly assemble the instruction.
 
@@ -1148,7 +970,7 @@ void AST::assemble()
 
                 break;
             }
-            case StatementType::ONE_REGISTER_OPCODE:
+            case StatementType::THREE_REGISTER_OPCODE:
             case StatementType::INDIRECT_ADDRESSING_OPCODE:
             case StatementType::TWO_REGISTER_OPCODE:
             case StatementType::STANDALONE_OPCODE:
@@ -1182,16 +1004,16 @@ void AST::writeBinOutput(std::string path)
     uint32_t maxAddress = m_orgAddress;
 
     for (Statement& s : m_statements)
-        if (s.address > m_orgAddress)
+        if (s.address > maxAddress)
             maxAddress = s.address;
 
     std::vector<uint16_t> assembly;
 
-    assembly.resize((maxAddress - m_orgAddress) / sizeof(uint16_t));
+    assembly.resize(((maxAddress - m_orgAddress)) + 1);
 
     for (Statement& s : m_statements)
         for (int i = 0; i < s.assembledWords.size(); i++)
-            assembly[(s.address - m_orgAddress) / sizeof(uint16_t) + i] = s.assembledWords[i];
+            assembly[(s.address - m_orgAddress) + i] = s.assembledWords[i];
 
 
     std::ofstream out;
@@ -1201,6 +1023,20 @@ void AST::writeBinOutput(std::string path)
     for (uint16_t word : assembly)
         out.write((char*)&word, sizeof(uint16_t));
 
+	// Make a verilog memory file 32 kB big
+
+    std::ofstream outm;
+
+    outm.open((path + ".mem").c_str(), std::ios_base::out);
+
+	int i = 0;
+    for (uint16_t word : assembly)
+	{
+        outm << std::hex << std::setfill('0') << std::setw(4) << word << std::endl;
+		i++;
+	}
+	for (int j = i; j < 32768; j++)
+		outm << "0000" << std::endl;
 
 }
 
@@ -1212,7 +1048,7 @@ void AST::printAssembly()
         if (s.assembledWords.size() == 0)
             continue;
 
-        std::cout << std::hex << std::setfill('0') << std::setw(6) << s.address << " : ";
+        std::cout << std::hex << std::setfill('0') << std::setw(4) << s.address << " : ";
 
         for (uint16_t w : s.assembledWords)
         {
