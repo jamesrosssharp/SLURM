@@ -57,7 +57,9 @@ void Statement::firstPassAssemble(uint32_t& curAddress, SymbolTable& syms)
         }
         case StatementType::ONE_REGISTER_OPCODE_AND_EXPRESSION:
         case StatementType::OPCODE_WITH_EXPRESSION:
-        {
+        case StatementType::INDIRECT_ADDRESSING_OPCODE_WITH_EXPRESSION:
+        case StatementType::INDIRECT_ADDRESSING_OPCODE_WITH_INDEX_AND_EXPRESSION:
+		{
 
             // Assembly might have 1 or two bytes, depending if an imm instruction is needed
 
@@ -373,40 +375,15 @@ void Statement::assemble(uint32_t &curAddress)
         }
         case StatementType::INDIRECT_ADDRESSING_OPCODE:
         {
-            uint16_t op;
-
-            int16_t idx = (int16_t)regInd - 24;
-
-            if (idx < 0 || idx > 4)
-            {
-                std::stringstream ss;
-                ss << "Error: illegal index register on line " << lineNum << std::endl;
-                throw std::runtime_error(ss.str());
-
-                break;
-            }
-
-            if ((uint16_t)regDest >= 16)
-            {
-                std::stringstream ss;
-                ss << "Error: illegal destination/source register on line " << lineNum << std::endl;
-                throw std::runtime_error(ss.str());
-
-                break;
-            }
-
-            if ((uint16_t)regOffset >= 16)
-            {
-                std::stringstream ss;
-                ss << "Error: illegal offset register on line " << lineNum << std::endl;
-                throw std::runtime_error(ss.str());
-
-                break;
-            }
+			words.resize(1);
 
             switch (opcode)
             {
-                default:
+    			case OpCode::LD:
+				case OpCode::ST:
+           			Assembly::makeLoadStore(opcode, lineNum, words, regInd, regDest, postIncrement, postDecrement);
+					break;	
+			    default:
                 {
                     std::stringstream ss;
                     ss << "Error: opcode cannot take indirect addressing on line " << lineNum << std::endl;
@@ -416,24 +393,51 @@ void Statement::assemble(uint32_t &curAddress)
                 }
             }
 
-            words.resize(1);
-            words[0] = op;
-
             break;
         }
         case StatementType::INDIRECT_ADDRESSING_OPCODE_WITH_EXPRESSION:
         {
+		    switch (opcode)
+            {
+    			case OpCode::LD:
+				case OpCode::ST:
+           			Assembly::makeLoadStoreWithExpression(opcode, lineNum, words, expression.value, regDest);
+					break;	
+			    default:
+                {
+                    std::stringstream ss;
+                    ss << "Error: opcode cannot take indirect addressing on line " << lineNum << std::endl;
+                    throw std::runtime_error(ss.str());
 
-           //std::cout << "Indirect addressing opcode with expression " << *this << std::endl;
-
-           Assembly::makeLoadStoreWithExpression(opcode, lineNum, words, expression.value, regInd, regDest);
-
-           //std::cout << std::hex << words[0] << " " << words[1] << std::endl;
+                    break;
+                }
+            }
 
            break;
 
         }
-        case StatementType::PSEUDO_OP_WITH_EXPRESSION:
+        case StatementType::INDIRECT_ADDRESSING_OPCODE_WITH_INDEX_AND_EXPRESSION:
+        {
+		    switch (opcode)
+            {
+    			case OpCode::LD:
+				case OpCode::ST:
+           			Assembly::makeLoadStoreWithIndexAndExpression(opcode, lineNum, words, expression.value, regDest, regInd);
+					break;	
+			    default:
+                {
+                    std::stringstream ss;
+                    ss << "Error: opcode cannot take indirect addressing with register and immediate on line " << lineNum << std::endl;
+                    throw std::runtime_error(ss.str());
+
+                    break;
+                }
+            }
+
+           break;
+
+        }
+	    case StatementType::PSEUDO_OP_WITH_EXPRESSION:
         {
             switch (pseudoOp)
             {

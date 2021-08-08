@@ -24,6 +24,9 @@ module register_file
 
  	input [REG_BITS - 1 : 0] MADDR_SEL,   /* index of register driving memory 
 											  address bus */
+	input MADDR_ALU_SELb,				/* select MADDR from ALU output */
+	input MADDR_POUT_SELb,				/* select MADDR from POUT */
+
 
 	input [2**REG_BITS - 1 : 0] INCb,  	  /* active low register increment */
 	input [2**REG_BITS - 1 : 0] DECb,  	  /* active low register deccrement */
@@ -46,6 +49,10 @@ wire [BITS - 1:0] aluB_wr;
 
 assign aluB_out = ALU_B_from_inP_b ? aluB_wr : inP; 
 
+wire [BITS - 1:0] m_addr_out_reg;
+
+assign m_addr_out = (MADDR_ALU_SELb == 1'b0) ? inALU : ((MADDR_POUT_SELb == 1'b0) ? inP : m_addr_out_reg);
+
 genvar j;
 generate
 	for (j = 0; j < 2**REG_BITS; j = j+1)
@@ -65,7 +72,7 @@ generate
 				ALU_B_SEL_v_b[j],
 				m_out,
 				M_SEL_v_b[j] | M_ENb, 
-				m_addr_out, 
+				m_addr_out_reg, 
 				MADDR_SEL_v_b[j], 
 				INCb[j],	
 				DECb[j]	

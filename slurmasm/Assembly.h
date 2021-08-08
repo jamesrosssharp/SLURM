@@ -26,8 +26,10 @@ public:
                                            std::vector<uint16_t>& assembledWords);
 
     static void makeLoadStoreWithExpression(OpCode opcode, uint32_t lineNum, std::vector<uint16_t>& words, int32_t value,
-                                            Register regInd, Register regDest);
-
+                                            Register regDest);
+    static void makeLoadStoreWithIndexAndExpression(OpCode opcode, uint32_t lineNum, std::vector<uint16_t>& words, int32_t value,
+                                            Register regDest, Register regInd);
+    static void makeLoadStore(OpCode opcode, uint32_t lineNum, std::vector<uint16_t>& words, Register regInd, Register regDest, bool postIncrement, bool postDecrement);
 
 };
 

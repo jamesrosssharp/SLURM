@@ -28,6 +28,8 @@ wire [2:0] ALU_B_SEL;
 wire M_ENb;
 wire [2:0] M_SEL;
 wire [2:0] MADDR_SEL;
+wire MADDR_ALU_SELb;				/* select MADDR from ALU output */
+wire MADDR_POUT_SELb;				/* select MADDR from POUT */
 
 wire [7:0] INCb;
 wire [7:0] DECb;
@@ -62,6 +64,8 @@ pipeline16 pip0
 	.M_ENb(M_ENb),					  
 	.M_SEL(M_SEL), 
 	.MADDR_SEL(MADDR_SEL), 
+	.MADDR_ALU_SELb(MADDR_ALU_SELb),				/* select MADDR from ALU output */
+	.MADDR_POUT_SELb(MADDR_POUR_SELb),				/* select MADDR from POUT */
 	.INCb(INCb),  	  
 	.DECb(DECb),  	  
 	.ALU_B_from_inP_b(ALU_B_from_inP_b),	
@@ -112,6 +116,8 @@ reg0
 	.M_ENb(M_ENb),					 
  	.M_SEL(M_SEL),    
  	.MADDR_SEL(MADDR_SEL),	
+	.MADDR_ALU_SELb(MADDR_ALU_SELb),				/* select MADDR from ALU output */
+	.MADDR_POUT_SELb(MADDR_POUR_SELb),				/* select MADDR from POUT */
 	.INCb(INCb), 
 	.DECb(DECb), 
 	.ALU_B_from_inP_b(ALU_B_from_inP_b),	

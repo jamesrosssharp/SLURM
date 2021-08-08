@@ -208,35 +208,59 @@ void AST::addIndirectAddressingOpcode(int linenum, char* opcode, char* regIdx)
     m_currentStatement.reset();
 }
 
-void AST::addIndirectAddressingOpcodeWithPostincrement(int linenum, char* opcode, char* regIdx)
+void AST::addIndirectAddressingOpcodeWithRegister(int linenum, char* opcode, char* regIdx, char* regDest)
 {
     m_currentStatement.lineNum = linenum;
     m_currentStatement.opcode = convertOpCode(opcode);
     m_currentStatement.type = StatementType::INDIRECT_ADDRESSING_OPCODE;
     m_currentStatement.regInd = convertReg(regIdx);
+	m_currentStatement.regDest = convertReg(regDest);
+    m_statements.push_back(m_currentStatement);
+    m_currentStatement.reset();
+}
+
+void AST::addIndirectAddressingOpcodeWithPostincrement(int linenum, char* opcode, char* regIdx, char* regDest)
+{
+    m_currentStatement.lineNum = linenum;
+    m_currentStatement.opcode = convertOpCode(opcode);
+    m_currentStatement.type = StatementType::INDIRECT_ADDRESSING_OPCODE;
+    m_currentStatement.regInd = convertReg(regIdx);
+	m_currentStatement.regDest = convertReg(regDest);
 	m_currentStatement.postIncrement = true;
     m_statements.push_back(m_currentStatement);
     m_currentStatement.reset();
 }
 
-void AST::addIndirectAddressingOpcodeWithPostdecrement(int linenum, char* opcode, char* regIdx)
+void AST::addIndirectAddressingOpcodeWithPostdecrement(int linenum, char* opcode, char* regIdx, char* regDest)
 {
     m_currentStatement.lineNum = linenum;
     m_currentStatement.opcode = convertOpCode(opcode);
     m_currentStatement.type = StatementType::INDIRECT_ADDRESSING_OPCODE;
     m_currentStatement.regInd = convertReg(regIdx);
+	m_currentStatement.regDest = convertReg(regDest);
 	m_currentStatement.postDecrement = true;
  	m_statements.push_back(m_currentStatement);
     m_currentStatement.reset();
 }
 
-void AST::addIndirectAddressingOpcodeWithExpression(int linenum, char* opcode, char* regDest, char* regIdx)
+void AST::addIndirectAddressingOpcodeWithExpression(int linenum, char* opcode, char* regDest)
 {
     m_currentStatement.lineNum = linenum;
     m_currentStatement.opcode = convertOpCode(opcode);
     m_currentStatement.type = StatementType::INDIRECT_ADDRESSING_OPCODE_WITH_EXPRESSION;
     m_currentStatement.regDest = convertReg(regDest);
-    m_currentStatement.regInd = convertReg(regIdx);
+    m_currentStatement.expression.lineNum = linenum;
+    m_statements.push_back(m_currentStatement);
+    m_currentStatement.reset();
+}
+
+void AST::addIndirectAddressingOpcodeWithIndexAndExpression(int linenum, char* opcode, char* regDest, char* regIdx)
+{
+    m_currentStatement.lineNum = linenum;
+    m_currentStatement.opcode = convertOpCode(opcode);
+    m_currentStatement.type = StatementType::INDIRECT_ADDRESSING_OPCODE_WITH_INDEX_AND_EXPRESSION;
+    m_currentStatement.regDest = convertReg(regDest);
+	m_currentStatement.regInd  = convertReg(regIdx);
     m_currentStatement.expression.lineNum = linenum;
     m_statements.push_back(m_currentStatement);
     m_currentStatement.reset();
@@ -812,6 +836,7 @@ void AST::firstPassAssemble()
 			case StatementType::ONE_REGISTER_OPCODE_AND_EXPRESSION:
     		case StatementType::OPCODE_WITH_EXPRESSION:
   			case StatementType::INDIRECT_ADDRESSING_OPCODE_WITH_EXPRESSION:
+  			case StatementType::INDIRECT_ADDRESSING_OPCODE_WITH_INDEX_AND_EXPRESSION:
 			case StatementType::PC_RELATIVE_EXPRESSION_OPCODE:
        			assemblyStarted = true;
 
@@ -959,7 +984,11 @@ void AST::evaluateExpressions()
 
         if (! (s.type == StatementType::OPCODE_WITH_EXPRESSION ||
                s.type == StatementType::ONE_REGISTER_OPCODE_AND_EXPRESSION ||
-               s.type == StatementType::PSEUDO_OP_WITH_EXPRESSION))
+               s.type == StatementType::PSEUDO_OP_WITH_EXPRESSION ||
+               s.type == StatementType::INDIRECT_ADDRESSING_OPCODE_WITH_EXPRESSION ||
+    		   s.type == StatementType::INDIRECT_ADDRESSING_OPCODE_WITH_INDEX_AND_EXPRESSION ||
+    		   s.type == StatementType::PC_RELATIVE_EXPRESSION_OPCODE
+			))
             continue;
 
         if (! s.expression.isStringLiteral(string) &&
@@ -987,12 +1016,14 @@ void AST::assemble()
             case StatementType::ONE_REGISTER_OPCODE_AND_EXPRESSION:
             case StatementType::OPCODE_WITH_EXPRESSION:
             case StatementType::INDIRECT_ADDRESSING_OPCODE_WITH_EXPRESSION:
+            case StatementType::INDIRECT_ADDRESSING_OPCODE_WITH_INDEX_AND_EXPRESSION:
             {
                 curAddress = s.address;
                 s.assemble(curAddress);
 
                 break;
             }
+			case StatementType::ONE_REGISTER_OPCODE:
             case StatementType::THREE_REGISTER_OPCODE:
             case StatementType::INDIRECT_ADDRESSING_OPCODE:
             case StatementType::TWO_REGISTER_OPCODE:

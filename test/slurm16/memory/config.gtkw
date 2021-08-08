@@ -1,0 +1,69 @@
+[*]
+[*] GTKWave Analyzer v3.3.103 (w)1999-2019 BSI
+[*] Sun Aug  8 08:59:40 2021
+[*]
+[dumpfile] "/home/jrsharp/code/FPGA/SLURM/test/slurm16/memory/dump.vcd"
+[dumpfile_mtime] "Sun Aug  8 08:58:13 2021"
+[dumpfile_size] 4321626
+[savefile] "/home/jrsharp/code/FPGA/SLURM/test/slurm16/memory/config.gtkw"
+[timestart] 523800
+[size] 1710 811
+[pos] -1 -1
+*-17.000000 160000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] slurm16_tb.
+[treeopen] slurm16_tb.slm0.
+[treeopen] slurm16_tb.slm0.mem0.
+[treeopen] slurm16_tb.slm0.reg0.
+[treeopen] slurm16_tb.slm0.reg0.Gen_Modules[0].
+[treeopen] slurm16_tb.slm0.reg0.Gen_Modules[1].
+[treeopen] slurm16_tb.slm0.reg0.Gen_Modules[2].
+[treeopen] slurm16_tb.slm0.reg0.Gen_Modules[3].
+[treeopen] slurm16_tb.slm0.reg0.Gen_Modules[4].
+[treeopen] slurm16_tb.slm0.reg0.Gen_Modules[5].
+[treeopen] slurm16_tb.slm0.reg0.Gen_Modules[6].
+[treeopen] slurm16_tb.slm0.reg0.Gen_Modules[7].
+[sst_width] 234
+[signals_width] 286
+[sst_expanded] 1
+[sst_vpaned_height] 218
+@28
+slurm16_tb.slm0.CLK
+slurm16_tb.slm0.RSTb
+@22
+slurm16_tb.slm0.mem_address[15:0]
+slurm16_tb.slm0.mem_data[15:0]
+slurm16_tb.slm0.pip0.pipeline_stage0_reg[15:0]
+slurm16_tb.slm0.pip0.pipeline_stage1_reg[15:0]
+@200
+-
+-registers
+@22
+slurm16_tb.slm0.reg0.Gen_Modules[0].register_inst.Reg[15:0]
+slurm16_tb.slm0.reg0.Gen_Modules[1].register_inst.Reg[15:0]
+slurm16_tb.slm0.reg0.Gen_Modules[2].register_inst.Reg[15:0]
+slurm16_tb.slm0.reg0.Gen_Modules[3].register_inst.Reg[15:0]
+@25
+slurm16_tb.slm0.reg0.Gen_Modules[4].register_inst.Reg[15:0]
+@22
+slurm16_tb.slm0.reg0.Gen_Modules[5].register_inst.Reg[15:0]
+slurm16_tb.slm0.reg0.Gen_Modules[6].register_inst.Reg[15:0]
+slurm16_tb.slm0.reg0.Gen_Modules[7].register_inst.Reg[15:0]
+@200
+-
+@22
+slurm16_tb.slm0.pip0.pout[15:0]
+@200
+-
+-Flags
+@28
+slurm16_tb.slm0.alu0.C
+slurm16_tb.slm0.alu0.S
+slurm16_tb.slm0.alu0.Z
+@22
+slurm16_tb.slm0.mem0.theRam.\RAM[32767][15:0]
+slurm16_tb.slm0.mem0.theRam.\RAM[32766][15:0]
+slurm16_tb.slm0.mem0.theRam.\RAM[32765][15:0]
+slurm16_tb.slm0.mem0.theRam.\RAM[32764][15:0]
+slurm16_tb.slm0.mem0.theRam.\RAM[32763][15:0]
+[pattern_trace] 1
+[pattern_trace] 0
