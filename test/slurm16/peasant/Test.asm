@@ -3,9 +3,11 @@
 		mov r0, 20
 		mov r1, 10
 		bl  multiply
+
 		mov r0, 20
 		mov r1, 10
 		bl  peasant_multiply
+
 die:
 		ba die
 
@@ -19,13 +21,19 @@ loop:
 		ret
 
 peasant_multiply:
-		mov r3, r0
-loop:
+		mov r3, 0
+.loop:
+		cmp r1,0
+		bz  .end_loop
+		test r1,1
+		bz  .dont_add	
+		add r3, r0
+.dont_add:
 		asr r1
 		lsl r0
-		bnz 
 
-
+		ba .loop
+.end_loop:
 		ret
 
 

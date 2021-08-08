@@ -38,6 +38,7 @@ void Statement::firstPassAssemble(uint32_t& curAddress, SymbolTable& syms)
 
     switch (type)
     {
+		case StatementType::ONE_REGISTER_OPCODE:
 		case StatementType::THREE_REGISTER_OPCODE:
 		case StatementType::TWO_REGISTER_OPCODE:
 		case StatementType::STANDALONE_OPCODE:
@@ -95,6 +96,8 @@ void Statement::firstPassAssemble(uint32_t& curAddress, SymbolTable& syms)
 				case OpCode::SUB:
 				case OpCode::ST:
 				case OpCode::XOR:
+				case OpCode::CMP:
+				case OpCode::TEST:
 					if (expressionCanFitIn4Bits)
                         assembledWords.resize(1 * repetitionCount);
                     else
@@ -237,12 +240,39 @@ void Statement::assemble(uint32_t &curAddress)
 
             break;
         }
-        case StatementType::TWO_REGISTER_OPCODE:
+		case StatementType::ONE_REGISTER_OPCODE:
+		{
+			words.resize(1);
+
+            switch (opcode)
+            {
+				case OpCode::ASR:
+				case OpCode::LSR:
+				case OpCode::LSL:
+
+			 		Assembly::makeArithmeticInstruction(opcode,
+                                         regDest,
+                                         regDest, words,
+                                         lineNum);
+            		break; 
+                default:
+                {
+            		std::stringstream ss;
+                    ss << "Error: opcode does not support one register mode on line " << lineNum << std::endl;
+                    throw std::runtime_error(ss.str());
+
+                    break;
+                }
+			}
+			break;
+        }
+		case StatementType::TWO_REGISTER_OPCODE:
         {
             words.resize(1);
 
             switch (opcode)
             {
+				case OpCode::ASR:
 				case OpCode::ADC:
 				case OpCode::ADD:
 				case OpCode::AND:
@@ -256,6 +286,8 @@ void Statement::assemble(uint32_t &curAddress)
 				case OpCode::SBB:
 				case OpCode::SUB:
 				case OpCode::XOR:
+				case OpCode::CMP:
+				case OpCode::TEST:
 			 		Assembly::makeArithmeticInstruction(opcode,
                                          regDest,
                                          regSrc, words,
@@ -290,6 +322,8 @@ void Statement::assemble(uint32_t &curAddress)
 				case OpCode::SBB:
 				case OpCode::SUB:
 				case OpCode::XOR:
+				case OpCode::CMP:
+				case OpCode::TEST:
 			 		Assembly::makeArithmeticInstructionWithImmediate(opcode,
                                          regDest,
                                          expression.value, words,

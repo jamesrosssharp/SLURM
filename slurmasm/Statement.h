@@ -13,6 +13,7 @@ enum class StatementType
     None,
 
 	/* register only operations */
+	ONE_REGISTER_OPCODE,
     TWO_REGISTER_OPCODE,
 	THREE_REGISTER_OPCODE,
     INDIRECT_ADDRESSING_OPCODE,

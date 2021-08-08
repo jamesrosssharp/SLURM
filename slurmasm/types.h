@@ -56,7 +56,9 @@ enum class OpCode : uint32_t
 	ST,
 	SUB,
 	SZ,
-	XOR
+	XOR,
+	CMP,
+	TEST
 };
 
 enum class UniqueOpCode

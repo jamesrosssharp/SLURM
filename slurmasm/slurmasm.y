@@ -58,8 +58,9 @@
 
 asm: body_section footer { cout << "Parsed asm file" << endl; } ;
 
-op_code : op_code_1 | op_code_2 | op_code_3 | op_code_4 | op_code_5 | op_code_6 | op_code_7 | op_code_8 | op_code_9 | op_code_10 | op_code_11 | op_code_12;
+op_code : op_code_0 | op_code_1 | op_code_2 | op_code_3 | op_code_4 | op_code_5 | op_code_6 | op_code_7 | op_code_8 | op_code_9 | op_code_10 | op_code_11 | op_code_12;
 
+op_code_0 : OPCODE REG ENDL { g_ast.addOneRegisterOpcode(line_num - 1, $1,$2); } ;
 op_code_1 : OPCODE REG COMMA REG ENDL { g_ast.addTwoRegisterOpcode(line_num - 1, $1,$2,$4); } ;
 op_code_2 : OPCODE REG COMMA REG COMMA REG ENDL { g_ast.addThreeRegisterOpcode(line_num - 1, $1,$2,$4,$6); } ;
 op_code_3 : OPCODE REG COMMA expressions ENDL { g_ast.addOneRegisterAndExpressionOpcode(line_num - 1, $1, $2); } ;

@@ -125,12 +125,15 @@ begin
 		/* extended ADC operations  - register only (no immediate) */
 		5'd16: begin /* asr */
 			out = asrOp;	
+			Z_flag_reg_next = (asrOp[BITS - 1:0] == {BITS{1'b0}}) ? 1'b1 : 1'b0;	
 		end
 		5'd17: begin /* lsr */
-			out = lsrOp;	
+			out = lsrOp;
+			Z_flag_reg_next = (lsrOp[BITS - 1:0] == {BITS{1'b0}}) ? 1'b1 : 1'b0;	
 		end
 		5'd18: begin /* lsl */
 			out = lslOp;
+			Z_flag_reg_next = (lslOp[BITS - 1:0] == {BITS{1'b0}}) ? 1'b1 : 1'b0;	
 		end
 		5'd19: begin /* rolc */
 			out = rolcOp;
@@ -140,32 +143,32 @@ begin
 			out = rorcOp;
 			C_flag_reg_next = A[0];	
 		end
-		5'd21: ; /* rol */	
-		5'd22:	begin /* clear carry */
+		5'd21: ; /* rol */
+		5'd22: ; /* ror */	
+		5'd23:	begin /* clear carry */
 			out = 0;		
 			C_flag_reg_next = 1'b0;
 		end
-		5'd23:	begin /* set carry */
+		5'd24:	begin /* set carry */
 			out = 0;		
 			C_flag_reg_next = 1'b1;
 		end
-		5'd24:	begin /* clear zero */
+		5'd25:	begin /* clear zero */
 			out = 0;		
 			Z_flag_reg_next = 1'b0;
 		end
-		5'd25:	begin /* set zero */
+		5'd26:	begin /* set zero */
 			out = 0;		
 			Z_flag_reg_next = 1'b1;
 		end
-		5'd25: begin /* clear sign */
+		5'd27: begin /* clear sign */
 			out = 0;
 			S_flag_reg_next = 1'b0;
 		end	
-		5'd27: begin /* set sign */
+		5'd28: begin /* set sign */
 			out = 0;
 			S_flag_reg_next = 1'b1;
 		end
-		5'd28: ; /* negate register? */
 		5'd29: ; /* clz ? */
 		5'd30: ; /* ctz ? */
 		5'd31: ; /* is power of two? */

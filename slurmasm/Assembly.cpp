@@ -43,6 +43,14 @@ void Assembly::makeArithmeticInstructionWithImmediate(OpCode opcode, Register re
 		case OpCode::XOR:
 			aluOp = 7;
 			break;
+		case OpCode::CMP:
+			aluOp = 3;
+			SDb = 1;
+			break;		
+		case OpCode::TEST:
+			aluOp = 5;
+			SDb = 1;
+			break;
 		default:
 		{
 	        std::stringstream ss;
@@ -162,6 +170,14 @@ void Assembly::makeArithmeticInstruction(OpCode opcode,
 		case OpCode::BSWAP:
 			aluOp = 28;
 			break;
+		case OpCode::CMP:
+			aluOp = 3;
+			SDb = 1;
+			break;		
+		case OpCode::TEST:
+			aluOp = 5;
+			SDb = 1;
+			break;
 		default:
 		{
 	        std::stringstream ss;
@@ -170,7 +186,7 @@ void Assembly::makeArithmeticInstruction(OpCode opcode,
 		}
 	}
 
-	op = SLRM_ALU_REG_REG_INSTRUCTION |  (SDb << 7) | ((aluOp & 0xf) << 8) | ((int)regDest << 4) | ((int)regSrc) | (aluOp &0x10);
+	op = SLRM_ALU_REG_REG_INSTRUCTION |  (SDb << 7) | ((aluOp & 0xf) << 8) | ((int)regDest << 4) | ((int)regSrc) | ((aluOp &0x10) >> 1);
 
     assembledWords[0] = op;
 

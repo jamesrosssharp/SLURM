@@ -12,7 +12,7 @@ module pipeline16
 	input S,
 
 	/* control signals to ALU */
-	output [3:0]    aluOp,
+	output [4:0]    aluOp,
 
 	/* pipeline output register */
 	output [15:0]   pout,
@@ -57,7 +57,7 @@ reg delay_slot_reg_next;
 
 localparam NOP_INSTRUCTION = 16'h0000;
 
-reg [3:0]    aluOp_reg;
+reg [4:0]    aluOp_reg;
 reg [3:0]    pout_reg;
 reg [11:0]   imm_reg;
 reg [11:0]   imm_reg_next;
@@ -140,6 +140,12 @@ input [15:0] p0;
 	alu_op_p0 = p0[11:8];
 endfunction
 
+/* alu operation hi bit from pipeline stage 0 */
+function alu_op_hi_p0;
+input [15:0] p0;
+	alu_op_hi_p0 = p0[3];
+endfunction
+
 /* source register for alu operations in pipeline stage 0 */
 function [2:0] src_reg_p0;
 input [15:0] p0;
@@ -213,7 +219,7 @@ endfunction
 /* instruction fetch / decode / execute logic */
 always @(*)
 begin
-	aluOp_reg 		= 4'b0000;
+	aluOp_reg 		= 5'b0000;
 	pout_reg  		= 4'b0000;
 	LD_reg_ALUb_reg = 8'hff;
 	LD_reg_Mb_reg   = 8'hff;
@@ -253,7 +259,8 @@ begin
 			imm_reg_next = pipeline_stage0_reg[11:0];
 		16'h2xxx:   /* ALU OP, REG, REG */
 		begin
-			aluOp_reg 	  		= alu_op_p0(pipeline_stage0_reg);
+			aluOp_reg[3:0] 	  		= alu_op_p0(pipeline_stage0_reg);
+			aluOp_reg[4]			= alu_op_hi_p0(pipeline_stage0_reg);
 			ALU_A_SEL_reg 		= dest_reg_p0(pipeline_stage0_reg);
 			ALU_B_SEL_reg 		= src_reg_p0(pipeline_stage0_reg);
 

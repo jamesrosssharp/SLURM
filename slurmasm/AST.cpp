@@ -135,6 +135,16 @@ void AST::addCharLiteralToCurrentStatementExpression(char* string)
     m_currentStatement.expression.addElement(e);
 }
 
+void AST::addOneRegisterOpcode(int linenum, char* opcode, char* regDest)
+{
+    m_currentStatement.lineNum = linenum;
+    m_currentStatement.opcode = convertOpCode(opcode);
+    m_currentStatement.regDest = convertReg(regDest);
+    m_currentStatement.type = StatementType::ONE_REGISTER_OPCODE;
+    m_statements.push_back(m_currentStatement);
+    m_currentStatement.reset();
+}
+
 void AST::addTwoRegisterOpcode(int linenum, char* opcode, char* regDest, char* regSrc)
 {
     m_currentStatement.lineNum = linenum;
@@ -296,7 +306,11 @@ OpCode AST::convertOpCode(char* opcode)
     for (auto & c: s)
         c = toupper(c);
 
-    if (s == "ADC")
+	if (s == "ASR")
+    {
+        return OpCode::ASR;
+    }
+    else if (s == "ADC")
     {
         return OpCode::ADC;
     }
@@ -436,7 +450,15 @@ OpCode AST::convertOpCode(char* opcode)
     {
         return OpCode::XOR;
     }
-
+	else if (s == "CMP")
+	{
+		return OpCode::CMP;
+	}
+	else if (s == "TEST")
+	{
+		return OpCode::TEST;
+	}
+	
     return OpCode::None;
 
 }
@@ -801,6 +823,7 @@ void AST::firstPassAssemble()
                 s.firstPassAssemble(curAddress, m_symbolTable);
                 isTimes = false;
                 break;
+			case StatementType::ONE_REGISTER_OPCODE:
             case StatementType::THREE_REGISTER_OPCODE:
             case StatementType::TWO_REGISTER_OPCODE:
             case StatementType::STANDALONE_OPCODE:

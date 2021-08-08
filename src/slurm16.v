@@ -15,7 +15,7 @@ wire C;
 wire Z;
 wire S;
 
-wire [3:0] aluOp;
+wire [4:0] aluOp;
 wire [15:0] pout;
 
 wire [7:0] LD_reg_ALUb;
