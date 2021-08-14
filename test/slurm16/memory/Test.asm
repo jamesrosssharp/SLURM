@@ -8,15 +8,16 @@
 		mov r0, 10
 		st  [r4-], r0 // push 
 
-		bl  peasant_multiply 
+		mov r3,0xa3a3
+		mov r1,0xa1a1
 
+		bl  peasant_multiply 
 die:
 		ba die
 
-
 peasant_multiply:
 		st [r4-], r1 // push r1
-		st [r4], r3 // push r3
+		st [r4-], r3 // push r3
 
 		ld r3, [r4,3] // arg 1
 		ld r1, [r4,4] // arg 2
@@ -34,9 +35,10 @@ peasant_multiply:
 
 		ba .loop
 .end_loop:
+		add r4,1
 		ld r3, [r4+] // pop r3
-		ld r1, [r4] // pop r1 
-
+		ld r1, [r4+] // pop r1 
+		add r4,1
 		ret
 
 

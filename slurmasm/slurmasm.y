@@ -69,7 +69,7 @@ op_code_4 : OPCODE expressions ENDL { g_ast.addExpressionOpcode(line_num - 1, $1
 op_code_5 : OPCODE ENDL { g_ast.addStandaloneOpcode(line_num - 1, $1); } ;
 op_code_6 : OPCODE OPEN_SQUARE_BRACKET REG CLOSE_SQUARE_BRACKET ENDL { g_ast.addIndirectAddressingOpcode(line_num - 1, $1, $3); }
 op_code_7 : OPCODE OPEN_SQUARE_BRACKET REG CLOSE_SQUARE_BRACKET COMMA REG ENDL { g_ast.addIndirectAddressingOpcodeWithRegister(line_num - 1, $1, $3, $6); }
-op_code_8 : OPCODE REG COMMA OPEN_SQUARE_BRACKET REG CLOSE_SQUARE_BRACKET ENDL { g_ast.addIndirectAddressingOpcodeWithRegister(line_num - 1, $1, $2, $5); }
+op_code_8 : OPCODE REG COMMA OPEN_SQUARE_BRACKET REG CLOSE_SQUARE_BRACKET ENDL { g_ast.addIndirectAddressingOpcodeWithRegister(line_num - 1, $1, $5, $2); }
 op_code_9 : OPCODE OPEN_SQUARE_BRACKET REG PLUS CLOSE_SQUARE_BRACKET COMMA REG ENDL { g_ast.addIndirectAddressingOpcodeWithPostincrement(line_num - 1, $1, $3, $7); }
 op_code_10 : OPCODE OPEN_SQUARE_BRACKET REG MINUS CLOSE_SQUARE_BRACKET COMMA REG ENDL { g_ast.addIndirectAddressingOpcodeWithPostdecrement(line_num - 1, $1, $3, $7); }
 op_code_11: OPCODE REG COMMA OPEN_SQUARE_BRACKET REG PLUS CLOSE_SQUARE_BRACKET  ENDL { g_ast.addIndirectAddressingOpcodeWithPostincrement(line_num - 1, $1, $5, $2); }

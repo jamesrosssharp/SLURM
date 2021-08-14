@@ -330,33 +330,73 @@ begin
 			end	
 		end
 		16'h5xxx: begin /* memory, reg, reg index */ 
-			pipeline_stall_reg_next = 1'b1; 			// We stall the pipeline so on the next cycle we can access memory	
 		
 			if (is_memory_load_or_store(pipeline_stage0_reg) == 1'b0) begin // load
-				MADDR_SEL_reg = memory_store_index(pipeline_stage0_reg);
+				pipeline_stall_reg_next  = 1'b1; 			// We stall the pipeline so on the next cycle we can access memory	
+				MADDR_SEL_reg 			 = memory_load_index(pipeline_stage0_reg);
 				pipeline_stage0_reg_next = NOP_INSTRUCTION; // feed nop
+				DECb_reg[7] 			 = 1'b0; 			// decrement r7 this cycle
 			end	
+			else begin // store
+				MADDR_SEL_reg 	= memory_store_index(pipeline_stage0_reg);
+				M_ENb_reg  		= 1'b0;
+				M_SEL_reg  		= memory_store_source(pipeline_stage0_reg);
+				mem_OEb_reg     = 1'b1;
+				mem_WRb_reg	   	= 1'b0;
+				INCb_reg[memory_store_index(pipeline_stage0_reg)] = memory_post_increment(pipeline_stage0_reg); // increment?
+				DECb_reg[memory_store_index(pipeline_stage0_reg)] = memory_post_decrement(pipeline_stage0_reg); // decrement?
+				pipeline_stage0_reg_next = NOP_INSTRUCTION; // feed nop
+				DECb_reg[7] 			 = 1'b0; 			// decrement r7 this cycle
+			end
 
 			INCb_reg[7] 			 = 1'b1; 			// don't increment r7 this cycle
 		end
 		16'h6xxx: begin /* memory, reg, immediate index */
-			pout_reg 				 = imm_reg_p0(pipeline_stage0_reg); // load immediate into lowest 4 bits of pout
-			pipeline_stall_reg_next = 1'b1; 			// We stall the pipeline so on the next cycle we can access memory	
-			MADDR_POUT_SELb_reg    = 1'b0;
+   			if (is_memory_load_or_store(pipeline_stage0_reg) == 1'b0) begin // load
+				pout_reg                                 = imm_reg_p0(pipeline_stage0_reg); // load immediate into lowest 4 bits of pout
+		    	MADDR_POUT_SELb_reg    = 1'b0;
+				imm_reg_next = imm_reg; // preserve imm
+				pipeline_stall_reg_next  = 1'b1; 			// We stall the pipeline so on the next cycle we can access memory	
+				MADDR_SEL_reg 			 = memory_load_index(pipeline_stage0_reg);
+				pipeline_stage0_reg_next = NOP_INSTRUCTION; // feed nop
+				DECb_reg[7] 			 = 1'b0; 			// decrement r7 this cycle
+			end	
+			else begin // store
+				pout_reg                                 = imm_reg_p0(pipeline_stage0_reg); // load immediate into lowest 4 bits of pout
+		    	MADDR_POUT_SELb_reg    = 1'b0;
+				M_ENb_reg  		= 1'b0;
+				M_SEL_reg  		= memory_store_source(pipeline_stage0_reg);
+				mem_OEb_reg     = 1'b1;
+				mem_WRb_reg	   	= 1'b0;
+				pipeline_stage0_reg_next = NOP_INSTRUCTION; // feed nop
+				DECb_reg[7] 			 = 1'b0; 			// decrement r7 this cycle
+			end
 			INCb_reg[7] 			 = 1'b1; 			// don't increment r7 this cycle
-			imm_reg_next			= imm_reg;			// Preserve imm value for pout, we will stall CPU so this is okay
-			pipeline_stage0_reg_next = NOP_INSTRUCTION; // feed nop
 		end
 		16'h7xxx: begin /* memory, reg, reg + immediate index */ 
+			ALU_A_SEL_reg                   = class7_idx_reg_p0(pipeline_stage0_reg);
+            ALU_B_from_inP_b_reg    = 1'b0;
+            MADDR_ALU_SELb_reg    = 1'b0;  
 			aluOp_reg  = 5'b00001;
-			ALU_A_SEL_reg 			= class7_idx_reg_p0(pipeline_stage0_reg);
-			ALU_B_from_inP_b_reg 	= 1'b0;
-			pout_reg 				 = imm_reg_p0(pipeline_stage0_reg); // load immediate into lowest 4 bits of pout
-			pipeline_stall_reg_next = 1'b1; 			// We stall the pipeline so on the next cycle we can access memory	
-			MADDR_ALU_SELb_reg    = 1'b0;
+			pout_reg                                 = imm_reg_p0(pipeline_stage0_reg); // load immediate into lowest 4 bits of pout
+		
+			if (is_memory_load_or_store(pipeline_stage0_reg) == 1'b0) begin // load
+				imm_reg_next = imm_reg; // preserve imm
+				pipeline_stall_reg_next  = 1'b1; 			// We stall the pipeline so on the next cycle we can access memory	
+				MADDR_SEL_reg 			 = memory_load_index(pipeline_stage0_reg);
+				pipeline_stage0_reg_next = NOP_INSTRUCTION; // feed nop
+				DECb_reg[7] 			 = 1'b0; 			// decrement r7 this cycle
+			end	
+			else begin // store
+				M_ENb_reg  		= 1'b0;
+				M_SEL_reg  		= memory_store_source(pipeline_stage0_reg);
+				mem_OEb_reg     = 1'b1;
+				mem_WRb_reg	   	= 1'b0;
+				pipeline_stage0_reg_next = NOP_INSTRUCTION; // feed nop
+				DECb_reg[7] 			 = 1'b0; 			// decrement r7 this cycle
+			end
 			INCb_reg[7] 			 = 1'b1; 			// don't increment r7 this cycle
-			imm_reg_next			= imm_reg;			// Preserve imm value for pout, we will stall CPU so this is okay
-			pipeline_stage0_reg_next = NOP_INSTRUCTION; // feed nop
+		
 		end
 		default: ;
 	endcase
@@ -372,50 +412,40 @@ begin
 		end
 		16'h5xxx: /* memory reg, reg index */		
 			if (is_memory_load_or_store(pipeline_stage1_reg) == 1'b1) begin // store
-				MADDR_SEL_reg = memory_store_index(pipeline_stage1_reg);
-				M_ENb_reg  = 1'b0;
-				M_SEL_reg  = memory_store_source(pipeline_stage1_reg);
-				mem_OEb_reg      = 1'b1;
-				mem_WRb_reg	   = 1'b0;
-				INCb_reg[memory_store_index(pipeline_stage1_reg)] = memory_post_increment(pipeline_stage1_reg); // increment?
-				DECb_reg[memory_store_index(pipeline_stage1_reg)] = memory_post_decrement(pipeline_stage1_reg); // decrement?
 			end	
 			else begin // load
+
+				MADDR_SEL_reg 			 = memory_load_index(pipeline_stage1_reg);
+
 				mem_OEb_reg      = 1'b0;
 				mem_WRb_reg	   = 1'b1;
 				LD_reg_Mb_reg = {8{1'b1}} ^ (1 << memory_load_destination(pipeline_stage1_reg));
 				INCb_reg[memory_store_index(pipeline_stage1_reg)] = memory_post_increment(pipeline_stage1_reg); // increment?
 				DECb_reg[memory_store_index(pipeline_stage1_reg)] = memory_post_decrement(pipeline_stage1_reg); // decrement?
 			end
-		16'h6xxx: /* memory reg, immediate index */		
+		16'h6xxx:  /* memory reg, immediate index */		
 			if (is_memory_load_or_store(pipeline_stage1_reg) == 1'b1) begin // store
-				MADDR_POUT_SELb_reg = 1'b0;
-				M_ENb_reg  = 1'b0;
-				M_SEL_reg  = memory_store_source(pipeline_stage1_reg);
-				mem_OEb_reg      = 1'b1;
-				mem_WRb_reg	   = 1'b0;
 			end	
 			else begin // load
+				pout_reg                                 = imm_reg_p0(pipeline_stage1_reg); // load immediate into lowest 4 bits of pout
+		    	MADDR_POUT_SELb_reg    = 1'b0;
 				mem_OEb_reg      = 1'b0;
 				mem_WRb_reg	   = 1'b1;
 				LD_reg_Mb_reg = {8{1'b1}} ^ (1 << memory_load_destination(pipeline_stage1_reg));
 			end
-		16'h7xxx: /* memory reg, reg + immediate index */
+		16'h7xxx:  /* memory reg, reg + immediate index */
 			if (is_memory_load_or_store(pipeline_stage1_reg) == 1'b1) begin // store
+			end	
+			else begin // load
+				ALU_A_SEL_reg                   = class7_idx_reg_p0(pipeline_stage1_reg);
+				ALU_B_from_inP_b_reg    = 1'b0;
+				MADDR_ALU_SELb_reg    	= 1'b0;  
 				aluOp_reg  				= 5'b00001;
-				ALU_A_SEL_reg 			= class7_idx_reg_p0(pipeline_stage0_reg);
-				ALU_B_from_inP_b_reg 	= 1'b0;
-				MADDR_ALU_SELb_reg    	= 1'b0;
-				M_ENb_reg  				= 1'b0;
-				M_SEL_reg  				= memory_store_source(pipeline_stage1_reg);
-				mem_OEb_reg      		= 1'b1;
-				mem_WRb_reg	   			= 1'b0;
-			end	
-			else begin // load
-				mem_OEb_reg      = 1'b0;
-				mem_WRb_reg	   = 1'b1;
-				LD_reg_Mb_reg = {8{1'b1}} ^ (1 << memory_load_destination(pipeline_stage1_reg));
-			end	
+				pout_reg                = imm_reg_p0(pipeline_stage1_reg); // load immediate into lowest 4 bits of pout
+				mem_OEb_reg      		= 1'b0;
+				mem_WRb_reg	   			= 1'b1;
+				LD_reg_Mb_reg 			= {8{1'b1}} ^ (1 << memory_load_destination(pipeline_stage1_reg));
+			end
 		default:;
 	endcase
 end

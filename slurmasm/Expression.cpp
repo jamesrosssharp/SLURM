@@ -206,30 +206,45 @@ Expression Expression::doOp(ExpressionElementType type, std::function<int32_t (i
 
             int32_t lval, rval;
 
+			bool hasLeft = true;
+
             if (left == nullptr)
             {
-                std::stringstream ss;
-                ss << "binary operator " << (uint32_t)type << " without left operand on line " << lineNum << std::endl;
-                throw std::runtime_error(ss.str());
+				// Unary minus?
+				if (type == ExpressionElementType::kMinus)
+				{
+					lval = 0;
+					hasLeft = false;
+				}
+				else
+				{ 
+                	std::stringstream ss;
+                	ss << "binary operator " << (uint32_t)type << " without left operand on line " << lineNum << std::endl;
+                	throw std::runtime_error(ss.str());
+				}
             }
 
-            switch (left->elem)
-            {
-                case ExpressionElementType::kInt:
-                    lval = left->v.sval;
-                    break;
-                case ExpressionElementType::kUInt:
-                    lval = left->v.uval;
-                    break;
-                case ExpressionElementType::kCharLiteral:
-                    lval = (int32_t)left->v.string[0];
-                    break;
-                default:
-                    std::stringstream ss;
-                    ss << "unexpected element, on line " << lineNum << std::endl;
-                    throw std::runtime_error(ss.str());
-                    break;
-            }
+			if (hasLeft)
+			{
+				switch (left->elem)
+				{
+					case ExpressionElementType::kInt:
+						lval = left->v.sval;
+						break;
+					case ExpressionElementType::kUInt:
+						lval = left->v.uval;
+						break;
+					case ExpressionElementType::kCharLiteral:
+						lval = (int32_t)left->v.string[0];
+						break;
+					default:
+						std::stringstream ss;
+						ss << "unexpected element, on line " << lineNum << std::endl;
+						throw std::runtime_error(ss.str());
+						break;
+				}
+			}
+			
 
             switch (right->elem)
             {

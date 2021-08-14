@@ -22,6 +22,8 @@ void Statement::reset()
     repetitionCount = 1;
     assembledWords.clear();
     address = 0;
+	postDecrement = false;
+	postIncrement = false;
 }
 
 void Statement::firstPassAssemble(uint32_t& curAddress, SymbolTable& syms)
@@ -228,7 +230,10 @@ void Statement::assemble(uint32_t &curAddress)
 				case OpCode::RET:
 					words[0] = SLRM_RET_INSTRUCTION;
 					break;
-                default:
+        		case OpCode::NOP:
+					words[0] = SLRM_NOP_INSTRUCTION;
+					break;
+		        default:
                 {
         
 									

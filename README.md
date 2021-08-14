@@ -1,5 +1,5 @@
-SLURM - Simple-Logic Micro RISC Machine
-======================================
+SLURM16 - SLightly Useful RISC Machine, 16 bit
+==============================================
 
 A simple microcontroller core, with emphasis on simplicity of instruction set and verilog implementation. 
 
@@ -194,7 +194,7 @@ Class 8: ALU operations 0-15 with separate destination register
 |---|----|----|----------|--------|-------|-------|
 |1  | 0  | 0  |  ALU OP  |  DEST  | SRC2  | SRC1  |
 
-     ALU OP : 3 bits ALU operation
+     ALU OP : 4 bits ALU operation
         0 - mov : DEST <- SRC1
         1 - add : DEST <- SRC2 + SRC1
         2 - adc : DEST <- SRC2 + SRC1 + Carry

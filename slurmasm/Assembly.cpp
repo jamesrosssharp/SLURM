@@ -322,7 +322,7 @@ void Assembly::makeLoadStoreWithExpression(OpCode opcode, uint32_t lineNum, std:
 		}
 	}
 
-	uint16_t op = SLRM_INDEX_REGISTER_MEMORY_INSTRUCTION | (LS << 8) | ((uint16_t)regDest << 4) | ((uint16_t)value & 0xf); 	
+	uint16_t op = SLRM_IMMEDIATE_MEMORY_INSTRUCTION  | (LS << 8) | ((uint16_t)regDest << 4) | ((uint16_t)value & 0xf); 	
 	
 	if (value >= 0 && value < 16)
     {
@@ -342,7 +342,7 @@ void Assembly::makeLoadStoreWithExpression(OpCode opcode, uint32_t lineNum, std:
             ss << "Error: not enough space allocated for instruction on line " << lineNum << std::endl;
             throw std::runtime_error(ss.str());
         }
-		assembledWords[0] = SLRM_IMM_INSTRUCTION | ((uint32_t)value >> 4);
+		assembledWords[0] = SLRM_IMM_INSTRUCTION | ((uint16_t)value >> 4);
         assembledWords[1] = op;
 	}
 
@@ -371,7 +371,7 @@ void Assembly::makeLoadStoreWithIndexAndExpression(OpCode opcode, uint32_t lineN
 		}
 	}
 
-	uint16_t op = SLRM_INDEX_REGISTER_MEMORY_INSTRUCTION | (LS << 8) | ((uint16_t)regDest << 4) | ((uint16_t)value & 0xf) | ((uint16_t)regInd << 9); 	
+	uint16_t op = SLRM_IMMEDIATE_PLUS_REG_MEMORY_INSTRUCTION | (LS << 8) | ((uint16_t)regDest << 4) | ((uint16_t)value & 0xf) | ((uint16_t)regInd << 9); 	
 	
 	if (value >= 0 && value < 16)
     {
@@ -391,7 +391,7 @@ void Assembly::makeLoadStoreWithIndexAndExpression(OpCode opcode, uint32_t lineN
             ss << "Error: not enough space allocated for instruction on line " << lineNum << std::endl;
             throw std::runtime_error(ss.str());
         }
-		assembledWords[0] = SLRM_IMM_INSTRUCTION | ((uint32_t)value >> 4);
+		assembledWords[0] = SLRM_IMM_INSTRUCTION | ((uint16_t)value >> 4);
         assembledWords[1] = op;
 	}
 
