@@ -234,9 +234,7 @@ void Statement::assemble(uint32_t &curAddress)
 					words[0] = SLRM_NOP_INSTRUCTION;
 					break;
 		        default:
-                {
-        
-									
+                {					
             		std::stringstream ss;
                     ss << "Error: opcode is not stand-alone on line " << lineNum << std::endl;
                     throw std::runtime_error(ss.str());
@@ -362,8 +360,8 @@ void Statement::assemble(uint32_t &curAddress)
 				case OpCode::BNZ:
 				case OpCode::BS:
 				case OpCode::BZ:
-					Assembly::makeFlowControlInstruction(opcode, address, expression.value, lineNum,
-                                           words);
+					Assembly::makeFlowControlInstruction(opcode, address, expression.value, Register::r0, lineNum,
+                                           words, false, false);
 
 					break;
                 default:
@@ -388,7 +386,17 @@ void Statement::assemble(uint32_t &curAddress)
 				case OpCode::ST:
            			Assembly::makeLoadStore(opcode, lineNum, words, regInd, regDest, postIncrement, postDecrement);
 					break;	
-			    default:
+			    case OpCode::BA:
+			    case OpCode::BL:
+			    case OpCode::BZ:
+			    case OpCode::BNZ:
+			    case OpCode::BS:
+			    case OpCode::BNS:
+			    case OpCode::BC:
+				case OpCode::BNC:
+					Assembly::makeFlowControlInstruction(opcode, address, 0, regInd, lineNum, words, true, false);
+					break;	
+				default:
                 {
                     std::stringstream ss;
                     ss << "Error: opcode cannot take indirect addressing on line " << lineNum << std::endl;

@@ -22,8 +22,9 @@ public:
                                                        Register regSrc, std::vector<uint16_t>& assembledWords,
                                                        uint32_t lineNum);
 
-    static void makeFlowControlInstruction(OpCode opcode, uint32_t address, uint32_t target, uint32_t lineNum,
-                                           std::vector<uint16_t>& assembledWords);
+    static void makeFlowControlInstruction(OpCode opcode, uint32_t address, uint32_t target, Register reg, uint32_t lineNum,
+                                           std::vector<uint16_t>& assembledWords, bool regIndirect, bool relative);
+
 
     static void makeLoadStoreWithExpression(OpCode opcode, uint32_t lineNum, std::vector<uint16_t>& words, int32_t value,
                                             Register regDest);

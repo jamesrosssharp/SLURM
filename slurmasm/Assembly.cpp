@@ -195,13 +195,10 @@ void Assembly::makeArithmeticInstruction(OpCode opcode,
 
 }
 
-
-void Assembly::makeFlowControlInstruction(OpCode opcode, uint32_t address, uint32_t target, uint32_t lineNum,
-                                       std::vector<uint16_t>& assembledWords)
+static uint16_t get_branch(OpCode opcode, int lineNum)
 {
 	uint16_t branch = 0;
-	uint16_t rel = 0;
-	
+
 	switch (opcode)
 	{
 		case OpCode::BZ:
@@ -236,14 +233,24 @@ void Assembly::makeFlowControlInstruction(OpCode opcode, uint32_t address, uint3
 		}
 	}
 
-	// For now, relative immediate branches are not supported.
+	return branch;
+}
+
+void Assembly::makeFlowControlInstruction(OpCode opcode, uint32_t address, uint32_t target, Register reg, uint32_t lineNum,
+                                       std::vector<uint16_t>& assembledWords, bool regIndirect, bool relative)
+{
+	uint16_t branch = 0;
+	uint16_t rel 	= relative ? 1 : 0;
+	uint16_t isreg  = regIndirect ? 1 : 0;
+	
+	branch = get_branch(opcode, lineNum);
 
 	uint16_t op;
 
+	op = SLRM_BRANCH_INSTRUCTION | (branch << 8) | (rel << 7) | ((uint16_t)target & 0xf) | ((uint16_t)reg << 4) | (rel << 7) | (isreg << 11);
+	
 	if (target >= 0 && target < 16)
     {
-
-		op = SLRM_BRANCH_INSTRUCTION |  (branch << 8) | (rel << 7) | ((uint16_t)target);
         if (assembledWords.size() == 2)
 		{
             assembledWords[0] = SLRM_IMM_INSTRUCTION;
@@ -253,7 +260,6 @@ void Assembly::makeFlowControlInstruction(OpCode opcode, uint32_t address, uint3
 		{
         	assembledWords[0] = op;
 		}
-
     }
 	else
 	{	
@@ -264,12 +270,11 @@ void Assembly::makeFlowControlInstruction(OpCode opcode, uint32_t address, uint3
             throw std::runtime_error(ss.str());
         }
 		assembledWords[0] = SLRM_IMM_INSTRUCTION | ((uint32_t)target >> 4);
-	
-		op = SLRM_BRANCH_INSTRUCTION | (branch << 8) | (rel << 7) | ((uint16_t)target & 0xf);
         assembledWords[1] = op;
 	}
 
 }
+
 
 void Assembly::makeLoadStore(OpCode opcode, uint32_t lineNum, std::vector<uint16_t>& assembledWords, Register regInd, Register regDest, bool postIncrement, bool postDecrement)
 {

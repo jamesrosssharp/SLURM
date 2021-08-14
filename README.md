@@ -132,10 +132,10 @@ Class 4: branch operation
 
 |15 | 14 | 13 | 12 | 11 | 10 - 8 | 7   | 6- 4 |   3 - 0     |
 |---|----|----|----|----|--------|-----|------|-------------|
-|0  | 1  | 0  | 0  |  R | BRNCH  | REL | REG  | IMM LO      |
+|0  | 1  | 0  | 0  |  R | BRNCH  | x   | REG  | IMM LO      |
 
     R: if 0, branch to immediate address
-       if 1, branch to address pointed to by REG
+       if 1, branch to address pointed to by REG + immediate
     BRNCH:
         0 - BZ, branch if zero
         1 - BNZ, branch if not zero
@@ -145,8 +145,6 @@ Class 4: branch operation
         5 - BNC, branch if not carry
         6 - BA, branch always
         7 - BL, branch and link
-    REL: if 0, branch is absolute
-         if 1, branch is relative: PC <- PC + REG (R = 1) or PC - IMM:IMMLO (R = 0)
     REG: index register for register branch
     IMM LO: 4 bit immediate for immediate branch
 
@@ -205,19 +203,27 @@ Class 8: ALU operations 0-15 with separate destination register
         7 - xor : DEST <- SRC2 ^ SRC1
         8 - 15: reserved
         
+Class 10: Relative branch
+-------------------------
 
-Class 10: move multiple
------------------------
+|15 | 14 | 13 | 12  - 10  |   8  - 0     |
+|---|----|----|-----------|--------------|
+|1  | 0  | 1  |  BRANCH   | BRNCH_IMM    |
 
-|15 | 14 | 13 | 12 | 11  - 4    |   3 - 0    |
-|---|----|----|----|------------|------------|
-|1  | 0  | 1  | RI | REGS DEST  | REG / IMM  |
+    BRNCH:
+        0 - BZ, branch if zero
+        1 - BNZ, branch if not zero
+        2 - BS, branch if sign
+        3 - BNS, branch if not sign
+        4 - BC, branch if carry
+        5 - BNC, branch if not carry
+        6 - BA, branch always
+        7 - BL, branch and link
+    BRNCH_IMM: signed immediate, -256 -> 256
+        PC <- PC + BRNCH_IMM
 
-    RI : register or immediate source
-    REGS DEST: list of registers (including PC)
-    REG / IMM: register or immediate value
 
-Classes 12 - 14:
+Classes 12- 14:
 ----------------
 
 Reserved
