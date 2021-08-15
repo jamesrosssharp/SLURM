@@ -31,6 +31,7 @@
   char *cval;
   char *regval;
   char *opcval;
+  char *mopcval;
   char *pseudoopval;
 }
 %define parse.error verbose
@@ -52,6 +53,7 @@
 %token <cval> CH_LITERAL
 %token <regval> REG
 %token <opcval> OPCODE
+%token <mopcval> MOPCODE
 %token <pseudoopval> PSEUDOOP
 
 %%
@@ -59,7 +61,7 @@
 asm: body_section footer { cout << "Parsed asm file" << endl; } ;
 
 op_code : op_code_0 | op_code_1 | op_code_2 | op_code_3 | op_code_4 | op_code_5 | op_code_6 | op_code_7 | op_code_8 | op_code_9 | op_code_10 | op_code_11 | op_code_12 | op_code_13 | op_code_14 | op_code_15 |
-			op_code_16 | op_code_17;
+			op_code_16 | op_code_17 | op_code_18;
 
 op_code_0 : OPCODE REG ENDL { g_ast.addOneRegisterOpcode(line_num - 1, $1,$2); } ;
 op_code_1 : OPCODE REG COMMA REG ENDL { g_ast.addTwoRegisterOpcode(line_num - 1, $1,$2,$4); } ;
@@ -79,10 +81,15 @@ op_code_14 : OPCODE REG COMMA OPEN_SQUARE_BRACKET expressions CLOSE_SQUARE_BRACK
 op_code_15 : OPCODE OPEN_SQUARE_BRACKET expressions CLOSE_SQUARE_BRACKET COMMA REG ENDL { g_ast.addIndirectAddressingOpcodeWithExpression(line_num - 1, $1, $6); }
 op_code_16 : OPCODE REG COMMA OPEN_SQUARE_BRACKET REG COMMA expressions CLOSE_SQUARE_BRACKET ENDL { g_ast.addIndirectAddressingOpcodeWithIndexAndExpression(line_num - 1, $1, $2, $5); }
 op_code_17 : OPCODE OPEN_SQUARE_BRACKET REG COMMA expressions CLOSE_SQUARE_BRACKET COMMA REG ENDL { g_ast.addIndirectAddressingOpcodeWithIndexAndExpression(line_num - 1, $1, $8, $3); }
+op_code_18 : OPCODE reglist ENDL { g_ast.addReglistOpcode(line_num - 1, $1); }
 
 expressions: expressions expression | expression ;
 expression: hexval | integer | open_parenthesis | close_parenthesis | plus | minus|
             mult | div | and | or | shl | shr | not | xor | string | str_literal | ch_literal;
+
+reglist: reglist OR reg | reg;
+
+reg: REG { g_ast.addRegisterToReglist($1); }
 
 
 str_literal:            STR_LITERAL         { g_ast.addStringLiteralToCurrentStatementExpression($1); }

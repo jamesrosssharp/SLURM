@@ -40,5 +40,7 @@ public:
                                             Register regDest, Register regInd);
     static void makeLoadStore(OpCode opcode, uint32_t lineNum, std::vector<uint16_t>& words, Register regInd, Register regDest, bool postIncrement, bool postDecrement);
 
+	static void makeReglistInstruction(OpCode opcode, std::vector<uint16_t>& words,  uint32_t lineNum, const std::vector<Register>& regList);
+   
 };
 

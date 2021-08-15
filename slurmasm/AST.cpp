@@ -135,6 +135,20 @@ void AST::addCharLiteralToCurrentStatementExpression(char* string)
     m_currentStatement.expression.addElement(e);
 }
 
+void AST::addRegisterToReglist(char* string)
+{
+	m_currentStatement.regList.push_back(convertReg(string));
+}
+
+void AST::addReglistOpcode(int linenum, char* opcode)
+{
+    m_currentStatement.lineNum = linenum;
+    m_currentStatement.opcode = convertOpCode(opcode);
+    m_currentStatement.type = StatementType::REGLIST_OPCODE;
+    m_statements.push_back(m_currentStatement);
+    m_currentStatement.reset();
+}
+
 void AST::addOneRegisterOpcode(int linenum, char* opcode, char* regDest)
 {
     m_currentStatement.lineNum = linenum;
@@ -271,26 +285,6 @@ void AST::addIndirectAddressingOpcodeWithIndexAndExpression(int linenum, char* o
     m_currentStatement.type = StatementType::INDIRECT_ADDRESSING_OPCODE_WITH_INDEX_AND_EXPRESSION;
     m_currentStatement.regDest = convertReg(regDest);
 	m_currentStatement.regInd  = convertReg(regIdx);
-    m_currentStatement.expression.lineNum = linenum;
-    m_statements.push_back(m_currentStatement);
-    m_currentStatement.reset();
-}
-
-void AST::addPCRelativeRegOpcode(int linenum, char* opcode, char* reg)
-{
-    m_currentStatement.lineNum = linenum;
-    m_currentStatement.opcode = convertOpCode(opcode);
-    m_currentStatement.type = StatementType::PC_RELATIVE_REG_OPCODE;
-    m_currentStatement.regSrc = convertReg(reg);
-    m_statements.push_back(m_currentStatement);
-    m_currentStatement.reset();
-}
-
-void AST::addPCRelativeExpressionOpcode(int linenum, char* opcode)
-{
-    m_currentStatement.lineNum = linenum;
-    m_currentStatement.opcode = convertOpCode(opcode);
-    m_currentStatement.type = StatementType::PC_RELATIVE_EXPRESSION_OPCODE;
     m_currentStatement.expression.lineNum = linenum;
     m_statements.push_back(m_currentStatement);
     m_currentStatement.reset();
@@ -879,7 +873,6 @@ void AST::firstPassAssemble()
   			case StatementType::INDIRECT_ADDRESSING_OPCODE_WITH_EXPRESSION:
   			case StatementType::INDIRECT_ADDRESSING_OPCODE_WITH_REG_AND_EXPRESSION:
   			case StatementType::INDIRECT_ADDRESSING_OPCODE_WITH_INDEX_AND_EXPRESSION:
-			case StatementType::PC_RELATIVE_EXPRESSION_OPCODE:
        			assemblyStarted = true;
 
                 if (isTimes)
@@ -894,11 +887,11 @@ void AST::firstPassAssemble()
             case StatementType::THREE_REGISTER_OPCODE:
             case StatementType::TWO_REGISTER_OPCODE:
             case StatementType::STANDALONE_OPCODE:
-            case StatementType::PC_RELATIVE_REG_OPCODE:
 			case StatementType::INDIRECT_ADDRESSING_OPCODE:
     		case StatementType::INDIRECT_ADDRESSING_OPCODE_WITH_POSTINCREMENT:
     		case StatementType::INDIRECT_ADDRESSING_OPCODE_WITH_POSTDECREMENT:
-                assemblyStarted = true;
+            case StatementType::REGLIST_OPCODE:
+			     assemblyStarted = true;
                 // we can directly assemble the instruction.
 
                 if (isTimes)
@@ -1029,8 +1022,7 @@ void AST::evaluateExpressions()
                s.type == StatementType::PSEUDO_OP_WITH_EXPRESSION ||
                s.type == StatementType::INDIRECT_ADDRESSING_OPCODE_WITH_EXPRESSION ||
                s.type == StatementType::INDIRECT_ADDRESSING_OPCODE_WITH_REG_AND_EXPRESSION ||
-    		   s.type == StatementType::INDIRECT_ADDRESSING_OPCODE_WITH_INDEX_AND_EXPRESSION ||
-    		   s.type == StatementType::PC_RELATIVE_EXPRESSION_OPCODE
+    		   s.type == StatementType::INDIRECT_ADDRESSING_OPCODE_WITH_INDEX_AND_EXPRESSION
 			))
             continue;
 
@@ -1072,6 +1064,7 @@ void AST::assemble()
             case StatementType::INDIRECT_ADDRESSING_OPCODE:
             case StatementType::TWO_REGISTER_OPCODE:
             case StatementType::STANDALONE_OPCODE:
+			case StatementType::REGLIST_OPCODE:
                 // These will already be assembled
                 break;
             case StatementType::PSEUDO_OP_WITH_EXPRESSION:

@@ -44,7 +44,9 @@ int g_str_idx = 0;
 
 equ {return EQU; }
 
-adc|add|and|asr|ba|ba.r|bc|bc.r|bl|bl.r|bnc|bnc.r|bns|bns.r|bnz|bnz.r|bs|bs.r|bz|bz.r|cc|cs|cz|decm|imm|incm|iret|ld|lsl|lsr|mov|nop|or|ret|rol|rolc|rorc|sbb|sc|ss|st|sub|sz|xor|cmp|test { yylval.sval = strdup(yytext); return OPCODE; }
+adc|add|and|asr|ba|ba.r|bc|bc.r|bl|bl.r|bnc|bnc.r|bns|bns.r|bnz|bnz.r|bs|bs.r|bz|bz.r|cc|cs|cz|imm|iret|ld|lsl|lsr|mov|nop|or|ret|rol|rolc|rorc|sbb|sc|ss|st|sub|sz|xor|cmp|test|incm|decm { yylval.sval = strdup(yytext); return OPCODE; }
+
+incm|decm { yylval.sval = strdup(yytext); return MOPCODE; }
 
 r0|r1|r2|r3|r4|r5|r6|r7 {yylval.regval = strdup(yytext); return REG; }
 

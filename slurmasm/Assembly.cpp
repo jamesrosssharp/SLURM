@@ -453,5 +453,35 @@ void Assembly::makeLoadStoreWithIndexAndExpression(OpCode opcode, uint32_t lineN
 	}
 }
 
+void Assembly::makeReglistInstruction(OpCode opcode, std::vector<uint16_t>& assembledWords,  uint32_t lineNum, const std::vector<Register>& regList)
+{
+	uint16_t op;
 
+	switch (opcode)
+	{
+		case OpCode::INCM:
+			op = SLRM_INCM_INSTRUCTION;
+			break;
+		case OpCode::DECM:
+			op = SLRM_DECM_INSTRUCTION;
+			break; 
+		default:
+		{
+	        std::stringstream ss;
+            ss << "Upsupported reglist operation on line " << lineNum << std::endl;
+            throw std::runtime_error(ss.str());  
+		}
+	}
+
+	uint16_t regs = 0xff;
+
+	// Build reg list
+	for (auto r : regList)
+	{
+		uint16_t reg = (uint16_t)r;
+		regs &= ~(1 << reg);
+	}
+
+	assembledWords[0] = op | (regs & 0x7f); 
+}
 

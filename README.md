@@ -43,7 +43,7 @@ Class 0 has 4 sub-classes, bits 9 - 8 of the opcode.
 
     |15 | 14 | 13 | 12 | 11 | 10 | 9 | 8 | 7 | 6 - 0 |
     |---|----|----|----|----|----|---|---|---|-------|
-    |0  | 0  | 0  | 0  | 0  | 0  | 1 | 0 | 0 | REGS  |
+    |0  | 0  | 0  | 0  | 0  | 0  | 1 | 0 | x | REGS  |
 
         REGS: if any bits are zero, the register will be incremented
 
@@ -51,7 +51,7 @@ Class 0 has 4 sub-classes, bits 9 - 8 of the opcode.
 
     |15 | 14 | 13 | 12 | 11 | 10 | 9 | 8 | 7 | 6 - 0 |
     |---|----|----|----|----|----|---|---|---|-------|
-    |0  | 0  | 0  | 0  | 0  | 0  | 1 | 1 | 0 | REGS  |
+    |0  | 0  | 0  | 0  | 0  | 0  | 1 | 1 | x | REGS  |
 
         REGS: if any bits are zero, the register will be decremented
 

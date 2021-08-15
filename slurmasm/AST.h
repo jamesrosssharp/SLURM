@@ -32,6 +32,9 @@ public:
     void addUIntToCurrentStatementExpresion(unsigned int val);
     void addStringToCurrentStatementExpression(char* string);
 
+	void addRegisterToReglist(char* string);
+	void addReglistOpcode(int linenum, char* opcode); 
+
     void addOneRegisterOpcode(int linenum, char* opcode, char* regDest);
     void addTwoRegisterOpcode(int linenum, char* opcode, char* regDest, char* regSrc);
     void addThreeRegisterOpcode(int linenum, char* opcode, char* regDest, char* regSrc1, char* regSrc2);

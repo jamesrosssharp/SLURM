@@ -17,13 +17,15 @@ void Statement::reset()
     type	 = StatementType::None;
     label	 = nullptr;
     regSrc	 = Register::None;
-    regDest	 = Register::None;
+    regSrc2  = Register::None;
+	regDest	 = Register::None;
     timesStatement = nullptr;
     repetitionCount = 1;
     assembledWords.clear();
     address = 0;
 	postDecrement = false;
 	postIncrement = false;
+	regList.clear();
 }
 
 void Statement::firstPassAssemble(uint32_t& curAddress, SymbolTable& syms)
@@ -40,11 +42,11 @@ void Statement::firstPassAssemble(uint32_t& curAddress, SymbolTable& syms)
 
     switch (type)
     {
+		case StatementType::REGLIST_OPCODE:
 		case StatementType::ONE_REGISTER_OPCODE:
 		case StatementType::THREE_REGISTER_OPCODE:
 		case StatementType::TWO_REGISTER_OPCODE:
 		case StatementType::STANDALONE_OPCODE:
-		case StatementType::PC_RELATIVE_REG_OPCODE:
 		case StatementType::INDIRECT_ADDRESSING_OPCODE:
 		case StatementType::INDIRECT_ADDRESSING_OPCODE_WITH_POSTINCREMENT:
 		case StatementType::INDIRECT_ADDRESSING_OPCODE_WITH_POSTDECREMENT:
@@ -256,6 +258,31 @@ void Statement::assemble(uint32_t &curAddress)
 
             break;
         }
+		case StatementType::REGLIST_OPCODE:
+		{
+			words.resize(1);
+
+            switch (opcode)
+            {
+				case OpCode::INCM:
+				case OpCode::DECM:
+			 		Assembly::makeReglistInstruction(opcode,
+      									 words,
+                                         lineNum, regList);
+            		break; 
+                default:
+                {
+            		std::stringstream ss;
+                    ss << "Error: opcode does not support one register mode on line " << lineNum << std::endl;
+                    throw std::runtime_error(ss.str());
+
+                    break;
+                }
+			}
+			break;
+        }
+	
+
 		case StatementType::ONE_REGISTER_OPCODE:
 		{
 			words.resize(1);
@@ -270,8 +297,18 @@ void Statement::assemble(uint32_t &curAddress)
                                          regDest,
                                          regDest, words,
                                          lineNum);
-            		break; 
-                default:
+            		break;
+				case OpCode::INCM:
+				case OpCode::DECM:
+				{
+					std::vector<Register> regs;
+					regs.push_back(regDest);	
+ 				 	Assembly::makeReglistInstruction(opcode,
+      									 words,
+                                         lineNum, regs);
+            		break;
+                }
+				default:
                 {
             		std::stringstream ss;
                     ss << "Error: opcode does not support one register mode on line " << lineNum << std::endl;
@@ -327,16 +364,10 @@ void Statement::assemble(uint32_t &curAddress)
 
             switch (opcode)
             {
-				case OpCode::ASR:
 				case OpCode::ADC:
 				case OpCode::ADD:
 				case OpCode::AND:
-				case OpCode::LSL:
-				case OpCode::LSR:
 				case OpCode::OR:
-				case OpCode::ROL:
-				case OpCode::ROLC:
-				case OpCode::RORC:
 				case OpCode::SBB:
 				case OpCode::SUB:
 				case OpCode::XOR:

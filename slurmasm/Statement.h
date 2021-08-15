@@ -13,6 +13,7 @@ enum class StatementType
     None,
 
 	/* register only operations */
+	REGLIST_OPCODE,
 	ONE_REGISTER_OPCODE,
     TWO_REGISTER_OPCODE,
 	THREE_REGISTER_OPCODE,
@@ -20,7 +21,6 @@ enum class StatementType
     INDIRECT_ADDRESSING_OPCODE_WITH_POSTINCREMENT,
     INDIRECT_ADDRESSING_OPCODE_WITH_POSTDECREMENT,
     STANDALONE_OPCODE,
-    PC_RELATIVE_REG_OPCODE,
     
 	/* operations with expressions */
 	ONE_REGISTER_OPCODE_AND_EXPRESSION,
@@ -28,7 +28,6 @@ enum class StatementType
   	INDIRECT_ADDRESSING_OPCODE_WITH_EXPRESSION,
   	INDIRECT_ADDRESSING_OPCODE_WITH_REG_AND_EXPRESSION,
   	INDIRECT_ADDRESSING_OPCODE_WITH_INDEX_AND_EXPRESSION,
-	PC_RELATIVE_EXPRESSION_OPCODE,
 
 	/* pseudo operations etc. */
 	PSEUDO_OP_WITH_EXPRESSION,
@@ -71,4 +70,5 @@ struct Statement
 
     void reset();
 
+	std::vector<Register> regList;
 };
