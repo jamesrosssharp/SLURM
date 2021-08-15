@@ -88,17 +88,8 @@ void Assembly::makeArithmeticInstructionWithImmediate(OpCode opcode, Register re
 
 }
 
-
-void Assembly::makeArithmeticInstruction(OpCode opcode,
-                                         Register regDest,
-                                         Register regSrc, std::vector<uint16_t>& assembledWords,
-                                         uint32_t lineNum)
+static void get_aluOp(OpCode opcode, uint32_t lineNum, uint16_t& aluOp, uint16_t SDb)
 {
-
-	uint16_t op 	= 0;
-	uint16_t aluOp 	= 0;
-	uint16_t SDb 	= 0;
-
 	switch (opcode)
 	{
 		case OpCode::MOV:
@@ -188,6 +179,39 @@ void Assembly::makeArithmeticInstruction(OpCode opcode,
             throw std::runtime_error(ss.str());  
 		}
 	}
+}
+
+void Assembly::makeThreeRegisterArithmeticInstruction(OpCode opcode,
+                                         Register regDest,
+                                         Register regSrc, Register regSrc2, std::vector<uint16_t>& assembledWords,
+                                         uint32_t lineNum)
+{
+
+	uint16_t op 	= 0;
+	uint16_t aluOp 	= 0;
+	uint16_t SDb 	= 0; // unused
+	
+	get_aluOp(opcode, lineNum, aluOp, SDb);
+
+	op = SLRM_ALU_REG_REG_REG_INSTRUCTION | ((aluOp & 0xf) << 9) | ((int)regDest << 6) | ((int)regSrc2 << 3) | ((int)regSrc);
+
+    assembledWords[0] = op;
+
+}
+
+
+
+void Assembly::makeArithmeticInstruction(OpCode opcode,
+                                         Register regDest,
+                                         Register regSrc, std::vector<uint16_t>& assembledWords,
+                                         uint32_t lineNum)
+{
+
+	uint16_t op 	= 0;
+	uint16_t aluOp 	= 0;
+	uint16_t SDb 	= 0;
+
+	get_aluOp(opcode, lineNum, aluOp, SDb);
 
 	op = SLRM_ALU_REG_REG_INSTRUCTION |  (SDb << 7) | ((aluOp & 0xf) << 8) | ((int)regDest << 4) | ((int)regSrc) | ((aluOp &0x10) >> 1);
 

@@ -321,7 +321,43 @@ void Statement::assemble(uint32_t &curAddress)
 
             break;
         }
-        case StatementType::ONE_REGISTER_OPCODE_AND_EXPRESSION:
+       	case StatementType::THREE_REGISTER_OPCODE:
+        {
+            words.resize(1);
+
+            switch (opcode)
+            {
+				case OpCode::ASR:
+				case OpCode::ADC:
+				case OpCode::ADD:
+				case OpCode::AND:
+				case OpCode::LSL:
+				case OpCode::LSR:
+				case OpCode::OR:
+				case OpCode::ROL:
+				case OpCode::ROLC:
+				case OpCode::RORC:
+				case OpCode::SBB:
+				case OpCode::SUB:
+				case OpCode::XOR:
+			 		Assembly::makeThreeRegisterArithmeticInstruction(opcode,
+                                         regDest,
+                                         regSrc, regSrc2, words,
+                                         lineNum);
+            		break; 
+                default:
+                {
+            		std::stringstream ss;
+                    ss << "Error: opcode does not support two register mode on line " << lineNum << std::endl;
+                    throw std::runtime_error(ss.str());
+
+                    break;
+                }
+            }
+
+            break;
+        }
+		case StatementType::ONE_REGISTER_OPCODE_AND_EXPRESSION:
         {
             switch (opcode)
             {

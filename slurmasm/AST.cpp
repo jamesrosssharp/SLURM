@@ -163,7 +163,7 @@ void AST::addThreeRegisterOpcode(int linenum, char* opcode, char* regDest, char*
     m_currentStatement.regSrc = convertReg(regSrc1);
     m_currentStatement.regSrc2 = convertReg(regSrc2);
     m_currentStatement.regDest = convertReg(regDest);
-    m_currentStatement.type = StatementType::TWO_REGISTER_OPCODE;
+    m_currentStatement.type = StatementType::THREE_REGISTER_OPCODE;
     m_statements.push_back(m_currentStatement);
     m_currentStatement.reset();
 }

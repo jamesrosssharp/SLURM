@@ -283,6 +283,25 @@ input [15:0] ins;
 	rel_branch_const_sign = ins[8];
 endfunction
 
+function [3:0] alu_op3;
+input [15:0] ins;
+	alu_op3 = ins[12:9];
+endfunction
+
+function [2:0] alu_dest_reg3;
+input [15:0] ins;
+	alu_dest_reg3 = ins[8:6];
+endfunction
+
+function [2:0] alu_src_reg3;
+input [15:0] ins;
+	alu_src_reg3 = ins[2:0];
+endfunction
+
+function [2:0] alu_src2_reg3;
+input [15:0] ins;
+	alu_src2_reg3 = ins[5:3];
+endfunction
 
 
 /* instruction fetch / decode / execute logic */
@@ -478,7 +497,15 @@ begin
 			INCb_reg[7] 			 = 1'b1; 			// don't increment r7 this cycle
 		
 		end
-		16'b100xxxxxxxxxxxxx: ; /* ALU op, reg, reg, reg */
+		16'b100xxxxxxxxxxxxx:  /* ALU op, reg, reg, reg */
+		begin
+			aluOp_reg[3:0] 	  		= alu_op3(pipeline_stage0_reg);
+			aluOp_reg[4]			= 1'b0;
+			ALU_A_SEL_reg 		= alu_src2_reg3(pipeline_stage0_reg);
+			ALU_B_SEL_reg 		= alu_src_reg3(pipeline_stage0_reg);
+
+			LD_reg_ALUb_reg 	= {8{1'b1}} ^ (1 << alu_dest_reg3(pipeline_stage0_reg)); 
+		end
 		16'b101xxxxxxxxxxxxx: begin /* relative branch */
 			if (rel_branch_taken(pipeline_stage0_reg) == 1'b1) begin
 				// Branch taken: move relative constant to imm_reg

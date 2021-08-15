@@ -21,6 +21,12 @@ public:
                                                        Register regDest,
                                                        Register regSrc, std::vector<uint16_t>& assembledWords,
                                                        uint32_t lineNum);
+    static void makeThreeRegisterArithmeticInstruction(OpCode opcode,
+                                                       Register regDest,
+                                                       Register regSrc, Register regSrc2,
+													   std::vector<uint16_t>& assembledWords,
+                                                       uint32_t lineNum);
+
 
     static void makeFlowControlInstruction(OpCode opcode, uint32_t address, uint32_t target, Register reg, uint32_t lineNum,
                                            std::vector<uint16_t>& assembledWords, bool regIndirect);
