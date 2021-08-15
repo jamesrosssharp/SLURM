@@ -1095,8 +1095,8 @@ void AST::writeBinOutput(std::string path)
     uint32_t maxAddress = m_orgAddress;
 
     for (Statement& s : m_statements)
-        if (s.address > maxAddress)
-            maxAddress = s.address;
+        if (s.address + s.assembledWords.size() > maxAddress)
+            maxAddress = s.address + s.assembledWords.size();
 
     std::vector<uint16_t> assembly;
 

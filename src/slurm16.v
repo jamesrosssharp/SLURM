@@ -6,9 +6,12 @@
  *  - 16 bit RISC instructions
  */
 
-module slurm16 (
+module slurm16 #(
+	parameter CLOCK_FREQ = 10000000
+) (
 	input CLK,
-	input RSTb	
+	input RSTb,
+	output [15:0] PINS
 );
 
 wire C;
@@ -74,14 +77,16 @@ pipeline16 pip0
 );
 
 memory_controller
-#(.BITS(16), .ADDRESS_BITS(16))
+#(.BITS(16), .ADDRESS_BITS(16), .CLOCK_FREQ(CLOCK_FREQ))
 mem0
 (
 	.CLK(CLK),	
+	.RSTb(RSTb),
 	.ADDRESS(mem_address),
 	.DATA(mem_data),
 	.OEb(mem_OEb), 
-	.WRb(mem_WRb) 
+	.WRb(mem_WRb),
+	.PINS(PINS) 
 );
 
 alu 
