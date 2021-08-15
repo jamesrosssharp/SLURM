@@ -208,6 +208,16 @@ void AST::addIndirectAddressingOpcode(int linenum, char* opcode, char* regIdx)
     m_currentStatement.reset();
 }
 
+void AST::addIndirectAddressingOpcodeWithRegAndExpression(int linenum, char* opcode, char* regIdx)
+{
+    m_currentStatement.lineNum = linenum;
+    m_currentStatement.opcode = convertOpCode(opcode);
+    m_currentStatement.type = StatementType::INDIRECT_ADDRESSING_OPCODE_WITH_REG_AND_EXPRESSION;
+    m_currentStatement.regInd = convertReg(regIdx);
+    m_statements.push_back(m_currentStatement);
+    m_currentStatement.reset();
+}
+
 void AST::addIndirectAddressingOpcodeWithRegister(int linenum, char* opcode, char* regIdx, char* regDest)
 {
     m_currentStatement.lineNum = linenum;
@@ -482,7 +492,38 @@ OpCode AST::convertOpCode(char* opcode)
 	{
 		return OpCode::TEST;
 	}
-	
+	else if (s == "BA.R")
+	{
+		return OpCode::BA_REL;
+	}
+	else if (s == "BL.R")
+	{
+		return OpCode::BL_REL;
+	}
+	else if (s == "BZ.R")
+	{
+		return OpCode::BZ_REL;
+	}
+	else if (s == "BNZ.R")
+	{
+		return OpCode::BNZ_REL;
+	}
+	else if (s == "BC.R")
+	{
+		return OpCode::BC_REL;
+	}
+	else if (s == "BNC.R")
+	{
+		return OpCode::BNC_REL;
+	}
+	else if (s == "BS.R")
+	{
+		return OpCode::BS_REL;
+	}
+	else if (s == "BNS.R")
+	{
+		return OpCode::BNS_REL;
+	}
     return OpCode::None;
 
 }
@@ -836,6 +877,7 @@ void AST::firstPassAssemble()
 			case StatementType::ONE_REGISTER_OPCODE_AND_EXPRESSION:
     		case StatementType::OPCODE_WITH_EXPRESSION:
   			case StatementType::INDIRECT_ADDRESSING_OPCODE_WITH_EXPRESSION:
+  			case StatementType::INDIRECT_ADDRESSING_OPCODE_WITH_REG_AND_EXPRESSION:
   			case StatementType::INDIRECT_ADDRESSING_OPCODE_WITH_INDEX_AND_EXPRESSION:
 			case StatementType::PC_RELATIVE_EXPRESSION_OPCODE:
        			assemblyStarted = true;
@@ -986,6 +1028,7 @@ void AST::evaluateExpressions()
                s.type == StatementType::ONE_REGISTER_OPCODE_AND_EXPRESSION ||
                s.type == StatementType::PSEUDO_OP_WITH_EXPRESSION ||
                s.type == StatementType::INDIRECT_ADDRESSING_OPCODE_WITH_EXPRESSION ||
+               s.type == StatementType::INDIRECT_ADDRESSING_OPCODE_WITH_REG_AND_EXPRESSION ||
     		   s.type == StatementType::INDIRECT_ADDRESSING_OPCODE_WITH_INDEX_AND_EXPRESSION ||
     		   s.type == StatementType::PC_RELATIVE_EXPRESSION_OPCODE
 			))
@@ -1016,6 +1059,7 @@ void AST::assemble()
             case StatementType::ONE_REGISTER_OPCODE_AND_EXPRESSION:
             case StatementType::OPCODE_WITH_EXPRESSION:
             case StatementType::INDIRECT_ADDRESSING_OPCODE_WITH_EXPRESSION:
+            case StatementType::INDIRECT_ADDRESSING_OPCODE_WITH_REG_AND_EXPRESSION:
             case StatementType::INDIRECT_ADDRESSING_OPCODE_WITH_INDEX_AND_EXPRESSION:
             {
                 curAddress = s.address;

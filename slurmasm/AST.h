@@ -39,6 +39,7 @@ public:
     void addExpressionOpcode(int linenum, char* opcode);
     void addStandaloneOpcode(int linenum, char* opcode);
     void addIndirectAddressingOpcode(int linenum, char* opcode, char* regDest);
+    void addIndirectAddressingOpcodeWithRegAndExpression(int linenum, char* opcode, char* regDest);
     void addIndirectAddressingOpcodeWithRegister(int linenum, char* opcode, char* regIdx, char* regDest);
     void addIndirectAddressingOpcodeWithPostincrement(int linenum, char* opcode, char* regIdx, char* regDest);
     void addIndirectAddressingOpcodeWithPostdecrement(int linenum, char* opcode, char* regIdx, char* regDest);

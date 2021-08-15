@@ -202,27 +202,35 @@ static uint16_t get_branch(OpCode opcode, int lineNum)
 	switch (opcode)
 	{
 		case OpCode::BZ:
+		case OpCode::BZ_REL:
 			branch = 0;
 			break;
 		case OpCode::BNZ:
+		case OpCode::BNZ_REL:
 			branch = 1;
 			break;
 		case OpCode::BS:
+		case OpCode::BS_REL:
 			branch = 2;
 			break;
 		case OpCode::BNS:
+		case OpCode::BNS_REL:
 			branch = 3;
 			break;
 		case OpCode::BC:
+		case OpCode::BC_REL:
 			branch = 4;
 			break;
 		case OpCode::BNC:
+		case OpCode::BNC_REL:
 			branch = 5;
 			break;
 		case OpCode::BA:
+		case OpCode::BA_REL:
 			branch = 6;
 			break;
 		case OpCode::BL:
+		case OpCode::BL_REL:
 			branch = 7;
 			break;
 		default:
@@ -237,17 +245,16 @@ static uint16_t get_branch(OpCode opcode, int lineNum)
 }
 
 void Assembly::makeFlowControlInstruction(OpCode opcode, uint32_t address, uint32_t target, Register reg, uint32_t lineNum,
-                                       std::vector<uint16_t>& assembledWords, bool regIndirect, bool relative)
+                                       std::vector<uint16_t>& assembledWords, bool regIndirect)
 {
 	uint16_t branch = 0;
-	uint16_t rel 	= relative ? 1 : 0;
 	uint16_t isreg  = regIndirect ? 1 : 0;
 	
 	branch = get_branch(opcode, lineNum);
 
 	uint16_t op;
 
-	op = SLRM_BRANCH_INSTRUCTION | (branch << 8) | (rel << 7) | ((uint16_t)target & 0xf) | ((uint16_t)reg << 4) | (rel << 7) | (isreg << 11);
+	op = SLRM_BRANCH_INSTRUCTION | (branch << 8) | ((uint16_t)target & 0xf) | ((uint16_t)reg << 4) | (isreg << 11);
 	
 	if (target >= 0 && target < 16)
     {
@@ -275,6 +282,27 @@ void Assembly::makeFlowControlInstruction(OpCode opcode, uint32_t address, uint3
 
 }
 
+void Assembly::makeRelativeFlowControlInstruction(OpCode opcode, uint32_t address, uint32_t target, uint32_t lineNum,
+                                           std::vector<uint16_t>& assembledWords)
+{
+
+	uint16_t branch = 0;
+	uint16_t op;
+
+	branch = get_branch(opcode, lineNum);
+
+	int16_t diff = target - address - 1; // need to subtract one, because PC will have already advanced once the instruction is in the pipeline
+	
+	if ((diff < -256) || (diff > 255))
+	{
+        std::stringstream ss;
+		ss << "Error: relative branch out of range on line " << lineNum << std::endl;
+		throw std::runtime_error(ss.str());
+	}
+
+	op = SLRM_RELATIVE_BRANCH_INSTRUCTION | (branch << 10) | ((uint16_t)diff & 0x1ff);	
+	assembledWords[0] = op;
+}
 
 void Assembly::makeLoadStore(OpCode opcode, uint32_t lineNum, std::vector<uint16_t>& assembledWords, Register regInd, Register regDest, bool postIncrement, bool postDecrement)
 {
@@ -399,5 +427,7 @@ void Assembly::makeLoadStoreWithIndexAndExpression(OpCode opcode, uint32_t lineN
 		assembledWords[0] = SLRM_IMM_INSTRUCTION | ((uint16_t)value >> 4);
         assembledWords[1] = op;
 	}
-
 }
+
+
+

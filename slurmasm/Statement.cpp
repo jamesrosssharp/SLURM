@@ -60,6 +60,7 @@ void Statement::firstPassAssemble(uint32_t& curAddress, SymbolTable& syms)
         case StatementType::ONE_REGISTER_OPCODE_AND_EXPRESSION:
         case StatementType::OPCODE_WITH_EXPRESSION:
         case StatementType::INDIRECT_ADDRESSING_OPCODE_WITH_EXPRESSION:
+        case StatementType::INDIRECT_ADDRESSING_OPCODE_WITH_REG_AND_EXPRESSION:
         case StatementType::INDIRECT_ADDRESSING_OPCODE_WITH_INDEX_AND_EXPRESSION:
 		{
 
@@ -107,7 +108,17 @@ void Statement::firstPassAssemble(uint32_t& curAddress, SymbolTable& syms)
                     else
                         assembledWords.resize(2 * repetitionCount);
                     break;
-                default:
+             	case OpCode::BL_REL:
+				case OpCode::BA_REL:
+				case OpCode::BZ_REL:
+				case OpCode::BNZ_REL:
+				case OpCode::BC_REL:
+				case OpCode::BNC_REL:
+				case OpCode::BS_REL:
+				case OpCode::BNS_REL:
+					assembledWords.resize(1 * repetitionCount);
+					break;
+			    default:
                 {
                     std::stringstream ss;
                     ss << "Error: opcode cannot take expression on line " << lineNum << std::endl;
@@ -361,7 +372,19 @@ void Statement::assemble(uint32_t &curAddress)
 				case OpCode::BS:
 				case OpCode::BZ:
 					Assembly::makeFlowControlInstruction(opcode, address, expression.value, Register::r0, lineNum,
-                                           words, false, false);
+                                           words, false);
+
+					break;
+				case OpCode::BA_REL:
+				case OpCode::BC_REL:
+				case OpCode::BL_REL:
+				case OpCode::BNC_REL:
+				case OpCode::BNS_REL:
+				case OpCode::BNZ_REL:
+				case OpCode::BS_REL:
+				case OpCode::BZ_REL:
+					Assembly::makeRelativeFlowControlInstruction(opcode, address, expression.value, lineNum,
+                                           words);
 
 					break;
                 default:
@@ -394,12 +417,40 @@ void Statement::assemble(uint32_t &curAddress)
 			    case OpCode::BNS:
 			    case OpCode::BC:
 				case OpCode::BNC:
-					Assembly::makeFlowControlInstruction(opcode, address, 0, regInd, lineNum, words, true, false);
+					Assembly::makeFlowControlInstruction(opcode, address, 0, regInd, lineNum, words, true);
 					break;	
 				default:
                 {
                     std::stringstream ss;
                     ss << "Error: opcode cannot take indirect addressing on line " << lineNum << std::endl;
+                    throw std::runtime_error(ss.str());
+
+                    break;
+                }
+            }
+
+            break;
+        }
+        case StatementType::INDIRECT_ADDRESSING_OPCODE_WITH_REG_AND_EXPRESSION:
+        {
+			words.resize(1);
+
+            switch (opcode)
+            {
+			    case OpCode::BA:
+			    case OpCode::BL:
+			    case OpCode::BZ:
+			    case OpCode::BNZ:
+			    case OpCode::BS:
+			    case OpCode::BNS:
+			    case OpCode::BC:
+				case OpCode::BNC:
+					Assembly::makeFlowControlInstruction(opcode, address, expression.value, regInd, lineNum, words, true);
+					break;	
+				default:
+                {
+                    std::stringstream ss;
+                    ss << "Error: opcode cannot take indirect addressing with register and expression on line " << lineNum << std::endl;
                     throw std::runtime_error(ss.str());
 
                     break;

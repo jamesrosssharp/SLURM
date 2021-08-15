@@ -323,8 +323,9 @@ begin
 					pipeline_stage0_reg_next = NOP_INSTRUCTION;
 					INCb_reg[7] 			 = 1'b1; 				// don't increment r7
 					LD_reg_ALUb_reg 		 = 8'h7f; 	 		    // load PC from alu 
-					ALU_B_SEL_reg			 = branch_reg_ind(pipeline_stage0_reg); // move reg indirect to PC
-					aluOp_reg 				 = 4'b0000;
+			        ALU_B_from_inP_b_reg     = 1'b0;
+					aluOp_reg  				 = 5'b00001;
+					ALU_A_SEL_reg			 = branch_reg_ind(pipeline_stage0_reg); // move reg indirect to PC
 					delay_slot_reg_next = 1'b1;
 				end else begin
 					pipeline_stage0_reg_next = NOP_INSTRUCTION;
@@ -345,6 +346,7 @@ begin
 					LD_reg_ALUb_reg			 = 8'hbf;			// move PC to LR (r6)  
 					INCb_reg[7] 			 = 1'b1; 			// don't increment r7
 					pipeline_stage0_reg_next = NOP_INSTRUCTION; // feed nop
+					imm_reg_next			 = imm_reg; // preserve imm
 					pout_reg 				 = imm_reg_p0(pipeline_stage0_reg); // load immediate into lowest 4 bits of pout
 					pipeline_stall_reg_next  = 1'b1;
 				end else begin
@@ -442,8 +444,10 @@ begin
 				DECb_reg[6] = 1'b0; // Decrement link register - to account for off by one in PC when loaded
 				if (is_branch_reg_ind(pipeline_stage1_reg)) begin
 					LD_reg_ALUb_reg 		 = 8'h7f; 	 		    // load PC from alu 
-					ALU_B_SEL_reg			 = branch_reg_ind(pipeline_stage1_reg); // move reg indirect to PC
-					aluOp_reg 				 = 4'b0000;
+					ALU_B_from_inP_b_reg     = 1'b0;
+					aluOp_reg  				 = 5'b00001;
+					pout_reg                 = imm_reg_p0(pipeline_stage1_reg); // load immediate into lowest 4 bits of pout
+					ALU_A_SEL_reg			 = branch_reg_ind(pipeline_stage1_reg); // move reg indirect to PC
 					delay_slot_reg_next = 1'b1;
 				end else begin
 				end
