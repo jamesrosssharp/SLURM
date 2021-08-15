@@ -238,6 +238,53 @@ input [15:0] p0;
 	class7_idx_reg_p0 = p0[11:9];
 endfunction
 
+/* is a relative branch taken based */
+function rel_branch_taken;
+input [15:0] p0;
+begin
+	case(p0[12:10])
+		3'b000:		/* 0x0 - BZ, branch if ZERO */
+			if (Z == 1'b1) rel_branch_taken = 1'b1;
+		3'b001:		/* 0x1 - BNZ, branch if not ZERO */
+			if (Z == 1'b0) rel_branch_taken = 1'b1;
+		3'b010:		/* 0x2 - BS, branch if SIGN */
+			if (S == 1'b1) rel_branch_taken = 1'b1;
+		3'b011:		/* 0x3 - BNS, branch if not SIGN */
+			if (S == 1'b0) rel_branch_taken = 1'b1;
+		3'b100:		/* 0x4 - BC, branch if CARRY */
+			if (S == 1'b1) rel_branch_taken = 1'b1;
+		3'b101:		/* 0x5 - BNC, branch if not CARRY */
+			if (S == 1'b0) rel_branch_taken = 1'b1;
+		3'b110:		/* 0x6 - BA, branch always */
+			rel_branch_taken = 1'b1;
+		3'b111:		/* 0x7 - BL, branch link */
+			rel_branch_taken = 1'b0; /* BL handled separately */
+	endcase
+end
+endfunction
+
+function is_rel_branch_link;
+input [15:0] ins;
+	is_rel_branch_link = (ins[12:10] == 3'b111) ? 1'b1 : 1'b0;
+endfunction
+
+function [4:0] rel_branch_const_upper;
+input [15:0] ins;
+	rel_branch_const_upper = ins[8:4];
+endfunction
+
+function [3:0] rel_branch_const_lower;
+input [15:0] ins;
+	rel_branch_const_lower = ins[3:0];
+endfunction
+
+function rel_branch_const_sign;
+input [15:0] ins;
+	rel_branch_const_sign = ins[8];
+endfunction
+
+
+
 /* instruction fetch / decode / execute logic */
 always @(*)
 begin
@@ -431,6 +478,28 @@ begin
 			INCb_reg[7] 			 = 1'b1; 			// don't increment r7 this cycle
 		
 		end
+		16'b100xxxxxxxxxxxxx: ; /* ALU op, reg, reg, reg */
+		16'b101xxxxxxxxxxxxx: begin /* relative branch */
+			if (rel_branch_taken(pipeline_stage0_reg) == 1'b1) begin
+				// Branch taken: move relative constant to imm_reg
+		        INCb_reg[7]              = 1'b1;            // don't increment r7
+                pipeline_stage0_reg_next = NOP_INSTRUCTION; // feed nop
+                imm_reg_next[11:5] = {7{rel_branch_const_sign(pipeline_stage0_reg)}};
+				imm_reg_next[4:0] = rel_branch_const_upper(pipeline_stage0_reg);
+				delay_slot_reg_next  = 1'b1;
+			end
+			else if (is_rel_branch_link(pipeline_stage0_reg) == 1'b1) begin
+				// Branch-link: move PC to link register and relative constant to imm_reg
+				imm_reg_next[11:5] = {7{rel_branch_const_sign(pipeline_stage0_reg)}};
+				imm_reg_next[4:0] = rel_branch_const_upper(pipeline_stage0_reg);
+				aluOp_reg                = 5'b00000;         // move
+                ALU_B_SEL_reg            = 3'b111;          // move PC
+                LD_reg_ALUb_reg          = 8'hbf;           // move PC to LR (r6)  
+                INCb_reg[7]              = 1'b1;            // don't increment r7
+                pipeline_stage0_reg_next = NOP_INSTRUCTION; // feed nop
+                delay_slot_reg_next  = 1'b1;
+			end	
+		end
 		default: ;
 	endcase
 
@@ -489,6 +558,17 @@ begin
 				mem_WRb_reg	   			= 1'b1;
 				LD_reg_Mb_reg 			= {8{1'b1}} ^ (1 << memory_load_destination(pipeline_stage1_reg));
 			end
+		16'b101xxxxxxxxxxxxx: begin /* relative branch */
+			if ((rel_branch_taken(pipeline_stage1_reg) == 1'b1) || (is_rel_branch_link(pipeline_stage1_reg) == 1'b1)) begin
+				    LD_reg_ALUb_reg 		 = 8'h7f; 	 		    // load PC from alu 
+					ALU_B_from_inP_b_reg     = 1'b0;
+					aluOp_reg  				 = 5'b00001;
+					pout_reg                 = rel_branch_const_lower(pipeline_stage1_reg); // load immediate into lowest 4 bits of pout
+					ALU_A_SEL_reg			 = 3'b111; // add PC + relative constant
+					delay_slot_reg_next = 1'b1;	
+                	INCb_reg[7]              = 1'b1;            // don't increment r7
+			end	
+		end
 		default:;
 	endcase
 end

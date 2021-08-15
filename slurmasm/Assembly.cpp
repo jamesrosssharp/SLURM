@@ -291,7 +291,7 @@ void Assembly::makeRelativeFlowControlInstruction(OpCode opcode, uint32_t addres
 
 	branch = get_branch(opcode, lineNum);
 
-	int16_t diff = target - address - 1; // need to subtract one, because PC will have already advanced once the instruction is in the pipeline
+	int16_t diff = target - address - 2; // need to subtract two, because PC will have already advanced once the instruction is in the pipeline
 	
 	if ((diff < -256) || (diff > 255))
 	{
