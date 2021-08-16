@@ -1,0 +1,2 @@
+set_io UART_TX		6
+set_io LED			2
