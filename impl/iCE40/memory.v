@@ -5,20 +5,20 @@ module memory
 (
 	input CLK,
 	input [ADDRESS_BITS - 1 : 0]  ADDRESS,
-	inout [BITS - 1 : 0] DATA,
-	input OEb, /* output enable */
+	input [BITS - 1 : 0] DATA_IN,
+	output [BITS - 1 : 0] DATA_OUT,
 	input WRb  /* write memory */  
 );
 
 wire [15:0] data_out1;
 wire [15:0] data_out2;
 
-assign DATA = (OEb == 1'b0) ? ((ADDRESS[14] == 1'b0) ? data_out1 : data_out2) : {BITS{1'bz}};
+assign DATA_OUT = ((ADDRESS[14] == 1'b0) ? data_out1 : data_out2);
 
 SB_SPRAM256KA spram0
 (
 .ADDRESS(ADDRESS[13:0]),
-.DATAIN(DATA),
+.DATAIN(DATA_IN),
 .MASKWREN({!WRb, !WRb, !WRb, !WRb}),
 .WREN(!WRb),
 .CHIPSELECT(!ADDRESS[14]),
@@ -32,7 +32,7 @@ SB_SPRAM256KA spram0
 SB_SPRAM256KA spram1
 (
 .ADDRESS(ADDRESS[13:0]),
-.DATAIN(DATA),
+.DATAIN(DATA_IN),
 .MASKWREN({!WRb, !WRb, !WRb, !WRb}),
 .WREN(!WRb),
 .CHIPSELECT(ADDRESS[14]),

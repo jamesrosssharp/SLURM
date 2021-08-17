@@ -4,8 +4,8 @@ module uart
 	input CLK,	
 	input RSTb,
 	input [7 : 0]  ADDRESS,
-	inout [BITS - 1 : 0] DATA,
-	input OEb,  /* output enable */
+	input [BITS - 1 : 0] DATA_IN,
+	output [BITS - 1 : 0] DATA_OUT,
 	input WRb,  /* write memory  */
 	output TX   /* UART output   */
 );
@@ -20,7 +20,7 @@ wire tick;
 
 reg [BITS - 1 : 0] data_reg;
 
-assign DATA = (OEb == 1'b0) ? data_reg : {BITS{1'bz}};
+assign DATA_OUT = data_reg;
 
 baudgen #(.CLK_FREQ(CLK_FREQ), .BAUD_RATE(BAUD_RATE)) bd0
 ( 
@@ -61,7 +61,7 @@ begin
 	casex (ADDRESS)
 		8'h00:	/* TX register */
 			if (WRb == 1'b0) begin
-				tx_reg_next = DATA;
+				tx_reg_next = DATA_IN;
 				go_reg_next = 1'b1;	
 			end
 		8'h01:  /* TX status register */

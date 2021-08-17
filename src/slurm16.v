@@ -39,11 +39,11 @@ wire [7:0] DECb;
 
 wire ALU_B_from_inP_b;
 
-wire mem_OEb;
 wire mem_WRb;
 
 wire [15:0] mem_address;
-wire [15:0] mem_data;
+wire [15:0] mem_data_in;
+wire [15:0] mem_data_out;
 
 wire [15:0] aluA;
 wire [15:0] aluB;
@@ -53,7 +53,7 @@ pipeline16 pip0
 (
 	.CLK(CLK),
 	.RSTb(RSTb),
-	.memoryIn(mem_data),
+	.memoryIn(mem_data_out),
 	.C(C),	
 	.Z(Z),
 	.S(S),	
@@ -72,7 +72,6 @@ pipeline16 pip0
 	.INCb(INCb),  	  
 	.DECb(DECb),  	  
 	.ALU_B_from_inP_b(ALU_B_from_inP_b),	
-	.mem_OEb(mem_OEb), 
 	.mem_WRb(mem_WRb)  
 );
 
@@ -83,8 +82,8 @@ mem0
 	.CLK(CLK),	
 	.RSTb(RSTb),
 	.ADDRESS(mem_address),
-	.DATA(mem_data),
-	.OEb(mem_OEb), 
+	.DATA_IN(mem_data_in),
+	.DATA_OUT(mem_data_out),
 	.WRb(mem_WRb),
 	.PINS(PINS) 
 );
@@ -112,7 +111,7 @@ reg0
 	.RSTb(RSTb),
 	.inALU(aluOut),
 	.LD_reg_ALUb(LD_reg_ALUb), 
-	.inM(mem_data), 
+	.inM(mem_data_out), 
 	.LD_reg_Mb(LD_reg_Mb),
 	.inP(pout), 
 	.LD_reg_Pb(LD_reg_Pb), 
@@ -128,7 +127,7 @@ reg0
 	.ALU_B_from_inP_b(ALU_B_from_inP_b),	
  	.aluA_out(aluA),
  	.aluB_out(aluB),
- 	.m_out(mem_data),
+ 	.m_out(mem_data_in),
 	.m_addr_out(mem_address) 
 );
 

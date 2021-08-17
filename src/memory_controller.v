@@ -23,40 +23,41 @@ module memory_controller
 	input CLK,	
 	input RSTb,
 	input [ADDRESS_BITS - 1 : 0]  ADDRESS,
-	inout [BITS - 1 : 0] DATA,
-	input OEb, /* output enable */
+	input [BITS - 1 : 0] DATA_IN,
+	output [BITS - 1 : 0] DATA_OUT,
 	input WRb,  /* write memory */
 	output [15:0] PINS /* output pins */ 
 );
 
-reg OEb_HIRAM;
-reg OEb_ROM;
-reg OEb_UART;
-
 reg WRb_HIRAM;
 reg WRb_UART;
 
+wire [BITS - 1 : 0] DATA_OUT_HIRAM;
+wire [BITS - 1 : 0] DATA_OUT_ROM;
+wire [BITS - 1 : 0] DATA_OUT_UART;
+
+reg [BITS - 1 : 0] dout;
+assign DATA_OUT = dout;
+
 always @(*)
 begin
-	OEb_ROM   = 1'b1;
-	OEb_HIRAM = 1'b1;
-	OEb_UART  = 1'b1;
 
 	WRb_HIRAM = 1'b1;
 	WRb_UART  = 1'b1;
 
 	casex (ADDRESS)
 		16'h0xxx:
-			OEb_ROM = OEb;
+			dout = DATA_OUT_ROM;
 		16'h10xx: begin
-			OEb_UART = OEb;
+			dout = DATA_OUT_UART;
 			WRb_UART = WRb;
 		end
 		16'b1xxxxxxxxxxxxxxx: begin
-			OEb_HIRAM = OEb;
+			dout = DATA_OUT_HIRAM;
 			WRb_HIRAM = WRb;
 		end		
-		default: ;
+		default:
+			dout = {BITS{1'b0}};
 	endcase
 
 end
@@ -67,16 +68,15 @@ rom #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 1)) theRom
 (
 	CLK,
  	ADDRESS[ADDRESS_BITS - 2 : 0],
-	DATA,
-	OEb_ROM
+	DATA_OUT_ROM
 );
 
 memory #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 1)) theRam
 (
 	CLK,
 	ADDRESS[ADDRESS_BITS - 2: 0],
-	DATA,
-	OEb_HIRAM,
+	DATA_IN,
+	DATA_OUT_HIRAM,
 	WRb_HIRAM
 );
 
@@ -86,8 +86,8 @@ uart
 	CLK,	
 	RSTb,
 	ADDRESS[7:0],
-	DATA,
-	OEb_UART,  /* output enable */
+	DATA_IN,
+	DATA_OUT_UART,
 	WRb_UART,  /* write memory  */
 	PINS[15]   /* UART output   */
 );

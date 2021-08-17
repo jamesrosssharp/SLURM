@@ -39,7 +39,7 @@ begin
 		
 		state <= idle;
 		txWord <= 8'h00;
-		bitCount <= 3'h00;
+		bitCount <= 3'b000;
 		done_out <= 1'b0;	
 
 	end else begin

@@ -14,17 +14,8 @@ module register
 	input  [BITS - 1 : 0] inP,		/* input from pipeline */
 	input  LDb_P,
 
-	output [BITS - 1 : 0] outA,     /* output to ALU A    	 */
-	input  OEb_A, 				    /* output enable         */
+	output [BITS - 1 : 0] out,     /* output (muxed in register file)   	 */
 
-	output [BITS - 1 : 0] outB,     /* output to ALU B    	 */
-	input  OEb_B, 				    /* output enable         */
-
-	output [BITS - 1 : 0] outM,     /* output to Memory   	 */
-	input  OEb_M, 					/* output enable         */
-
-	output [BITS - 1 : 0] outMADDR, /* output to Memory Address */
-	input  OEb_MADDR, 				/* output enable         */
 	input  INCb,					/* increment 			 */			
 	input  DECb						/* decrement 			 */			
 );
@@ -32,14 +23,11 @@ module register
 reg [BITS - 1 : 0] Reg;
 reg [BITS - 1 : 0] Reg_next;
 
-assign outA = OEb_A ? {BITS{1'bZ}} : Reg;
-assign outB = OEb_B ? {BITS{1'bZ}} : Reg;
-assign outM = OEb_M ? {BITS{1'bZ}} : Reg;
-assign outMADDR = OEb_MADDR ? {BITS{1'bZ}} : Reg;
+assign out =  Reg;
 
 always @(posedge CLK)
 begin
-	if (RSTb == 0)
+	if (RSTb == 1'b0)
 		Reg <= {BITS{1'b0}};
 	else
 		Reg <= Reg_next;
@@ -56,9 +44,9 @@ begin
 	else if (LDb_P == 0)
 		Reg_next = inP;
 	else if (INCb == 0)
-		Reg_next = Reg + 1;
+		Reg_next = Reg + 16'h0001;
 	else if (DECb == 0)
-		Reg_next = Reg - 1;
+		Reg_next = Reg + 16'hffff;
 end
 
 endmodule

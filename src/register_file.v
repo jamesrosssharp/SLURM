@@ -39,19 +39,28 @@ module register_file
 	output [BITS - 1 : 0] m_addr_out 
 );
 
-/* decode selectors */
-wire [2**REG_BITS-1:0] ALU_A_SEL_v_b 	= {2**REG_BITS{1'b1}} ^ (1 << ALU_A_SEL);
-wire [2**REG_BITS-1:0] ALU_B_SEL_v_b 	= {2**REG_BITS{1'b1}} ^ (1 << ALU_B_SEL);
-wire [2**REG_BITS-1:0] M_SEL_v_b     	= {2**REG_BITS{1'b1}} ^ (1 << M_SEL);
-wire [2**REG_BITS-1:0] MADDR_SEL_v_b    = {2**REG_BITS{1'b1}} ^ (1 << MADDR_SEL);
 
 wire [BITS - 1:0] aluB_wr;
 
-assign aluB_out = ALU_B_from_inP_b ? aluB_wr : inP; 
 
-wire [BITS - 1:0] m_addr_out_reg;
+wire [BITS - 1:0] out [2**REG_BITS - 1:0];
 
-assign m_addr_out = (MADDR_ALU_SELb == 1'b0) ? inALU : ((MADDR_POUT_SELb == 1'b0) ? inP : m_addr_out_reg);
+assign aluA_out = out[ALU_A_SEL];
+assign aluB_out = (ALU_B_from_inP_b == 1'b0) ? inP : out[ALU_B_SEL];
+assign m_out = (M_ENb == 1'b0) ? out[M_SEL] : {BITS{1'b0}};
+
+reg [BITS - 1 : 0] m_addr_out_r;
+assign m_addr_out = m_addr_out_r;
+
+always @(*)
+begin
+	if (MADDR_ALU_SELb == 1'b0)
+		m_addr_out_r = inALU;
+	else if (MADDR_POUT_SELb == 1'b0)
+		m_addr_out_r = inP;
+	else
+		m_addr_out_r = out[MADDR_SEL];
+end
 
 genvar j;
 generate
@@ -66,14 +75,7 @@ generate
 				LD_reg_Mb[j],
 				inP,
 				LD_reg_Pb[j],
-				aluA_out,
-				ALU_A_SEL_v_b[j], 
-				aluB_wr, 
-				ALU_B_SEL_v_b[j],
-				m_out,
-				M_SEL_v_b[j] | M_ENb, 
-				m_addr_out_reg, 
-				MADDR_SEL_v_b[j], 
+				out[j],
 				INCb[j],	
 				DECb[j]	
 			);

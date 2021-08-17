@@ -5,14 +5,13 @@ module rom
 (
 	input CLK,	
 	input [ADDRESS_BITS - 1 : 0]  ADDRESS,
-	inout [BITS - 1 : 0] DATA,
-	input OEb /* output enable */
+	output [BITS - 1 : 0] DATA_OUT
 );
 
 reg [BITS - 1:0] ROM [(1 << ADDRESS_BITS) - 1:0];
 reg [BITS - 1:0] dout;
 
-assign DATA = (OEb == 1'b0) ? dout : {BITS{1'bz}};
+assign DATA_OUT = dout;
 
 initial begin
         $display("Loading rom.");
