@@ -4,11 +4,25 @@ UART_TX_REG 	equ 	0x1000
 UART_TX_STATUS  equ		0x1001
 
 
-//		ld r1, [the_string]
+		mov r1, 'A'
 run:
-//		st [UART_TX_REG], r1
+		st [UART_TX_REG], r1
+		add r1,1
 
-//		ba run
+		mov r2, 1
+		cmp r2, 0
+		//bz  is_zero
+
+		mov r1, 'N'
+		st [UART_TX_REG], r1
+
+die_1:
+		ba die_1
+
+is_zero:
+
+
+		ba run
 
 
 		mov r4, 0xffff	// Stack pointer; top of mem
@@ -17,8 +31,8 @@ run:
 loop:
 		ld r1, [r0+]
 		st [UART_TX_REG], r1
-		cmp r1, 0
-		bz die 
+		//cmp r1, 0
+		//bz die 
 test_loop:
 		ld r2, [UART_TX_STATUS]
 		test r2, 1

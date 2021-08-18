@@ -68,7 +68,7 @@ pipeline16 pip0
 	.M_SEL(M_SEL), 
 	.MADDR_SEL(MADDR_SEL), 
 	.MADDR_ALU_SELb(MADDR_ALU_SELb),				/* select MADDR from ALU output */
-	.MADDR_POUT_SELb(MADDR_POUR_SELb),				/* select MADDR from POUT */
+	.MADDR_POUT_SELb(MADDR_POUT_SELb),				/* select MADDR from POUT */
 	.INCb(INCb),  	  
 	.DECb(DECb),  	  
 	.ALU_B_from_inP_b(ALU_B_from_inP_b),	
@@ -121,7 +121,7 @@ reg0
  	.M_SEL(M_SEL),    
  	.MADDR_SEL(MADDR_SEL),	
 	.MADDR_ALU_SELb(MADDR_ALU_SELb),				/* select MADDR from ALU output */
-	.MADDR_POUT_SELb(MADDR_POUR_SELb),				/* select MADDR from POUT */
+	.MADDR_POUT_SELb(MADDR_POUT_SELb),				/* select MADDR from POUT */
 	.INCb(INCb), 
 	.DECb(DECb), 
 	.ALU_B_from_inP_b(ALU_B_from_inP_b),	

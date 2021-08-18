@@ -346,7 +346,7 @@ begin
 	casex(pipeline_stage0_reg)
 		16'h0000:	;/* NOP */
 		16'h01xx: begin /* ret / iret */
-				aluOp_reg 				 = 4'b0000; 		// move
+				aluOp_reg 				 = 5'b00000; 		// move
 				ALU_B_SEL_reg			 = ret_or_iret(pipeline_stage0_reg) ? 3'b101 : 3'b110;          // move LR or ILR (interrupt link register)
 				LD_reg_ALUb_reg			 = 8'h7f;			// move LR / ILR to PC  
 				INCb_reg[7] 			 = 1'b1; 			// don't increment r7
@@ -407,7 +407,7 @@ begin
  				 */
 				
 				if (is_branch_reg_ind(pipeline_stage0_reg)) begin
-					aluOp_reg 				 = 4'b0000; 		// move
+					aluOp_reg 				 = 5'b00000; 		// move
 					ALU_B_SEL_reg			 = 3'b111;          // move PC
 					LD_reg_ALUb_reg			 = 8'hbf;			// move PC to LR (r6)  
 					INCb_reg[7] 			 = 1'b1; 			// don't increment r7
@@ -416,7 +416,7 @@ begin
 					pout_reg 				 = imm_reg_p0(pipeline_stage0_reg); // load immediate into lowest 4 bits of pout
 					pipeline_stall_reg_next  = 1'b1;
 				end else begin
-					aluOp_reg 				 = 4'b0000; 		// move
+					aluOp_reg 				 = 5'b00000; 		// move
 					ALU_B_SEL_reg			 = 3'b111;          // move PC
 					LD_reg_ALUb_reg			 = 8'hbf;			// move PC to LR (r6)  
 					INCb_reg[7] 			 = 1'b1; 			// don't increment r7

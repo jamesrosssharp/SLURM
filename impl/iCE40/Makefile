@@ -22,7 +22,7 @@ rom.v: rom_image.mem
 	xxd -i $< > $@
 
 $(PROJ).json: $(SOURCE) rom_image.mem
-	yosys -p 'synth_ice40 -top top -json $@' $(SOURCE)
+	yosys -p 'debug synth_ice40 -top top -json $@' $(SOURCE)
 
 %.asc: $(PIN_DEF) %.json
 	nextpnr-ice40 --up5k --json $(PROJ).json --pcf $(PROJ).pcf --asc $@

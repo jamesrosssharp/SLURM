@@ -20,7 +20,7 @@ module register
 	input  DECb						/* decrement 			 */			
 );
 
-reg [BITS - 1 : 0] Reg;
+reg [BITS - 1 : 0] Reg = {BITS{1'b0}};
 reg [BITS - 1 : 0] Reg_next;
 
 assign out =  Reg;

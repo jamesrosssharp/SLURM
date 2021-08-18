@@ -40,9 +40,6 @@ module register_file
 );
 
 
-wire [BITS - 1:0] aluB_wr;
-
-
 wire [BITS - 1:0] out [2**REG_BITS - 1:0];
 
 assign aluA_out = out[ALU_A_SEL];

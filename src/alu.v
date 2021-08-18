@@ -16,17 +16,17 @@ module alu
 	output S /* sign flag */
 );
 
-reg C_flag_reg;
+reg C_flag_reg = 1'b0;
 reg C_flag_reg_next;
 
 assign C = C_flag_reg;
 
-reg Z_flag_reg;
+reg Z_flag_reg = 1'b0;
 reg Z_flag_reg_next;
 
 assign Z = Z_flag_reg;
 
-reg S_flag_reg;
+reg S_flag_reg = 1'b0;
 reg S_flag_reg_next;
 
 assign S = S_flag_reg;
@@ -51,9 +51,9 @@ assign aluOut = out;
 always @(posedge CLK)
 begin
 	if (RSTb == 1'b0) begin
-		C_flag_reg <= 0;
-		Z_flag_reg <= 0;
-		S_flag_reg <= 0;
+		C_flag_reg <= 1'b0;
+		Z_flag_reg <= 1'b0;
+		S_flag_reg <= 1'b0;
 	end
 	else begin
 		C_flag_reg <= C_flag_reg_next;
