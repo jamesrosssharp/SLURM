@@ -1,35 +1,10 @@
         .org 0h
 
 UART_TX_REG 	equ 	0x1000
-UART_TX_STATUS  equ		0x1001
-GPIO_OUT_REG    equ     0x1100
+UART_TX_STATUS  equ		0x1002
 
-top:
-		mov r0, 'A'
-		mov r4, UART_TX_STATUS
-		
+
 run:
-		st [UART_TX_REG], r0
-		nop
-		add r0, 1
-
-	//	mov r2, 0xff
-loopy:
-		ld r3, [0x1002]
-		st [GPIO_OUT_REG], r3
-		or r3,r3
-		bz loopy
-
-	//	sub r2, 1
-	//	bnz loopy
-
-done:
-		ba run
-
-dat:
-		dw 'A'
-
-/*
 		mov r4, 0xffff	// Stack pointer; top of mem
 
 		mov r0, the_string
@@ -56,7 +31,7 @@ delay_1:
 		bnz delay
 		
 		ba run
-*/
+
 
 the_string:
 		dw "Hello world! Hello Anna, my lovely!\r\n"
