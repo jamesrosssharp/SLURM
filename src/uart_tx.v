@@ -54,55 +54,57 @@ end
 always @(*)
 begin
 
-	done_out_next 		<= done_out;
-	tx_out 			<= 1;
-	state_next 		<= state;
-	txWord_next 	<= txWord;
-	tx_out			<= 1;
-	bitCount_next 	<= bitCount; 
+	done_out_next 	= done_out;
+	tx_out 			= 1;
+	state_next 		= state;
+	txWord_next 	= txWord;
+	bitCount_next 	= bitCount; 
 
 	case (state)
 		idle: 
 			begin
 				if (go == 1) begin
-					state_next <= latchWord;
-					done_out_next <= 0;
+					state_next = latchWord;
+					done_out_next = 0;
 				end
 			end
 		latchWord:
 			begin
-				txWord_next <= char;
-				state_next  <= startBit;
+				txWord_next = char;
+				if (tick)
+					state_next  = startBit;
 			end
 		startBit:
 			begin
-				tx_out 				 <= 0;
-				if (tick) state_next <= shiftBits;
-				bitCount_next <= 0;
+				tx_out 				 = 0;
+				if (tick) state_next = shiftBits;
+				bitCount_next = 0;
 			end
 		shiftBits:
 			begin
-				tx_out <= txWord[0];
+				tx_out = txWord[0];
 				if (tick) begin
-					txWord_next[6:0] <= txWord[7:1];
-					txWord_next[7] 	 <= 0;
-					bitCount_next <= bitCount + 1;
-					if (bitCount == 7) state_next <= stopBit;
+					txWord_next[6:0] = txWord[7:1];
+					txWord_next[7] 	 = 0;
+					bitCount_next = bitCount + 1;
+					if (bitCount == 7) state_next = stopBit;
 				end
 			end
 		stopBit:
 			begin
-				tx_out <= 0;
+				tx_out = 0;
 				if (tick)
-					state_next <= done;
+					state_next = done;
 			end
 		done:
 			begin
 				if (tick) begin
-					done_out_next <= 1;
-					state_next <= idle;
+					done_out_next = 1;
+					state_next = idle;
 				end
 			end
+		default:
+			state_next = idle;
 	endcase
 
 end

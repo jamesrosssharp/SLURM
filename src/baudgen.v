@@ -8,7 +8,7 @@ module baudgen
 
 reg tickOut = 0;
 
-reg [0:15] baudCtr = 0;
+reg [31:0] baudCtr = 0;
 
 assign tick = tickOut;
 

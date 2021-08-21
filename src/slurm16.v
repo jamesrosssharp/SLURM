@@ -49,6 +49,8 @@ wire [15:0] aluA;
 wire [15:0] aluB;
 wire [15:0] aluOut;
 
+wire mem_OEb;
+
 pipeline16 pip0
 (
 	.CLK(CLK),
@@ -72,6 +74,7 @@ pipeline16 pip0
 	.INCb(INCb),  	  
 	.DECb(DECb),  	  
 	.ALU_B_from_inP_b(ALU_B_from_inP_b),	
+	.mem_OEb(mem_OEb),
 	.mem_WRb(mem_WRb)  
 );
 

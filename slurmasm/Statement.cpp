@@ -454,6 +454,9 @@ void Statement::assemble(uint32_t &curAddress)
                                            words);
 
 					break;
+				case OpCode::IMM:
+					words[0] = SLRM_IMM_INSTRUCTION | ((uint16_t)expression.value >> 4); 
+					break;
                 default:
                 {
                     std::stringstream ss;

@@ -45,14 +45,14 @@ begin
 	WRb_HIRAM = 1'b1;
 	WRb_UART  = 1'b1;
 
-	casex (ADDRESS)
-		16'h0xxx:
+	casez (ADDRESS)
+		16'h0???:
 			dout = DATA_OUT_ROM;
-		16'h10xx: begin
+		16'h10??: begin
 			dout = DATA_OUT_UART;
 			WRb_UART = WRb;
 		end
-		16'b1xxxxxxxxxxxxxxx: begin
+		16'b1???????????????: begin
 			dout = DATA_OUT_HIRAM;
 			WRb_HIRAM = WRb;
 		end		

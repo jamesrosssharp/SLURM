@@ -16,7 +16,7 @@ rom_image.mem: Test.asm
 	../../slurmasm/slurmasm Test.asm -o rom_image
 
 rom.v: rom_image.mem
-	python3 genrom.py
+	python3 ../../scripts/genrom.py
 
 %.h: %.bin
 	xxd -i $< > $@

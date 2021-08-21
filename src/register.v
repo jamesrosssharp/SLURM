@@ -37,16 +37,16 @@ always @(*)
 begin
 	Reg_next = Reg;
 
-	if (LDb_ALU == 0) 
+	if (LDb_ALU == 1'b0) 
 		Reg_next = inALU;
-	else if (LDb_M == 0)
+	else if (LDb_M == 1'b0)
 		Reg_next = inM;
-	else if (LDb_P == 0)
+	else if (LDb_P == 1'b0)
 		Reg_next = inP;
-	else if (INCb == 0)
-		Reg_next = Reg + 16'h0001;
-	else if (DECb == 0)
-		Reg_next = Reg + 16'hffff;
+	else if (INCb == 1'b0)
+		Reg_next = Reg + 1;
+	else if (DECb == 1'b0)
+		Reg_next = Reg - 1;
 end
 
 endmodule

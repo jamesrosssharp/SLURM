@@ -119,20 +119,34 @@ end
 /* is a branch taken based in pipeline stage 0 */
 function branch_taken_p0;
 input [15:0] p0;
+input Z_in;
+input S_in;
+input C_in;
 begin
 	case(p0[10:8])
 		3'b000:		/* 0x0 - BZ, branch if ZERO */
-			if (Z == 1'b1) branch_taken_p0 = 1'b1;
+			if (Z_in == 1'b1) branch_taken_p0 = 1'b1;
+			else branch_taken_p0 = 1'b0;
+	
 		3'b001:		/* 0x1 - BNZ, branch if not ZERO */
-			if (Z == 1'b0) branch_taken_p0 = 1'b1;
+			if (Z_in == 1'b0) branch_taken_p0 = 1'b1;
+			else branch_taken_p0 = 1'b0;
+	
 		3'b010:		/* 0x2 - BS, branch if SIGN */
-			if (S == 1'b1) branch_taken_p0 = 1'b1;
+			if (S_in == 1'b1) branch_taken_p0 = 1'b1;
+			else branch_taken_p0 = 1'b0;
+	
 		3'b011:		/* 0x3 - BNS, branch if not SIGN */
-			if (S == 1'b0) branch_taken_p0 = 1'b1;
+			if (S_in == 1'b0) branch_taken_p0 = 1'b1;
+			else branch_taken_p0 = 1'b0;
+	
 		3'b100:		/* 0x4 - BC, branch if CARRY */
-			if (S == 1'b1) branch_taken_p0 = 1'b1;
+			if (C_in == 1'b1) branch_taken_p0 = 1'b1;
+			else branch_taken_p0 = 1'b0;
+	
 		3'b101:		/* 0x5 - BNC, branch if not CARRY */
-			if (S == 1'b0) branch_taken_p0 = 1'b1;
+			if (C_in == 1'b0) branch_taken_p0 = 1'b1;
+			else branch_taken_p0 = 1'b0;
 		3'b110:		/* 0x6 - BA, branch always */
 			branch_taken_p0 = 1'b1;
 		3'b111:		/* 0x7 - BL, branch link */
@@ -241,20 +255,29 @@ endfunction
 /* is a relative branch taken based */
 function rel_branch_taken;
 input [15:0] p0;
+input Z_in;
+input S_in;
+input C_in;
 begin
 	case(p0[12:10])
 		3'b000:		/* 0x0 - BZ, branch if ZERO */
-			if (Z == 1'b1) rel_branch_taken = 1'b1;
+			if (Z_in == 1'b1) rel_branch_taken = 1'b1;
+			else rel_branch_taken = 1'b0;
 		3'b001:		/* 0x1 - BNZ, branch if not ZERO */
-			if (Z == 1'b0) rel_branch_taken = 1'b1;
+			if (Z_in == 1'b0) rel_branch_taken = 1'b1;
+			else rel_branch_taken = 1'b0;
 		3'b010:		/* 0x2 - BS, branch if SIGN */
-			if (S == 1'b1) rel_branch_taken = 1'b1;
+			if (S_in == 1'b1) rel_branch_taken = 1'b1;
+			else rel_branch_taken = 1'b0;
 		3'b011:		/* 0x3 - BNS, branch if not SIGN */
-			if (S == 1'b0) rel_branch_taken = 1'b1;
+			if (S_in == 1'b0) rel_branch_taken = 1'b1;
+			else rel_branch_taken = 1'b0;
 		3'b100:		/* 0x4 - BC, branch if CARRY */
-			if (S == 1'b1) rel_branch_taken = 1'b1;
+			if (S_in == 1'b1) rel_branch_taken = 1'b1;
+			else rel_branch_taken = 1'b0;
 		3'b101:		/* 0x5 - BNC, branch if not CARRY */
-			if (S == 1'b0) rel_branch_taken = 1'b1;
+			if (S_in == 1'b0) rel_branch_taken = 1'b1;
+			else rel_branch_taken = 1'b0;
 		3'b110:		/* 0x6 - BA, branch always */
 			rel_branch_taken = 1'b1;
 		3'b111:		/* 0x7 - BL, branch link */
@@ -343,9 +366,9 @@ begin
 		mem_OEb_reg 				= 1'b0;
 	end
 	
-	casex(pipeline_stage0_reg)
+	casez(pipeline_stage0_reg)
 		16'h0000:	;/* NOP */
-		16'h01xx: begin /* ret / iret */
+		16'h01??: begin /* ret / iret */
 				aluOp_reg 				 = 5'b00000; 		// move
 				ALU_B_SEL_reg			 = ret_or_iret(pipeline_stage0_reg) ? 3'b101 : 3'b110;          // move LR or ILR (interrupt link register)
 				LD_reg_ALUb_reg			 = 8'h7f;			// move LR / ILR to PC  
@@ -354,15 +377,15 @@ begin
 				LD_reg_ALUb_reg 		 = 8'h7f; 	 		// load r7 from alu 
 				delay_slot_reg_next  	 = 1'b1;
 				end
-		16'h02xx: begin /* increment multiple */
+		16'h02??: begin /* increment multiple */
 				INCb_reg[6:0] = pipeline_stage0_reg[6:0];
 				end
-		16'h03xx: begin /* decrement multiple */
+		16'h03??: begin /* decrement multiple */
 				DECb_reg[6:0] = pipeline_stage0_reg[6:0];
 				end
-		16'h1xxx:   /* IMM */
+		16'h1???:   /* IMM */
 			imm_reg_next = pipeline_stage0_reg[11:0];
-		16'h2xxx:   /* ALU OP, REG, REG */
+		16'h2???:   /* ALU OP, REG, REG */
 		begin
 			aluOp_reg[3:0] 	  		= alu_op_p0(pipeline_stage0_reg);
 			aluOp_reg[4]			= alu_op_hi_p0(pipeline_stage0_reg);
@@ -372,9 +395,10 @@ begin
 			if (store_dest_p0(pipeline_stage0_reg) == 1'b0)
 				LD_reg_ALUb_reg 	= {8{1'b1}} ^ (1 << dest_reg_p0(pipeline_stage0_reg)); 
 		end
-		16'h3xxx: /* ALU OP, REG, IMM */
+		16'h3???: /* ALU OP, REG, IMM */
 		begin
-			aluOp_reg 	  			= alu_op_p0(pipeline_stage0_reg);
+			aluOp_reg[3:0] 	  			= alu_op_p0(pipeline_stage0_reg);
+			aluOp_reg[4] = 1'b0;
 			pout_reg 				= imm_reg_p0(pipeline_stage0_reg);
 			ALU_A_SEL_reg 			= dest_reg_p0(pipeline_stage0_reg);
 			ALU_B_from_inP_b_reg 	= 1'b0;
@@ -382,9 +406,9 @@ begin
 			if (store_dest_p0(pipeline_stage0_reg) == 1'b0)
 				LD_reg_ALUb_reg 		= {8{1'b1}} ^ (1 << dest_reg_p0(pipeline_stage0_reg)); 			
 		end
-		16'h4xxx: /* branch */
+		16'h4???: /* branch */
 		begin
-			if (branch_taken_p0(pipeline_stage0_reg) == 1'b1) begin
+			if (branch_taken_p0(pipeline_stage0_reg, Z, S, C) == 1'b1) begin
 				if (is_branch_reg_ind(pipeline_stage0_reg)) begin
 					pipeline_stage0_reg_next = NOP_INSTRUCTION;
 					INCb_reg[7] 			 = 1'b1; 				// don't increment r7
@@ -428,7 +452,7 @@ begin
 
 			end	
 		end
-		16'h5xxx: begin /* memory, reg, reg index */ 
+		16'h5???: begin /* memory, reg, reg index */ 
 		
 			if (is_memory_load_or_store(pipeline_stage0_reg) == 1'b0) begin // load
 				pipeline_stall_reg_next  = 1'b1; 			// We stall the pipeline so on the next cycle we can access memory	
@@ -450,7 +474,7 @@ begin
 
 			INCb_reg[7] 			 = 1'b1; 			// don't increment r7 this cycle
 		end
-		16'h6xxx: begin /* memory, reg, immediate index */
+		16'h6???: begin /* memory, reg, immediate index */
    			if (is_memory_load_or_store(pipeline_stage0_reg) == 1'b0) begin // load
 				pout_reg                                 = imm_reg_p0(pipeline_stage0_reg); // load immediate into lowest 4 bits of pout
 		    	MADDR_POUT_SELb_reg    = 1'b0;
@@ -472,7 +496,7 @@ begin
 			end
 			INCb_reg[7] 			 = 1'b1; 			// don't increment r7 this cycle
 		end
-		16'h7xxx: begin /* memory, reg, reg + immediate index */ 
+		16'h7???: begin /* memory, reg, reg + immediate index */ 
 			ALU_A_SEL_reg                   = class7_idx_reg_p0(pipeline_stage0_reg);
             ALU_B_from_inP_b_reg    = 1'b0;
             MADDR_ALU_SELb_reg    = 1'b0;  
@@ -497,7 +521,7 @@ begin
 			INCb_reg[7] 			 = 1'b1; 			// don't increment r7 this cycle
 		
 		end
-		16'b100xxxxxxxxxxxxx:  /* ALU op, reg, reg, reg */
+		16'b100?????????????:  /* ALU op, reg, reg, reg */
 		begin
 			aluOp_reg[3:0] 	  		= alu_op3(pipeline_stage0_reg);
 			aluOp_reg[4]			= 1'b0;
@@ -506,8 +530,8 @@ begin
 
 			LD_reg_ALUb_reg 	= {8{1'b1}} ^ (1 << alu_dest_reg3(pipeline_stage0_reg)); 
 		end
-		16'b101xxxxxxxxxxxxx: begin /* relative branch */
-			if (rel_branch_taken(pipeline_stage0_reg) == 1'b1) begin
+		16'b101?????????????: begin /* relative branch */
+			if (rel_branch_taken(pipeline_stage0_reg, Z, S, C) == 1'b1) begin
 				// Branch taken: move relative constant to imm_reg
 		        INCb_reg[7]              = 1'b1;            // don't increment r7
                 pipeline_stage0_reg_next = NOP_INSTRUCTION; // feed nop
@@ -527,13 +551,17 @@ begin
                 delay_slot_reg_next  = 1'b1;
 			end	
 		end
+		16'b110?????????????: begin
+			pout_reg = {1'b0, C, Z, S};
+			LD_reg_Pb_reg = 8'hfe; // load r0 with flags
+		end
 		default: ;
 	endcase
 
 	// Stage 1
 
-	casex(pipeline_stage1_reg)
-		16'h4xxx: /* branch */
+	casez(pipeline_stage1_reg)
+		16'h4???: /* branch */
 		begin
 			if (is_branch_link(pipeline_stage1_reg) == 1'b1) begin
 				
@@ -549,7 +577,7 @@ begin
 				end
 			end	
 		end
-		16'h5xxx: /* memory reg, reg index */		
+		16'h5???: /* memory reg, reg index */		
 			if (is_memory_load_or_store(pipeline_stage1_reg) == 1'b1) begin // store
 			end	
 			else begin // load
@@ -562,7 +590,7 @@ begin
 				INCb_reg[memory_store_index(pipeline_stage1_reg)] = memory_post_increment(pipeline_stage1_reg); // increment?
 				DECb_reg[memory_store_index(pipeline_stage1_reg)] = memory_post_decrement(pipeline_stage1_reg); // decrement?
 			end
-		16'h6xxx:  /* memory reg, immediate index */		
+		16'h6???:  /* memory reg, immediate index */		
 			if (is_memory_load_or_store(pipeline_stage1_reg) == 1'b1) begin // store
 			end	
 			else begin // load
@@ -572,7 +600,7 @@ begin
 				mem_WRb_reg	   = 1'b1;
 				LD_reg_Mb_reg = {8{1'b1}} ^ (1 << memory_load_destination(pipeline_stage1_reg));
 			end
-		16'h7xxx:  /* memory reg, reg + immediate index */
+		16'h7???:  /* memory reg, reg + immediate index */
 			if (is_memory_load_or_store(pipeline_stage1_reg) == 1'b1) begin // store
 			end	
 			else begin // load
@@ -585,8 +613,8 @@ begin
 				mem_WRb_reg	   			= 1'b1;
 				LD_reg_Mb_reg 			= {8{1'b1}} ^ (1 << memory_load_destination(pipeline_stage1_reg));
 			end
-		16'b101xxxxxxxxxxxxx: begin /* relative branch */
-			if ((rel_branch_taken(pipeline_stage1_reg) == 1'b1) || (is_rel_branch_link(pipeline_stage1_reg) == 1'b1)) begin
+		16'b101?????????????: begin /* relative branch */
+			if ((rel_branch_taken(pipeline_stage1_reg, Z, S, C) == 1'b1) || (is_rel_branch_link(pipeline_stage1_reg) == 1'b1)) begin
 				    LD_reg_ALUb_reg 		 = 8'h7f; 	 		    // load PC from alu 
 					ALU_B_from_inP_b_reg     = 1'b0;
 					aluOp_reg  				 = 5'b00001;

@@ -18,9 +18,10 @@ reg go_reg_next;
 
 wire tick;
 
-reg [BITS - 1 : 0] data_reg;
+wire done_sig;
 
-assign DATA_OUT = data_reg;
+assign DATA_OUT[BITS - 1:1] = {BITS - 1{1'b0}};
+assign DATA_OUT[0] = done_sig;
 
 baudgen #(.CLK_FREQ(CLK_FREQ), .BAUD_RATE(BAUD_RATE)) bd0
 ( 
@@ -28,7 +29,6 @@ baudgen #(.CLK_FREQ(CLK_FREQ), .BAUD_RATE(BAUD_RATE)) bd0
 	tick 
 );
 
-wire done_sig;
 
 uart_tx u0
 (
@@ -56,16 +56,14 @@ always @(*)
 begin
 	go_reg_next = 1'b0;
 	tx_reg_next = tx_reg;
-	data_reg = {BITS{1'b0}};
 
-	casex (ADDRESS)
+	casez (ADDRESS)
 		8'h00:	/* TX register */
 			if (WRb == 1'b0) begin
-				tx_reg_next = DATA_IN;
+				tx_reg_next = DATA_IN[7:0];
 				go_reg_next = 1'b1;	
 			end
-		8'h01:  /* TX status register */
-			data_reg[0] = done_sig; 
+		default:;
 	endcase
 end
 

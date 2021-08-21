@@ -77,25 +77,25 @@ begin
 			out = B;				
 		end
 		5'd1: begin /* add */
-			out = addOp;
+			out = addOp[BITS - 1:0];
 			C_flag_reg_next = addOp[BITS];
-			Z_flag_reg_next = (addOp[BITS - 1:0] == {BITS{1'b0}}) ? 1'b1 : 1'b0;
+			Z_flag_reg_next = (addOp[BITS - 1:0] == 16'h0000 /*{BITS{1'b0}} */) ? 1'b1 : 1'b0;
 			S_flag_reg_next = addOp[BITS - 1] ? 1'b1 : 1'b0;
 		end
 		5'd2: begin /* adc */
-			out = addOp;
+			out = addOp[BITS - 1:0];
 			C_flag_reg_next = addOp[BITS];
-			Z_flag_reg_next = (addOp[BITS - 1:0] == {BITS{1'b0}}) ? 1'b1 : 1'b0;
+			Z_flag_reg_next = (addOp[BITS - 1:0] == 16'h0000 /*{BITS{1'b0}}*/) ? 1'b1 : 1'b0;
 			S_flag_reg_next = addOp[BITS - 1] ? 1'b1 : 1'b0;
 		end
 		5'd3: begin /* sub */ 
-			out = subOp;
+			out = subOp[BITS - 1:0];
 			C_flag_reg_next = subOp[BITS];
-			Z_flag_reg_next = (subOp[BITS - 1:0] == {BITS{1'b0}}) ? 1'b1 : 1'b0;
+			Z_flag_reg_next = (subOp[BITS - 1:0] == 16'h0000/*{BITS{1'b0}}*/) ? 1'b1 : 1'b0;
 			S_flag_reg_next = subOp[BITS - 1] ? 1'b1 : 1'b0;
 		end
 		5'd4: begin /* sbb */ 
-			out = subOp;
+			out = subOp[BITS - 1:0];
 			C_flag_reg_next = subOp[BITS];
 			Z_flag_reg_next = (subOp[BITS - 1:0] == {BITS{1'b0}}) ? 1'b1 : 1'b0;
 			S_flag_reg_next = subOp[BITS - 1] ? 1'b1 : 1'b0;
