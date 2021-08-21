@@ -13,24 +13,21 @@ run:
 		nop
 		add r0, 1
 
-		mov r1, 0x1fff
-		//mov r2, 1
-		//st [GPIO_OUT_REG], r2
+	//	mov r2, 0xff
 loopy:
-		ld r3, [dat]
+		ld r3, [0x1002]
 		st [GPIO_OUT_REG], r3
-	
-		sub r1, 1
-		bnz loopy
+		or r3,r3
+		bz loopy
 
-		//mov r2, 0
-		//st [GPIO_OUT_REG], r2
+	//	sub r2, 1
+	//	bnz loopy
 
 done:
 		ba run
 
 dat:
-		dw 1
+		dw 'A'
 
 /*
 		mov r4, 0xffff	// Stack pointer; top of mem

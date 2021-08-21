@@ -1,7 +1,8 @@
 
 SRCDIR=../../../src/
 
-SOURCE=$(SRCDIR)/pipeline16.v $(SRCDIR)/slurm16.v $(SRCDIR)/alu.v $(SRCDIR)/register_file.v $(SRCDIR)/register.v $(SRCDIR)/memory_controller.v $(SRCDIR)/memory.v $(SRCDIR)/rom.v
+SOURCE=$(SRCDIR)/pipeline16.v $(SRCDIR)/slurm16.v $(SRCDIR)/alu.v $(SRCDIR)/register_file.v $(SRCDIR)/register.v $(SRCDIR)/memory_controller.v $(SRCDIR)/memory.v $(SRCDIR)/rom.v $(SRCDIR)/uart.v $(SRCDIR)/uart_tx.v $(SRCDIR)/baudgen.v \
+	$(SRCDIR)/gpio.v
 PROJECT=slurm16
 
 all: sim

@@ -14,9 +14,12 @@ initial begin
 	#50 RSTb = 1'b1;
 end
 
+wire [15:0] PINS;
+
 slurm16 slm0 (
 	CLK,
-	RSTb
+	RSTb,
+	PINS
 );
 
 

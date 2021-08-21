@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.103 (w)1999-2019 BSI
-[*] Sat Aug 14 04:20:21 2021
+[*] Sat Aug 21 07:29:05 2021
 [*]
 [dumpfile] "/home/jrsharp/code/FPGA/SLURM/test/slurm16/memory/dump.vcd"
-[dumpfile_mtime] "Sat Aug 14 04:20:03 2021"
-[dumpfile_size] 4211398
+[dumpfile_mtime] "Sat Aug 21 07:28:27 2021"
+[dumpfile_size] 3870975
 [savefile] "/home/jrsharp/code/FPGA/SLURM/test/slurm16/memory/config.gtkw"
-[timestart] 512800
+[timestart] 0
 [size] 1710 811
 [pos] -1 -1
-*-16.000000 700000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-16.000000 200000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] slurm16_tb.
 [treeopen] slurm16_tb.slm0.
 [treeopen] slurm16_tb.slm0.mem0.
@@ -31,10 +31,10 @@ slurm16_tb.slm0.CLK
 slurm16_tb.slm0.RSTb
 @22
 slurm16_tb.slm0.mem_address[15:0]
-slurm16_tb.slm0.mem_data[15:0]
 @23
-slurm16_tb.slm0.pip0.pipeline_stage0_reg[15:0]
+slurm16_tb.slm0.mem0.DATA_OUT[15:0]
 @22
+slurm16_tb.slm0.pip0.pipeline_stage0_reg[15:0]
 slurm16_tb.slm0.pip0.pipeline_stage1_reg[15:0]
 @200
 -

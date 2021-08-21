@@ -38,8 +38,15 @@ wire [BITS - 1 : 0] DATA_OUT_ROM;
 wire [BITS - 1 : 0] DATA_OUT_UART;
 wire [BITS - 1 : 0] DATA_OUT_GPIO;
 
+reg [BITS - 1 : 0] dout_next;
 reg [BITS - 1 : 0] dout;
-assign DATA_OUT = dout;
+
+always @(posedge CLK)
+begin
+	dout <= dout_next;
+end
+
+assign DATA_OUT = (ADDRESS < 16'h1000) ? DATA_OUT_ROM : ((ADDRESS >= 16'h8000) ? DATA_OUT_HIRAM : dout);
 
 always @(*)
 begin
@@ -48,25 +55,19 @@ begin
 	WRb_UART  = 1'b1;
 	WRb_GPIO  = 1'b1;
 
-	dout = {BITS{1'b0}};
+	dout_next = {BITS{1'b0}};
 
 	casez (ADDRESS)
-		16'h0???:
-			dout = DATA_OUT_ROM;
 		16'h10??: begin
-			dout = DATA_OUT_UART;
+			dout_next = DATA_OUT_UART;
 			WRb_UART = WRb;
 		end
 		16'h11??: begin
-			dout = DATA_OUT_GPIO;
+			dout_next = DATA_OUT_GPIO;
 			WRb_GPIO = WRb;
 		end
-		16'b1???????????????: begin
-			dout = DATA_OUT_HIRAM;
-			WRb_HIRAM = WRb;
-		end		
-		default:
-			dout = {BITS{1'b0}};
+		default: 
+			dout_next = {BITS{1'b0}};
 	endcase
 
 end
