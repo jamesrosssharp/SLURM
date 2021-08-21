@@ -4,10 +4,10 @@
  *
  *	0x0000 - 0x0fff:  4k x 16 bit boot ROM
  *	0x1000 - 0x10ff:  UART
- *	0x1100 - 0x11ff:  Timers ?
- *	0x1200 - 0x12ff:  SPI ?
- *	0x1300 - 0x13ff:  I2C ?
- *	0x1400 - 0x14ff:  GPIO ?
+ *  0x1100 - 0x11ff:  GPIO
+ *	0x1200 - 0x12ff:  Timers ?
+ *	0x1300 - 0x13ff:  SPI ?
+ *	0x1400 - 0x14ff:  I2C ?
  *	0x1500 - 0x15ff:  DMAC ?
  *
  *	0x4000 - 0x7fff:  OCM, 16k x 16 bit RAM, dual port - DMA able ?
@@ -31,10 +31,12 @@ module memory_controller
 
 reg WRb_HIRAM;
 reg WRb_UART;
+reg WRb_GPIO;
 
 wire [BITS - 1 : 0] DATA_OUT_HIRAM;
 wire [BITS - 1 : 0] DATA_OUT_ROM;
 wire [BITS - 1 : 0] DATA_OUT_UART;
+wire [BITS - 1 : 0] DATA_OUT_GPIO;
 
 reg [BITS - 1 : 0] dout;
 assign DATA_OUT = dout;
@@ -44,6 +46,9 @@ begin
 
 	WRb_HIRAM = 1'b1;
 	WRb_UART  = 1'b1;
+	WRb_GPIO  = 1'b1;
+
+	dout = {BITS{1'b0}};
 
 	casez (ADDRESS)
 		16'h0???:
@@ -51,6 +56,10 @@ begin
 		16'h10??: begin
 			dout = DATA_OUT_UART;
 			WRb_UART = WRb;
+		end
+		16'h11??: begin
+			dout = DATA_OUT_GPIO;
+			WRb_GPIO = WRb;
 		end
 		16'b1???????????????: begin
 			dout = DATA_OUT_HIRAM;
@@ -62,7 +71,7 @@ begin
 
 end
 
-assign PINS[14:0] = 15'b000000000000000;
+assign PINS[14:8] = 7'b0000000;
 
 rom #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 1)) theRom
 (
@@ -70,6 +79,7 @@ rom #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 1)) theRom
  	ADDRESS[ADDRESS_BITS - 2 : 0],
 	DATA_OUT_ROM
 );
+
 
 memory #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 1)) theRam
 (
@@ -90,6 +100,18 @@ uart
 	DATA_OUT_UART,
 	WRb_UART,  /* write memory  */
 	PINS[15]   /* UART output   */
+);
+
+gpio
+#(.CLK_FREQ(CLOCK_FREQ), .BITS(16)) g0
+(
+	CLK,	
+	RSTb,
+	ADDRESS[7:0],
+	DATA_IN,
+	DATA_OUT_GPIO,
+	WRb_GPIO,  /* write memory */
+	PINS[7:0] /* output pins */ 
 );
 
 endmodule

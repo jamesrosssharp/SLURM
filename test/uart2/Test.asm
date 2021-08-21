@@ -6,19 +6,20 @@ GPIO_OUT_REG    equ     0x1100
 
 top:
 		mov r0, 'A'
-		mov r4, UART_TX_STATUS
 		
 run:
 		st [UART_TX_REG], r0
 		nop
 		add r0, 1
 
-		mov r1, 0x1fff
+		mov r1, 0x1f
 		//mov r2, 1
 		//st [GPIO_OUT_REG], r2
 loopy:
-		ld r3, [dat]
-		st [GPIO_OUT_REG], r3
+		ld r3, [UART_TX_STATUS]
+		or r3,r3
+		bz loopy
+		//st [GPIO_OUT_REG], r3
 	
 		sub r1, 1
 		bnz loopy

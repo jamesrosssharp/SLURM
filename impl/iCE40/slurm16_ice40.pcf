@@ -1,2 +1,3 @@
 set_io UART_TX		46
-set_io LED			2
+set_io GPIO1		6
+set_io GPIO2	    2
