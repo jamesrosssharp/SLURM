@@ -2,10 +2,10 @@
 
 UART_TX_REG 	equ 	0x1000
 UART_TX_STATUS  equ		0x1002
-
-
-run:
+PWM_LED			equ 	0x1201
+	
 		mov r4, 0xffff	// Stack pointer; top of mem
+run:
 
 		mov r0, the_string
 loop:
@@ -24,6 +24,8 @@ die:
 delay:
 		mov r1, 0x20
 delay_1:
+		st	[PWM_LED], r0
+
 		sub r1, 1
 		bnz delay_1
 	
@@ -34,7 +36,7 @@ delay_1:
 
 
 the_string:
-		dw "Hello world! Hello Anna, my lovely!\r\n"
+		dw "Hello world!\r\n"
 		dw 0
 
 		.end

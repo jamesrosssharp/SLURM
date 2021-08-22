@@ -3,8 +3,12 @@ module top
 	output UART_TX,
 
 	output GPIO1,
-	output GPIO2
+	output GPIO2,
 
+	output RED_LED,
+	output GREEN_LED,
+	output BLUE_LED,
+	
 );
 
 wire clk;
@@ -33,6 +37,11 @@ wire [15:0] PINS;
 assign UART_TX = PINS[15];
 assign GPIO1 = PINS[0];
 assign GPIO2 = PINS[1];
+assign RED_LED = PINS[8];
+assign GREEN_LED = PINS[9];
+assign BLUE_LED = PINS[10];
+
+
 
 slurm16 #(
 	.CLOCK_FREQ(CLOCKFREQ)

@@ -4,7 +4,7 @@ DEVICE 	= up5k
 
 SRCDIR=../../src
 
-SOURCE = $(SRCDIR)/pipeline16.v $(SRCDIR)/slurm16.v $(SRCDIR)/alu.v $(SRCDIR)/register_file.v $(SRCDIR)/register.v $(SRCDIR)/memory_controller.v memory.v rom.v $(SRCDIR)/uart.v $(SRCDIR)/uart_tx.v $(SRCDIR)/baudgen.v $(SRCDIR)/gpio.v $(PROJ).v 
+SOURCE = $(SRCDIR)/pipeline16.v $(SRCDIR)/slurm16.v $(SRCDIR)/alu.v $(SRCDIR)/register_file.v $(SRCDIR)/register.v $(SRCDIR)/memory_controller.v memory.v rom.v $(SRCDIR)/uart.v $(SRCDIR)/uart_tx.v $(SRCDIR)/baudgen.v $(SRCDIR)/gpio.v $(PROJ).v $(SRCDIR)/pwm_led.v 
 
 ICEPACK = icepack
 ICETIME = icetime
