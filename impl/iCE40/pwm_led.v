@@ -14,6 +14,12 @@ reg pwm_g;
 reg pwm_b;
 reg pwm_r;
 
+reg pwm_g_next;
+reg pwm_b_next;
+reg pwm_r_next;
+
+
+
 reg [BITS - 1:0] red_reg;
 reg [BITS - 1:0] red_reg_next;
 
@@ -42,14 +48,23 @@ defparam RGBA_DRIVER.RGB2_CURRENT = "0b000111";
 assign DATA_OUT = {BITS{1'b0}};
 
 reg [BITS - 1:0] pwm_ctr = {BITS{1'b0}};
+reg [BITS - 1:0] pwm_ctr_next;
 
 
 always@(posedge CLK)
 begin
- pwm_r = (pwm_ctr < red_reg)   ? 1'b1 : 1'b0;
- pwm_g = (pwm_ctr < green_reg) ? 1'b1 : 1'b0;
- pwm_b = (pwm_ctr < blue_reg)  ? 1'b1 : 1'b0;
- pwm_ctr <= pwm_ctr + 1;
+	pwm_r <= pwm_r_next;
+	pwm_g <= pwm_g_next;
+	pwm_b <= pwm_b_next;
+	pwm_ctr = pwm_ctr_next;
+end
+
+always@(*)
+begin
+ pwm_r_next = (pwm_ctr < red_reg)   ? 1'b1 : 1'b0;
+ pwm_g_next = (pwm_ctr < green_reg) ? 1'b1 : 1'b0;
+ pwm_b_next = (pwm_ctr < blue_reg)  ? 1'b1 : 1'b0;
+ pwm_ctr_next = pwm_ctr + 1;
 end
 
 always @(posedge CLK)
