@@ -15,13 +15,16 @@ wire [15:0] data_out2;
 
 assign DATA_OUT = ((ADDRESS[14] == 1'b0) ? data_out1 : data_out2);
 
+wire WEN1 = (ADDRESS[14] == 1'b0) ? ((WRb == 1'b0) ? 1'b1 : 1'b0) : 1'b0;
+wire WEN2 = (ADDRESS[14] == 1'b1) ? ((WRb == 1'b0) ? 1'b1 : 1'b0) : 1'b0;
+
 SB_SPRAM256KA spram0
 (
 .ADDRESS(ADDRESS[13:0]),
 .DATAIN(DATA_IN),
-.MASKWREN({!WRb, !WRb, !WRb, !WRb}),
-.WREN(!WRb),
-.CHIPSELECT(!ADDRESS[14]),
+.MASKWREN(4'b1111),
+.WREN(WEN1),
+.CHIPSELECT(1'b1),
 .CLOCK(CLK),
 .STANDBY(1'b0),
 .SLEEP(1'b0),
@@ -33,9 +36,9 @@ SB_SPRAM256KA spram1
 (
 .ADDRESS(ADDRESS[13:0]),
 .DATAIN(DATA_IN),
-.MASKWREN({!WRb, !WRb, !WRb, !WRb}),
-.WREN(!WRb),
-.CHIPSELECT(ADDRESS[14]),
+.MASKWREN(4'b1111),
+.WREN(WEN2),
+.CHIPSELECT(1'b1),
 .CLOCK(CLK),
 .STANDBY(1'b0),
 .SLEEP(1'b0),

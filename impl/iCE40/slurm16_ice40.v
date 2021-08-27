@@ -13,14 +13,14 @@ module top
 
 wire clk;
 
-localparam CLOCKFREQ = 12000000;
+localparam CLOCKFREQ = 6000000;
 
 SB_HFOSC inthosc (
   .CLKHFPU(1'b1),
   .CLKHFEN(1'b1),
   .CLKHF(clk)
 );
-defparam inthosc.CLKHF_DIV = "0b10";
+defparam inthosc.CLKHF_DIV = "0b11";
 
 
 reg [20:0] COUNT = 0;

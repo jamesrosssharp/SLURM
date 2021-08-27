@@ -4,14 +4,22 @@ UART_TX_REG 	equ 	0x1000
 UART_TX_STATUS  equ		0x1002
 PWM_LED			equ 	0x1201
 
-HIRAM			equ 	0x8000
+HIRAM			equ 	0xC100
 
 
 		mov r3, HIRAM
-		mov r1, 'A'
-		st [r3+], r1
-		mov r1, 0
-		st [r3+], r1
+		mov r1, the_string
+		
+the_loop:
+		ld r0, [r1+]
+		or r0, r0
+		bz end_loop
+		st [r3+], r0
+		ba the_loop
+end_loop:
+		mov r0, 0
+		st [r3+], r0
+
 
 	
 		mov r4, 0xffff	// Stack pointer; top of mem
