@@ -23,18 +23,33 @@ reg [BITS - 1:0] green_reg_next;
 reg [BITS - 1:0] blue_reg;
 reg [BITS - 1:0] blue_reg_next;
 
+SB_RGBA_DRV RGBA_DRIVER (
+  .CURREN(1'b1),
+  .RGBLEDEN(1'b1),
+  .RGB0PWM(pwm_b),
+  .RGB1PWM(pwm_g),
+  .RGB2PWM(pwm_r),
+  .RGB0(PINS[2]),
+  .RGB1(PINS[1]),
+  .RGB2(PINS[0])
+);
+
+defparam RGBA_DRIVER.CURRENT_MODE = "0b1";
+defparam RGBA_DRIVER.RGB0_CURRENT = "0b000111";
+defparam RGBA_DRIVER.RGB1_CURRENT = "0b000111";
+defparam RGBA_DRIVER.RGB2_CURRENT = "0b000111";
+
 assign DATA_OUT = {BITS{1'b0}};
 
 reg [BITS - 1:0] pwm_ctr = {BITS{1'b0}};
 
-assign pwm_r = (pwm_ctr < red_reg)   ? 1'b1 : 1'b0;
-assign pwm_g = (pwm_ctr < green_reg) ? 1'b1 : 1'b0;
-assign pwm_b = (pwm_ctr < blue_reg)  ? 1'b1 : 1'b0;
-
 
 always@(posedge CLK)
 begin
-  pwm_ctr <= pwm_ctr + 1;
+ pwm_r = (pwm_ctr < red_reg)   ? 1'b1 : 1'b0;
+ pwm_g = (pwm_ctr < green_reg) ? 1'b1 : 1'b0;
+ pwm_b = (pwm_ctr < blue_reg)  ? 1'b1 : 1'b0;
+ pwm_ctr <= pwm_ctr + 1;
 end
 
 always @(posedge CLK)

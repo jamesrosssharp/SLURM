@@ -82,6 +82,9 @@ begin
 			dout_next = DATA_OUT_PWM;
 			WRb_PWM = WRb;
 		end
+		16'b1000000000000000: begin
+			WRb_HIRAM = 1'b0;
+		end
 		default: 
 			dout_next = {BITS{1'b0}};
 	endcase
