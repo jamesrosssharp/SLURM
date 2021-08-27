@@ -4,7 +4,7 @@ UART_TX_REG 	equ 	0x1000
 UART_TX_STATUS  equ		0x1002
 PWM_LED			equ 	0x1201
 
-HIRAM			equ 	0xc030
+HIRAM			equ 	0x8030
 
 
 		mov r3, HIRAM
@@ -13,9 +13,9 @@ HIRAM			equ 	0xc030
 the_loop:
 		ld r0, [r1+]
 		or r0, r0
-		bz end_loop
+		bz.r end_loop
 		st [r3+], r0
-		ba the_loop
+		ba.r the_loop
 end_loop:
 		mov r0, 0
 		st [r3+], r0
@@ -29,14 +29,14 @@ run:
 loop:
 		ld r1, [r0+]
 		or r1, r1
-		bz die 
+		bz.r die 
 		st [UART_TX_REG], r1
 test_loop:
 		ld r2, [UART_TX_STATUS]
 		test r2, 1
-		bz test_loop
+		bz.r test_loop
 
-		ba loop
+		ba.r loop
 die:
 		mov r0, 0xffff
 delay:
@@ -50,7 +50,7 @@ delay_1:
 		sub r0, 1
 		bnz delay
 		
-		ba run
+		ba.r run
 
 
 the_string:
