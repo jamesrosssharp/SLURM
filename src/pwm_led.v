@@ -56,7 +56,7 @@ begin
 	green_reg_next = green_reg;
 	blue_reg_next  = blue_reg;
 
-	casez (ADDRESS)
+	case (ADDRESS)
 		8'h00:	/* red value register */
 			if (WRb == 1'b0) begin
 				red_reg_next = DATA_IN;

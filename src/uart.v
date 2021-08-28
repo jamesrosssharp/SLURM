@@ -57,7 +57,7 @@ begin
 	go_reg_next = 1'b0;
 	tx_reg_next = tx_reg;
 
-	casez (ADDRESS)
+	case (ADDRESS)
 		8'h00:	/* TX register */
 			if (WRb == 1'b0) begin
 				tx_reg_next = DATA_IN[7:0];

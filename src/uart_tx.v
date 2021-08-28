@@ -9,7 +9,8 @@ module uart_tx
 	output TX
 );
 
-reg tx_out = 1;
+reg tx_out;
+reg tx_out_next;
 
 reg done_out;
 reg done_out_next;
@@ -41,13 +42,14 @@ begin
 		txWord <= 8'h00;
 		bitCount <= 3'b000;
 		done_out <= 1'b0;	
-
+		tx_out <= 1'b1;
 	end else begin
 
 		state <= state_next;
 		txWord <= txWord_next;
 		bitCount <= bitCount_next;
 		done_out <= done_out_next;
+		tx_out <= tx_out_next;
 	end
 end
 
@@ -55,7 +57,7 @@ always @(*)
 begin
 
 	done_out_next 	= done_out;
-	tx_out 			= 1;
+	tx_out_next 			= 1;
 	state_next 		= state;
 	txWord_next 	= txWord;
 	bitCount_next 	= bitCount; 
@@ -76,13 +78,13 @@ begin
 			end
 		startBit:
 			begin
-				tx_out 				 = 0;
+				tx_out_next 				 = 0;
 				if (tick) state_next = shiftBits;
 				bitCount_next = 0;
 			end
 		shiftBits:
 			begin
-				tx_out = txWord[0];
+				tx_out_next = txWord[0];
 				if (tick) begin
 					txWord_next[6:0] = txWord[7:1];
 					txWord_next[7] 	 = 0;
@@ -92,7 +94,7 @@ begin
 			end
 		stopBit:
 			begin
-				tx_out = 0;
+				tx_out_next = 0;
 				if (tick)
 					state_next = done;
 			end

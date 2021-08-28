@@ -46,9 +46,11 @@ assign aluA_out = out[ALU_A_SEL];
 assign aluB_out = (ALU_B_from_inP_b == 1'b0) ? inP : out[ALU_B_SEL];
 assign m_out = (M_ENb == 1'b0) ? out[M_SEL] : {BITS{1'b0}};
 
-assign m_addr_out = (MADDR_ALU_SELb == 1'b0)? inALU : ((MADDR_POUT_SELb == 1'b0) ? inP : out[MADDR_SEL]);
+//assign m_addr_out = (MADDR_ALU_SELb == 1'b0)? inALU : ((MADDR_POUT_SELb == 1'b0) ? inP : out[MADDR_SEL]);
+reg [BITS - 1 : 0] m_addr_out_r;
+assign m_addr_out = m_addr_out_r;
 
-/*always @(*)
+always @(*)
 begin
 	if (MADDR_ALU_SELb == 1'b0)
 		m_addr_out_r = inALU;
@@ -57,7 +59,7 @@ begin
 	else
 		m_addr_out_r = out[MADDR_SEL];
 end
-*/
+
 
 genvar j;
 generate

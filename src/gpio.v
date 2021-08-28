@@ -30,7 +30,7 @@ always @(*)
 begin
 	gpio_reg_next = gpio_reg;
 
-	casez (ADDRESS)
+	case (ADDRESS)
 		8'h00:	/* Output register */
 			if (WRb == 1'b0) begin
 				gpio_reg_next = DATA_IN[7:0];

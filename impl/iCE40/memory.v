@@ -1,7 +1,7 @@
 /* memory.v : Memory */
 
 module memory
-#(parameter BITS = 16, ADDRESS_BITS = 16)
+#(parameter BITS = 16, ADDRESS_BITS = 15)
 (
 	input CLK,
 	input [ADDRESS_BITS - 1 : 0]  ADDRESS,
