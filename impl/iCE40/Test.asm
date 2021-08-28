@@ -5,7 +5,7 @@ UART_TX_STATUS  equ		0x1001
 PWM_LED			equ 	0x1200
 
 HIRAM			equ 	0x8100
-
+UPPER_HIRAM		equ		0xc000
 
 		mov r3, HIRAM
 		mov r1, the_string
@@ -20,8 +20,25 @@ end_loop:
 		mov r0, 0
 		st [r3+], r0
 
-	
-		mov r4, PWM_LED
+		mov r3, UPPER_HIRAM
+		mov r0, 0xffff
+		mov r1, 0
+		st  [r3+], r0
+		st  [r3+], r1
+		st  [r3+], r1
+
+		st  [r3+], r1
+		st  [r3+], r0
+		st  [r3+], r1
+
+		st  [r3+], r1
+		st  [r3+], r1
+		st  [r3+], r0
+
+		st  [r3+], r0
+		st  [r3+], r0
+		st  [r3+], r0
+
 run:
 
 		mov r0, HIRAM
@@ -37,25 +54,31 @@ test_loop:
 
 		ba.r loop
 die:
+		mov r3, 0x4
+		
+		mov r2, UPPER_HIRAM
+outer:
+		ld r0, [r2+]
+		st [PWM_LED], r0
+		ld r0, [r2+]
+		st [PWM_LED+1], r0
+		ld r0, [r2+]
+		st [PWM_LED+2], r0
 
-		mov r0, 0xffff
+		mov r0, 0x20
 delay:
-		mov r1, 0x20
+		mov r1, 0xffff
 delay_1:
-		st	[r4], r0
 
 		sub r1, 1
 		bnz delay_1
 	
 		sub r0, 1
 		bnz delay
+
+		sub r3, 1
+		bnz outer
 		
-		incm r4
-		cmp  r4, 0x1203
-		bnz.r run
-
-		mov r4, PWM_LED
-
 		ba.r run
 
 		dw 0

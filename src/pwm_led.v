@@ -10,9 +10,9 @@ module pwm_led
 	output [2:0] PINS /* output pins */ 
 );
 
-reg pwm_g;
-reg pwm_b;
-reg pwm_r;
+wire pwm_g;
+wire pwm_b;
+wire pwm_r;
 
 reg [BITS - 1:0] red_reg;
 reg [BITS - 1:0] red_reg_next;
@@ -30,6 +30,11 @@ reg [BITS - 1:0] pwm_ctr = {BITS{1'b0}};
 assign pwm_r = (pwm_ctr < red_reg)   ? 1'b1 : 1'b0;
 assign pwm_g = (pwm_ctr < green_reg) ? 1'b1 : 1'b0;
 assign pwm_b = (pwm_ctr < blue_reg)  ? 1'b1 : 1'b0;
+
+assign PINS[0] = pwm_r;
+assign PINS[1] = pwm_g;
+assign PINS[2] = pwm_b;
+
 
 
 always@(posedge CLK)

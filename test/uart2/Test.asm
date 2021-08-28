@@ -2,68 +2,69 @@
 
 UART_TX_REG 	equ 	0x1000
 UART_TX_STATUS  equ		0x1001
-GPIO_OUT_REG    equ     0x1100
+PWM_LED			equ 	0x1200
 
-top:
-		mov r0, 'A'
+HIRAM			equ 	0x8100
+UPPER_HIRAM		equ		0xc100
+
+		mov r3, HIRAM
+		mov r1, the_string
 		
+the_loop:
+		ld r0, [r1+]
+		or r0, r0
+		bz.r end_loop
+		st [r3+], r0
+		ba.r the_loop
+end_loop:
+		mov r0, 0
+		st [r3+], r0
+
 run:
-		st [UART_TX_REG], r0
-		nop
-		add r0, 1
 
-		mov r1, 0x1f
-		//mov r2, 1
-		//st [GPIO_OUT_REG], r2
-loopy:
-		ld r3, [UART_TX_STATUS]
-		or r3,r3
-		bz loopy
-		//st [GPIO_OUT_REG], r3
-	
-		sub r1, 1
-		bnz loopy
-
-		//mov r2, 0
-		//st [GPIO_OUT_REG], r2
-
-done:
-		ba run
-
-dat:
-		dw 1
-
-/*
-		mov r4, 0xffff	// Stack pointer; top of mem
-
-		mov r0, the_string
+		mov r0, HIRAM
 loop:
 		ld r1, [r0+]
 		or r1, r1
-		bz die 
+		bz.r die 
 		st [UART_TX_REG], r1
 test_loop:
 		ld r2, [UART_TX_STATUS]
 		test r2, 1
-		bz test_loop
+		bz.r test_loop
 
-		ba loop
+		ba.r loop
 die:
-		mov r0, 0xffff
+		mov r3, 0x4
+		
+		mov r2, UPPER_HIRAM
+outer:
+		ld r0, [r2]
+		st [PWM_LED], r0
+		ld r0, [r2]
+		st [PWM_LED+1], r0
+		ld r0, [r2]
+		st [PWM_LED+2], r0
+
+		mov r0, 0x20
 delay:
-		mov r1, 0x20
+		mov r1, 0xffff
 delay_1:
+
 		sub r1, 1
 		bnz delay_1
 	
 		sub r0, 1
 		bnz delay
-		
-		ba run
-*/
 
+		sub r3, 1
+		bnz outer
+		
+		ba.r run
+
+		dw 0
 the_string:
-		dw "Hello world! Hello Anna, my lovely!\r\n"
+		dw "Hello world!\r\n"
 		dw 0
 
 		.end
