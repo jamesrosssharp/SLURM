@@ -4,7 +4,7 @@ UART_TX_REG 	equ 	0x1000
 UART_TX_STATUS  equ		0x1001
 PWM_LED			equ 	0x1200
 
-HIRAM			equ 	0x8100
+HIRAM			equ 	0x8000
 UPPER_HIRAM		equ		0xc000
 
 		mov r3, HIRAM

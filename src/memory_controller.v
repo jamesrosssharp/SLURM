@@ -52,52 +52,69 @@ reg [BITS - 1 : 0] dout;
 
 reg [BITS - 1 : 0] DATA_OUT_REG;
 
+reg [ADDRESS_BITS - 1 : 0] addr_reg;
+
 always @(posedge CLK)
 begin
 	dout <= dout_next;
+	addr_reg <= ADDRESS;
 end
 
 // ROM and HIRAM are synchronous so we mux them with the registered outputs from
 // the other peripherals
-assign DATA_OUT = DATA_OUT_REG; //(ADDRESS <= 16'h0fff) ? DATA_OUT_ROM : ((ADDRESS >= 16'h8000) ? DATA_OUT_HIRAM : dout);
+assign DATA_OUT = DATA_OUT_REG; 
 
 always @(*)
 begin
-
 	WRb_HIRAM = 1'b1;
 	WRb_UART  = 1'b1;
 	WRb_GPIO  = 1'b1;
 	WRb_PWM   = 1'b1;
 
-	DATA_OUT_REG = {BITS{1'b0}};
-
-	dout_next = {BITS{1'b0}};
+	dout_next = dout;
 
 	casex (ADDRESS)
-		16'h0xxx: begin
-			DATA_OUT_REG = DATA_OUT_ROM;
-		end
 		16'h10xx: begin
 			dout_next = DATA_OUT_UART;
 			WRb_UART = WRb;
-			DATA_OUT_REG = dout;
 		end
 		16'h11xx: begin
 			dout_next = DATA_OUT_GPIO;
 			WRb_GPIO = WRb;
-			DATA_OUT_REG = dout;
 		end
 		16'h12xx: begin
 			dout_next = DATA_OUT_PWM;
 			WRb_PWM = WRb;
-			DATA_OUT_REG = dout;
 		end
 		16'b1xxxxxxxxxxxxxxx: begin
 			WRb_HIRAM = WRb;
+		end
+		default: ;
+	endcase
+end
+
+always @(*)
+begin
+
+	DATA_OUT_REG = {BITS{1'b0}};
+
+	casex (addr_reg)
+		16'h0xxx: begin
+			DATA_OUT_REG = DATA_OUT_ROM;
+		end
+		16'h10xx: begin
+			DATA_OUT_REG = dout;
+		end
+		16'h11xx: begin
+			DATA_OUT_REG = dout;
+		end
+		16'h12xx: begin
+			DATA_OUT_REG = dout;
+		end
+		16'b1xxxxxxxxxxxxxxx: begin
 			DATA_OUT_REG = DATA_OUT_HIRAM;
 		end
-		default: 
-			dout_next = {BITS{1'b0}};
+		default: ;
 	endcase
 
 end
