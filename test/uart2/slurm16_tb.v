@@ -11,7 +11,7 @@ always #50 CLK <= !CLK; // ~ 10MHz
 reg RSTb = 1'b0;
 
 initial begin 
-	#50 RSTb = 1'b1;
+	#150 RSTb = 1'b1;
 end
 
 wire [15:0] PINS;

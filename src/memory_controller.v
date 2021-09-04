@@ -56,8 +56,13 @@ reg [ADDRESS_BITS - 1 : 0] addr_reg;
 
 always @(posedge CLK)
 begin
-	dout <= dout_next;
-	addr_reg <= ADDRESS;
+	if (RSTb == 1'b0) begin
+		dout <= {BITS{1'b0}};
+		addr_reg <= {ADDRESS_BITS{1'b0}};
+	end else begin
+		dout <= dout_next;
+		addr_reg <= ADDRESS;
+	end
 end
 
 // ROM and HIRAM are synchronous so we mux them with the registered outputs from

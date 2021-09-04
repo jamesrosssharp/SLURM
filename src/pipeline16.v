@@ -579,6 +579,7 @@ begin
 		end
 		16'h5xxx: /* memory reg, reg index */		
 			if (is_memory_load_or_store(pipeline_stage1_reg) == 1'b1) begin // store
+					pipeline_stage0_reg_next = NOP_INSTRUCTION;
 			end	
 			else begin // load
 
