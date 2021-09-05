@@ -135,20 +135,6 @@ void AST::addCharLiteralToCurrentStatementExpression(char* string)
     m_currentStatement.expression.addElement(e);
 }
 
-void AST::addRegisterToReglist(char* string)
-{
-	m_currentStatement.regList.push_back(convertReg(string));
-}
-
-void AST::addReglistOpcode(int linenum, char* opcode)
-{
-    m_currentStatement.lineNum = linenum;
-    m_currentStatement.opcode = convertOpCode(opcode);
-    m_currentStatement.type = StatementType::REGLIST_OPCODE;
-    m_statements.push_back(m_currentStatement);
-    m_currentStatement.reset();
-}
-
 void AST::addOneRegisterOpcode(int linenum, char* opcode, char* regDest)
 {
     m_currentStatement.lineNum = linenum;
@@ -394,17 +380,17 @@ OpCode AST::convertOpCode(char* opcode)
     {
         return OpCode::CZ;
     }
-    else if (s == "DECM")
+    else if (s == "DEC")
     {
-        return OpCode::DECM;
+        return OpCode::DEC;
     }
     else if (s == "IMM")
     {
         return OpCode::IMM;
     }
-    else if (s == "INCM")
+    else if (s == "INC")
     {
-        return OpCode::INCM;
+        return OpCode::INC;
     }
     else if (s == "IRET")
     {
@@ -591,6 +577,39 @@ Register AST::convertReg(char* reg)
     {
         return Register::r7;
     }
+    else if (s == "r8")
+    {
+        return Register::r8;
+    }
+    else if (s == "r9")
+    {
+        return Register::r9;
+    }
+    else if (s == "r10")
+    {
+        return Register::r10;
+    }
+    else if (s == "r11")
+    {
+        return Register::r11;
+    }
+    else if (s == "r12")
+    {
+        return Register::r12;
+    }
+    else if (s == "r13")
+    {
+        return Register::r13;
+    }
+    else if (s == "r14")
+    {
+        return Register::r14;
+    }
+    else if (s == "r15")
+    {
+        return Register::r15;
+    }
+
 
     return Register::None;
 }
@@ -890,7 +909,6 @@ void AST::firstPassAssemble()
 			case StatementType::INDIRECT_ADDRESSING_OPCODE:
     		case StatementType::INDIRECT_ADDRESSING_OPCODE_WITH_POSTINCREMENT:
     		case StatementType::INDIRECT_ADDRESSING_OPCODE_WITH_POSTDECREMENT:
-            case StatementType::REGLIST_OPCODE:
 			     assemblyStarted = true;
                 // we can directly assemble the instruction.
 
@@ -1064,7 +1082,6 @@ void AST::assemble()
             case StatementType::INDIRECT_ADDRESSING_OPCODE:
             case StatementType::TWO_REGISTER_OPCODE:
             case StatementType::STANDALONE_OPCODE:
-			case StatementType::REGLIST_OPCODE:
                 // These will already be assembled
                 break;
             case StatementType::PSEUDO_OP_WITH_EXPRESSION:

@@ -21,7 +21,10 @@ public:
                                                        Register regDest,
                                                        Register regSrc, std::vector<uint16_t>& assembledWords,
                                                        uint32_t lineNum);
-    static void makeThreeRegisterArithmeticInstruction(OpCode opcode,
+    static void makeExtendedArithmeticInstruction(OpCode opcode,
+                                                       Register regSrcDest, std::vector<uint16_t>& assembledWords,
+                                                       uint32_t lineNum);
+	static void makeThreeRegisterArithmeticInstruction(OpCode opcode,
                                                        Register regDest,
                                                        Register regSrc, Register regSrc2,
 													   std::vector<uint16_t>& assembledWords,
@@ -40,7 +43,7 @@ public:
                                             Register regDest, Register regInd);
     static void makeLoadStore(OpCode opcode, uint32_t lineNum, std::vector<uint16_t>& words, Register regInd, Register regDest, bool postIncrement, bool postDecrement);
 
-	static void makeReglistInstruction(OpCode opcode, std::vector<uint16_t>& words,  uint32_t lineNum, const std::vector<Register>& regList);
+	static void makeIncDecInstruction(OpCode opcode, std::vector<uint16_t>& words,  uint32_t lineNum, Register reg);
    
 };
 

@@ -208,9 +208,9 @@ input [15:0] ins;
 	is_branch_reg_ind = ins[11];
 endfunction
 
-function [2:0] branch_reg_ind;
+function [3:0] branch_reg_ind;
 input [15:0] ins;
-		branch_reg_ind = ins[6:4];
+		branch_reg_ind = ins[7:4];
 endfunction
 
 function ret_or_iret;
@@ -255,7 +255,7 @@ endfunction
 
 function [3:0] class12_idx_reg_p0;
 input [15:0] p0;
-	class7_idx_reg_p0 = p0[12:9];
+	class12_idx_reg_p0 = p0[12:9];
 endfunction
 
 /* is a relative branch taken based */
@@ -338,18 +338,18 @@ always @(*)
 begin
 	aluOp_reg 		= 5'b0000;
 	pout_reg  		= 4'b0000;
-	LD_reg_ALUb_reg = 8'hff;
-	LD_reg_Mb_reg   = 8'hff;
-	LD_reg_Pb_reg   = 8'hff;
-	ALU_A_SEL_reg   = 3'b000;
-	ALU_B_SEL_reg   = 3'b000;
+	LD_reg_ALUb_reg = 16'hffff;
+	LD_reg_Mb_reg   = 16'hffff;
+	LD_reg_Pb_reg   = 16'hffff;
+	ALU_A_SEL_reg   = 4'b0000;
+	ALU_B_SEL_reg   = 4'b0000;
 	M_ENb_reg 			= 1'b1;
-	M_SEL_reg 			= 3'b000;	
-	MADDR_SEL_reg 		= 3'b000;
+	M_SEL_reg 			= 4'b0000;	
+	MADDR_SEL_reg 		= 4'b0000;
 	MADDR_ALU_SELb_reg	= 1'b1;
 	MADDR_POUT_SELb_reg	= 1'b1;
-	INCb_reg 			= 8'hff;
-	DECb_reg 			= 8'hff;
+	INCb_reg 			= 16'hffff;
+	DECb_reg 			= 16'hffff;
 	ALU_B_from_inP_b_reg = 1'b1;
 	mem_OEb_reg = 1'b1;
 	mem_WRb_reg = 1'b1;
@@ -361,14 +361,14 @@ begin
 	if (pipeline_stall_reg == 1'b1) begin
 		pipeline_stage0_reg_next = NOP_INSTRUCTION;
 	end else if (delay_slot_reg == 1'b1) begin // delay slot synchronizes branches, we need to cover two cycles with nops, then resume execution			
-		MADDR_SEL_reg 	= 3'd7; // PC register is r7	
+		MADDR_SEL_reg 	= 4'd15; // PC register is r15	
 		pipeline_stage0_reg_next = NOP_INSTRUCTION;
 		mem_OEb_reg = 1'b0;
-		INCb_reg[7] = 1'b0;
+		INCb_reg[15] = 1'b0;
 	end else begin			
-		MADDR_SEL_reg 				= 3'd7; // PC register is r7	
+		MADDR_SEL_reg 				= 4'd15; // PC register is r15
 		pipeline_stage0_reg_next 	= memoryIn;
-		INCb_reg[7] 				= 1'b0; // increment r7	
+		INCb_reg[15] 				= 1'b0; // increment r15	
 		mem_OEb_reg 				= 1'b0;
 	end
 	
@@ -514,8 +514,10 @@ begin
 		begin
 			aluOp_reg[3:0] 	  	= alu_op3(pipeline_stage0_reg);
 			aluOp_reg[4]		= 1'b0;
-			ALU_A_SEL_reg 		= alu_src2_reg3(pipeline_stage0_reg);
-			ALU_B_SEL_reg 		= alu_src_reg3(pipeline_stage0_reg);
+			ALU_A_SEL_reg[3]    = 1'b0;
+			ALU_B_SEL_reg[3]    = 1'b0;
+			ALU_A_SEL_reg[2:0] 		= alu_src2_reg3(pipeline_stage0_reg);
+			ALU_B_SEL_reg[2:0] 		= alu_src_reg3(pipeline_stage0_reg);
 
 			LD_reg_ALUb_reg 	= {16{1'b1}} ^ (1 << alu_dest_reg3(pipeline_stage0_reg)); 
 		end
@@ -609,7 +611,7 @@ begin
 				mem_WRb_reg	   			= 1'b1;
 				LD_reg_Mb_reg 			= {16{1'b1}} ^ (1 << memory_load_destination(pipeline_stage1_reg));
 			end
-		16'h7xxx;
+		16'h7xxx: ;
 		16'b101xxxxxxxxxxxxx: begin /* relative branch */
 			if ((rel_branch_taken(pipeline_stage1_reg, Z, S, C) == 1'b1) || (is_rel_branch_link(pipeline_stage1_reg) == 1'b1)) begin
 				    LD_reg_ALUb_reg 		 = 16'h7fff; 	 		    // load PC from alu 

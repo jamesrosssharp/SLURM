@@ -13,7 +13,6 @@ enum class StatementType
     None,
 
 	/* register only operations */
-	REGLIST_OPCODE,
 	ONE_REGISTER_OPCODE,
     TWO_REGISTER_OPCODE,
 	THREE_REGISTER_OPCODE,
@@ -70,5 +69,4 @@ struct Statement
 
     void reset();
 
-	std::vector<Register> regList;
 };

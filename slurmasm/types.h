@@ -13,6 +13,14 @@ enum class Register : uint32_t
     r5,
     r6,
     r7,
+	r8,
+	r9,
+	r10,
+	r11,
+	r12,
+	r13,
+	r14,
+	r15,
     None = 0xff
 };
 
@@ -35,9 +43,9 @@ enum class OpCode : uint32_t
 	CC,
 	CS,
 	CZ,
-	DECM,
+	DEC,
 	IMM,
-	INCM,
+	INC,
 	IRET,
 	LD,
 	LSL,

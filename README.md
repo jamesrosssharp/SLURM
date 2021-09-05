@@ -138,9 +138,9 @@ Class 3: immediate to register ALU operation
 Class 4: branch operation
 -------------------------------------------
 
-|15 | 14 | 13 | 12 | 11 | 10 - 8 | 7   | 6- 4 |   3 - 0     |
-|---|----|----|----|----|--------|-----|------|-------------|
-|0  | 1  | 0  | 0  |  R | BRNCH  | x   | REG  | IMM LO      |
+|15 | 14 | 13 | 12 | 11 | 10 - 8 | 7   - 4 |   3 - 0     |
+|---|----|----|----|----|--------|---------|-------------|
+|0  | 1  | 0  | 0  |  R | BRNCH  |   REG   | IMM LO      |
 
     R: if 0, branch to immediate address
        if 1, branch to address pointed to by REG + immediate

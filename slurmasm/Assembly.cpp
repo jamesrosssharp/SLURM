@@ -8,7 +8,6 @@ void Assembly::makeArithmeticInstructionWithImmediate(OpCode opcode, Register re
 
 	uint16_t op 	= 0;
 	uint16_t aluOp 	= 0;
-	uint16_t SDb 	= 0;
 
     if (((uint32_t)value & 0xffff) != (uint32_t)value)
     {
@@ -44,12 +43,10 @@ void Assembly::makeArithmeticInstructionWithImmediate(OpCode opcode, Register re
 			aluOp = 7;
 			break;
 		case OpCode::CMP:
-			aluOp = 3;
-			SDb = 1;
+			aluOp = 12;
 			break;		
 		case OpCode::TEST:
-			aluOp = 5;
-			SDb = 1;
+			aluOp = 13;
 			break;
 		default:
 		{
@@ -62,7 +59,7 @@ void Assembly::makeArithmeticInstructionWithImmediate(OpCode opcode, Register re
 
 	if (value >= 0 && value < 16)
     {
-		op = SLRM_ALU_REG_IMM_INSTRUCTION |  (SDb << 7) | ((aluOp & 0xf) << 8) | ((int)regDest << 4) | ((uint16_t)value);
+		op = SLRM_ALU_REG_IMM_INSTRUCTION | ((aluOp & 0xf) << 8) | ((int)regDest << 4) | ((uint16_t)value);
 
         if (assembledWords.size() == 2)
     	{
@@ -82,13 +79,13 @@ void Assembly::makeArithmeticInstructionWithImmediate(OpCode opcode, Register re
         }
 		assembledWords[0] = SLRM_IMM_INSTRUCTION | ((uint32_t)value >> 4);
 	
-		op = SLRM_ALU_REG_IMM_INSTRUCTION |  (SDb << 7) | ((aluOp & 0xf) << 8) | ((int)regDest << 4) | ((uint16_t)value & 0xf);
+		op = SLRM_ALU_REG_IMM_INSTRUCTION | ((aluOp & 0xf) << 8) | ((int)regDest << 4) | ((uint16_t)value & 0xf);
         assembledWords[1] = op;
 	}
 
 }
 
-static void get_aluOp(OpCode opcode, uint32_t lineNum, uint16_t& aluOp, uint16_t SDb)
+static void get_aluOp(OpCode opcode, uint32_t lineNum, uint16_t& aluOp)
 {
 	switch (opcode)
 	{
@@ -139,38 +136,30 @@ static void get_aluOp(OpCode opcode, uint32_t lineNum, uint16_t& aluOp, uint16_t
 			break;
 		case OpCode::CC:
 			aluOp = 23;
-			SDb = 1;
 			break;
 		case OpCode::SC:
 			aluOp = 24;
-			SDb = 1;		
 			break;
 		case OpCode::CZ:
 			aluOp = 25;
-			SDb = 1;
 			break;
 		case OpCode::SZ:
 			aluOp = 25;
-			SDb = 1;
 			break;
 		case OpCode::CS:
 			aluOp = 26;
-			SDb = 1;
 			break;
 		case OpCode::SS:
 			aluOp = 27;
-			SDb = 1;
 			break;
 		case OpCode::BSWAP:
 			aluOp = 28;
 			break;
 		case OpCode::CMP:
-			aluOp = 3;
-			SDb = 1;
+			aluOp = 12;
 			break;		
 		case OpCode::TEST:
-			aluOp = 5;
-			SDb = 1;
+			aluOp = 13;
 			break;
 		default:
 		{
@@ -189,11 +178,26 @@ void Assembly::makeThreeRegisterArithmeticInstruction(OpCode opcode,
 
 	uint16_t op 	= 0;
 	uint16_t aluOp 	= 0;
-	uint16_t SDb 	= 0; // unused
 	
-	get_aluOp(opcode, lineNum, aluOp, SDb);
+	get_aluOp(opcode, lineNum, aluOp);
 
 	op = SLRM_ALU_REG_REG_REG_INSTRUCTION | ((aluOp & 0xf) << 9) | ((int)regDest << 6) | ((int)regSrc2 << 3) | ((int)regSrc);
+
+    assembledWords[0] = op;
+
+}
+
+void Assembly::makeExtendedArithmeticInstruction(OpCode opcode,
+                                         Register regDest, std::vector<uint16_t>& assembledWords,
+                                         uint32_t lineNum)
+{
+
+	uint16_t op 	= 0;
+	uint16_t aluOp 	= 0;
+
+	get_aluOp(opcode, lineNum, aluOp);
+
+	op = SLRM_ALU_SINGLE_REG_INSTRUCTION | ((aluOp & 0xf) << 4) | ((int)regDest);
 
     assembledWords[0] = op;
 
@@ -209,11 +213,10 @@ void Assembly::makeArithmeticInstruction(OpCode opcode,
 
 	uint16_t op 	= 0;
 	uint16_t aluOp 	= 0;
-	uint16_t SDb 	= 0;
 
-	get_aluOp(opcode, lineNum, aluOp, SDb);
+	get_aluOp(opcode, lineNum, aluOp);
 
-	op = SLRM_ALU_REG_REG_INSTRUCTION |  (SDb << 7) | ((aluOp & 0xf) << 8) | ((int)regDest << 4) | ((int)regSrc) | ((aluOp &0x10) >> 1);
+	op = SLRM_ALU_REG_REG_INSTRUCTION | ((aluOp & 0xf) << 8) | ((int)regDest << 4) | ((int)regSrc);
 
     assembledWords[0] = op;
 
@@ -453,17 +456,17 @@ void Assembly::makeLoadStoreWithIndexAndExpression(OpCode opcode, uint32_t lineN
 	}
 }
 
-void Assembly::makeReglistInstruction(OpCode opcode, std::vector<uint16_t>& assembledWords,  uint32_t lineNum, const std::vector<Register>& regList)
+void Assembly::makeIncDecInstruction(OpCode opcode, std::vector<uint16_t>& assembledWords,  uint32_t lineNum, Register reg)
 {
 	uint16_t op;
 
 	switch (opcode)
 	{
-		case OpCode::INCM:
-			op = SLRM_INCM_INSTRUCTION;
+		case OpCode::INC:
+			op = SLRM_INC_INSTRUCTION;
 			break;
-		case OpCode::DECM:
-			op = SLRM_DECM_INSTRUCTION;
+		case OpCode::DEC:
+			op = SLRM_DEC_INSTRUCTION;
 			break; 
 		default:
 		{
@@ -473,15 +476,6 @@ void Assembly::makeReglistInstruction(OpCode opcode, std::vector<uint16_t>& asse
 		}
 	}
 
-	uint16_t regs = 0xff;
-
-	// Build reg list
-	for (auto r : regList)
-	{
-		uint16_t reg = (uint16_t)r;
-		regs &= ~(1 << reg);
-	}
-
-	assembledWords[0] = op | (regs & 0x7f); 
+	assembledWords[0] = op | ((uint16_t)reg & 0x0f); 
 }
 

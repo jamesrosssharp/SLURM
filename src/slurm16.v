@@ -107,7 +107,7 @@ alu0
 );
 
 register_file
-#(.REG_BITS(3), .BITS(16))
+#(.REG_BITS(4), .BITS(16))
 reg0
 (
 	.CLK(CLK),

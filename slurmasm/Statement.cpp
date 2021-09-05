@@ -25,7 +25,6 @@ void Statement::reset()
     address = 0;
 	postDecrement = false;
 	postIncrement = false;
-	regList.clear();
 }
 
 void Statement::firstPassAssemble(uint32_t& curAddress, SymbolTable& syms)
@@ -42,7 +41,6 @@ void Statement::firstPassAssemble(uint32_t& curAddress, SymbolTable& syms)
 
     switch (type)
     {
-		case StatementType::REGLIST_OPCODE:
 		case StatementType::ONE_REGISTER_OPCODE:
 		case StatementType::THREE_REGISTER_OPCODE:
 		case StatementType::TWO_REGISTER_OPCODE:
@@ -235,8 +233,7 @@ void Statement::assemble(uint32_t &curAddress)
 				case OpCode::SC:
 				case OpCode::SS:
 				case OpCode::SZ:
-					Assembly::makeArithmeticInstruction(opcode,
-                                         Register::r0,
+					Assembly::makeExtendedArithmeticInstruction(opcode,
                                          Register::r0, words,
                                          lineNum);
 					break;
@@ -258,31 +255,6 @@ void Statement::assemble(uint32_t &curAddress)
 
             break;
         }
-		case StatementType::REGLIST_OPCODE:
-		{
-			words.resize(1);
-
-            switch (opcode)
-            {
-				case OpCode::INCM:
-				case OpCode::DECM:
-			 		Assembly::makeReglistInstruction(opcode,
-      									 words,
-                                         lineNum, regList);
-            		break; 
-                default:
-                {
-            		std::stringstream ss;
-                    ss << "Error: opcode does not support one register mode on line " << lineNum << std::endl;
-                    throw std::runtime_error(ss.str());
-
-                    break;
-                }
-			}
-			break;
-        }
-	
-
 		case StatementType::ONE_REGISTER_OPCODE:
 		{
 			words.resize(1);
@@ -292,20 +264,23 @@ void Statement::assemble(uint32_t &curAddress)
 				case OpCode::ASR:
 				case OpCode::LSR:
 				case OpCode::LSL:
+				case OpCode::ROLC:
+				case OpCode::RORC:
+				case OpCode::ROL:
+				case OpCode::ROR:
 
-			 		Assembly::makeArithmeticInstruction(opcode,
+
+			 		Assembly::makeExtendedArithmeticInstruction(opcode,
                                          regDest,
-                                         regDest, words,
+                                         words,
                                          lineNum);
             		break;
-				case OpCode::INCM:
-				case OpCode::DECM:
+				case OpCode::INC:
+				case OpCode::DEC:
 				{
-					std::vector<Register> regs;
-					regs.push_back(regDest);	
- 				 	Assembly::makeReglistInstruction(opcode,
+ 				 	Assembly::makeIncDecInstruction(opcode,
       									 words,
-                                         lineNum, regs);
+                                         lineNum, regDest);
             		break;
                 }
 				default:
@@ -325,17 +300,11 @@ void Statement::assemble(uint32_t &curAddress)
 
             switch (opcode)
             {
-				case OpCode::ASR:
 				case OpCode::ADC:
 				case OpCode::ADD:
 				case OpCode::AND:
-				case OpCode::LSL:
-				case OpCode::LSR:
 				case OpCode::MOV:
 				case OpCode::OR:
-				case OpCode::ROL:
-				case OpCode::ROLC:
-				case OpCode::RORC:
 				case OpCode::SBB:
 				case OpCode::SUB:
 				case OpCode::XOR:
