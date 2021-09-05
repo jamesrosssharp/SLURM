@@ -10,8 +10,9 @@ Most components in the design are parameterizable, e.g. configurable number of r
 SLURM16
 =======
 
-SLURM16 is the 16 bit core, with 8 16-bit registers. R7 = program counter (PC), R6 = link 
-register (LR), R5 = interrupt link register (ILR), R4 = stack pointer (SP), R0-R3 are general purpose. 
+SLURM16 is the 16 bit core, with 16 16-bit registers. R15 = program counter (PC), R14 = link 
+register (LR), R13 = interrupt link register (ILR), R12 = stack pointer (SP), R0-R11 are general purpose. Although unintended, the architecture bears a strong resemblance to
+Jan Gray's XR16 RISC machine. 
 
 Instruction Set
 ===============
@@ -38,22 +39,46 @@ Class 0 has 4 sub-classes, bits 9 - 8 of the opcode.
         RT : 0 = RET (return) (restore PC from link register and branch)
              1 = IRET (interrupt return) (restore PC from interrupt link register and branch)
 
-2. Increment multiple
+2. Increment
 
 
-    |15 | 14 | 13 | 12 | 11 | 10 | 9 | 8 | 7 | 6 - 0 |
-    |---|----|----|----|----|----|---|---|---|-------|
-    |0  | 0  | 0  | 0  | 0  | 0  | 1 | 0 | x | REGS  |
+    |15 | 14 | 13 | 12 | 11 | 10 | 9 | 8 | 7 - 4 | 3 - 0 |
+    |---|----|----|----|----|----|---|---|-------|-------|
+    |0  | 0  | 0  | 0  | 0  | 0  | 1 | 0 |   x   | REG   |
 
-        REGS: if any bits are zero, the register will be incremented
 
-3.  Decrement multiple
+3.  Decrement 
 
-    |15 | 14 | 13 | 12 | 11 | 10 | 9 | 8 | 7 | 6 - 0 |
-    |---|----|----|----|----|----|---|---|---|-------|
-    |0  | 0  | 0  | 0  | 0  | 0  | 1 | 1 | x | REGS  |
+    |15 | 14 | 13 | 12 | 11 | 10 | 9 | 8 | 7 - 4 | 3 - 0 |
+    |---|----|----|----|----|----|---|---|-------|-------|
+    |0  | 0  | 0  | 0  | 0  | 0  | 1 | 1 |   x   | REG   |
 
         REGS: if any bits are zero, the register will be decremented
+
+4. Single register ALU operation
+
+    |15 | 14 | 13 | 12 | 11 | 10 | 9 | 8 | 7 - 4 | 3 - 0 |
+    |---|----|----|----|----|----|---|---|-------|-------|
+    |0  | 0  | 0  | 0  | 0  | 1  | 0 | 0 | ALU OP| REG   |
+
+	ALU OP:
+		ALU Op is 5 bits, with MSB set to 1
+
+ 		16 - asr : arithmetic shift right REG
+        17 - lsr : logical shift right REG
+        18 - lsl : logical shift left REG
+        19 - rolc
+        20 - rorc
+        21 - rol
+        22 - ror
+        23 - cc : clear carry
+        24 - sc : set carry
+        25 - cz : clear zero
+        26 - sz : set zero
+        27 - cs : clear sign
+        28 - ss : set sign
+        29 - bswap : byte swap
+        30 - 31 : reserved
 
 Class 1:  Immediate load
 ------------------------
@@ -68,9 +93,9 @@ Class 1:  Immediate load
 Class 2: Register to register ALU operation
 -------------------------------------------
 
-|15 | 14 | 13 | 12 | 11 - 8 | 7   | 6 - 4 |      3    | 2 - 0 |
-|---|----|----|----|--------|-----|-------|-----------|-------|
-|0  | 0  | 1  | 0  | ALU OP | SDb | DEST  | ALU OP HI |  SRC  |
+|15 | 14 | 13 | 12 | 11 - 8 | 7  - 4 | 3  - 0 |
+|---|----|----|----|--------|--------|--------|
+|0  | 0  | 1  | 0  | ALU OP |  DEST  |   SRC  |
 
 
     ALU OP + ALU OP HI: 5 bits ALU operation
@@ -83,32 +108,16 @@ Class 2: Register to register ALU operation
         6 - or  : DEST <- DEST | SRC
         7 - xor : DEST <- DEST ^ SRC
         8-15 - reserved
-        16 - asr : arithmetic shift right SRC and store to DEST
-        17 - lsr : logical shift right SRC and store to DEST
-        18 - lsl : logical shift left SRC and store to DEST
-        19 - rolc
-        20 - rorc
-        21 - rol
-        22 - ror
-        23 - cc : clear carry
-        24 - sc : set carry
-        25 - cz : clear zero
-        26 - sz : set zero
-        27 - cs : clear sign
-        28 - ss : set sign
-        29 - bswap : byte swap
-        30 - 31 : reserved
- 
-    SDb:  if low, store result to DEST register, otherwise discard result (used for tst, cmp)
-    DEST: destination and operand (alu A input)
+    
+	DEST: destination and operand (alu A input)
     SRC:  source and second operand (alu B input)
 
 Class 3: immediate to register ALU operation
 -------------------------------------------
 
-|15 | 14 | 13 | 12 | 11 - 8 | 7   | 6 - 4 |   3  - 0    |
-|---|----|----|----|--------|-----|-------|-------------|
-|0  | 0  | 1  | 1  | ALU OP | SDb | DEST  |    IMM LO   |
+|15 | 14 | 13 | 12 | 11 - 8 | 7  - 4 |   3  - 0    |
+|---|----|----|----|--------|--------|-------------|
+|0  | 0  | 1  | 1  | ALU OP |  DEST  |    IMM LO   |
 
 
     ALU OP: 4 bits ALU operation
@@ -122,7 +131,6 @@ Class 3: immediate to register ALU operation
         7 - xor : DEST <- DEST ^ SRC
         8-15 - reserved
  
-    SDb:  if low, store result to DEST register, otherwise discard result (used for tst, cmp)
     DEST: destination and operand (alu A input)
     IMM LO : 4 bit immediate which can be combined with the immediate register to produce a 
         16 bit value
@@ -151,9 +159,9 @@ Class 4: branch operation
 Class 5: index register memory operation
 -------------------------------------------
 
-|15 | 14 | 13 | 12 | 11 | 10 | 9  | 8  | 7 | 6- 4 | 3 | 2 - 0 |
-|---|----|----|----|----|----|----|--- |---|------|---|-------|
-|0  | 1  | 0  | 1  |  x | PD | PI | LS | x | REG  | x | IDX   |
+|15 | 14 | 13 | 12 | 11 | 10 | 9  | 8  | 7  - 4 | 3 - 0 |
+|---|----|----|----|----|----|----|--- |--------|-------|
+|0  | 1  | 0  | 1  |  x | PD | PI | LS |  REG   |  IDX  |
 
     PD: 1 = no post decrement, 0 = post decrement
     PI: 1 = no post increment, 0 = post increment (increment takes precedence over decrement)
@@ -164,9 +172,9 @@ Class 5: index register memory operation
 Class 6: immediate memory operation
 -------------------------------------------
 
-|15 | 14 | 13 | 12 | 11 | 10 | 9  | 8  | 7 | 6- 4 | 3 - 0 |
-|---|----|----|----|----|----|----|--- |---|------|-------|
-|0  | 1  | 1  | 0  |  x | x  | x  | LS | x | REG  | IMM   |
+|15 | 14 | 13 | 12 | 11 | 10 | 9  | 8  | 7 - 4 | 3 - 0 |
+|---|----|----|----|----|----|----|--- |-------|-------|
+|0  | 1  | 1  | 0  |  x | x  | x  | LS |  REG  | IMM   |
 
     LS: 0 = load, 1 = store
     REG: source for store, destination for load
@@ -175,9 +183,9 @@ Class 6: immediate memory operation
 Class 7: immediate + register memory operation
 -----------------------------------------------
 
-|15 | 14 | 13 | 12 | 11 - 9  | 8  | 7 | 6 - 4 | 3 - 0 |
-|---|----|----|----|---------|----|---|-------|-------|
-|0  | 1  | 1  | 1  |    IDX  | LS | x | REG   | IMM   |
+|15 | 14 | 13 | 12 | 11 - 9  | 8  | 7  - 4 | 3 - 0 |
+|---|----|----|----|---------|----|--------|-------|
+|0  | 1  | 1  | 1  |    IDX  | LS |  REG   | IMM   |
 
     LS: 0 = load, 1 = store
     IDX: index register, holds address of memory location
@@ -191,6 +199,8 @@ Class 8: ALU operations 0-15 with separate destination register
 |15 | 14 | 13 | 12  - 9  | 8  - 6 | 5 - 3 | 2 - 0 |
 |---|----|----|----------|--------|-------|-------|
 |1  | 0  | 0  |  ALU OP  |  DEST  | SRC2  | SRC1  |
+
+	DEST, SRC2, SRC1: only lowest 8 registers can be used
 
      ALU OP : 4 bits ALU operation
         0 - mov : DEST <- SRC1
@@ -206,9 +216,9 @@ Class 8: ALU operations 0-15 with separate destination register
 Class 10: Relative branch
 -------------------------
 
-|15 | 14 | 13 | 12  - 10  |   8  - 0     |
-|---|----|----|-----------|--------------|
-|1  | 0  | 1  |  BRANCH   | BRNCH_IMM    |
+|15 | 14 | 13 | 12 | 11  - 19  |   8  - 0     |
+|---|----|----|----|-----------|--------------|
+|1  | 0  | 1  |  x |  BRANCH   | BRNCH_IMM    |
 
     BRNCH:
         0 - BZ, branch if zero
@@ -277,9 +287,9 @@ Assembler Mnemonics
     CC
     CS
     CZ
-    DECM REGS
+    DEC REG
     IMM
-    INCM REGS
+    INC REG
     IRET
     LD REG_DST, [IMM]
     LD REG_DST, [REG_IDX+]
