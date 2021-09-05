@@ -18,26 +18,26 @@ module pipeline16
 	output [15:0]   pout,
 
 	/* control signals to register file */
-	output [7 : 0]  LD_reg_ALUb, /* Active low bit vector to load
+	output [15 : 0]  LD_reg_ALUb, /* Active low bit vector to load
 												register(s) from ALU output */
-	output [7 : 0]  LD_reg_Mb,  /* Active low bit vector to load
+	output [15 : 0]  LD_reg_Mb,  /* Active low bit vector to load
 												register(s) from memory */
-	output  [7 : 0] LD_reg_Pb,  /* Active low bit vector to load
+	output  [15 : 0] LD_reg_Pb,  /* Active low bit vector to load
 												register(s) from pipeline (constants in instruction words etc) */
 
-	output [2 : 0]  ALU_A_SEL,   		/* index of register driving ALU A bus */
- 	output [2 : 0]  ALU_B_SEL,   		/* index of register driving ALU B bus */
+	output [3 : 0]  ALU_A_SEL,   		/* index of register driving ALU A bus */
+ 	output [3 : 0]  ALU_B_SEL,   		/* index of register driving ALU B bus */
 
 	output M_ENb,					    /* enable register to drive memory bus */
- 	output [2 : 0] M_SEL,       	    /* index of register driving memory bus */
+ 	output [3 : 0] M_SEL,       	    /* index of register driving memory bus */
 
- 	output [2 : 0] MADDR_SEL,   		/* index of register driving memory address bus */
+ 	output [3 : 0] MADDR_SEL,   		/* index of register driving memory address bus */
 	output MADDR_ALU_SELb,				/* select MADDR from ALU output */
 	output MADDR_POUT_SELb,				/* select MADDR from POUT */
 
 
-	output [7 : 0] INCb,  	  			/* active low register increment */
-	output [7 : 0] DECb,  	  			/* active low register decrement */
+	output [15 : 0] INCb,  	  			/* active low register increment */
+	output [15 : 0] DECb,  	  			/* active low register decrement */
 
 	output ALU_B_from_inP_b,			/* 1 = ALU B from registers, 0 = ALU B from inP (pipeline constant register) */
 
@@ -64,18 +64,18 @@ reg [4:0]    aluOp_reg;
 reg [3:0]    pout_reg;
 reg [11:0]   imm_reg;
 reg [11:0]   imm_reg_next;
-reg [7 : 0]  LD_reg_ALUb_reg;
-reg [7 : 0]  LD_reg_Mb_reg;
-reg [7 : 0]  LD_reg_Pb_reg;
-reg [2 : 0]  ALU_A_SEL_reg;
-reg [2 : 0]  ALU_B_SEL_reg;
+reg [15 : 0]  LD_reg_ALUb_reg;
+reg [15 : 0]  LD_reg_Mb_reg;
+reg [15 : 0]  LD_reg_Pb_reg;
+reg [3 : 0]  ALU_A_SEL_reg;
+reg [3 : 0]  ALU_B_SEL_reg;
 reg M_ENb_reg;
-reg [2 : 0] M_SEL_reg;
-reg [2 : 0] MADDR_SEL_reg;
+reg [3 : 0] M_SEL_reg;
+reg [3 : 0] MADDR_SEL_reg;
 reg MADDR_ALU_SELb_reg;				/* select MADDR from ALU output */
 reg MADDR_POUT_SELb_reg;				/* select MADDR from POUT */
-reg [7 : 0] INCb_reg;
-reg [7 : 0] DECb_reg;
+reg [15 : 0] INCb_reg;
+reg [15 : 0] DECb_reg;
 reg ALU_B_from_inP_b_reg;
 reg mem_OEb_reg;
 reg mem_WRb_reg;
@@ -155,28 +155,34 @@ begin
 end
 endfunction
 
+/* register to increment or decrement */
+function [3:0] inc_dec_reg_p0;
+input [15:0] p0;
+	inc_dec_reg_p0 = p0[3:0];
+endfunction
+
 /* alu operation from pipeline stage 0 */
 function [3:0] alu_op_p0;
 input [15:0] p0;
 	alu_op_p0 = p0[11:8];
 endfunction
 
-/* alu operation hi bit from pipeline stage 0 */
-function alu_op_hi_p0;
+/* alu operation for single register alu op */
+function [3:0] alu_op_single_reg;
 input [15:0] p0;
-	alu_op_hi_p0 = p0[3];
+	alu_op_single_reg = p0[7:4];
 endfunction
 
 /* source register for alu operations in pipeline stage 0 */
-function [2:0] src_reg_p0;
+function [3:0] src_reg_p0;
 input [15:0] p0;
-	src_reg_p0 = p0[2:0];
+	src_reg_p0 = p0[3:0];
 endfunction
 
 /* dest register for alu operations in pipeline stage 0 */
-function [2:0] dest_reg_p0;
+function [3:0] dest_reg_p0;
 input [15:0] p0;
-	dest_reg_p0 = p0[6:4];
+	dest_reg_p0 = p0[7:4];
 endfunction
 
 /* imm register for alu / branch operations in pipeline stage 0 */
@@ -227,29 +233,29 @@ input [15:0] p0;
 	memory_post_decrement = p0[10]; // 0 = decrement, 1 = no increment
 endfunction
 
-function [2:0] memory_store_source;
+function [3:0] memory_store_source;
 input [15:0] p0;
-	memory_store_source = p0[6:4];
+	memory_store_source = p0[7:4];
 endfunction
 
-function [2:0] memory_store_index;
+function [3:0] memory_store_index;
 input [15:0] p0;
-	memory_store_index = p0[2:0];
+	memory_store_index = p0[3:0];
 endfunction
 
-function [2:0] memory_load_destination;
+function [3:0] memory_load_destination;
 input [15:0] p0;
-	memory_load_destination = p0[6:4];
+	memory_load_destination = p0[7:4];
 endfunction
 
-function [2:0] memory_load_index;
+function [3:0] memory_load_index;
 input [15:0] p0;
-	memory_load_index = p0[2:0];
+	memory_load_index = p0[3:0];
 endfunction
 
-function [2:0] class7_idx_reg_p0;
+function [3:0] class12_idx_reg_p0;
 input [15:0] p0;
-	class7_idx_reg_p0 = p0[11:9];
+	class7_idx_reg_p0 = p0[12:9];
 endfunction
 
 /* is a relative branch taken based */
@@ -369,31 +375,37 @@ begin
 	casex(pipeline_stage0_reg)
 		16'h0000:	;/* NOP */
 		16'h01xx: begin /* ret / iret */
-				aluOp_reg 				 = 5'b00000; 		// move
-				ALU_B_SEL_reg			 = ret_or_iret(pipeline_stage0_reg) ? 3'b101 : 3'b110;          // move LR or ILR (interrupt link register)
-				LD_reg_ALUb_reg			 = 8'h7f;			// move LR / ILR to PC  
-				INCb_reg[7] 			 = 1'b1; 			// don't increment r7
-				pipeline_stage0_reg_next = NOP_INSTRUCTION; // feed nop
-				LD_reg_ALUb_reg 		 = 8'h7f; 	 		// load r7 from alu 
+				aluOp_reg 				 = 5'b00000; 												// move
+				ALU_B_SEL_reg			 = ret_or_iret(pipeline_stage0_reg) ? 4'b1101 : 4'b1110;    // move LR or ILR (interrupt link register)
+				LD_reg_ALUb_reg			 = 16'h7fff;												// move LR / ILR to PC  
+				INCb_reg[15] 			 = 1'b1; 													// don't increment r7
+				pipeline_stage0_reg_next = NOP_INSTRUCTION; 										// feed nop
+				LD_reg_ALUb_reg 		 = 16'h7fff; 	 											// load r7 from alu 
 				delay_slot_reg_next  	 = 1'b1;
 				end
-		16'h02xx: begin /* increment multiple */
-				INCb_reg[6:0] = pipeline_stage0_reg[6:0];
+		16'h02xx: begin /* increment */
+				INCb_reg[inc_dec_reg_p0(pipeline_stage0_reg)] = 1'b0;
 				end
-		16'h03xx: begin /* decrement multiple */
-				DECb_reg[6:0] = pipeline_stage0_reg[6:0];
+		16'h03xx: begin /* decrement */
+				DECb_reg[inc_dec_reg_p0(pipeline_stage0_reg)] = 1'b0;
+				end
+		16'h04xx: begin /* single register ALU operation */
+				aluOp_reg[3:0] 	  		= alu_op_single_reg(pipeline_stage0_reg);
+				aluOp_reg[4] = 1'b1;
+				ALU_A_SEL_reg 			= src_reg_p0(pipeline_stage0_reg);
+				ALU_B_SEL_reg 			= src_reg_p0(pipeline_stage0_reg);
+				LD_reg_ALUb_reg 	= {16{1'b1}} ^ (1 << src_reg_p0(pipeline_stage0_reg)); 
 				end
 		16'h1xxx:   /* IMM */
 			imm_reg_next = pipeline_stage0_reg[11:0];
 		16'h2xxx:   /* ALU OP, REG, REG */
 		begin
 			aluOp_reg[3:0] 	  		= alu_op_p0(pipeline_stage0_reg);
-			aluOp_reg[4]			= alu_op_hi_p0(pipeline_stage0_reg);
-			ALU_A_SEL_reg 		= dest_reg_p0(pipeline_stage0_reg);
-			ALU_B_SEL_reg 		= src_reg_p0(pipeline_stage0_reg);
+			aluOp_reg[4] = 1'b0;
+			ALU_A_SEL_reg 			= dest_reg_p0(pipeline_stage0_reg);
+			ALU_B_SEL_reg 			= src_reg_p0(pipeline_stage0_reg);
 
-			if (store_dest_p0(pipeline_stage0_reg) == 1'b0)
-				LD_reg_ALUb_reg 	= {8{1'b1}} ^ (1 << dest_reg_p0(pipeline_stage0_reg)); 
+			LD_reg_ALUb_reg 	= {16{1'b1}} ^ (1 << dest_reg_p0(pipeline_stage0_reg)); 
 		end
 		16'h3xxx: /* ALU OP, REG, IMM */
 		begin
@@ -403,50 +415,49 @@ begin
 			ALU_A_SEL_reg 			= dest_reg_p0(pipeline_stage0_reg);
 			ALU_B_from_inP_b_reg 	= 1'b0;
 				
-			if (store_dest_p0(pipeline_stage0_reg) == 1'b0)
-				LD_reg_ALUb_reg 		= {8{1'b1}} ^ (1 << dest_reg_p0(pipeline_stage0_reg)); 			
+			LD_reg_ALUb_reg 		= {16{1'b1}} ^ (1 << dest_reg_p0(pipeline_stage0_reg)); 			
 		end
 		16'h4xxx: /* branch */
 		begin
 			if (branch_taken_p0(pipeline_stage0_reg, Z, S, C) == 1'b1) begin
 				if (is_branch_reg_ind(pipeline_stage0_reg)) begin
 					pipeline_stage0_reg_next = NOP_INSTRUCTION;
-					INCb_reg[7] 			 = 1'b1; 				// don't increment r7
-					LD_reg_ALUb_reg 		 = 8'h7f; 	 		    // load PC from alu 
+					INCb_reg[15] 			 = 1'b1; 				// don't increment r15
+					LD_reg_ALUb_reg 		 = 16'h7fff; 	 		    // load PC from alu 
 			        ALU_B_from_inP_b_reg     = 1'b0;
 					aluOp_reg  				 = 5'b00001;
 					ALU_A_SEL_reg			 = branch_reg_ind(pipeline_stage0_reg); // move reg indirect to PC
 					delay_slot_reg_next = 1'b1;
 				end else begin
 					pipeline_stage0_reg_next = NOP_INSTRUCTION;
-					INCb_reg[7] 			 = 1'b1; 			// don't increment r7
-					LD_reg_Pb_reg 			 = 8'h7f; 	 		// load r7 from pout 
+					INCb_reg[15] 			 = 1'b1; 			// don't increment r15
+					LD_reg_Pb_reg 			 = 16'h7fff; 	 		// load r15 from pout 
 					pout_reg 				 = imm_reg_p0(pipeline_stage0_reg);
 					delay_slot_reg_next = 1'b1;
 				end
 			end
 			else if (is_branch_link(pipeline_stage0_reg) == 1'b1) begin
 				/*
- 				 *		For branch link, we stop PC from incrementing, and move PC to R6 (LR)
+ 				 *		For branch link, we stop PC from incrementing, and move PC to R14 (LR)
  				 */
 				
 				if (is_branch_reg_ind(pipeline_stage0_reg)) begin
 					aluOp_reg 				 = 5'b00000; 		// move
-					ALU_B_SEL_reg			 = 3'b111;          // move PC
-					LD_reg_ALUb_reg			 = 8'hbf;			// move PC to LR (r6)  
-					INCb_reg[7] 			 = 1'b1; 			// don't increment r7
+					ALU_B_SEL_reg			 = 4'b1111;          // move PC
+					LD_reg_ALUb_reg			 = 16'hbfff;			// move PC to LR (r14)  
+					INCb_reg[15] 			 = 1'b1; 			// don't increment r15
 					pipeline_stage0_reg_next = NOP_INSTRUCTION; // feed nop
 					imm_reg_next			 = imm_reg; // preserve imm
 					pout_reg 				 = imm_reg_p0(pipeline_stage0_reg); // load immediate into lowest 4 bits of pout
 					pipeline_stall_reg_next  = 1'b1;
 				end else begin
 					aluOp_reg 				 = 5'b00000; 		// move
-					ALU_B_SEL_reg			 = 3'b111;          // move PC
-					LD_reg_ALUb_reg			 = 8'hbf;			// move PC to LR (r6)  
-					INCb_reg[7] 			 = 1'b1; 			// don't increment r7
+					ALU_B_SEL_reg			 = 4'b1111;         // move PC
+					LD_reg_ALUb_reg			 = 16'hbfff;		// move PC to LR (r14)  
+					INCb_reg[15] 			 = 1'b1; 			// don't increment r15
 					pipeline_stage0_reg_next = NOP_INSTRUCTION; // feed nop
 					pout_reg 				 = imm_reg_p0(pipeline_stage0_reg); // load immediate into lowest 4 bits of pout
-					LD_reg_Pb_reg 			 = 8'h7f; 	 		// load r7 from pout 
+					LD_reg_Pb_reg 			 = 16'h7fff; 	 		// load r15 from pout 
 					delay_slot_reg_next 	 = 1'b1;
 				end
 
@@ -458,7 +469,7 @@ begin
 				pipeline_stall_reg_next  = 1'b1; 			// We stall the pipeline so on the next cycle we can access memory	
 				MADDR_SEL_reg 			 = memory_load_index(pipeline_stage0_reg);
 				pipeline_stage0_reg_next = NOP_INSTRUCTION; // feed nop
-				DECb_reg[7] 			 = 1'b0; 			// decrement r7 this cycle
+				DECb_reg[15] 			 = 1'b0; 			// decrement r15 this cycle
 			end	
 			else begin // store
 				MADDR_SEL_reg 	= memory_store_index(pipeline_stage0_reg);
@@ -469,10 +480,10 @@ begin
 				INCb_reg[memory_store_index(pipeline_stage0_reg)] = memory_post_increment(pipeline_stage0_reg); // increment?
 				DECb_reg[memory_store_index(pipeline_stage0_reg)] = memory_post_decrement(pipeline_stage0_reg); // decrement?
 				pipeline_stage0_reg_next = NOP_INSTRUCTION; // feed nop
-				DECb_reg[7] 			 = 1'b0; 			// decrement r7 this cycle
+				DECb_reg[15] 			 = 1'b0; 			// decrement r15 this cycle
 			end
 
-			INCb_reg[7] 			 = 1'b1; 			// don't increment r7 this cycle
+			INCb_reg[15] 			 = 1'b1; 			// don't increment r7 this cycle
 		end
 		16'h6xxx: begin /* memory, reg, immediate index */
    			if (is_memory_load_or_store(pipeline_stage0_reg) == 1'b0) begin // load
@@ -482,7 +493,7 @@ begin
 				pipeline_stall_reg_next  = 1'b1; 			// We stall the pipeline so on the next cycle we can access memory	
 				MADDR_SEL_reg 			 = memory_load_index(pipeline_stage0_reg);
 				pipeline_stage0_reg_next = NOP_INSTRUCTION; // feed nop
-				DECb_reg[7] 			 = 1'b0; 			// decrement r7 this cycle
+				DECb_reg[15] 			 = 1'b0; 			// decrement r7 this cycle
 			end	
 			else begin // store
 				pout_reg                                 = imm_reg_p0(pipeline_stage0_reg); // load immediate into lowest 4 bits of pout
@@ -492,12 +503,46 @@ begin
 				mem_OEb_reg     = 1'b1;
 				mem_WRb_reg	   	= 1'b0;
 				pipeline_stage0_reg_next = NOP_INSTRUCTION; // feed nop
-				DECb_reg[7] 			 = 1'b0; 			// decrement r7 this cycle
+				DECb_reg[15] 			 = 1'b0; 			// decrement r7 this cycle
 			end
-			INCb_reg[7] 			 = 1'b1; 			// don't increment r7 this cycle
+			INCb_reg[15] 			 = 1'b1; 			// don't increment r7 this cycle
 		end
-		16'h7xxx: begin /* memory, reg, reg + immediate index */ 
-			ALU_A_SEL_reg                   = class7_idx_reg_p0(pipeline_stage0_reg);
+		16'h7xxx: begin 
+			// reserved	
+		end
+		16'b100xxxxxxxxxxxxx:  /* ALU op, reg, reg, reg */
+		begin
+			aluOp_reg[3:0] 	  	= alu_op3(pipeline_stage0_reg);
+			aluOp_reg[4]		= 1'b0;
+			ALU_A_SEL_reg 		= alu_src2_reg3(pipeline_stage0_reg);
+			ALU_B_SEL_reg 		= alu_src_reg3(pipeline_stage0_reg);
+
+			LD_reg_ALUb_reg 	= {16{1'b1}} ^ (1 << alu_dest_reg3(pipeline_stage0_reg)); 
+		end
+		16'b101xxxxxxxxxxxxx: begin /* relative branch */
+			if (rel_branch_taken(pipeline_stage0_reg, Z, S, C) == 1'b1) begin
+				// Branch taken: move relative constant to imm_reg
+		        INCb_reg[15]              = 1'b1;            // don't increment r15
+                pipeline_stage0_reg_next  = NOP_INSTRUCTION; // feed nop
+                imm_reg_next[11:5] 		  = {7{rel_branch_const_sign(pipeline_stage0_reg)}};
+				imm_reg_next[4:0] 		  = rel_branch_const_upper(pipeline_stage0_reg);
+				delay_slot_reg_next  	  = 1'b1;
+			end
+			else if (is_rel_branch_link(pipeline_stage0_reg) == 1'b1) begin
+				// Branch-link: move PC to link register and relative constant to imm_reg
+				imm_reg_next[11:5] = {7{rel_branch_const_sign(pipeline_stage0_reg)}};
+				imm_reg_next[4:0] = rel_branch_const_upper(pipeline_stage0_reg);
+				aluOp_reg                = 5'b00000;         // move
+                ALU_B_SEL_reg            = 4'b1111;          // move PC
+                LD_reg_ALUb_reg          = 16'hbfff;           // move PC to LR (r14)  
+                INCb_reg[15]             = 1'b1;            // don't increment r15
+                pipeline_stage0_reg_next = NOP_INSTRUCTION; // feed nop
+                delay_slot_reg_next  = 1'b1;
+			end	
+		end
+		16'b110xxxxxxxxxxxxx: begin /* memory, reg, reg + immediate index */ 
+
+			ALU_A_SEL_reg                   = class12_idx_reg_p0(pipeline_stage0_reg);
             ALU_B_from_inP_b_reg    = 1'b0;
             MADDR_ALU_SELb_reg    = 1'b0;  
 			aluOp_reg  = 5'b00001;
@@ -508,7 +553,7 @@ begin
 				pipeline_stall_reg_next  = 1'b1; 			// We stall the pipeline so on the next cycle we can access memory	
 				MADDR_SEL_reg 			 = memory_load_index(pipeline_stage0_reg);
 				pipeline_stage0_reg_next = NOP_INSTRUCTION; // feed nop
-				DECb_reg[7] 			 = 1'b0; 			// decrement r7 this cycle
+				DECb_reg[15] 			 = 1'b0; 			// decrement r15 this cycle
 			end	
 			else begin // store
 				M_ENb_reg  		= 1'b0;
@@ -516,44 +561,9 @@ begin
 				mem_OEb_reg     = 1'b1;
 				mem_WRb_reg	   	= 1'b0;
 				pipeline_stage0_reg_next = NOP_INSTRUCTION; // feed nop
-				DECb_reg[7] 			 = 1'b0; 			// decrement r7 this cycle
+				DECb_reg[15] 	= 1'b0; 			// decrement r15 this cycle
 			end
-			INCb_reg[7] 			 = 1'b1; 			// don't increment r7 this cycle
-		
-		end
-		16'b100xxxxxxxxxxxxx:  /* ALU op, reg, reg, reg */
-		begin
-			aluOp_reg[3:0] 	  		= alu_op3(pipeline_stage0_reg);
-			aluOp_reg[4]			= 1'b0;
-			ALU_A_SEL_reg 		= alu_src2_reg3(pipeline_stage0_reg);
-			ALU_B_SEL_reg 		= alu_src_reg3(pipeline_stage0_reg);
-
-			LD_reg_ALUb_reg 	= {8{1'b1}} ^ (1 << alu_dest_reg3(pipeline_stage0_reg)); 
-		end
-		16'b101xxxxxxxxxxxxx: begin /* relative branch */
-			if (rel_branch_taken(pipeline_stage0_reg, Z, S, C) == 1'b1) begin
-				// Branch taken: move relative constant to imm_reg
-		        INCb_reg[7]              = 1'b1;            // don't increment r7
-                pipeline_stage0_reg_next = NOP_INSTRUCTION; // feed nop
-                imm_reg_next[11:5] = {7{rel_branch_const_sign(pipeline_stage0_reg)}};
-				imm_reg_next[4:0] = rel_branch_const_upper(pipeline_stage0_reg);
-				delay_slot_reg_next  = 1'b1;
-			end
-			else if (is_rel_branch_link(pipeline_stage0_reg) == 1'b1) begin
-				// Branch-link: move PC to link register and relative constant to imm_reg
-				imm_reg_next[11:5] = {7{rel_branch_const_sign(pipeline_stage0_reg)}};
-				imm_reg_next[4:0] = rel_branch_const_upper(pipeline_stage0_reg);
-				aluOp_reg                = 5'b00000;         // move
-                ALU_B_SEL_reg            = 3'b111;          // move PC
-                LD_reg_ALUb_reg          = 8'hbf;           // move PC to LR (r6)  
-                INCb_reg[7]              = 1'b1;            // don't increment r7
-                pipeline_stage0_reg_next = NOP_INSTRUCTION; // feed nop
-                delay_slot_reg_next  = 1'b1;
-			end	
-		end
-		16'b110xxxxxxxxxxxxx: begin
-			pout_reg = {1'b0, C, Z, S};
-			LD_reg_Pb_reg = 8'hfe; // load r0 with flags
+			INCb_reg[15] 			 = 1'b1; 			// don't increment r15 this cycle
 		end
 		default: ;
 	endcase
@@ -565,9 +575,9 @@ begin
 		begin
 			if (is_branch_link(pipeline_stage1_reg) == 1'b1) begin
 				
-				DECb_reg[6] = 1'b0; // Decrement link register - to account for off by one in PC when loaded
+				DECb_reg[14] = 1'b0; // Decrement link register - to account for off by one in PC when loaded
 				if (is_branch_reg_ind(pipeline_stage1_reg)) begin
-					LD_reg_ALUb_reg 		 = 8'h7f; 	 		    // load PC from alu 
+					LD_reg_ALUb_reg 		 = 16'h7fff; 	 		    // load PC from alu 
 					ALU_B_from_inP_b_reg     = 1'b0;
 					aluOp_reg  				 = 5'b00001;
 					pout_reg                 = imm_reg_p0(pipeline_stage1_reg); // load immediate into lowest 4 bits of pout
@@ -582,12 +592,10 @@ begin
 					pipeline_stage0_reg_next = NOP_INSTRUCTION;
 			end	
 			else begin // load
-
 				MADDR_SEL_reg 			 = memory_load_index(pipeline_stage1_reg);
-
-				mem_OEb_reg      = 1'b0;
-				mem_WRb_reg	   = 1'b1;
-				LD_reg_Mb_reg = {8{1'b1}} ^ (1 << memory_load_destination(pipeline_stage1_reg));
+				mem_OEb_reg      		 = 1'b0;
+				mem_WRb_reg	   			 = 1'b1;
+				LD_reg_Mb_reg 			 = {16{1'b1}} ^ (1 << memory_load_destination(pipeline_stage1_reg));
 				INCb_reg[memory_store_index(pipeline_stage1_reg)] = memory_post_increment(pipeline_stage1_reg); // increment?
 				DECb_reg[memory_store_index(pipeline_stage1_reg)] = memory_post_decrement(pipeline_stage1_reg); // decrement?
 			end
@@ -595,35 +603,37 @@ begin
 			if (is_memory_load_or_store(pipeline_stage1_reg) == 1'b1) begin // store
 			end	
 			else begin // load
-				pout_reg                                 = imm_reg_p0(pipeline_stage1_reg); // load immediate into lowest 4 bits of pout
-		    	MADDR_POUT_SELb_reg    = 1'b0;
-				mem_OEb_reg      = 1'b0;
-				mem_WRb_reg	   = 1'b1;
-				LD_reg_Mb_reg = {8{1'b1}} ^ (1 << memory_load_destination(pipeline_stage1_reg));
+				pout_reg				= imm_reg_p0(pipeline_stage1_reg); // load immediate into lowest 4 bits of pout
+		    	MADDR_POUT_SELb_reg    	= 1'b0;
+				mem_OEb_reg      		= 1'b0;
+				mem_WRb_reg	   			= 1'b1;
+				LD_reg_Mb_reg 			= {16{1'b1}} ^ (1 << memory_load_destination(pipeline_stage1_reg));
 			end
-		16'h7xxx:  /* memory reg, reg + immediate index */
+		16'h7xxx;
+		16'b101xxxxxxxxxxxxx: begin /* relative branch */
+			if ((rel_branch_taken(pipeline_stage1_reg, Z, S, C) == 1'b1) || (is_rel_branch_link(pipeline_stage1_reg) == 1'b1)) begin
+				    LD_reg_ALUb_reg 		 = 16'h7fff; 	 		    // load PC from alu 
+					ALU_B_from_inP_b_reg     = 1'b0;
+					aluOp_reg  				 = 5'b00001;
+					pout_reg                 = rel_branch_const_lower(pipeline_stage1_reg); // load immediate into lowest 4 bits of pout
+					ALU_A_SEL_reg			 = 4'b1111; // add PC + relative constant
+					delay_slot_reg_next 	 = 1'b1;	
+                	INCb_reg[15]             = 1'b1;            // don't increment r7
+			end	
+		end
+		16'b110xxxxxxxxxxxxx: begin   /* memory reg, reg + immediate index */
 			if (is_memory_load_or_store(pipeline_stage1_reg) == 1'b1) begin // store
 			end	
 			else begin // load
-				ALU_A_SEL_reg                   = class7_idx_reg_p0(pipeline_stage1_reg);
+				ALU_A_SEL_reg           = class12_idx_reg_p0(pipeline_stage1_reg);
 				ALU_B_from_inP_b_reg    = 1'b0;
 				MADDR_ALU_SELb_reg    	= 1'b0;  
 				aluOp_reg  				= 5'b00001;
 				pout_reg                = imm_reg_p0(pipeline_stage1_reg); // load immediate into lowest 4 bits of pout
 				mem_OEb_reg      		= 1'b0;
 				mem_WRb_reg	   			= 1'b1;
-				LD_reg_Mb_reg 			= {8{1'b1}} ^ (1 << memory_load_destination(pipeline_stage1_reg));
+				LD_reg_Mb_reg 			= {16{1'b1}} ^ (1 << memory_load_destination(pipeline_stage1_reg));
 			end
-		16'b101xxxxxxxxxxxxx: begin /* relative branch */
-			if ((rel_branch_taken(pipeline_stage1_reg, Z, S, C) == 1'b1) || (is_rel_branch_link(pipeline_stage1_reg) == 1'b1)) begin
-				    LD_reg_ALUb_reg 		 = 8'h7f; 	 		    // load PC from alu 
-					ALU_B_from_inP_b_reg     = 1'b0;
-					aluOp_reg  				 = 5'b00001;
-					pout_reg                 = rel_branch_const_lower(pipeline_stage1_reg); // load immediate into lowest 4 bits of pout
-					ALU_A_SEL_reg			 = 3'b111; // add PC + relative constant
-					delay_slot_reg_next = 1'b1;	
-                	INCb_reg[7]              = 1'b1;            // don't increment r7
-			end	
 		end
 		default:;
 	endcase

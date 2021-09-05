@@ -180,17 +180,10 @@ Class 6: immediate memory operation
     REG: source for store, destination for load
     IMM: immediate address of memory location
     
-Class 7: immediate + register memory operation
------------------------------------------------
+Class 7: 
+--------
 
-|15 | 14 | 13 | 12 | 11 - 9  | 8  | 7  - 4 | 3 - 0 |
-|---|----|----|----|---------|----|--------|-------|
-|0  | 1  | 1  | 1  |    IDX  | LS |  REG   | IMM   |
-
-    LS: 0 = load, 1 = store
-    IDX: index register, holds address of memory location
-    REG: source for store, destination for load
-    IMM: immediate address of memory location, effective address = [IDX] + IMM
+RESERVED
 
 
 Class 8: ALU operations 0-15 with separate destination register
@@ -232,8 +225,22 @@ Class 10: Relative branch
     BRNCH_IMM: signed immediate, -256 -> 256
         PC <- PC + BRNCH_IMM
 
+Class 12: immediate + register memory operation
+-----------------------------------------------
 
-Classes 12- 14:
+|15 | 14 | 13 | 12 - 9  | 8  | 7  - 4 | 3 - 0 |
+|---|----|----|---------|----|--------|-------|
+| 1 | 1  | 0  |   IDX   | LS |  REG   | IMM   |
+
+    LS: 0 = load, 1 = store
+    IDX: index register, holds address of memory location
+    REG: source for store, destination for load
+    IMM: immediate address of memory location, effective address = [IDX] + IMM
+
+
+
+
+Classes 14:
 ----------------
 
 Reserved

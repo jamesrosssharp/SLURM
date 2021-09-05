@@ -1,7 +1,7 @@
 /* register_file.v : a register file  */
 
 module register_file
-#(parameter REG_BITS = 3 /* default 2**3 = 8 registers */, parameter BITS = 16 /* default 16 bits */)
+#(parameter REG_BITS = 4 /* default 2**4 = 16 registers */, parameter BITS = 16 /* default 16 bits */)
 (
 	input CLK,
 	input RSTb,

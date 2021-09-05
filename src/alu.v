@@ -120,9 +120,22 @@ begin
 		5'd10: ; /* bsr */
 		5'd11: ; /* bsl */
 
-		/* 12 - 15 reserved */
+		5'd12: begin /* cmp */
+			out = A;
+			C_flag_reg_next = subOp[BITS];
+			Z_flag_reg_next = (subOp[BITS - 1:0] == 16'h0000/*{BITS{1'b0}}*/) ? 1'b1 : 1'b0;
+			S_flag_reg_next = subOp[BITS - 1] ? 1'b1 : 1'b0;
+		end	
 
-		/* extended ADC operations  - register only (no immediate) */
+		5'd13: begin /* test */
+			out = A;
+			Z_flag_reg_next = (andOp[BITS - 1:0] == {BITS{1'b0}}) ? 1'b1 : 1'b0;	
+		end
+
+		/* 14 - 15 reserved */
+
+
+		/* extended ADC operations  - single register only (no immediate) */
 		5'd16: begin /* asr */
 			out = asrOp;	
 			Z_flag_reg_next = (asrOp[BITS - 1:0] == {BITS{1'b0}}) ? 1'b1 : 1'b0;	

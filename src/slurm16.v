@@ -21,21 +21,21 @@ wire S;
 wire [4:0] aluOp;
 wire [15:0] pout;
 
-wire [7:0] LD_reg_ALUb;
-wire [7:0] LD_reg_Mb;
-wire [7:0] LD_reg_Pb;
+wire [15:0] LD_reg_ALUb;
+wire [15:0] LD_reg_Mb;
+wire [15:0] LD_reg_Pb;
 
-wire [2:0] ALU_A_SEL;
-wire [2:0] ALU_B_SEL;
+wire [3:0] ALU_A_SEL;
+wire [3:0] ALU_B_SEL;
 
 wire M_ENb;
-wire [2:0] M_SEL;
-wire [2:0] MADDR_SEL;
+wire [3:0] M_SEL;
+wire [3:0] MADDR_SEL;
 wire MADDR_ALU_SELb;				/* select MADDR from ALU output */
 wire MADDR_POUT_SELb;				/* select MADDR from POUT */
 
-wire [7:0] INCb;
-wire [7:0] DECb;
+wire [15:0] INCb;
+wire [15:0] DECb;
 
 wire ALU_B_from_inP_b;
 
