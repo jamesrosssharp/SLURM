@@ -1,0 +1,48 @@
+PROJ 	= slurm16_ice40
+PIN_DEF = slurm16_ice40.pcf
+DEVICE 	= up5k
+
+SRCDIR=../../src_next
+
+SOURCE = $(SRCDIR)/pipeline16.v $(SRCDIR)/slurm16.v $(SRCDIR)/alu.v $(SRCDIR)/register_file.v $(SRCDIR)/memory_controller.v memory.v rom.v slurm16_ice40.v 
+
+ICEPACK = icepack
+ICETIME = icetime
+ICEPROG = iceprog
+
+all: $(PROJ).h
+
+rom_image.mem: Test.asm
+	../../slurmasm/slurmasm Test.asm -o rom_image
+
+rom.v: rom_image.mem
+	python3 ../../scripts/genrom.py
+
+%.h: %.bin
+	xxd -i $< > $@
+
+$(PROJ).json: $(SOURCE) rom_image.mem
+	yosys -p 'debug synth_ice40 -top top -json $@' $(SOURCE)
+
+%.asc: $(PIN_DEF) %.json
+	nextpnr-ice40 --up5k --json $(PROJ).json --pcf $(PROJ).pcf --asc $@
+
+%.bin: %.asc
+	$(ICEPACK) $< $@
+
+%.rpt: %.asc
+	$(ICETIME) -d $(DEVICE) -mtr $@ $<
+
+prog: $(PROJ).bin
+	$(ICEPROG) -S $<
+	#$(ICEPROG) $<
+
+sudo-prog: $(PROJ).bin
+	@echo 'Executing prog as root!!!'
+	sudo $(ICEPROG) -S $<
+
+clean:
+	rm -f $(PROJ).json $(PROJ).asc $(PROJ).rpt $(PROJ).bin $(PROJ).h
+
+.SECONDARY:
+.PHONY: all prog clean
