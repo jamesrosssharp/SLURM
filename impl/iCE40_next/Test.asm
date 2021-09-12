@@ -4,6 +4,10 @@ UART_TX_REG 	equ 	0x1000
 UART_TX_STATUS  equ		0x1001
 		
 		mov r1, 'A'
+		nop
+		nop
+		nop
+
 loop:
 		st [UART_TX_REG], r1
 test_loop:

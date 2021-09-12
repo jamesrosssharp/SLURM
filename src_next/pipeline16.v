@@ -316,6 +316,7 @@ begin
 	result_stage4_r_next = result_stage3_r;
 
 	reg_wr_addr_r = 5'd16;	// Default to register 16 (not used) so we have dummy op
+	reg_out_r = {BITS{1'b0}};
 	regARdAddr_r = 5'd0;
 	regBRdAddr_r = 5'd0;
 
