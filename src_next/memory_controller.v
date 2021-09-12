@@ -138,9 +138,10 @@ uart
 	ADDRESS[7:0],
 	DATA_IN,
 	DATA_OUT_UART,
-	WR_UART,  /* write memory  */
-	PINS[15]   /* UART output   */
+	WR_UART,  // write memory  
+	PINS[15]   // UART output   
 );
+
 
 gpio
 #(.CLK_FREQ(CLOCK_FREQ), .BITS(BITS)) g0
@@ -150,9 +151,10 @@ gpio
 	ADDRESS[7:0],
 	DATA_IN,
 	DATA_OUT_GPIO,
-	WR_GPIO,  /* write memory */
-	PINS[7:0] /* output pins */ 
+	WR_GPIO,  // write memory 
+	PINS[7:0] // output pins  
 );
+
 
 pwm_led
 #(.CLK_FREQ(CLOCK_FREQ), .BITS(BITS)) led0
@@ -162,8 +164,8 @@ pwm_led
 	ADDRESS[7:0],
 	DATA_IN,
 	DATA_OUT_PWM,
-	WR_PWM,  /* write memory */
-	PINS[10:8] /* output pins */ 
+	WR_PWM,  // write memory 
+	PINS[10:8] // output pins 
 );
 
 

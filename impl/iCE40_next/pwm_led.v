@@ -6,7 +6,7 @@ module pwm_led
 	input [ADDRESS_BITS - 1 : 0]  ADDRESS,
 	input [BITS - 1 : 0] DATA_IN,
 	output [BITS - 1 : 0] DATA_OUT,
-	input WRb,  /* write memory */
+	input WR,  /* write memory */
 	output [2:0] PINS /* output pins */ 
 );
 
@@ -88,15 +88,15 @@ begin
 
 	casez (ADDRESS)
 		8'h00:	/* red value register */
-			if (WRb == 1'b0) begin
+			if (WR == 1'b1) begin
 				red_reg_next = DATA_IN;
 			end
 		8'h01:	/* green value register */
-			if (WRb == 1'b0) begin
+			if (WR == 1'b1) begin
 				green_reg_next = DATA_IN;
 			end
 		8'h02:	/* green value register */
-			if (WRb == 1'b0) begin
+			if (WR == 1'b1) begin
 				blue_reg_next = DATA_IN;
 			end
 		default:;
