@@ -2,6 +2,7 @@
 SRCDIR=../../src_next
 
 SOURCE=$(SRCDIR)/pipeline16.v $(SRCDIR)/slurm16.v $(SRCDIR)/alu.v $(SRCDIR)/register_file.v $(SRCDIR)/memory_controller.v $(SRCDIR)/rom.v \
+		$(SRCDIR)/uart.v $(SRCDIR)/uart_tx.v $(SRCDIR)/baudgen.v $(SRCDIR)/pwm_led.v $(SRCDIR)/gpio.v $(SRCDIR)/memory.v
 
 PROJECT=slurm16
 
