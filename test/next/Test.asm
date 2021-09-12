@@ -1,5 +1,6 @@
         .org 0h
 
+top:
 		mov r0, 45
 		mov r1, 19
 		add r0, r1
@@ -10,9 +11,12 @@ loop:
 		sub r0, 1
 		bnz loop
 
+		mov r0, die
+	
+		nop
 die:
-		ba die		
-
+		ba [r0, 0xffff]
+		ba top
 
 		.end
 

@@ -472,7 +472,7 @@ void Statement::assemble(uint32_t &curAddress)
         }
         case StatementType::INDIRECT_ADDRESSING_OPCODE_WITH_REG_AND_EXPRESSION:
         {
-			words.resize(1);
+			//words.resize(1);
 
             switch (opcode)
             {
