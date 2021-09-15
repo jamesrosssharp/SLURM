@@ -132,6 +132,13 @@ reg [BITS - 1:0] loadStoreAddr_stage3_r_next;
 reg [BITS - 1:0] loadStoreAddr_stage4_r;
 reg [BITS - 1:0] loadStoreAddr_stage4_r_next;
 
+reg flagsModifiedStage2_r_next;
+reg flagsModifiedStage2_r;
+
+reg flagsModifiedStage3_r_next;
+reg flagsModifiedStage3_r;
+
+
 
 always @(posedge CLK)
 begin
@@ -157,7 +164,8 @@ begin
 		loadStoreAddr_stage4_r		 <= {BITS{1'b0}};
 		memoryOut_stage3_r			 <= {BITS{1'b0}};
 		memoryOut_stage4_r			 <= {BITS{1'b0}};
-
+		flagsModifiedStage2_r		 <= 1'b0;
+		flagsModifiedStage3_r		 <= 1'b0;
 	end
 	else begin
 		pc_r <= pc_r_next;
@@ -177,10 +185,13 @@ begin
 		branch_taken2_r	<= branch_taken2_r_next;
 		branch_taken3_r	<= branch_taken2_r;
 		branch_taken4_r	<= branch_taken3_r;
-		loadStoreAddr_stage3_r		<= loadStoreAddr_stage3_r_next;
-		loadStoreAddr_stage4_r		<= loadStoreAddr_stage4_r_next;
-		memoryOut_stage3_r					<= memoryOut_stage3_r_next;
-		memoryOut_stage4_r					<= memoryOut_stage4_r_next;
+		loadStoreAddr_stage3_r	<= loadStoreAddr_stage3_r_next;
+		loadStoreAddr_stage4_r	<= loadStoreAddr_stage4_r_next;
+		memoryOut_stage3_r		<= memoryOut_stage3_r_next;
+		memoryOut_stage4_r		<= memoryOut_stage4_r_next;
+		flagsModifiedStage2_r	<= flagsModifiedStage2_r_next;
+		flagsModifiedStage3_r	<= flagsModifiedStage3_r_next;
+
 	end
 end
 
@@ -231,17 +242,31 @@ begin
 end
 endfunction
 
-function [15:0] has_hazard;
+function  has_hazard;
 input [3:0] register;
 begin
 	has_hazard = (hazard2_r[register] == 1'b1 || hazard3_r[register] == 1'b1 || hazard4_r[register] == 1'b1) ? 1'b1 : 1'b0;
 end
 endfunction
 
-function [15:0] hazard_clears_next;
+function  hazard_clears_next;
 input [3:0] register;
 begin
 	hazard_clears_next = (hazard2_r[register] == 1'b0 && hazard3_r[register] == 1'b0) ? 1'b1 : 1'b0;
+end
+endfunction
+
+function  has_flag_hazard;
+input dummy;
+begin
+	has_flag_hazard = (flagsModifiedStage2_r == 1'b1 || flagsModifiedStage3_r == 1'b1) ? 1'b1 : 1'b0;
+end
+endfunction
+
+function [15:0] flag_hazard_clears_next;
+input dummy;
+begin
+	flag_hazard_clears_next = (flagsModifiedStage2_r == 1'b0) ? 1'b1 : 1'b0;
 end
 endfunction
 
@@ -249,7 +274,6 @@ function is_load_store_from_ins;
 input [15:0] p0;
     is_load_store_from_ins = p0[8]; // 0 = load, 1 = store
 endfunction
-
 
 function branch_taken_from_ins;
 input [15:0] ins;
@@ -315,6 +339,9 @@ begin
 	result_stage3_r_next = result_stage2_r;
 	result_stage4_r_next = result_stage3_r;
 
+	flagsModifiedStage2_r_next = 1'b0;
+	flagsModifiedStage3_r_next = flagsModifiedStage2_r;
+
 	reg_wr_addr_r = 5'd16;	// Default to register 16 (not used) so we have dummy op
 	reg_out_r = {BITS{1'b0}};
 	regARdAddr_r = 5'd0;
@@ -376,7 +403,7 @@ begin
 			end
 
 		end
-		16'h02xx, 16'h03xx, 16'h04xx: begin /* inc / dec / alu op reg */
+		16'h02xx, 16'h03xx: begin
 			regARdAddr_r	= reg_src_from_ins(pipelineStage1_r);
 
 			hazard2_r_next[reg_src_from_ins(pipelineStage1_r)] = 1'b1;
@@ -391,7 +418,24 @@ begin
 					pc_r_prev_next = pc_r_prev;
 				end
 			end
+		end
+		16'h04xx: begin /* alu op reg */
+			regARdAddr_r	= reg_src_from_ins(pipelineStage1_r);
 
+			hazard2_r_next[reg_src_from_ins(pipelineStage1_r)] = 1'b1;
+	
+			if (has_hazard(reg_src_from_ins(pipelineStage1_r))) begin
+				pipelineStage1_r_next = pipelineStage1_r;
+				pipelineStage2_r_next = NOP_INSTRUCTION;
+				hazard2_r_next[reg_src_from_ins(pipelineStage1_r)] = 1'b0;
+
+				if (!hazard_clears_next(reg_src_from_ins(pipelineStage1_r))) begin
+					pc_r_next = pc_r_prev;
+					pc_r_prev_next = pc_r_prev;
+				end
+			end
+			
+			flagsModifiedStage2_r_next = 1'b1;
 		end
 		16'h1xxx:   	/* imm */
 			imm_r_next 	= imm_r_from_ins(pipelineStage1_r);
@@ -411,6 +455,8 @@ begin
 					pc_r_prev_next = pc_r_prev;
 				end
 			end
+
+			flagsModifiedStage2_r_next = 1'b1;
 		end
 		16'h3xxx:	begin	/* alu op, reg imm */
 			imm_stage2_r_next 	= {imm_r, imm_lo_from_ins(pipelineStage1_r)};
@@ -428,6 +474,8 @@ begin
 					pc_r_prev_next = pc_r_prev;
 				end
 			end
+
+			flagsModifiedStage2_r_next = 1'b1;
 		end
 		16'h4xxx:	begin /* branch */
 			if (branch_taken_from_ins(pipelineStage1_r, Z, S, C) == 1'b1) begin
@@ -454,7 +502,22 @@ begin
 					branch_taken2_r_next = 1'b1;
 					pc_r_next = {imm_r, imm_lo_from_ins(pipelineStage1_r)};
 					pipelineStage1_r_next = NOP_INSTRUCTION;
-				end	
+				end
+	
+				/* flags hazard */
+
+				if (has_flag_hazard(1)) begin
+						pipelineStage1_r_next = pipelineStage1_r;
+						pipelineStage2_r_next = NOP_INSTRUCTION;
+						branch_taken2_r_next = 1'b0;
+						imm_r_next = imm_r;
+
+						if (!flag_hazard_clears_next(1)) begin
+							pc_r_next = pc_r_prev;
+							pc_r_prev_next = pc_r_prev;
+						end
+				end
+
 			end
 			/* branch and link? */
 			else if (is_branch_link_from_ins(pipelineStage1_r) == 1'b1) begin
