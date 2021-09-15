@@ -327,6 +327,59 @@ input [15:0] ins;
 endfunction
 
 
+task has_one_register_hazard;
+input [3:0] regin;
+begin
+	if (has_hazard(regin)) begin
+			pipelineStage1_r_next = pipelineStage1_r;
+			pipelineStage2_r_next = NOP_INSTRUCTION;
+			hazard2_r_next[regin] = 1'b0;
+			imm_r_next = imm_r;
+
+			if (!hazard_clears_next(regin)) begin
+				pc_r_next = pc_r_prev;
+				pc_r_prev_next = pc_r_prev;
+			end
+		end
+end
+endtask
+
+task has_two_register_hazard;
+input [3:0] regin1;
+input [3:0] regin2;
+begin
+	if (has_hazard(regin1) ||
+		has_hazard(regin2)) begin
+		pipelineStage1_r_next = pipelineStage1_r;
+		pipelineStage2_r_next = NOP_INSTRUCTION;
+		hazard2_r_next[regin1] = 1'b0;
+		imm_r_next = imm_r;
+
+		if (!hazard_clears_next(regin1) || !hazard_clears_next(regin2)) begin
+			pc_r_next = pc_r_prev;
+			pc_r_prev_next = pc_r_prev;
+		end
+	end
+end
+endtask
+
+task has_branch_one_register_hazard;
+input [3:0] regin;
+begin
+	if (has_hazard(regin)) begin
+		pipelineStage1_r_next = pipelineStage1_r;
+		pipelineStage2_r_next = NOP_INSTRUCTION;
+		branch_taken2_r_next = 1'b0;
+		imm_r_next = imm_r;
+
+		if (!hazard_clears_next(regin)) begin
+			pc_r_next = pc_r_prev;
+			pc_r_prev_next = pc_r_prev;
+		end
+	end
+end
+endtask
+
 
 always @(*)
 begin
@@ -391,50 +444,18 @@ begin
 
 			hazard2_r_next[LINK_REGISTER] = 1'b1;
 	
-			if (has_hazard(LINK_REGISTER)) begin
-				pipelineStage1_r_next = pipelineStage1_r;
-				pipelineStage2_r_next = NOP_INSTRUCTION;
-				hazard2_r_next[LINK_REGISTER] = 1'b0;
-
-				if (!hazard_clears_next(LINK_REGISTER)) begin
-					pc_r_next = pc_r_prev;
-					pc_r_prev_next = pc_r_prev;
-				end
-			end
+			has_one_register_hazard(LINK_REGISTER);		
 
 		end
 		16'h02xx, 16'h03xx: begin
 			regARdAddr_r	= reg_src_from_ins(pipelineStage1_r);
-
-			hazard2_r_next[reg_src_from_ins(pipelineStage1_r)] = 1'b1;
-	
-			if (has_hazard(reg_src_from_ins(pipelineStage1_r))) begin
-				pipelineStage1_r_next = pipelineStage1_r;
-				pipelineStage2_r_next = NOP_INSTRUCTION;
-				hazard2_r_next[reg_src_from_ins(pipelineStage1_r)] = 1'b0;
-
-				if (!hazard_clears_next(reg_src_from_ins(pipelineStage1_r))) begin
-					pc_r_next = pc_r_prev;
-					pc_r_prev_next = pc_r_prev;
-				end
-			end
+			hazard2_r_next[reg_src_from_ins(pipelineStage1_r)] = 1'b1;	
+			has_one_register_hazard(reg_src_from_ins(pipelineStage1_r));		
 		end
 		16'h04xx: begin /* alu op reg */
 			regARdAddr_r	= reg_src_from_ins(pipelineStage1_r);
-
 			hazard2_r_next[reg_src_from_ins(pipelineStage1_r)] = 1'b1;
-	
-			if (has_hazard(reg_src_from_ins(pipelineStage1_r))) begin
-				pipelineStage1_r_next = pipelineStage1_r;
-				pipelineStage2_r_next = NOP_INSTRUCTION;
-				hazard2_r_next[reg_src_from_ins(pipelineStage1_r)] = 1'b0;
-
-				if (!hazard_clears_next(reg_src_from_ins(pipelineStage1_r))) begin
-					pc_r_next = pc_r_prev;
-					pc_r_prev_next = pc_r_prev;
-				end
-			end
-			
+			has_one_register_hazard(reg_src_from_ins(pipelineStage1_r));		
 			flagsModifiedStage2_r_next = 1'b1;
 		end
 		16'h1xxx:   	/* imm */
@@ -443,38 +464,14 @@ begin
 			regARdAddr_r	= reg_dest_from_ins(pipelineStage1_r);
 			regBRdAddr_r	= reg_src_from_ins(pipelineStage1_r);
 			hazard2_r_next[reg_dest_from_ins(pipelineStage1_r)] = 1'b1;
-	
-			if (has_hazard(reg_dest_from_ins(pipelineStage1_r)) ||
-				has_hazard(reg_src_from_ins(pipelineStage1_r))) begin
-				pipelineStage1_r_next = pipelineStage1_r;
-				pipelineStage2_r_next = NOP_INSTRUCTION;
-				hazard2_r_next[reg_dest_from_ins(pipelineStage1_r)] = 1'b0;
-
-				if (!hazard_clears_next(reg_dest_from_ins(pipelineStage1_r)) || !hazard_clears_next(reg_src_from_ins(pipelineStage1_r))) begin
-					pc_r_next = pc_r_prev;
-					pc_r_prev_next = pc_r_prev;
-				end
-			end
-
+			has_two_register_hazard(reg_dest_from_ins(pipelineStage1_r), reg_src_from_ins(pipelineStage1_r));
 			flagsModifiedStage2_r_next = 1'b1;
 		end
 		16'h3xxx:	begin	/* alu op, reg imm */
 			imm_stage2_r_next 	= {imm_r, imm_lo_from_ins(pipelineStage1_r)};
 			regARdAddr_r 		= reg_dest_from_ins(pipelineStage1_r);	
 			hazard2_r_next[reg_dest_from_ins(pipelineStage1_r)] = 1'b1;
-
-			if (has_hazard(reg_dest_from_ins(pipelineStage1_r))) begin
-				pipelineStage1_r_next = pipelineStage1_r;
-				pipelineStage2_r_next = NOP_INSTRUCTION;
-				hazard2_r_next[reg_dest_from_ins(pipelineStage1_r)] = 1'b0;
-				imm_r_next = imm_r;
-
-				if (!hazard_clears_next(reg_dest_from_ins(pipelineStage1_r))) begin
-					pc_r_next = pc_r_prev;
-					pc_r_prev_next = pc_r_prev;
-				end
-			end
-
+			has_one_register_hazard(reg_dest_from_ins(pipelineStage1_r));
 			flagsModifiedStage2_r_next = 1'b1;
 		end
 		16'h4xxx:	begin /* branch */
@@ -486,18 +483,7 @@ begin
 					branch_taken2_r_next = 1'b1;
 					pipelineStage1_r_next = NOP_INSTRUCTION;
 					
-					if (has_hazard(reg_branch_ind_from_ins(pipelineStage1_r))) begin
-						pipelineStage1_r_next = pipelineStage1_r;
-						pipelineStage2_r_next = NOP_INSTRUCTION;
-						branch_taken2_r_next = 1'b0;
-						imm_r_next = imm_r;
-
-						if (!hazard_clears_next(reg_branch_ind_from_ins(pipelineStage1_r))) begin
-							pc_r_next = pc_r_prev;
-							pc_r_prev_next = pc_r_prev;
-						end
-					end
-
+					has_branch_one_register_hazard(reg_branch_ind_from_ins(pipelineStage1_r));
 				end else begin
 					branch_taken2_r_next = 1'b1;
 					pc_r_next = {imm_r, imm_lo_from_ins(pipelineStage1_r)};
@@ -529,19 +515,8 @@ begin
 				
 					branch_taken2_r_next = 1'b1;
 					result_stage2_r_next = pc_r_prev;
-	
-					if (has_hazard(reg_branch_ind_from_ins(pipelineStage1_r))) begin
-						pipelineStage1_r_next = pipelineStage1_r;
-						pipelineStage2_r_next = NOP_INSTRUCTION;
-						branch_taken2_r_next = 1'b0;
-						imm_r_next = imm_r;
 
-						if (!hazard_clears_next(reg_branch_ind_from_ins(pipelineStage1_r))) begin
-							pc_r_next = pc_r_prev;
-							pc_r_prev_next = pc_r_prev;
-						end
-					end
-
+					has_branch_one_register_hazard(reg_branch_ind_from_ins(pipelineStage1_r));
 				end else begin
 			
 					branch_taken2_r_next = 1'b1;
@@ -566,17 +541,7 @@ begin
 				regARdAddr_r 		= reg_dest_from_ins(pipelineStage1_r);	
 				
 				// Check for hazards
-				if (has_hazard(reg_dest_from_ins(pipelineStage1_r))) begin
-					pipelineStage1_r_next = pipelineStage1_r;
-					pipelineStage2_r_next = NOP_INSTRUCTION;
-					imm_r_next = imm_r;
-
-					if (!hazard_clears_next(reg_dest_from_ins(pipelineStage1_r))) begin
-						pc_r_next = pc_r_prev;
-						pc_r_prev_next = pc_r_prev;
-					end
-				end
-
+				has_one_register_hazard(reg_dest_from_ins(pipelineStage1_r));
 			end
 		end
 		default: ;
