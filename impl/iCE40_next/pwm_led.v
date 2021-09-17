@@ -95,7 +95,7 @@ begin
 			if (WR == 1'b1) begin
 				green_reg_next = DATA_IN;
 			end
-		8'h02:	/* green value register */
+		8'h02:	/* blue value register */
 			if (WR == 1'b1) begin
 				blue_reg_next = DATA_IN;
 			end

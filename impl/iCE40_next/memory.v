@@ -7,7 +7,7 @@ module memory
 	input [ADDRESS_BITS - 1 : 0]  ADDRESS,
 	input [BITS - 1 : 0] DATA_IN,
 	output [BITS - 1 : 0] DATA_OUT,
-	input WRb  /* write memory */  
+	input WR  /* write memory */  
 );
 
 wire [15:0] data_out1;
@@ -15,8 +15,8 @@ wire [15:0] data_out2;
 
 assign DATA_OUT = ((ADDRESS[14] == 1'b0) ? data_out1 : data_out2);
 
-wire WEN1 = (ADDRESS[14] == 1'b0) ? ((WRb == 1'b0) ? 1'b1 : 1'b0) : 1'b0;
-wire WEN2 = (ADDRESS[14] == 1'b1) ? ((WRb == 1'b0) ? 1'b1 : 1'b0) : 1'b0;
+wire WEN1 = (ADDRESS[14] == 1'b0) ? ((WR == 1'b1) ? 1'b1 : 1'b0) : 1'b0;
+wire WEN2 = (ADDRESS[14] == 1'b1) ? ((WR == 1'b1) ? 1'b1 : 1'b0) : 1'b0;
 
 SB_SPRAM256KA spram0
 (

@@ -235,6 +235,13 @@ begin
 end
 endfunction
 
+function [4:0] reg_idx_from_ins;
+input [15:0] ins;
+begin
+	reg_idx_from_ins = {1'b0, ins[12:9]};
+end
+endfunction
+
 function [3:0]  imm_lo_from_ins;
 input 	 [15:0] ins;
 begin
@@ -336,10 +343,10 @@ begin
 			hazard2_r_next[regin] = 1'b0;
 			imm_r_next = imm_r;
 
-			if (!hazard_clears_next(regin)) begin
+			//if (!hazard_clears_next(regin)) begin
 				pc_r_next = pc_r_prev;
 				pc_r_prev_next = pc_r_prev;
-			end
+			//end
 		end
 end
 endtask
@@ -355,10 +362,10 @@ begin
 		hazard2_r_next[regin1] = 1'b0;
 		imm_r_next = imm_r;
 
-		if (!hazard_clears_next(regin1) || !hazard_clears_next(regin2)) begin
+		//if (!hazard_clears_next(regin1) || !hazard_clears_next(regin2)) begin
 			pc_r_next = pc_r_prev;
 			pc_r_prev_next = pc_r_prev;
-		end
+		//end
 	end
 end
 endtask
@@ -372,10 +379,10 @@ begin
 		branch_taken2_r_next = 1'b0;
 		imm_r_next = imm_r;
 
-		if (!hazard_clears_next(regin)) begin
+		//if (!hazard_clears_next(regin)) begin
 			pc_r_next = pc_r_prev;
 			pc_r_prev_next = pc_r_prev;
-		end
+		//end
 	end
 end
 endtask
@@ -429,7 +436,7 @@ begin
 
 	/* if we are in stage 4 and loading a register from mem, need to stall the pipeline */
 	casex (pipelineStage4_r)
-		16'h6xxx:
+		16'h5xxx, 16'h6xxx, 16'b110xxxxxxxxxxxxx:
 			//if (is_load_store_from_ins(pipelineStage4_r) == 1'b0)  /* load */
 				pipelineStage1_r_next = NOP_INSTRUCTION;
 				
@@ -528,9 +535,17 @@ begin
 			end
 		end
 		16'h5xxx:	begin	/* load / store reg, reg ind */	
-
-			// Load reg index - check for hazards
-
+			if (is_load_store_from_ins(pipelineStage1_r) == 1'b0) begin /* load */
+				hazard2_r_next[reg_dest_from_ins(pipelineStage1_r)] 	= 1'b1;	// we will write to this register
+				has_one_register_hazard(reg_src_from_ins(pipelineStage1_r));
+				regBRdAddr_r 		= reg_src_from_ins(pipelineStage1_r);	
+			end else begin /* store */
+				regARdAddr_r 		= reg_dest_from_ins(pipelineStage1_r);	
+				regBRdAddr_r 		= reg_src_from_ins(pipelineStage1_r);	
+				// Check for hazards
+				has_one_register_hazard(reg_dest_from_ins(pipelineStage1_r));
+				has_one_register_hazard(reg_src_from_ins(pipelineStage1_r));
+			end
 		end
 		16'h6xxx: 	begin /* load / store, reg, imm address */
 			if (is_load_store_from_ins(pipelineStage1_r) == 1'b0) begin /* load */
@@ -543,6 +558,26 @@ begin
 				// Check for hazards
 				has_one_register_hazard(reg_dest_from_ins(pipelineStage1_r));
 			end
+		end
+		16'b110xxxxxxxxxxxxx: begin /* memory, reg, reg + immediate index */ 
+			if (is_load_store_from_ins(pipelineStage1_r) == 1'b0) begin /* load */
+			
+				hazard2_r_next[reg_dest_from_ins(pipelineStage1_r)] 	= 1'b1;	// we will write to this register
+				imm_stage2_r_next 	= {imm_r, imm_lo_from_ins(pipelineStage1_r)};
+				regBRdAddr_r 		= reg_idx_from_ins(pipelineStage1_r);	
+				has_one_register_hazard(reg_idx_from_ins(pipelineStage1_r));
+
+			end else begin /* store */
+			
+				imm_stage2_r_next 	= {imm_r, imm_lo_from_ins(pipelineStage1_r)};
+				regARdAddr_r 		= reg_dest_from_ins(pipelineStage1_r);	
+				regBRdAddr_r 		= reg_idx_from_ins(pipelineStage1_r);	
+				
+				// Check for hazards
+				has_one_register_hazard(reg_dest_from_ins(pipelineStage1_r));
+				has_one_register_hazard(reg_idx_from_ins(pipelineStage1_r));
+			end
+
 		end
 		default: ;
 	endcase
@@ -581,7 +616,17 @@ begin
 				if (branch_taken2_r == 1'b1)
 					pipelineStage1_r_next = NOP_INSTRUCTION;
 			end
-		end	
+		end
+		16'h5xxx:	begin /* load store, reg address */
+			// Store address
+			loadStoreAddr_stage3_r_next = regB;
+
+			if (is_load_store_from_ins(pipelineStage2_r) == 1'b1) begin 
+				memoryOut_stage3_r_next = regA;
+			end
+
+		end
+	
 		16'h6xxx:	begin /* load store, imm address */
 			// Store address
 			loadStoreAddr_stage3_r_next = imm_stage2_r;
@@ -590,6 +635,13 @@ begin
 				memoryOut_stage3_r_next = regA;
 			end
 
+		end
+		16'b110xxxxxxxxxxxxx: begin /* memory, reg, reg + immediate index */ 
+	
+			loadStoreAddr_stage3_r_next = regB + imm_stage2_r;
+			if (is_load_store_from_ins(pipelineStage2_r) == 1'b1) begin /* store */
+				memoryOut_stage3_r_next = regA;
+			end 
 		end
 		default: ;
 	endcase
@@ -605,7 +657,7 @@ begin
 				pipelineStage1_r_next = NOP_INSTRUCTION;
 			end
 		end
-		16'h6xxx:	begin /* load store, imm address */
+		16'h5xxx, 16'h6xxx, 16'b110xxxxxxxxxxxxx:	begin /* load / store */
 				// Output address
 				pc_r_next = pc_r;
 				memoryAddr_r = loadStoreAddr_stage3_r;
@@ -630,7 +682,7 @@ begin
 			reg_wr_addr_r   = LINK_REGISTER; /* link register */
 			reg_out_r		= result_stage4_r;
 		end
-		16'h6xxx:	begin /* load store, imm address */
+		16'h5xxx, 16'h6xxx, 16'b110xxxxxxxxxxxxx:	begin /* load store, imm address */
 			if (is_load_store_from_ins(pipelineStage4_r) == 1'b0) begin /* load */
 				// write back value 
 				reg_wr_addr_r = reg_dest_from_ins(pipelineStage4_r);
