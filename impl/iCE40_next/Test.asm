@@ -28,50 +28,22 @@ end_loop:
 		mov r1, 0
 		st  [r3], r0
 		inc r3
-		nop
-		nop
 		st  [r3], r1
 		inc r3
-		nop
-		nop
-	
 		st  [r3], r1
 		inc r3
-		nop
-		nop
-	
 		st  [r3], r1
 		inc r3
-		nop
-		nop
-
 		st  [r3], r0
 		inc r3
-		nop
-		nop
-
-
 		st  [r3], r1
 		inc r3
-		nop
-		nop
-
 		st  [r3], r1
 		inc r3
-		nop
-		nop
-
 		st  [r3], r1
 		inc r3
-		nop
-		nop
-
 		st  [r3], r0
 		inc r3
-		nop
-		nop
-
-
 		st  [r3], r0
 		inc r3
 		st  [r3], r0
@@ -101,18 +73,12 @@ die:
 outer:
 		ld r0, [r2]
 		inc r2
-		nop
-		nop
 		st [PWM_LED], r0
 		ld r0, [r2]
 		inc r2
-		nop
-		nop
 		st [PWM_LED+1], r0
 		ld r0, [r2]
 		inc r2
-		nop
-		nop
 		st [PWM_LED+2], r0
 
 		mov r0, 0x20
