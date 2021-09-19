@@ -14,7 +14,8 @@ module top
 wire clk12;
 wire clk;
 
-localparam CLOCKFREQ = 25125000;
+//localparam CLOCKFREQ = 25125000;
+localparam CLOCKFREQ = 12000000;
 
 SB_HFOSC inthosc (
   .CLKHFPU(1'b1),
@@ -23,7 +24,7 @@ SB_HFOSC inthosc (
 );
 defparam inthosc.CLKHF_DIV = "0b10";
 
-SB_PLL40_CORE #(
+/*SB_PLL40_CORE #(
 		.FEEDBACK_PATH("SIMPLE"),
 		.DIVR(4'b0000),		// DIVR =  0
 		.DIVF(7'b1000010),	// DIVF = 66
@@ -36,8 +37,8 @@ SB_PLL40_CORE #(
 		.REFERENCECLK(clk12),
 		.PLLOUTCORE(clk)
 		);
-
-
+*/
+assign clk = clk12;
 
 reg [20:0] COUNT = 0;
 wire RSTb = (COUNT < 10000) ? 1'b0 : 1'b1;

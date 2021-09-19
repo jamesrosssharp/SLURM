@@ -10,96 +10,45 @@ UPPER_HIRAM		equ		0xc000
 		mov r3, HIRAM
 		mov r1, the_string
 
-		nop
-		nop
-		nop
-		
 the_loop:
 		ld r0, [r1]
 		inc r1
-		nop
-		nop
 		or r0, r0
-		nop
-		nop
 		bz end_loop
 		st [r3], r0
 		inc r3
-		nop
-		nop
 		ba the_loop
 end_loop:
 		mov r0, 0
-		nop
-		nop
-		nop
 		st [r3], r0
 
 		mov r3, UPPER_HIRAM
 		mov r0, 0xffff
 		mov r1, 0
-		nop
-		nop
 		st  [r3], r0
 		inc r3
-		nop
-		nop
-		nop
 		st  [r3], r1
 		inc r3
-		nop
-		nop
-		nop
 		st  [r3], r1
 		inc r3
-		nop
-		nop
-		nop
 		st  [r3], r1
 		inc r3
-		nop
-		nop
-		nop
 		st  [r3], r0
 		inc r3
-		nop
-		nop
-		nop
 		st  [r3], r1
 		inc r3
-		nop
-		nop
-		nop
 		st  [r3], r1
 		inc r3
-		nop
-		nop
-		nop
 		st  [r3], r1
 		inc r3
-		nop
-		nop
-		nop
 		st  [r3], r0
 		inc r3
-		nop
-		nop
-		nop
 		st  [r3], r0
 		inc r3
-		nop
-		nop
-		nop
 		st  [r3], r0
 		inc r3
-		nop
-		nop
-		nop
 		st  [r3], r0
 		inc r3
-		nop
-		nop
-		nop
 
 run:
 
@@ -117,7 +66,7 @@ test_loop:
 
 		ba loop
 die:
-		mov r3, 0x4
+		mov r3, 0x2
 		
 		mov r2, UPPER_HIRAM
 outer:
@@ -131,9 +80,9 @@ outer:
 		inc r2
 		st [PWM_LED+2], r0
 
-		mov r0, 0x20
+		mov r0, 0x2
 delay:
-		mov r1, 0xffff
+		mov r1, 0x2
 delay_1:
 
 		sub r1, 1

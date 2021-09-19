@@ -386,14 +386,14 @@ begin
 	
 	if ((regARdAddr_r < 5'd16) && 
 		(hazard2_r[regARdAddr] == 1'b1 || 
-		 hazard3_r[regARdAddr] == 1'b1 || 
-		 hazard4_r[regARdAddr] == 1'b1))
+		 hazard3_r[regARdAddr] == 1'b1/* || 
+		 hazard4_r[regARdAddr] == 1'b1*/))
 			partial_pipeline_stall_r = 1'b1;
 
 	if ((regBRdAddr_r < 5'd16) && 
 		(hazard2_r[regBRdAddr] == 1'b1 || 
-		 hazard3_r[regBRdAddr] == 1'b1 ||
-		 hazard4_r[regBRdAddr] == 1'b1))
+		 hazard3_r[regBRdAddr] == 1'b1 /*||
+		 hazard4_r[regBRdAddr] == 1'b1*/))
 			partial_pipeline_stall_r = 1'b1;
 
 	/* flags hazard */
@@ -412,19 +412,24 @@ always @(*)
 begin
 	partial_pipeline_stall_clearing_r = 1'b0;
 
-	if (((regARdAddr_r < 5'd16) && 
-		(hazard2_r[regARdAddr] == 1'b0 && 
-		 hazard3_r[regARdAddr] == 1'b0)) && ((regBRdAddr_r < 5'd16) && 
-		(hazard2_r[regBRdAddr] == 1'b0 && 
-		 hazard3_r[regBRdAddr] == 1'b0)))
-			partial_pipeline_stall_clearing_r = 1'b1;
+	if (partial_pipeline_stall_r == 1'b1)
+	begin
 
-	casex (pipelineStage1_r)
-		16'h4xxx:	begin 
-			if (uses_flags_for_branch(pipelineStage1_r) == 1'b1 && (flagsModifiedStage2_r == 1'b0))
-				partial_pipeline_stall_clearing_r = partial_pipeline_stall_clearing_r & 1'b1;
-		end
-	endcase
+		if (((regARdAddr_r < 5'd16) && 
+			(hazard2_r[regARdAddr] == 1'b0 /*&& 
+			 hazard3_r[regARdAddr] == 1'b0*/)) && ((regBRdAddr_r < 5'd16) && 
+			(hazard2_r[regBRdAddr] == 1'b0 /*&& 
+			 hazard3_r[regBRdAddr] == 1'b0*/)))
+				partial_pipeline_stall_clearing_r = 1'b1;
+
+		casex (pipelineStage1_r)
+			16'h4xxx:	begin 
+				if (uses_flags_for_branch(pipelineStage1_r) == 1'b1 && (flagsModifiedStage2_r == 1'b0))
+					partial_pipeline_stall_clearing_r = partial_pipeline_stall_clearing_r & 1'b1;
+			end
+		endcase
+
+	end
 end
 
 /* branch logic */
@@ -458,11 +463,17 @@ begin
 
 	/* partial pipeline stall */
 
-/*	if (partial_pipeline_stall_r == 1'b1) begin
+	if (partial_pipeline_stall_r == 1'b1) begin
 		pipelineStage1_r_next = pipelineStage1_r;
 		pipelineStage2_r_next = NOP_INSTRUCTION;	
 	end
-*/
+
+	casex (pipelineStage4_r)
+		16'h5xxx, 16'h6xxx, 16'b110xxxxxxxxxxxxx:	begin 
+			pipelineStage1_r_next = NOP_INSTRUCTION;	
+		end
+	endcase
+
 	/* If branch taken in stage 1, insert nop as new instruction in stage 1 */
 
 	casex (pipelineStage1_r)
@@ -496,17 +507,18 @@ begin
 	pc_r_next = pc_r + 1;
 	pc_r_prev_next = pc_r;
 	
-	casex (pipelineStage3_r)
-		16'h5xxx, 16'h6xxx, 16'b110xxxxxxxxxxxxx:	begin 
-			pc_r_next = pc_r;
-		end
-	endcase
-
-/*	if (partial_pipeline_stall_r == 1'b1 && partial_pipeline_stall_clearing_r == 1'b0) begin
+	if (partial_pipeline_stall_r == 1'b1 && partial_pipeline_stall_clearing_r == 1'b0) begin
 		pc_r_next = pc_r_prev;
 		pc_r_prev_next = pc_r_prev;
 	end
-*/
+
+	casex (pipelineStage3_r)
+		16'h5xxx, 16'h6xxx, 16'b110xxxxxxxxxxxxx:	begin 
+			pc_r_prev_next = pc_r_prev;
+			pc_r_next = pc_r_prev;
+		end
+	endcase
+
 	/* Branch in pipeline stage 1 ? */
 
 	casex (pipelineStage1_r)
@@ -549,9 +561,8 @@ begin
 	memoryAddr_r = pc_r;
 	mem_WR_r = 1'b0;
 
-/*	if (partial_pipeline_stall_r == 1'b1 && partial_pipeline_stall_clearing_r == 1'b0)
+	if (partial_pipeline_stall_r == 1'b1 && partial_pipeline_stall_clearing_r == 1'b0)
 		memoryAddr_r = pc_r_prev;
-*/
 
 	casex (pipelineStage3_r)
 		16'h5xxx, 16'h6xxx, 16'b110xxxxxxxxxxxxx:	begin /* load / store */
