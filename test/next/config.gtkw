@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.103 (w)1999-2019 BSI
-[*] Sun Sep 19 09:42:06 2021
+[*] Mon Sep 20 10:36:33 2021
 [*]
 [dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/next/dump.vcd"
-[dumpfile_mtime] "Sun Sep 19 09:38:15 2021"
-[dumpfile_size] 34945533
+[dumpfile_mtime] "Mon Sep 20 10:35:57 2021"
+[dumpfile_size] 54928323
 [savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/next/config.gtkw"
-[timestart] 0
+[timestart] 27460000
 [size] 1710 811
 [pos] -1 -1
-*-18.000000 500000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-20.000000 30200000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] slurm16_tb.
 [treeopen] slurm16_tb.slm0.
 [treeopen] slurm16_tb.slm0.mem0.
@@ -67,9 +67,6 @@ slurm16_tb.slm0.pip0.imm_r[11:0]
 slurm16_tb.slm0.pip0.pc_r[15:0]
 slurm16_tb.slm0.pip0.regA[15:0]
 slurm16_tb.slm0.pip0.regB[15:0]
-slurm16_tb.slm0.pip0.hazard2_r[31:0]
-slurm16_tb.slm0.pip0.hazard3_r[31:0]
-slurm16_tb.slm0.pip0.hazard4_r[31:0]
 slurm16_tb.slm0.pip0.imm_stage2_r[15:0]
 slurm16_tb.slm0.pip0.memoryOut_stage3_r_next[15:0]
 @28
@@ -82,8 +79,14 @@ slurm16_tb.slm0.mem0.u0.WR
 @22
 slurm16_tb.slm0.mem0.u0.DATA_IN[15:0]
 @28
-slurm16_tb.slm0.pip0.partial_pipeline_stall_clearing_r
-@29
 slurm16_tb.slm0.pip0.partial_pipeline_stall_r
+@22
+slurm16_tb.slm0.pip0.regARdAddr_stage0_r[5:0]
+slurm16_tb.slm0.pip0.regBRdAddr_stage0_r[5:0]
+slurm16_tb.slm0.pip0.hazard2_r[5:0]
+slurm16_tb.slm0.pip0.hazard2_r_next[5:0]
+slurm16_tb.slm0.pip0.hazard3_r[5:0]
+@23
+slurm16_tb.slm0.pip0.hazard4_r[5:0]
 [pattern_trace] 1
 [pattern_trace] 0

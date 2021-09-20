@@ -59,6 +59,9 @@ reg mem_WR_r;
 reg [BITS - 1:0] memoryOut_stage3_r;
 reg [BITS - 1:0] memoryOut_stage3_r_next;
 
+reg memory_op_r;
+reg memory_op_r_next;
+
 assign memoryAddr 	= memoryAddr_r;
 assign mem_RD 		= mem_RD_r;
 assign mem_WR 		= mem_WR_r;
@@ -88,8 +91,12 @@ reg [BITS - 1:0] aluB_r;
 assign aluA = aluA_r;
 assign aluB = aluB_r;
 
-reg [REG_BITS - 1:0] regARdAddr_r;
-reg [REG_BITS - 1:0] regBRdAddr_r;
+reg [REG_BITS:0] regARdAddr_r;
+reg [REG_BITS:0] regBRdAddr_r;
+
+reg [REG_BITS:0] regARdAddr_stage0_r;
+reg [REG_BITS:0] regBRdAddr_stage0_r;
+
 
 assign regARdAddr = regARdAddr_r;
 assign regBRdAddr = regBRdAddr_r;
@@ -112,11 +119,11 @@ assign regWrAddr = reg_wr_addr_r;
 reg [4:0] alu_op_r;
 assign aluOp = alu_op_r;
 
-reg [2**REG_BITS - 1:0] hazard2_r;
-reg [2**REG_BITS - 1:0] hazard2_r_next;
-reg [2**REG_BITS - 1:0] hazard3_r;
+reg [REG_BITS:0] hazard2_r;
+reg [REG_BITS:0] hazard2_r_next;
+reg [REG_BITS:0] hazard3_r;
 
-reg [2**REG_BITS - 1:0] hazard4_r;
+reg [REG_BITS:0] hazard4_r;
 
 reg branch_taken2_r;
 reg branch_taken2_r_next;
@@ -135,7 +142,7 @@ reg flagsModifiedStage2_r;
 reg flagsModifiedStage3_r;
 
 reg partial_pipeline_stall_r;
-reg partial_pipeline_stall_clearing_r;
+reg partial_pipeline_stall_r_next;
 
 always @(posedge CLK)
 begin
@@ -151,9 +158,9 @@ begin
 		result_stage2_r  <= {BITS{1'b0}};
 		result_stage3_r  <= {BITS{1'b0}};
 		result_stage4_r  <= {BITS{1'b0}};
-		hazard2_r		 <= {2**REG_BITS - 1{1'b0}};
-		hazard3_r		 <= {2**REG_BITS - 1{1'b0}};
-		hazard4_r		 <= {2**REG_BITS - 1{1'b0}};
+		hazard2_r		 <= {REG_BITS + 1{1'b0}};
+		hazard3_r		 <= {REG_BITS + 1{1'b0}};
+		hazard4_r		 <= {REG_BITS + 1{1'b0}};
 		branch_taken2_r  <= 1'b0;
 		branch_taken3_r  <= 1'b0;
 		branch_taken4_r  <= 1'b0;
@@ -162,6 +169,8 @@ begin
 		memoryOut_stage3_r			 <= {BITS{1'b0}};
 		flagsModifiedStage2_r		 <= 1'b0;
 		flagsModifiedStage3_r		 <= 1'b0;
+		partial_pipeline_stall_r     <= 1'b0;
+		memory_op_r 				 <= 1'b0;
 	end
 	else begin
 		pc_r <= pc_r_next;
@@ -186,7 +195,8 @@ begin
 		memoryOut_stage3_r		<= memoryOut_stage3_r_next;
 		flagsModifiedStage2_r	<= flagsModifiedStage2_r_next;
 		flagsModifiedStage3_r	<= flagsModifiedStage2_r;
-
+		partial_pipeline_stall_r <= partial_pipeline_stall_r_next;
+		memory_op_r <= memory_op_r_next;
 	end
 end
 
@@ -318,118 +328,110 @@ endfunction
 
 always @(*)
 begin
-	hazard2_r_next = {BITS{1'b0}};
+	hazard2_r_next = 5'd16;
 
-	casex (pipelineStage1_r)
-		16'h01xx:	begin	/* ret / iret */
-			hazard2_r_next[LINK_REGISTER] = 1'b1;
-		end
-		16'h02xx, 16'h03xx: begin
-			hazard2_r_next[reg_src_from_ins(pipelineStage1_r)] = 1'b1;	
-		end
-		16'h04xx: begin /* alu op reg */
-			hazard2_r_next[reg_src_from_ins(pipelineStage1_r)] = 1'b1;
-		end
-		16'h2xxx:	begin	/* alu op, reg reg */
-			hazard2_r_next[reg_dest_from_ins(pipelineStage1_r)] = 1'b1;
-		end
-		16'h3xxx:	begin	/* alu op, reg imm */
-			hazard2_r_next[reg_dest_from_ins(pipelineStage1_r)] = 1'b1;
-		end
-		16'h5xxx:	begin	/* load / store reg, reg ind */	
-			if (is_load_store_from_ins(pipelineStage1_r) == 1'b0) begin /* load */
-				hazard2_r_next[reg_dest_from_ins(pipelineStage1_r)] 	= 1'b1;	// we will write to this register
+	if (partial_pipeline_stall_r == 1'b0) begin
+
+		casex (pipelineStage1_r)
+			16'h01xx:	begin	/* ret / iret */
+				hazard2_r_next = LINK_REGISTER;
 			end
-		end
-		16'h6xxx: 	begin /* load / store, reg, imm address */
-			if (is_load_store_from_ins(pipelineStage1_r) == 1'b0) begin /* load */
-				hazard2_r_next[reg_dest_from_ins(pipelineStage1_r)] 	= 1'b1;	// we will write to this register
-			end 
-		end
-		16'b110xxxxxxxxxxxxx: begin /* memory, reg, reg + immediate index */ 
-			if (is_load_store_from_ins(pipelineStage1_r) == 1'b0) begin /* load */
-				hazard2_r_next[reg_dest_from_ins(pipelineStage1_r)] 	= 1'b1;	// we will write to this register
-			end 
-		end
-		default: ;
-	endcase
+			16'h02xx, 16'h03xx: begin
+				hazard2_r_next = reg_src_from_ins(pipelineStage1_r);	
+			end
+			16'h04xx: begin /* alu op reg */
+				hazard2_r_next = reg_src_from_ins(pipelineStage1_r);
+			end
+			16'h2xxx:	begin	/* alu op, reg reg */
+				hazard2_r_next = reg_dest_from_ins(pipelineStage1_r);
+			end
+			16'h3xxx:	begin	/* alu op, reg imm */
+				hazard2_r_next = reg_dest_from_ins(pipelineStage1_r);
+			end
+			16'h5xxx:	begin	/* load / store reg, reg ind */	
+				if (is_load_store_from_ins(pipelineStage1_r) == 1'b0) begin /* load */
+					hazard2_r_next = reg_dest_from_ins(pipelineStage1_r);	// we will write to this register
+				end
+			end
+			16'h6xxx: 	begin /* load / store, reg, imm address */
+				if (is_load_store_from_ins(pipelineStage1_r) == 1'b0) begin /* load */
+					hazard2_r_next = reg_dest_from_ins(pipelineStage1_r);	// we will write to this register
+				end 
+			end
+			16'b110xxxxxxxxxxxxx: begin /* memory, reg, reg + immediate index */ 
+				if (is_load_store_from_ins(pipelineStage1_r) == 1'b0) begin /* load */
+					hazard2_r_next = reg_dest_from_ins(pipelineStage1_r);	// we will write to this register
+				end 
+			end
+			default: ;
+		endcase
 
-	if (partial_pipeline_stall_r == 1'b1)
-		hazard2_r_next = {BITS{1'b0}};
+	end
+
 end
 
 /* 2 - flags that will be written */
 
 always @(*)
 begin
-	flagsModifiedStage2_r_next = 1'b0;
+/*	flagsModifiedStage2_r_next = 1'b0;
 
 	casex (pipelineStage1_r)
-		16'h04xx: begin /* alu op reg */
+		16'h04xx: begin 
 			flagsModifiedStage2_r_next = 1'b1;
 		end
-		16'h2xxx:	begin	/* alu op, reg reg */
+		16'h2xxx:	begin	
 			flagsModifiedStage2_r_next = 1'b1;
 		end
-		16'h3xxx:	begin	/* alu op, reg imm */
+		16'h3xxx:	begin	
 			flagsModifiedStage2_r_next = 1'b1;
 		end
 		default: ;
 	endcase
+*/
 end
 
 /* Determine any hazard and assert pipeline_partial_stall */
 
 always @(*)
 begin
-	partial_pipeline_stall_r = 1'b0;
+	partial_pipeline_stall_r_next = partial_pipeline_stall_r;
+
+	if (partial_pipeline_stall_r == 1'b0 && memory_op_r == 1'b0) begin
 	
-	if ((regARdAddr_r < 5'd16) && 
-		(hazard2_r[regARdAddr] == 1'b1 || 
-		 hazard3_r[regARdAddr] == 1'b1/* || 
-		 hazard4_r[regARdAddr] == 1'b1*/))
-			partial_pipeline_stall_r = 1'b1;
+		if ((regARdAddr_stage0_r != 5'd16) && 
+			(hazard2_r == regARdAddr_stage0_r || 
+			 hazard3_r == regARdAddr_stage0_r  || 
+			 hazard2_r_next == regARdAddr_stage0_r))
+				partial_pipeline_stall_r_next = 1'b1;
 
-	if ((regBRdAddr_r < 5'd16) && 
-		(hazard2_r[regBRdAddr] == 1'b1 || 
-		 hazard3_r[regBRdAddr] == 1'b1 /*||
-		 hazard4_r[regBRdAddr] == 1'b1*/))
-			partial_pipeline_stall_r = 1'b1;
+		if ((regBRdAddr_stage0_r != 5'd16) && 
+			(hazard2_r == regBRdAddr_stage0_r || 
+			 hazard3_r == regBRdAddr_stage0_r ||
+			 hazard2_r_next == regBRdAddr_stage0_r))
+				partial_pipeline_stall_r_next = 1'b1;
 
-	/* flags hazard */
+		/* flags hazard */
 
-	casex (pipelineStage1_r)
-		16'h4xxx:	begin /* branch */
-			if (uses_flags_for_branch(pipelineStage1_r) == 1'b1 && (flagsModifiedStage2_r == 1'b1 || flagsModifiedStage3_r == 1'b1))
-				partial_pipeline_stall_r = 1'b1;
-		end
-	endcase
-end
-
-/* if stall clears next cycle */
-
-always @(*)
-begin
-	partial_pipeline_stall_clearing_r = 1'b0;
-
-	if (partial_pipeline_stall_r == 1'b1)
-	begin
-
-		if (((regARdAddr_r < 5'd16) && 
-			(hazard2_r[regARdAddr] == 1'b0 /*&& 
-			 hazard3_r[regARdAddr] == 1'b0*/)) && ((regBRdAddr_r < 5'd16) && 
-			(hazard2_r[regBRdAddr] == 1'b0 /*&& 
-			 hazard3_r[regBRdAddr] == 1'b0*/)))
-				partial_pipeline_stall_clearing_r = 1'b1;
-
+		/*
 		casex (pipelineStage1_r)
 			16'h4xxx:	begin 
-				if (uses_flags_for_branch(pipelineStage1_r) == 1'b1 && (flagsModifiedStage2_r == 1'b0))
-					partial_pipeline_stall_clearing_r = partial_pipeline_stall_clearing_r & 1'b1;
+				if (uses_flags_for_branch(pipelineStage1_r) == 1'b1 && (flagsModifiedStage2_r == 1'b1 || flagsModifiedStage3_r == 1'b1))
+					partial_pipeline_stall_r_next = 1'b1;
 			end
 		endcase
+		*/
+	end else begin
 
+		if (((regARdAddr_stage0_r == 5'd16) || 
+			(hazard2_r != regARdAddr_stage0_r && 
+			 hazard3_r != regARdAddr_stage0_r)) &&
+		   ((regBRdAddr_stage0_r == 5'd16) || 
+			(hazard2_r != regBRdAddr_stage0_r && 
+			 hazard3_r != regBRdAddr_stage0_r)))
+				partial_pipeline_stall_r_next = 1'b0;
 	end
+
 end
 
 /* branch logic */
@@ -462,17 +464,17 @@ begin
 	pipelineStage4_r_next = pipelineStage3_r;
 
 	/* partial pipeline stall */
-
-	if (partial_pipeline_stall_r == 1'b1) begin
-		pipelineStage1_r_next = pipelineStage1_r;
-		pipelineStage2_r_next = NOP_INSTRUCTION;	
-	end
-
 	casex (pipelineStage4_r)
 		16'h5xxx, 16'h6xxx, 16'b110xxxxxxxxxxxxx:	begin 
 			pipelineStage1_r_next = NOP_INSTRUCTION;	
 		end
 	endcase
+
+
+	if (partial_pipeline_stall_r == 1'b1) begin
+		pipelineStage1_r_next = pipelineStage1_r;
+		pipelineStage2_r_next = NOP_INSTRUCTION;	
+	end
 
 	/* If branch taken in stage 1, insert nop as new instruction in stage 1 */
 
@@ -507,17 +509,17 @@ begin
 	pc_r_next = pc_r + 1;
 	pc_r_prev_next = pc_r;
 	
-	if (partial_pipeline_stall_r == 1'b1 && partial_pipeline_stall_clearing_r == 1'b0) begin
+	if (partial_pipeline_stall_r == 1'b1) begin
 		pc_r_next = pc_r_prev;
 		pc_r_prev_next = pc_r_prev;
+	end else begin
+		casex (pipelineStage3_r)
+			16'h5xxx, 16'h6xxx, 16'b110xxxxxxxxxxxxx:	begin 
+				pc_r_prev_next = pc_r;
+				pc_r_next = pc_r;
+			end
+		endcase
 	end
-
-	casex (pipelineStage3_r)
-		16'h5xxx, 16'h6xxx, 16'b110xxxxxxxxxxxxx:	begin 
-			pc_r_prev_next = pc_r_prev;
-			pc_r_next = pc_r_prev;
-		end
-	endcase
 
 	/* Branch in pipeline stage 1 ? */
 
@@ -561,7 +563,7 @@ begin
 	memoryAddr_r = pc_r;
 	mem_WR_r = 1'b0;
 
-	if (partial_pipeline_stall_r == 1'b1 && partial_pipeline_stall_clearing_r == 1'b0)
+	if (partial_pipeline_stall_r == 1'b1)
 		memoryAddr_r = pc_r_prev;
 
 	casex (pipelineStage3_r)
@@ -571,6 +573,22 @@ begin
 				mem_WR_r = 1'b1;
 		end
 	endcase
+
+end
+
+/* determine if next cycle is a memory operation */
+
+always @(*)
+begin
+
+	memory_op_r_next = 1'b0;
+
+	casex (pipelineStage3_r)
+		16'h5xxx, 16'h6xxx, 16'b110xxxxxxxxxxxxx:	begin /* load / store */
+			memory_op_r_next = 1'b1;
+		end
+	endcase
+
 
 end
 
@@ -600,7 +618,8 @@ begin
 			regARdAddr_r 		= reg_dest_from_ins(pipelineStage1_r);	
 		end
 		16'h4xxx:	begin /* branch */
-			regARdAddr_r	= reg_branch_ind_from_ins(pipelineStage1_r);
+			if (is_branch_reg_ind_from_ins(pipelineStage1_r) == 1'b1) 
+				regARdAddr_r	= reg_branch_ind_from_ins(pipelineStage1_r);
 		end
 		16'h5xxx:	begin	/* load / store reg, reg ind */	
 			regBRdAddr_r 		= reg_src_from_ins(pipelineStage1_r);	
@@ -612,6 +631,48 @@ begin
 		16'b110xxxxxxxxxxxxx: begin /* memory, reg, reg + immediate index */ 
 			regBRdAddr_r 		= reg_idx_from_ins(pipelineStage1_r);	
 			regARdAddr_r 		= reg_dest_from_ins(pipelineStage1_r);	
+		end
+		default: ;
+	endcase
+end
+
+always @(*)
+begin
+	regARdAddr_stage0_r = 5'd16;
+	regBRdAddr_stage0_r = 5'd16;
+
+	casex (memoryIn) /* instruction before its loaded */
+		16'h0000:	;	/* nop */
+		16'h01xx:	begin	/* ret / iret */
+			regARdAddr_stage0_r = LINK_REGISTER; // add iret later when needed
+		end
+		16'h02xx, 16'h03xx: begin
+			regBRdAddr_stage0_r	= reg_src_from_ins(memoryIn);
+		end
+		16'h04xx: begin /* alu op reg */
+			regBRdAddr_stage0_r	= reg_src_from_ins(memoryIn);
+		end
+		16'h2xxx:	begin	/* alu op, reg reg */
+			regARdAddr_stage0_r	= reg_dest_from_ins(memoryIn);
+			regBRdAddr_stage0_r	= reg_src_from_ins(memoryIn);
+		end
+		16'h3xxx:	begin	/* alu op, reg imm */
+			regARdAddr_stage0_r 		= reg_dest_from_ins(memoryIn);	
+		end
+		16'h4xxx:	begin /* branch */
+			if (is_branch_reg_ind_from_ins(memoryIn) == 1'b1) 
+				regARdAddr_stage0_r	= reg_branch_ind_from_ins(memoryIn);
+		end
+		16'h5xxx:	begin	/* load / store reg, reg ind */	
+			regBRdAddr_stage0_r 		= reg_src_from_ins(memoryIn);	
+			regARdAddr_stage0_r 		= reg_dest_from_ins(memoryIn);	
+		end
+		16'h6xxx: 	begin /* load / store, reg, imm address */
+			regARdAddr_stage0_r 		= reg_dest_from_ins(memoryIn);	
+		end
+		16'b110xxxxxxxxxxxxx: begin /* memory, reg, reg + immediate index */ 
+			regBRdAddr_stage0_r 		= reg_idx_from_ins(memoryIn);	
+			regARdAddr_stage0_r 		= reg_dest_from_ins(memoryIn);	
 		end
 		default: ;
 	endcase
