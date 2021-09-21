@@ -101,7 +101,7 @@ delay_1:
 
 		dw 0
 the_string:
-		dw "Hello world!\r\nHello Anna!\r\n"
+		dw "Hello world!\r\nHello from SLURM16, 5 stage pipeline\r\n"
 		dw 0
 
 		.end
