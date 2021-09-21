@@ -6,7 +6,7 @@ module uart
 	input [7 : 0]  ADDRESS,
 	input [BITS - 1 : 0] DATA_IN,
 	output [BITS - 1 : 0] DATA_OUT,
-	input WRb,  /* write memory  */
+	input WR,  /* write memory  */
 	output TX   /* UART output   */
 );
 
@@ -59,7 +59,7 @@ begin
 
 	case (ADDRESS)
 		8'h00:	/* TX register */
-			if (WRb == 1'b0) begin
+			if (WR == 1'b1) begin
 				tx_reg_next = DATA_IN[7:0];
 				go_reg_next = 1'b1;	
 			end

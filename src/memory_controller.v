@@ -3,26 +3,8 @@
 /* Memory map:
  *
  *	0x0000 - 0x0fff:  4k x 16 bit boot ROM
- *	0x1000 - 0x10ff:  UART
- *  0x1100 - 0x11ff:  GPIO
- *  0x1200 - 0x12ff:  PWM LED
- *	0x1300 - 0x13ff:  Timers ?
- *	0x1400 - 0x14ff:  SPI ?
- *	0x1500 - 0x15ff:  I2C ?
- *	0x1600 - 0x16ff:  DMAC ?
- *
- *	0x4000 - 0x7fff:  OCM, 16k x 16 bit RAM, dual port - DMA able ?
- *
- *  0x8000 - 0xffff:  Hi memory, 32k x 16 bit RAM - program memory, single port, non-DMA able
- *
- * Pin assignments: 
- * 		7 - 0 	: GPIO output
- * 		10 - 8 	: PWM LED
- * 		14 - 11 : reserved
- * 		15		: UART tx 
  *
  */
-
 
 module memory_controller
 #(parameter BITS = 16, ADDRESS_BITS = 16, CLOCK_FREQ = 10000000)
@@ -32,14 +14,19 @@ module memory_controller
 	input [ADDRESS_BITS - 1 : 0]  ADDRESS,
 	input [BITS - 1 : 0] DATA_IN,
 	output [BITS - 1 : 0] DATA_OUT,
-	input WRb,  /* write memory */
+	input memWR,  /* write memory */
+	input memRD,  /* read request */
+	output memBUSY, /* memory is busy (GFX / SND mem) */
 	output [15:0] PINS /* output pins */ 
 );
 
-reg WRb_HIRAM;
-reg WRb_UART;
-reg WRb_GPIO;
-reg WRb_PWM;
+/* memory is never busy for now */
+assign memBUSY = 1'b0;
+
+reg WR_HIRAM;
+reg WR_UART;
+reg WR_GPIO;
+reg WR_PWM;
 
 wire [BITS - 1 : 0] DATA_OUT_HIRAM;
 wire [BITS - 1 : 0] DATA_OUT_ROM;
@@ -71,28 +58,28 @@ assign DATA_OUT = DATA_OUT_REG;
 
 always @(*)
 begin
-	WRb_HIRAM = 1'b1;
-	WRb_UART  = 1'b1;
-	WRb_GPIO  = 1'b1;
-	WRb_PWM   = 1'b1;
+	WR_HIRAM = 1'b0;
+	WR_UART  = 1'b0;
+	WR_GPIO  = 1'b0;
+	WR_PWM   = 1'b0;
 
 	dout_next = dout;
 
 	casex (ADDRESS)
 		16'h10xx: begin
 			dout_next = DATA_OUT_UART;
-			WRb_UART = WRb;
+			WR_UART = memWR;
 		end
 		16'h11xx: begin
 			dout_next = DATA_OUT_GPIO;
-			WRb_GPIO = WRb;
+			WR_GPIO = memWR;
 		end
 		16'h12xx: begin
 			dout_next = DATA_OUT_PWM;
-			WRb_PWM = WRb;
+			WR_PWM = memWR;
 		end
 		16'b1xxxxxxxxxxxxxxx: begin
-			WRb_HIRAM = WRb;
+			WR_HIRAM = memWR;
 		end
 		default: ;
 	endcase
@@ -137,10 +124,10 @@ rom #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 1)) theRom
 memory #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 1)) theRam
 (
 	CLK,
-	ADDRESS[ADDRESS_BITS - 2: 0],
+	ADDRESS[ADDRESS_BITS - 2 : 0],
 	DATA_IN,
 	DATA_OUT_HIRAM,
-	WRb_HIRAM
+	WR_HIRAM
 );
 
 uart 
@@ -151,9 +138,10 @@ uart
 	ADDRESS[7:0],
 	DATA_IN,
 	DATA_OUT_UART,
-	WRb_UART,  /* write memory  */
-	PINS[15]   /* UART output   */
+	WR_UART,  // write memory  
+	PINS[15]   // UART output   
 );
+
 
 gpio
 #(.CLK_FREQ(CLOCK_FREQ), .BITS(BITS)) g0
@@ -163,9 +151,10 @@ gpio
 	ADDRESS[7:0],
 	DATA_IN,
 	DATA_OUT_GPIO,
-	WRb_GPIO,  /* write memory */
-	PINS[7:0] /* output pins */ 
+	WR_GPIO,  // write memory 
+	PINS[7:0] // output pins  
 );
+
 
 pwm_led
 #(.CLK_FREQ(CLOCK_FREQ), .BITS(BITS)) led0
@@ -175,8 +164,10 @@ pwm_led
 	ADDRESS[7:0],
 	DATA_IN,
 	DATA_OUT_PWM,
-	WRb_PWM,  /* write memory */
-	PINS[10:8] /* output pins */ 
+	WR_PWM,  // write memory 
+	PINS[10:8] // output pins 
 );
+
+
 
 endmodule

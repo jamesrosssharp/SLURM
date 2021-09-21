@@ -1,8 +1,8 @@
 /*
- *	slurm16.v: slurm16 processor
+ *	slurm16.v: slurm16 processor (next)
  *
- * 	- 8x 16 bit registers
- *  - 64kB Memory space
+ * 	- 16 x 16 bit registers
+ *  - 128kB Memory space
  *  - 16 bit RISC instructions
  */
 
@@ -19,77 +19,64 @@ wire Z;
 wire S;
 
 wire [4:0] aluOp;
-wire [15:0] pout;
-
-wire [15:0] LD_reg_ALUb;
-wire [15:0] LD_reg_Mb;
-wire [15:0] LD_reg_Pb;
-
-wire [3:0] ALU_A_SEL;
-wire [3:0] ALU_B_SEL;
-
-wire M_ENb;
-wire [3:0] M_SEL;
-wire [3:0] MADDR_SEL;
-wire MADDR_ALU_SELb;				/* select MADDR from ALU output */
-wire MADDR_POUT_SELb;				/* select MADDR from POUT */
-
-wire [15:0] INCb;
-wire [15:0] DECb;
-
-wire ALU_B_from_inP_b;
-
-wire mem_WRb;
-
-wire [15:0] mem_address;
-wire [15:0] mem_data_in;
-wire [15:0] mem_data_out;
 
 wire [15:0] aluA;
 wire [15:0] aluB;
+
 wire [15:0] aluOut;
 
-wire mem_OEb;
+wire [4:0] regIn;
+wire [4:0] regOutA;
+wire [4:0] regOutB;
+wire [15:0] regIn_data;
+wire [15:0] regOutA_data;
+wire [15:0] regOutB_data;
+
+wire memBUSY;
+wire [15:0] memoryIn;
+wire [15:0] memoryOut;
+wire [15:0] memoryAddr;
+wire mem_RD;
+wire mem_WR;
+
+register_file
+#(.REG_BITS(5), .BITS(16)) reg0
+(
+	.CLK(CLK),
+	.RSTb(RSTb),
+	.regIn(regIn),
+	.regOutA(regOutA),
+	.regOutB(regOutB),	
+	.regOutA_data(regOutA_data),
+	.regOutB_data(regOutB_data),
+	.regIn_data(regIn_data)
+);
 
 pipeline16 pip0
 (
 	.CLK(CLK),
 	.RSTb(RSTb),
-	.memoryIn(mem_data_out),
 	.C(C),	
 	.Z(Z),
 	.S(S),	
 	.aluOp(aluOp),
-	.pout(pout),	
-	.LD_reg_ALUb(LD_reg_ALUb), 	
-	.LD_reg_Mb(LD_reg_Mb), 
-	.LD_reg_Pb(LD_reg_Pb), 
-	.ALU_A_SEL(ALU_A_SEL),   		
- 	.ALU_B_SEL(ALU_B_SEL),   	
-	.M_ENb(M_ENb),					  
-	.M_SEL(M_SEL), 
-	.MADDR_SEL(MADDR_SEL), 
-	.MADDR_ALU_SELb(MADDR_ALU_SELb),				/* select MADDR from ALU output */
-	.MADDR_POUT_SELb(MADDR_POUT_SELb),				/* select MADDR from POUT */
-	.INCb(INCb),  	  
-	.DECb(DECb),  	  
-	.ALU_B_from_inP_b(ALU_B_from_inP_b),	
-	.mem_OEb(mem_OEb),
-	.mem_WRb(mem_WRb)  
+	.aluA(aluA),
+	.aluB(aluB),
+	.aluOut(aluOut),
+	.regFileIn(regIn_data),
+	.regWrAddr(regIn),
+	.regARdAddr(regOutA),
+	.regBRdAddr(regOutB),
+	.regA(regOutA_data),
+	.regB(regOutB_data),
+	.BUSY(memBUSY),
+	.memoryIn(memoryIn),
+	.memoryOut(memoryOut),
+	.memoryAddr(memoryAddr),
+	.mem_RD(mem_RD),
+	.mem_WR(mem_WR)  
 );
 
-memory_controller
-#(.BITS(16), .ADDRESS_BITS(16), .CLOCK_FREQ(CLOCK_FREQ))
-mem0
-(
-	.CLK(CLK),	
-	.RSTb(RSTb),
-	.ADDRESS(mem_address),
-	.DATA_IN(mem_data_in),
-	.DATA_OUT(mem_data_out),
-	.WRb(mem_WRb),
-	.PINS(PINS) 
-);
 
 alu 
 #(.BITS(16))
@@ -106,32 +93,21 @@ alu0
 	.S(S) 
 );
 
-register_file
-#(.REG_BITS(4), .BITS(16))
-reg0
+memory_controller
+#(.BITS(16), .ADDRESS_BITS(16), .CLOCK_FREQ(CLOCK_FREQ))
+mem0
 (
-	.CLK(CLK),
+	.CLK(CLK),	
 	.RSTb(RSTb),
-	.inALU(aluOut),
-	.LD_reg_ALUb(LD_reg_ALUb), 
-	.inM(mem_data_out), 
-	.LD_reg_Mb(LD_reg_Mb),
-	.inP(pout), 
-	.LD_reg_Pb(LD_reg_Pb), 
-	.ALU_A_SEL(ALU_A_SEL),   		
- 	.ALU_B_SEL(ALU_B_SEL),   	
-	.M_ENb(M_ENb),					 
- 	.M_SEL(M_SEL),    
- 	.MADDR_SEL(MADDR_SEL),	
-	.MADDR_ALU_SELb(MADDR_ALU_SELb),				/* select MADDR from ALU output */
-	.MADDR_POUT_SELb(MADDR_POUT_SELb),				/* select MADDR from POUT */
-	.INCb(INCb), 
-	.DECb(DECb), 
-	.ALU_B_from_inP_b(ALU_B_from_inP_b),	
- 	.aluA_out(aluA),
- 	.aluB_out(aluB),
- 	.m_out(mem_data_in),
-	.m_addr_out(mem_address) 
+	.ADDRESS(memoryAddr),
+	.DATA_IN(memoryOut),
+	.DATA_OUT(memoryIn),
+	.memWR(mem_WR), 
+	.memRD(mem_RD), 
+	.memBUSY(memBUSY),
+	.PINS(PINS) 
 );
+
+
 
 endmodule

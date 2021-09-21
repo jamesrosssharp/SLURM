@@ -1,84 +1,61 @@
-/* register_file.v : a register file  */
+/*
+ *	Register file: slurm-next
+ *
+ * 	Use block ram to implement register file, to eliminate high LUT usage due to
+ * 	muxes etc
+ *
+ *	New register assignment:
+ *
+ *	R0 - R11: general purpose registers
+ *	R12: Frame pointer
+ *	R13: Stack pointer
+ *	R14: Interrupt Link Register
+ *	R15: Link Register
+ *
+ *	The rest of the block RAM is scratch
+ *  
+ *  We use two block RAMs, and write same value to both block RAMs on write, 
+ *  on read there are two register selects to select each of A and B independently
+ *
+ */
 
 module register_file
-#(parameter REG_BITS = 4 /* default 2**4 = 16 registers */, parameter BITS = 16 /* default 16 bits */)
+#(parameter REG_BITS = 5 /* default 2**4 = 16 registers */, parameter BITS = 16 /* default 16 bits */)
 (
 	input CLK,
 	input RSTb,
-	input [BITS - 1 : 0] 		inALU,
-	input [2**REG_BITS - 1 : 0] LD_reg_ALUb, /* Active low bit vector to load
-												register(s) from ALU output */
-	input [BITS - 1 : 0] 		inM, 
-	input [2**REG_BITS - 1 : 0] LD_reg_Mb,  /* Active low bit vector to load
-												register(s) from memory */
-	input [BITS - 1 : 0] 		inP, 
-	input [2**REG_BITS - 1 : 0] LD_reg_Pb,  /* Active low bit vector to load
-												register(s) from pipeline (constants in instruction words etc) */
-
-	input [REG_BITS  - 1: 0] ALU_A_SEL,   		/* index of register driving ALU A bus */
- 	input [REG_BITS - 1: 0]  ALU_B_SEL,   		/* index of register driving ALU B bus */
-
-	input M_ENb,					  /* enable register to drive memory bus */
- 	input [REG_BITS - 1 : 0] M_SEL,       /* index of register driving memory
-												bus */
-
- 	input [REG_BITS - 1 : 0] MADDR_SEL,   /* index of register driving memory 
-											  address bus */
-	input MADDR_ALU_SELb,				/* select MADDR from ALU output */
-	input MADDR_POUT_SELb,				/* select MADDR from POUT */
-
-
-	input [2**REG_BITS - 1 : 0] INCb,  	  /* active low register increment */
-	input [2**REG_BITS - 1 : 0] DECb,  	  /* active low register deccrement */
-
-	input ALU_B_from_inP_b,	/* 1 = ALU B from registers, 0 = ALU B from inP (pipeline constant register) */
-
- 	output [BITS - 1 : 0] aluA_out,
- 	output [BITS - 1 : 0] aluB_out,
- 	output [BITS - 1 : 0] m_out,
-	output [BITS - 1 : 0] m_addr_out 
+	input [REG_BITS - 1 : 0] regIn,
+	input [REG_BITS - 1 : 0] regOutA,
+	input [REG_BITS - 1 : 0] regOutB,	
+	output [BITS - 1 : 0] regOutA_data,
+	output [BITS - 1 : 0] regOutB_data,
+	input  [BITS - 1 : 0] regIn_data
 );
 
+reg [BITS - 1: 0] outA;
+reg [BITS - 1: 0] outB;
 
-wire [BITS - 1:0] out [2**REG_BITS - 1:0];
+assign regOutA_data = outA;
+assign regOutB_data = outB;
 
-assign aluA_out = out[ALU_A_SEL];
-assign aluB_out = (ALU_B_from_inP_b == 1'b0) ? inP : out[ALU_B_SEL];
-assign m_out = (M_ENb == 1'b0) ? out[M_SEL] : {BITS{1'b0}};
+reg [BITS - 1: 0] regFileA [2**REG_BITS - 1 : 0];
+reg [BITS - 1: 0] regFileB [2**REG_BITS - 1 : 0];
 
-//assign m_addr_out = (MADDR_ALU_SELb == 1'b0)? inALU : ((MADDR_POUT_SELb == 1'b0) ? inP : out[MADDR_SEL]);
-reg [BITS - 1 : 0] m_addr_out_r;
-assign m_addr_out = m_addr_out_r;
-
-always @(*)
+always @(posedge CLK)
 begin
-	if (MADDR_ALU_SELb == 1'b0)
-		m_addr_out_r = inALU;
-	else if (MADDR_POUT_SELb == 1'b0)
-		m_addr_out_r = inP;
+	regFileA[regIn] <= regIn_data;
+	regFileB[regIn] <= regIn_data;
+
+	if (regOutA == regIn)
+		outA <= regIn_data;
 	else
-		m_addr_out_r = out[MADDR_SEL];
+		outA <= regFileA[regOutA];
+
+	if (regOutB == regIn)
+		outB <= regIn_data;
+	else
+		outB <= regFileB[regOutB];
 end
 
 
-genvar j;
-generate
-	for (j = 0; j < 2**REG_BITS; j = j+1)
-		begin: Gen_Modules
-			register #(BITS) register_inst (
-				CLK, 		
-				RSTb,	
-				inALU,    
-				LD_reg_ALUb[j], 
-				inM,	
-				LD_reg_Mb[j],
-				inP,
-				LD_reg_Pb[j],
-				out[j],
-				INCb[j],	
-				DECb[j]	
-			);
-		end
-endgenerate
-
-endmodule 
+endmodule

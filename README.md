@@ -10,9 +10,11 @@ Most components in the design are parameterizable, e.g. configurable number of r
 SLURM16
 =======
 
-SLURM16 is the 16 bit core, with 16 16-bit registers. R15 = program counter (PC), R14 = link 
-register (LR), R13 = interrupt link register (ILR), R12 = stack pointer (SP), R0-R11 are general purpose. Although unintended, the architecture bears a strong resemblance to
-Jan Gray's XR16 RISC machine. 
+SLURM16 is the 16 bit core, with 16 16-bit registers. R15 = link 
+register (LR), R14 = interrupt link register (ILR), R13 = stack pointer (SP), R0-R12 are general purpose. Although unintended, the architecture bears a strong resemblance to
+Jan Gray's XR16 RISC machine.
+
+Five stage pipeline. 
 
 Instruction Set
 ===============
@@ -161,10 +163,8 @@ Class 5: index register memory operation
 
 |15 | 14 | 13 | 12 | 11 | 10 | 9  | 8  | 7  - 4 | 3 - 0 |
 |---|----|----|----|----|----|----|--- |--------|-------|
-|0  | 1  | 0  | 1  |  x | PD | PI | LS |  REG   |  IDX  |
+|0  | 1  | 0  | 1  |  x | x  | x  | LS |  REG   |  IDX  |
 
-    PD: 1 = no post decrement, 0 = post decrement
-    PI: 1 = no post increment, 0 = post increment (increment takes precedence over decrement)
     LS: 0 = load, 1 = store
     REG: source for store, destination for load
     IDX: index register, holds address of memory location

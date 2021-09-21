@@ -46,7 +46,8 @@ wire [BITS - 1 : 0] asrOp = {B[BITS-1], B[BITS - 1:1]};
 wire [BITS - 1 : 0] lsrOp = {1'b0, B[BITS - 1:1]};
 
 reg [BITS - 1 : 0] out;
-assign aluOut = out;
+reg [BITS - 1 : 0] out_r;
+assign aluOut = out_r;
 
 always @(posedge CLK)
 begin
@@ -54,11 +55,13 @@ begin
 		C_flag_reg <= 1'b0;
 		Z_flag_reg <= 1'b0;
 		S_flag_reg <= 1'b0;
+		out_r <= {BITS{1'b0}};
 	end
 	else begin
 		C_flag_reg <= C_flag_reg_next;
 		Z_flag_reg <= Z_flag_reg_next;
 		S_flag_reg <= S_flag_reg_next;
+		out_r <= out;
 	end
 end
 

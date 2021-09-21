@@ -2,9 +2,10 @@ PROJ 	= slurm16_ice40
 PIN_DEF = slurm16_ice40.pcf
 DEVICE 	= up5k
 
-SRCDIR=../../src
+SRCDIR=../../src_next
 
-SOURCE = $(SRCDIR)/pipeline16.v $(SRCDIR)/slurm16.v $(SRCDIR)/alu.v $(SRCDIR)/register_file.v $(SRCDIR)/register.v $(SRCDIR)/memory_controller.v memory.v rom.v $(SRCDIR)/uart.v $(SRCDIR)/uart_tx.v $(SRCDIR)/baudgen.v $(SRCDIR)/gpio.v $(PROJ).v pwm_led.v 
+SOURCE = $(SRCDIR)/pipeline16.v $(SRCDIR)/slurm16.v $(SRCDIR)/alu.v $(SRCDIR)/register_file.v $(SRCDIR)/memory_controller.v \
+		 $(SRCDIR)/uart.v $(SRCDIR)/uart_tx.v $(SRCDIR)/baudgen.v $(SRCDIR)/gpio.v pwm_led.v  memory.v rom.v slurm16_ice40.v 
 
 ICEPACK = icepack
 ICETIME = icetime

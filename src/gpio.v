@@ -6,7 +6,7 @@ module gpio
 	input [ADDRESS_BITS - 1 : 0]  ADDRESS,
 	input [BITS - 1 : 0] DATA_IN,
 	output [BITS - 1 : 0] DATA_OUT,
-	input WRb,  /* write memory */
+	input WR,  /* write memory */
 	output [7:0] PINS /* output pins */ 
 );
 
@@ -32,7 +32,7 @@ begin
 
 	case (ADDRESS)
 		8'h00:	/* Output register */
-			if (WRb == 1'b0) begin
+			if (WR == 1'b1) begin
 				gpio_reg_next = DATA_IN[7:0];
 			end
 		default:;
