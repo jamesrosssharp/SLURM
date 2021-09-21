@@ -5,7 +5,7 @@ UART_TX_STATUS  equ		0x1001
 PWM_LED			equ 	0x1200
 
 HIRAM			equ 	0x8000
-UPPER_HIRAM		equ		0xc000
+UPPER_HIRAM		equ		0x9000
 
 		mov r3, HIRAM
 		mov r1, the_string
@@ -101,7 +101,7 @@ delay_1:
 
 		dw 0
 the_string:
-		dw "Hello world!\r\n"
+		dw "Hello world!\r\nHello Anna!\r\n"
 		dw 0
 
 		.end
