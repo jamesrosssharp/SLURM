@@ -413,7 +413,7 @@ begin
 
 end
 
-/* Determine any hazard and assert pipeline_partial_stall */
+/* Determine any hazard and set stall_count_r */
 
 always @(*)
 begin
@@ -595,9 +595,6 @@ begin
 	memoryAddr_r = pc_r;
 	mem_WR_r = 1'b0;
 
-	//if (partial_pipeline_stall_r == 1'b1)
-	//	memoryAddr_r = pc_r_prev;
-
 	casex (pipelineStage3_r)
 		16'h5xxx, 16'h6xxx, 16'b110xxxxxxxxxxxxx:	begin /* load / store */
 			memoryAddr_r 	= loadStoreAddr_stage3_r;
@@ -612,7 +609,6 @@ end
 
 always @(*)
 begin
-
 	memory_op_r_next = 1'b0;
 
 	casex (pipelineStage3_r)
@@ -620,8 +616,6 @@ begin
 			memory_op_r_next = 1'b1;
 		end
 	endcase
-
-
 end
 
 /* determine register A + B selection in pipleline stage 1*/
@@ -763,6 +757,7 @@ always @(*)
 begin
 	imm_r_next = {12{1'b0}};
 
+	// Don't change on a nop
 	if (pipelineStage1_r == 16'h0000) 
 		imm_r_next = imm_r;
 
