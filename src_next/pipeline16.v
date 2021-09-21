@@ -42,11 +42,11 @@ pipeline16
 	output mem_WR  /* write mem    */
 );
 
-localparam REG_BITS = 5; /* 16 registers */
+localparam REG_BITS = 5; /* 16 registers, but use 5 bits */
 localparam BITS = 16;
 
 localparam NOP_INSTRUCTION = {BITS{1'b0}};
-localparam LINK_REGISTER   = 4'd15;
+localparam LINK_REGISTER   = 5'd15;
 
 reg [BITS - 1:0] pc_r;
 reg [BITS - 1:0] pc_r_prev;
@@ -94,11 +94,11 @@ reg [BITS - 1:0] aluB_r;
 assign aluA = aluA_r;
 assign aluB = aluB_r;
 
-reg [REG_BITS:0] regARdAddr_r;
-reg [REG_BITS:0] regBRdAddr_r;
+reg [REG_BITS-1:0] regARdAddr_r;
+reg [REG_BITS-1:0] regBRdAddr_r;
 
-reg [REG_BITS:0] regARdAddr_stage0_r;
-reg [REG_BITS:0] regBRdAddr_stage0_r;
+reg [REG_BITS-1:0] regARdAddr_stage0_r;
+reg [REG_BITS-1:0] regBRdAddr_stage0_r;
 
 
 assign regARdAddr = regARdAddr_r;
@@ -122,12 +122,12 @@ assign regWrAddr = reg_wr_addr_r;
 reg [4:0] alu_op_r;
 assign aluOp = alu_op_r;
 
-reg [REG_BITS:0] hazard1_r_next;
-reg [REG_BITS:0] hazard1_r;
-reg [REG_BITS:0] hazard2_r;
-reg [REG_BITS:0] hazard2_r_next;
-reg [REG_BITS:0] hazard3_r;
-reg [REG_BITS:0] hazard4_r;
+reg [REG_BITS-1:0] hazard1_r_next;
+reg [REG_BITS-1:0] hazard1_r;
+reg [REG_BITS-1:0] hazard2_r;
+reg [REG_BITS-1:0] hazard2_r_next;
+reg [REG_BITS-1:0] hazard3_r;
+reg [REG_BITS-1:0] hazard4_r;
 
 reg branch_taken2_r;
 reg branch_taken2_r_next;
@@ -330,9 +330,9 @@ input [15:0] ins;
 	is_branch_reg_ind_from_ins = ins[11];
 endfunction
 
-function [3:0] reg_branch_ind_from_ins;
+function [4:0] reg_branch_ind_from_ins;
 input [15:0] ins;
-		reg_branch_ind_from_ins = ins[7:4];
+		reg_branch_ind_from_ins = {1'b0, ins[7:4]};
 endfunction
 
 /* interlock logic - determine hazard */
