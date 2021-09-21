@@ -70,8 +70,6 @@ test_loop:
 
 die:
 
-		//ba run
-
 		mov r3, 0x4
 		
 		mov r2, UPPER_HIRAM
@@ -86,11 +84,10 @@ outer:
 		inc r2
 		st [PWM_LED+2], r0
 
-		mov r0, 2
+		mov r0, 20
 delay:
 		mov r1, 0xffff
 delay_1:
-
 		sub r1, 1
 		bnz delay_1
 	
