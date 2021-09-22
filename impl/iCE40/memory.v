@@ -11,12 +11,8 @@ module memory
 );
 
 wire [15:0] data_out1;
-wire [15:0] data_out2;
 
-assign DATA_OUT = ((ADDRESS[14] == 1'b0) ? data_out1 : data_out2);
-
-wire WEN1 = (ADDRESS[14] == 1'b0) ? WR : 1'b0;
-wire WEN2 = (ADDRESS[14] == 1'b1) ? WR : 1'b0;
+assign DATA_OUT = data_out1;
 
 SB_SPRAM256KA spram0
 (
@@ -24,26 +20,11 @@ SB_SPRAM256KA spram0
 .DATAIN(DATA_IN),
 .MASKWREN(4'b1111),
 .WREN(WR),
-.CHIPSELECT(!ADDRESS[14]),
+.CHIPSELECT(1'b1),
 .CLOCK(CLK),
 .STANDBY(1'b0),
 .SLEEP(1'b0),
 .POWEROFF(1'b1),
 .DATAOUT(data_out1)
 );
-
-SB_SPRAM256KA spram1
-(
-.ADDRESS(ADDRESS[13:0]),
-.DATAIN(DATA_IN),
-.MASKWREN(4'b1111),
-.WREN(WR),
-.CHIPSELECT(ADDRESS[14]),
-.CLOCK(CLK),
-.STANDBY(1'b0),
-.SLEEP(1'b0),
-.POWEROFF(1'b1),
-.DATAOUT(data_out2)
-);
-
 endmodule

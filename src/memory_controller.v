@@ -24,11 +24,17 @@ module memory_controller
 assign memBUSY = 1'b0;
 
 reg WR_HIRAM;
+reg WR_HIRAM2;
+reg WR_HIRAM3;
+reg WR_HIRAM4;
 reg WR_UART;
 reg WR_GPIO;
 reg WR_PWM;
 
 wire [BITS - 1 : 0] DATA_OUT_HIRAM;
+wire [BITS - 1 : 0] DATA_OUT_HIRAM2;
+wire [BITS - 1 : 0] DATA_OUT_HIRAM3;
+wire [BITS - 1 : 0] DATA_OUT_HIRAM4;
 wire [BITS - 1 : 0] DATA_OUT_ROM;
 wire [BITS - 1 : 0] DATA_OUT_UART;
 wire [BITS - 1 : 0] DATA_OUT_GPIO;
@@ -59,27 +65,39 @@ assign DATA_OUT = DATA_OUT_REG;
 always @(*)
 begin
 	WR_HIRAM = 1'b0;
+	WR_HIRAM2 = 1'b0;
+	WR_HIRAM3 = 1'b0;
+	WR_HIRAM4 = 1'b0;
 	WR_UART  = 1'b0;
 	WR_GPIO  = 1'b0;
 	WR_PWM   = 1'b0;
 
 	dout_next = dout;
 
-	casex (ADDRESS)
-		16'h10xx: begin
+	casez (ADDRESS)
+		16'h10zz: begin
 			dout_next = DATA_OUT_UART;
 			WR_UART = memWR;
 		end
-		16'h11xx: begin
+		16'h11zz: begin
 			dout_next = DATA_OUT_GPIO;
 			WR_GPIO = memWR;
 		end
-		16'h12xx: begin
+		16'h12zz: begin
 			dout_next = DATA_OUT_PWM;
 			WR_PWM = memWR;
 		end
-		16'b1xxxxxxxxxxxxxxx: begin
+		16'b00xxxxxxxxxxxxxx: begin
 			WR_HIRAM = memWR;
+		end
+		16'b01xxxxxxxxxxxxxx: begin
+			WR_HIRAM2 = memWR;
+		end
+		16'b10xxxxxxxxxxxxxx: begin
+			WR_HIRAM3 = memWR;
+		end
+		16'b11xxxxxxxxxxxxxx: begin
+			WR_HIRAM4 = memWR;
 		end
 		default: ;
 	endcase
@@ -103,8 +121,17 @@ begin
 		16'h12xx: begin
 			DATA_OUT_REG = dout;
 		end
-		16'b1xxxxxxxxxxxxxxx: begin
+		16'b00xxxxxxxxxxxxxx: begin
 			DATA_OUT_REG = DATA_OUT_HIRAM;
+		end
+		16'b01xxxxxxxxxxxxxx: begin
+			DATA_OUT_REG = DATA_OUT_HIRAM2;
+		end
+		16'b10xxxxxxxxxxxxxx: begin
+			DATA_OUT_REG = DATA_OUT_HIRAM3;
+		end
+		16'b11xxxxxxxxxxxxxx: begin
+			DATA_OUT_REG = DATA_OUT_HIRAM4;
 		end
 		default: ;
 	endcase
@@ -113,21 +140,48 @@ end
 
 assign PINS[14:11] = 4'b0000;
 
-rom #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 1)) theRom
+rom #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 2)) theRom
 (
 	CLK,
- 	ADDRESS[ADDRESS_BITS - 2 : 0],
+ 	ADDRESS[ADDRESS_BITS - 3 : 0],
 	DATA_OUT_ROM
 );
 
 
-memory #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 1)) theRam
+memory #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 2)) theRam
+(
+	CLK,
+	ADDRESS[ADDRESS_BITS - 3 : 0],
+	DATA_IN,
+	DATA_OUT_HIRAM,
+	WR_HIRAM
+);
+
+memory #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 1)) theRam2
 (
 	CLK,
 	ADDRESS[ADDRESS_BITS - 2 : 0],
 	DATA_IN,
-	DATA_OUT_HIRAM,
-	WR_HIRAM
+	DATA_OUT_HIRAM2,
+	WR_HIRAM2
+);
+
+memory #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 1)) theRam3
+(
+	CLK,
+	ADDRESS[ADDRESS_BITS - 2 : 0],
+	DATA_IN,
+	DATA_OUT_HIRAM3,
+	WR_HIRAM3
+);
+
+memory #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 1)) theRam4
+(
+	CLK,
+	ADDRESS[ADDRESS_BITS - 2 : 0],
+	DATA_IN,
+	DATA_OUT_HIRAM4,
+	WR_HIRAM4
 );
 
 uart 

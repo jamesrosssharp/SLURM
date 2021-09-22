@@ -127,7 +127,6 @@ reg [REG_BITS-1:0] hazard1_r;
 reg [REG_BITS-1:0] hazard2_r;
 reg [REG_BITS-1:0] hazard2_r_next;
 reg [REG_BITS-1:0] hazard3_r;
-reg [REG_BITS-1:0] hazard4_r;
 
 reg branch_taken2_r;
 reg branch_taken2_r_next;
@@ -169,7 +168,6 @@ begin
 		hazard1_r		 <= 5'd16;
 		hazard2_r		 <= 5'd16;
 		hazard3_r		 <= 5'd16;
-		hazard4_r		 <= 5'd16;
 		branch_taken2_r  <= 1'b0;
 		branch_taken3_r  <= 1'b0;
 		branch_taken4_r  <= 1'b0;
@@ -198,7 +196,6 @@ begin
 		hazard1_r		 <= hazard1_r_next;
 		hazard2_r		 <= hazard2_r_next;
 		hazard3_r		 <= hazard2_r;
-		hazard4_r		 <= hazard3_r;
 		branch_taken2_r	<= branch_taken2_r_next;
 		branch_taken3_r	<= branch_taken2_r;
 		branch_taken4_r	<= branch_taken3_r;

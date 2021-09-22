@@ -24,6 +24,8 @@ SB_HFOSC inthosc (
 );
 defparam inthosc.CLKHF_DIV = "0b10";
 
+wire locked;
+
 SB_PLL40_CORE #(
 		.FEEDBACK_PATH("SIMPLE"),
 		.DIVR(4'b0000),		// DIVR =  0

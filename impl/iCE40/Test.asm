@@ -4,8 +4,8 @@ UART_TX_REG 	equ 	0x1000
 UART_TX_STATUS  equ		0x1001
 PWM_LED			equ 	0x1200
 
-HIRAM			equ 	0x8000
-UPPER_HIRAM		equ		0x9000
+HIRAM			equ 	0x2000
+UPPER_HIRAM		equ		0x8000
 
 		mov r3, HIRAM
 		mov r1, the_string
@@ -74,20 +74,38 @@ die:
 		
 		mov r2, UPPER_HIRAM
 outer:
-		ld r0, [r2]
+		ld r4, [r2]
 		inc r2
-		st [PWM_LED], r0
-		ld r0, [r2]
+		st [PWM_LED], r4
+		ld r5, [r2]
 		inc r2
-		st [PWM_LED+1], r0
-		ld r0, [r2]
+		st [PWM_LED+1], r5
+		ld r6, [r2]
 		inc r2
-		st [PWM_LED+2], r0
+		st [PWM_LED+2], r6
 
 		mov r0, 20
 delay:
 		mov r1, 0xffff
 delay_1:
+		or r4,r4
+		bz noinc1
+		sub r4, 1
+		st [PWM_LED], r4
+noinc1:
+		or r5,r5
+		bz noinc2
+		sub r5, 1
+		st [PWM_LED+1], r5
+noinc2:
+		or r6,r6
+		bz noinc3
+		sub r6, 1
+		st [PWM_LED+2], r6
+noinc3:
+
+
+
 		sub r1, 1
 		bnz delay_1
 	
