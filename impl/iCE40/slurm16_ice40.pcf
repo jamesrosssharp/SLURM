@@ -6,3 +6,22 @@ set_io RED_LED		41
 set_io GREEN_LED	40
 set_io BLUE_LED		39
 
+set_io BB[0] 12
+set_io BB[1] 21
+set_io BB[2] 13
+set_io BB[3] 20
+
+set_io RR[0] 4
+set_io RR[1] 3
+set_io RR[2] 48
+set_io RR[3] 45
+
+set_io GG[0] 47
+set_io GG[1] 11
+set_io GG[2] 10
+set_io GG[3] 9
+
+set_io HS 19
+set_io VS 18
+
+set_io CLK12 35
