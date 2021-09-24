@@ -17,7 +17,7 @@ module memory_controller
 	input memWR,  /* write memory */
 	input memRD,  /* read request */
 	output memBUSY, /* memory is busy (GFX / SND mem) */
-	output [15:0] PINS /* output pins */ 
+	output [31:0] PINS /* output pins */ 
 );
 
 /* memory is never busy for now */
@@ -30,6 +30,7 @@ reg WR_HIRAM4;
 reg WR_UART;
 reg WR_GPIO;
 reg WR_PWM;
+reg WR_GFX;
 
 wire [BITS - 1 : 0] DATA_OUT_HIRAM;
 wire [BITS - 1 : 0] DATA_OUT_HIRAM2;
@@ -39,6 +40,7 @@ wire [BITS - 1 : 0] DATA_OUT_ROM;
 wire [BITS - 1 : 0] DATA_OUT_UART;
 wire [BITS - 1 : 0] DATA_OUT_GPIO;
 wire [BITS - 1 : 0] DATA_OUT_PWM;
+wire [BITS - 1 : 0] DATA_OUT_GFX;
 
 reg [BITS - 1 : 0] dout_next;
 reg [BITS - 1 : 0] dout;
@@ -46,6 +48,22 @@ reg [BITS - 1 : 0] dout;
 reg [BITS - 1 : 0] DATA_OUT_REG;
 
 reg [ADDRESS_BITS - 1 : 0] addr_reg;
+
+wire [ADDRESS_BITS - 3 : 0] GFX_B1_ADDR;
+wire [BITS - 1 : 0] 		GFX_B1_DOUT;
+wire						GFX_B1_RD;
+
+wire [ADDRESS_BITS - 3 : 0] GFX_B2_ADDR;
+wire [BITS - 1 : 0] 		GFX_B2_DOUT;
+wire						GFX_B2_RD;
+
+wire [ADDRESS_BITS - 3 : 0] GFX_B3_ADDR;
+wire [BITS - 1 : 0]			GFX_B3_DOUT;
+wire 						GFX_B3_RD;
+
+wire [ADDRESS_BITS - 3 : 0] GFX_B4_ADDR;
+wire [BITS - 1 : 0]			GFX_B4_DOUT;
+wire						GFX_B4_RD;
 
 always @(posedge CLK)
 begin
@@ -71,21 +89,26 @@ begin
 	WR_UART  = 1'b0;
 	WR_GPIO  = 1'b0;
 	WR_PWM   = 1'b0;
+	WR_GFX   = 1'b0;
 
 	dout_next = dout;
 
-	casez (ADDRESS)
-		16'h10zz: begin
+	casex (ADDRESS)
+		16'h10xx: begin
 			dout_next = DATA_OUT_UART;
 			WR_UART = memWR;
 		end
-		16'h11zz: begin
+		16'h11xx: begin
 			dout_next = DATA_OUT_GPIO;
 			WR_GPIO = memWR;
 		end
-		16'h12zz: begin
+		16'h12xx: begin
 			dout_next = DATA_OUT_PWM;
 			WR_PWM = memWR;
+		end
+		16'h2xxx: begin
+			dout_next = DATA_OUT_GFX;
+			WR_GFX = memWR;	
 		end
 		16'b00xxxxxxxxxxxxxx: begin
 			WR_HIRAM = memWR;
@@ -119,6 +142,9 @@ begin
 			DATA_OUT_REG = dout;
 		end
 		16'h12xx: begin
+			DATA_OUT_REG = dout;
+		end
+		16'h2xxx: begin
 			DATA_OUT_REG = dout;
 		end
 		16'b00xxxxxxxxxxxxxx: begin
@@ -222,6 +248,34 @@ pwm_led
 	PINS[10:8] // output pins 
 );
 
+assign PINS[31:30] = 2'b00;
+
+gfx #(.BITS(16), .BANK_ADDRESS_BITS(14), .ADDRESS_BITS(12)) gfx0
+(
+	.CLK(CLK),
+	.RSTb(RSTb),
+	.ADDRESS(ADDRESS[11:0]),
+	.DATA_IN(DATA_IN),
+	.DATA_OUT(DATA_OUT_GFX),
+	.WR(WR_GFX), 
+	.HS(PINS[28]),
+	.VS(PINS[29]),
+	.BB(PINS[19:16]),
+	.RR(PINS[23:20]),
+	.GG(PINS[27:24]),
+	.B1_ADDR(GFX_B1_ADDR),
+	.B1_DOUT(GFX_B1_DOUT),
+	.B1_RD(GFX_B1_RD),
+	.B2_ADDR(GFX_B2_ADDR),
+	.B2_DOUT(GFX_B2_DOUT),
+	.B2_RD(GFX_B2_RD),
+	.B3_ADDR(GFX_B3_ADDR),
+	.B3_DOUT(GFX_B3_DOUT),
+	.B3_RD(GFX_B3_RD),
+	.B4_ADDR(GFX_B4_ADDR),
+	.B4_DOUT(GFX_B4_DOUT),
+	.B4_RD(GFX_B4_RD)
+);
 
 
 endmodule

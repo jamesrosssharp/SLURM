@@ -5,7 +5,7 @@ DEVICE 	= up5k
 SRCDIR=../../src
 
 SOURCE = $(SRCDIR)/pipeline16.v $(SRCDIR)/slurm16.v $(SRCDIR)/alu.v $(SRCDIR)/register_file.v $(SRCDIR)/memory_controller.v \
-		 $(SRCDIR)/uart.v $(SRCDIR)/uart_tx.v $(SRCDIR)/baudgen.v $(SRCDIR)/gpio.v pwm_led.v  memory.v rom.v slurm16_ice40.v 
+		 $(SRCDIR)/uart.v $(SRCDIR)/uart_tx.v $(SRCDIR)/baudgen.v $(SRCDIR)/gpio.v pwm_led.v $(SRCDIR)/gfx.v  memory.v rom.v slurm16_ice40.v 
 
 ICEPACK = icepack
 ICETIME = icetime
@@ -26,7 +26,7 @@ $(PROJ).json: $(SOURCE) rom_image.mem
 	yosys -p 'debug synth_ice40 -top top -json $@' $(SOURCE)
 
 %.asc: $(PIN_DEF) %.json
-	nextpnr-ice40 --up5k --json $(PROJ).json --pcf $(PROJ).pcf --asc $@
+	nextpnr-ice40 --freq 25.125 --up5k --json $(PROJ).json --pcf $(PROJ).pcf --asc $@
 
 %.bin: %.asc
 	$(ICEPACK) $< $@

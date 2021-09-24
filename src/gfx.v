@@ -1,0 +1,73 @@
+module gfx #(parameter BITS = 16, parameter BANK_ADDRESS_BITS = 14, parameter ADDRESS_BITS = 12)
+(
+	input  CLK,
+	input  RSTb,
+	input  [ADDRESS_BITS - 1 : 0]  ADDRESS,
+	input  [BITS - 1 : 0] DATA_IN,
+	output [BITS - 1 : 0] DATA_OUT,
+	input  WR, 
+
+	output HS,
+	output VS,
+	output [3:0] BB,
+	output [3:0] RR,
+	output [3:0] GG,
+
+	// Memory Bank DMA ports
+
+	output [BANK_ADDRESS_BITS - 1 : 0] B1_ADDR,
+	input  [BITS - 1 : 0] B1_DOUT,
+	output B1_RD,
+
+	output [BANK_ADDRESS_BITS - 1 : 0] B2_ADDR,
+	input  [BITS - 1 : 0] B2_DOUT,
+	output B2_RD,
+
+	output [BANK_ADDRESS_BITS - 1 : 0] B3_ADDR,
+	input  [BITS - 1 : 0] B3_DOUT,
+	output B3_RD,
+
+	output [BANK_ADDRESS_BITS - 1 : 0] B4_ADDR,
+	input  [BITS - 1 : 0] B4_DOUT,
+	output B4_RD
+
+);
+
+reg [9:0] hcount = 10'd0;
+reg [9:0] vcount = 10'd0;
+
+localparam H_FRONT_PORCH = 16;
+localparam H_SYNC_PULSE  = 96;
+localparam H_BACK_PORCH  = 48;
+localparam H_TOTAL_PORCH = H_FRONT_PORCH + H_SYNC_PULSE + H_BACK_PORCH;
+localparam H_PIXELS = 640;
+
+localparam V_FRONT_PORCH = 10;
+localparam V_SYNC_PULSE  = 2;
+localparam V_BACK_PORCH  = 33;
+localparam V_TOTAL_PORCH = V_FRONT_PORCH + V_SYNC_PULSE + V_BACK_PORCH;
+localparam V_DISPLAY_LINES = 480;
+localparam V_LINES = V_DISPLAY_LINES + V_TOTAL_PORCH;
+
+assign RR = (hcount > 47 && hcount < 688 && vcount > 33 && vcount < 513) ? 4'b1111 : 4'b0000;
+assign BB = (hcount > 47 && hcount < 688 && vcount > 33 && vcount < 513) ? 4'b0000 : 4'b0000;
+assign GG = (hcount > 47 && hcount < 688 && vcount > 33 && vcount < 513) ? 4'b0000 : 4'b0000;
+
+assign HS = (hcount > (800 - 96 - 16)) ? 1'b0 : 1'b1;
+assign VS = (vcount > 525 - 12) ? 1'b0 : 1'b1;
+
+
+always @(posedge CLK)
+begin
+	hcount <= hcount + 1;
+
+	if (hcount == 10'd799) begin
+		if (vcount == 10'd524)
+			vcount <= 10'd0;
+		else
+			vcount <= vcount + 1;
+		hcount <= 10'd0;
+	end
+end
+
+endmodule
