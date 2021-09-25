@@ -49,13 +49,16 @@ localparam V_TOTAL_PORCH = V_FRONT_PORCH + V_SYNC_PULSE + V_BACK_PORCH;
 localparam V_DISPLAY_LINES = 480;
 localparam V_LINES = V_DISPLAY_LINES + V_TOTAL_PORCH;
 
-assign RR = (hcount > 47 && hcount < 688 && vcount > 33 && vcount < 513) ? 4'b1111 : 4'b0000;
-assign BB = (hcount > 47 && hcount < 688 && vcount > 33 && vcount < 513) ? 4'b0000 : 4'b0000;
-assign GG = (hcount > 47 && hcount < 688 && vcount > 33 && vcount < 513) ? 4'b0000 : 4'b0000;
+assign HS = (hcount >= (H_PIXELS + H_BACK_PORCH + H_FRONT_PORCH)) ? 1'b0 : 1'b1;
+assign VS = (vcount >= (V_LINES - V_SYNC_PULSE)) ? 1'b0 : 1'b1;
 
-assign HS = (hcount > (800 - 96 - 16)) ? 1'b0 : 1'b1;
-assign VS = (vcount > 525 - 12) ? 1'b0 : 1'b1;
+wire frameTick = (hcount == 10'd0 && vcount == 10'd0) ? 1'b1 : 1'b0;
 
+wire [9:0] x = hcount;
+wire [9:0] y = vcount;
+
+wire spriteActive;
+wire [11:0] spriteColor;
 
 always @(posedge CLK)
 begin
@@ -69,5 +72,30 @@ begin
 		hcount <= 10'd0;
 	end
 end
+
+pacman_sprite pac0
+(
+	CLK,
+	RSTb,
+	frameTick,
+	x,
+	y,
+	spriteColor,
+	spriteActive
+);
+
+wire [11:0] color_next = spriteActive ? spriteColor : 12'h00f; 
+reg [11:0] color;
+
+always @(posedge CLK)
+begin
+	color <= color_next;
+end
+
+wire DE = (hcount >= H_BACK_PORCH && hcount < (H_BACK_PORCH + H_PIXELS + 32) && vcount >= V_BACK_PORCH && vcount < (V_DISPLAY_LINES + V_BACK_PORCH + 16));
+
+assign RR = DE ? color[11:8]  : 4'b0000;
+assign GG = DE ? color[7:4]  : 4'b0000;
+assign BB = DE ? color[3:0] : 4'b0000;
 
 endmodule

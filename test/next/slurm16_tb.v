@@ -14,7 +14,7 @@ initial begin
 	#150 RSTb = 1'b1;
 end
 
-wire [15:0] PINS;
+wire [31:0] PINS;
 
 slurm16 #(.CLOCK_FREQ(10000000)) slm0 (
 	CLK,
