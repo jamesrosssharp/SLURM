@@ -36,6 +36,8 @@ module gfx #(parameter BITS = 16, parameter BANK_ADDRESS_BITS = 14, parameter AD
 reg [9:0] hcount = 10'd0;
 reg [9:0] vcount = 10'd0;
 
+reg [5:0] frameCount = 6'd0;
+
 localparam H_FRONT_PORCH = 16;
 localparam H_SYNC_PULSE  = 96;
 localparam H_BACK_PORCH  = 48;
@@ -60,6 +62,8 @@ wire [9:0] y = vcount;
 wire spriteActive;
 wire [11:0] spriteColor;
 
+reg WR_sprite;
+
 always @(posedge CLK)
 begin
 	hcount <= hcount + 1;
@@ -77,6 +81,9 @@ pacman_sprite pac0
 (
 	CLK,
 	RSTb,
+	ADDRESS[3:0],
+	DATA_IN,
+	WR_sprite,
 	frameTick,
 	x,
 	y,
@@ -90,6 +97,8 @@ reg [11:0] color;
 always @(posedge CLK)
 begin
 	color <= color_next;
+	if (frameTick)
+		frameCount <= frameCount + 1;
 end
 
 wire DE = (hcount >= H_BACK_PORCH && hcount < (H_BACK_PORCH + H_PIXELS + 32) && vcount >= V_BACK_PORCH && vcount < (V_DISPLAY_LINES + V_BACK_PORCH + 16));
@@ -97,5 +106,25 @@ wire DE = (hcount >= H_BACK_PORCH && hcount < (H_BACK_PORCH + H_PIXELS + 32) && 
 assign RR = DE ? color[11:8]  : 4'b0000;
 assign GG = DE ? color[7:4]  : 4'b0000;
 assign BB = DE ? color[3:0] : 4'b0000;
+
+// Memory interface
+
+reg [BITS - 1:0] dout_r;
+
+assign DATA_OUT = dout_r;
+
+always @(*)
+begin
+	WR_sprite = 1'b0;
+	dout_r = {BITS{1'b0}};
+	casex (ADDRESS)
+		16'h0000:	/* frame count register */
+			dout_r = frameCount;
+		16'h001x: /* sprite 1 */
+			WR_sprite = WR;
+		default: ;
+	endcase
+end
+
 
 endmodule

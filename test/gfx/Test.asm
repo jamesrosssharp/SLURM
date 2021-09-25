@@ -43,7 +43,6 @@ die:
 gfx_loop:
 		mov r4, r0
 		lsr r4
-		nop
 		lsr r4
 		st [GFX_SPRITE_FRAME], r4
 		st [GFX_SPRITE_X], r1
@@ -51,30 +50,17 @@ gfx_loop:
 
 		// Wait for retrace
 
-wait_frame:
-		ld r4, [GFX_FRAME]
-		cmp r4, r3
-		bz wait_frame
-		mov r3, r4
+#wait_frame:
+#		ld r4, [GFX_FRAME]
+#		cmp r4, r3
+#		bz wait_frame
+#		mov r3, r4
 
 		add r0, 1
 		cmp r0, 12
 		bnz no_trunc
-		mov r0, 0
+		//mov r0, 0
 no_trunc:
-		
-		add r1, 4
-		cmp r1, 700
-		bs  no_y_inc
-		add r2, 16
-		mov r1, 0
-		cmp r2, 512
-		bs no_y_inc
-
-		mov r2, 0
-
-no_y_inc:
-
 		ba gfx_loop		
 
 		dw 0

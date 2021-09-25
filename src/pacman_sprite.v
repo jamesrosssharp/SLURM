@@ -3,6 +3,10 @@ module pacman_sprite
 	input  CLK,
 	input  RSTb,
 
+	input  [3:0] ADDRESS,
+	input  [15:0] DATA_IN,
+	input  WR,
+
 	input frameTick,
 
 	input [9:0] display_x,
@@ -15,13 +19,14 @@ module pacman_sprite
 );
 
 reg [9:0] sprite_x = 320;
+
 reg [9:0] sprite_y = 240;
 
 reg [9:0] sprite_x_next;
 reg [9:0] sprite_y_next;
 
-reg [4:0] spriteFrame_r = 0;
-reg [4:0] spriteFrame_next;
+reg [1:0] spriteFrame_r = 0;
+reg [1:0] spriteFrame_next;
 
 localparam SPRITE_WIDTH = 16;
 localparam SPRITE_HEIGHT = 16;
@@ -48,23 +53,13 @@ begin
 	spriteFrame_r <= spriteFrame_next;
 end
 
-always @(*)
-begin
-	spriteFrame_next = spriteFrame_r;
-	if (frameTick == 1'b1) begin
-		spriteFrame_next = spriteFrame_r + 1;
-		if (spriteFrame_r == 5'd23)
-			spriteFrame_next = 5'b0000;
-	end
-end
-
 // Sprite rom address
 always @(*)
 begin
 	spriteRomAddress[3:0] = (display_y - sprite_y);
 	// Generate data 1 clock early
 	spriteRomAddress[7:4] = (display_x - sprite_x + 1);
-	spriteRomAddress[9:8] = spriteFrame_r[4:3];
+	spriteRomAddress[9:8] = spriteFrame_r[1:0];
 end
 
 // Is active
@@ -87,15 +82,20 @@ always @(*)
 begin
 	sprite_x_next = sprite_x;
 	sprite_y_next = sprite_y;
-	if (frameTick == 1'b1) begin
-		sprite_x_next = sprite_x + 2;
-		if (sprite_x >= 10'd784) begin
-			sprite_y_next = sprite_y + 16;
-			sprite_x_next = 10'd0;
-			if (sprite_y >= 10'd509)
-				sprite_y_next = 10'd0;
-		end
+	spriteFrame_next = spriteFrame_r;
+
+	if (WR == 1'b1) begin
+		case (ADDRESS)
+			4'd0:
+				sprite_x_next = DATA_IN[9:0];
+			4'd1:
+				sprite_y_next = DATA_IN[9:0];
+			4'd2:
+				spriteFrame_next <= DATA_IN[1:0];
+			default: ;
+		endcase
 	end
 end
+
 
 endmodule

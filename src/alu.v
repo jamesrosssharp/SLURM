@@ -31,7 +31,7 @@ reg S_flag_reg_next;
 
 assign S = S_flag_reg;
 
-wire [BITS : 0] addOp = {1'b0,A} + {1'b0,B}; 
+wire [BITS : 0] addOp = {5'h00000,A[11:0]} + {5'b0000,B[11:0]}; 
 wire [BITS : 0] subOp = {1'b0,A} - {1'b0,B}; 
 
 wire [BITS - 1 : 0] orOp = A | B;
