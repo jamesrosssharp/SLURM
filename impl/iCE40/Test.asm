@@ -10,6 +10,7 @@ UPPER_HIRAM		equ		0x8000
 GFX_SPRITE_FRAME	equ 0x2012
 GFX_SPRITE_X		equ 0x2010
 GFX_SPRITE_Y		equ 0x2011
+GFX_SPRITE_FLIP		equ 0x2013
 GFX_FRAME			equ 0x2000
 
 		nop
@@ -34,13 +35,18 @@ die:
 		// r0 = sprite frame
 		// r1 = sprite x
 		// r2 = sprite y
+		// r3 = frame number
+		// r5 = state
 
+		mov r5, 0
 		mov r0, 0
-		mov r1, 320
-		mov r2, 240
+		mov r1, 320 + 48
+		mov r2, 240 + 33
 		ld r3, [GFX_FRAME]		
 
 gfx_loop:
+		st  [GFX_SPRITE_FLIP], r5
+
 		mov r4, r0
 		lsr r4
 		nop
@@ -62,20 +68,72 @@ wait_frame:
 		bnz no_trunc
 		mov r0, 0
 no_trunc:
-		
+	
+		cmp r5, 0
+		bz  state_0
+
+		cmp r5, 1
+		bz state_1
+
+		cmp r5, 2
+		bz state_2
+
+		ba state_3
+
+
+state_0:
+
 		add r1, 4
 		cmp r1, 700
-		bs  no_y_inc
-		add r2, 16
-		mov r1, 0
-		cmp r2, 512
-		bs no_y_inc
+		bs  done_state_0
 
+		add r5, 1
+		and r5, 3
+
+done_state_0:
+		ba gfx_loop
+
+state_1:
+
+		sub r1, 4
+		cmp r1, 40
+		bns  done_state_1
+
+		mov r1, 320 + 48
 		mov r2, 0
 
-no_y_inc:
+		add r5, 1
+		and r5, 3
 
-		ba gfx_loop		
+done_state_1:
+		ba gfx_loop
+
+state_2:
+
+		add r2, 4
+		cmp r2, 500
+		bs  done_state_2
+
+		add r5, 1
+		and r5, 3
+
+done_state_2:
+		ba gfx_loop
+
+state_3:
+
+		sub r2, 4
+		cmp r2, 40
+		bns  done_state_3
+
+		mov r1, 0
+		mov r2, 240 + 33
+
+		add r5, 1
+		and r5, 3
+
+done_state_3:
+		ba gfx_loop
 
 		dw 0
 the_string:

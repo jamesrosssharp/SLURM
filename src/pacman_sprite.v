@@ -28,6 +28,9 @@ reg [9:0] sprite_y_next;
 reg [1:0] spriteFrame_r = 0;
 reg [1:0] spriteFrame_next;
 
+reg [1:0] flip_r = 2'b00;
+reg [1:0] flip_r_next;
+
 localparam SPRITE_WIDTH = 16;
 localparam SPRITE_HEIGHT = 16;
 
@@ -56,10 +59,32 @@ end
 // Sprite rom address
 always @(*)
 begin
-	spriteRomAddress[3:0] = (display_y - sprite_y);
-	// Generate data 1 clock early
-	spriteRomAddress[7:4] = (display_x - sprite_x + 1);
-	spriteRomAddress[9:8] = spriteFrame_r[1:0];
+	case (flip_r)
+		2'b00: begin
+			spriteRomAddress[3:0] = (display_y - sprite_y);
+			// Generate data 1 clock early
+			spriteRomAddress[7:4] = (display_x - sprite_x + 1);
+			spriteRomAddress[9:8] = spriteFrame_r[1:0];
+		end
+		2'b10: begin
+			spriteRomAddress[7:4] = (display_y - sprite_y);
+			// Generate data 1 clock early
+			spriteRomAddress[3:0] = (display_x - sprite_x + 1);
+			spriteRomAddress[9:8] = spriteFrame_r[1:0];
+		end
+		2'b01: begin
+			spriteRomAddress[3:0] = 15 - (display_y - sprite_y);
+			// Generate data 1 clock early
+			spriteRomAddress[7:4] = 15 - ((display_x + 1) - sprite_x);
+			spriteRomAddress[9:8] = spriteFrame_r[1:0];
+		end
+		2'b11: begin
+			spriteRomAddress[7:4] = 15 - (display_y - sprite_y);
+			// Generate data 1 clock early
+			spriteRomAddress[3:0] = 15 - (display_x - sprite_x + 1);
+			spriteRomAddress[9:8] = spriteFrame_r[1:0];
+		end
+	endcase
 end
 
 // Is active
@@ -76,6 +101,7 @@ always @(posedge CLK)
 begin
 	sprite_x <= sprite_x_next;
 	sprite_y <= sprite_y_next;
+	flip_r   <= flip_r_next;
 end
 
 always @(*)
@@ -83,6 +109,7 @@ begin
 	sprite_x_next = sprite_x;
 	sprite_y_next = sprite_y;
 	spriteFrame_next = spriteFrame_r;
+	flip_r_next = flip_r;
 
 	if (WR == 1'b1) begin
 		case (ADDRESS)
@@ -91,7 +118,9 @@ begin
 			4'd1:
 				sprite_y_next = DATA_IN[9:0];
 			4'd2:
-				spriteFrame_next <= DATA_IN[1:0];
+				spriteFrame_next = DATA_IN[1:0];
+			4'd3:
+				flip_r_next = DATA_IN[1:0];
 			default: ;
 		endcase
 	end
