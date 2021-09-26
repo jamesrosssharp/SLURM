@@ -32,6 +32,7 @@ reg WR_UART;
 reg WR_GPIO;
 reg WR_PWM;
 reg WR_GFX;
+reg WR_AUDIO = 1'b0;
 
 wire [BITS - 1 : 0] DATA_OUT_HIRAM;
 wire [BITS - 1 : 0] DATA_OUT_HIRAM2;
@@ -42,6 +43,7 @@ wire [BITS - 1 : 0] DATA_OUT_UART;
 wire [BITS - 1 : 0] DATA_OUT_GPIO;
 wire [BITS - 1 : 0] DATA_OUT_PWM;
 wire [BITS - 1 : 0] DATA_OUT_GFX;
+wire [BITS - 1 : 0] DATA_OUT_AUDIO;
 
 reg [BITS - 1 : 0] dout_next;
 reg [BITS - 1 : 0] dout;
@@ -165,8 +167,6 @@ begin
 
 end
 
-assign PINS[14:11] = 4'b0000;
-
 rom #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 2)) theRom
 (
 	CLK,
@@ -252,7 +252,7 @@ pwm_led
 
 assign PINS[31:30] = 2'b00;
 
-gfx #(.BITS(16), .BANK_ADDRESS_BITS(14), .ADDRESS_BITS(12)) gfx0
+gfx #(.BITS(BITS), .BANK_ADDRESS_BITS(14), .ADDRESS_BITS(12)) gfx0
 (
 	.CLK(CLK),
 	.RSTb(RSTb),
@@ -279,5 +279,16 @@ gfx #(.BITS(16), .BANK_ADDRESS_BITS(14), .ADDRESS_BITS(12)) gfx0
 	.B4_RD(GFX_B4_RD)
 );
 
+audio
+#(.BITS(BITS), .ADDRESS_BITS(8), .CLK_FREQ(CLOCK_FREQ)) aud0
+(
+	CLK,	
+	RSTb,
+	ADDRESS,
+	DATA_IN,
+	DATA_OUT_AUDIO,
+	WR_AUDIO, 
+	PINS[14:11]
+);
 
 endmodule

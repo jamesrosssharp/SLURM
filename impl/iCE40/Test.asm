@@ -64,8 +64,19 @@ test_b:
 		mov r8, 0xffff
 
 no_up:
+		and r6, 15
+		
+		mov r9, 12
+shift_loop:
+		lsl r6
+		nop
+		sub r9, 1
+		bnz shift_loop
+
+
 		st [PWM_LED], r7
 		st [PWM_LED + 1], r8
+		st [PWM_LED + 2], r6
 		ba don_button
 
 

@@ -33,3 +33,7 @@ set_io RIGHT_BUTTON		37
 set_io A_BUTTON		    31
 set_io B_BUTTON		    34
 
+set_io DAC_MCLK			38	
+set_io DAC_LRCLK		27
+set_io DAC_SCLK			42
+set_io DAC_SDIN			26

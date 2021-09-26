@@ -23,7 +23,12 @@ module top
 	input LEFT_BUTTON,
 	input RIGHT_BUTTON,
 	input A_BUTTON,
-	input B_BUTTON
+	input B_BUTTON,
+
+	output DAC_MCLK,
+	output DAC_LRCLK,
+	output DAC_SCLK,
+	output DAC_SDIN
 );
 
 wire clk;
@@ -79,7 +84,10 @@ assign GG = PINS[27:24];
 assign HS = PINS[28];
 assign VS = PINS[29];
 
-
+assign DAC_MCLK = PINS[11]; 
+assign DAC_LRCLK = PINS[12];
+assign DAC_SCLK = PINS[13];
+assign DAC_SDIN = PINS[14];
 
 slurm16 #(
 	.CLOCK_FREQ(CLOCKFREQ)
