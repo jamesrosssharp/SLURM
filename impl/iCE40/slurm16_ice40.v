@@ -16,8 +16,14 @@ module top
 	output HS,
 	output VS,
 
-	input CLK12
+	input CLK12,
 
+	input UP_BUTTON,
+	input DOWN_BUTTON,
+	input LEFT_BUTTON,
+	input RIGHT_BUTTON,
+	input A_BUTTON,
+	input B_BUTTON
 );
 
 wire clk;
@@ -50,9 +56,19 @@ end
 
 wire [31:0] PINS;
 
+wire [7:0] INPUT_PINS;
+
+assign INPUT_PINS[0] = UP_BUTTON;
+assign INPUT_PINS[1] = DOWN_BUTTON;
+assign INPUT_PINS[2] = LEFT_BUTTON;
+assign INPUT_PINS[3] = RIGHT_BUTTON;
+assign INPUT_PINS[4] = A_BUTTON;
+assign INPUT_PINS[5] = B_BUTTON;
+assign INPUT_PINS[6] = 1'b0;
+assign INPUT_PINS[7] = 1'b0;
+
 assign UART_TX = PINS[15];
-assign GPIO1 = PINS[0];
-assign GPIO2 = PINS[1];
+
 assign RED_LED = PINS[8];
 assign GREEN_LED = PINS[9];
 assign BLUE_LED = PINS[10];
@@ -70,7 +86,8 @@ slurm16 #(
 ) slm0 (
 	clk,
 	RSTb,
-	PINS
+	PINS,
+	INPUT_PINS
 );
 
 endmodule

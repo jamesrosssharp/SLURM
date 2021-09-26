@@ -11,7 +11,8 @@ module slurm16 #(
 ) (
 	input CLK,
 	input RSTb,
-	output [31:0] PINS
+	output [31:0] PINS,
+	input  [7:0]  INPUT_PINS
 );
 
 wire C;
@@ -105,7 +106,8 @@ mem0
 	.memWR(mem_WR), 
 	.memRD(mem_RD), 
 	.memBUSY(memBUSY),
-	.PINS(PINS) 
+	.PINS(PINS),
+	.INPUT_PINS(INPUT_PINS) 
 );
 
 

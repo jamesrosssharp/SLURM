@@ -13,6 +13,8 @@ GFX_SPRITE_Y		equ 0x2011
 GFX_SPRITE_FLIP		equ 0x2013
 GFX_FRAME			equ 0x2000
 
+GPIO_IN				equ 0x1101
+
 		nop
 		
 run:
@@ -45,6 +47,32 @@ die:
 		ld r3, [GFX_FRAME]		
 
 gfx_loop:
+		// Check buttons
+	
+		mov r7, 0
+		mov r8, 0	
+		ld r6, [GPIO_IN]
+		test r6, 32
+		bz   test_b
+
+		mov r7, 0xffff
+
+test_b:
+		test r6, 16
+		bz no_up
+
+		mov r8, 0xffff
+
+no_up:
+		st [PWM_LED], r7
+		st [PWM_LED + 1], r8
+		ba don_button
+
+
+don_button:
+
+
+
 		st  [GFX_SPRITE_FLIP], r5
 
 		mov r4, r0

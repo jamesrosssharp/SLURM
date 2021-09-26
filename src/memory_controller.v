@@ -17,7 +17,8 @@ module memory_controller
 	input memWR,  /* write memory */
 	input memRD,  /* read request */
 	output memBUSY, /* memory is busy (GFX / SND mem) */
-	output [31:0] PINS /* output pins */ 
+	output [31:0] PINS, /* output pins */ 
+	input [7:0] INPUT_PINS /* input pins */
 );
 
 /* memory is never busy for now */
@@ -232,7 +233,8 @@ gpio
 	DATA_IN,
 	DATA_OUT_GPIO,
 	WR_GPIO,  // write memory 
-	PINS[7:0] // output pins  
+	PINS[7:0], // output pins  
+	INPUT_PINS // input pins
 );
 
 

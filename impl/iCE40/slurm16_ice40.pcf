@@ -25,3 +25,11 @@ set_io HS 19
 set_io VS 18
 
 set_io CLK12 35
+
+set_io UP_BUTTON		28
+set_io DOWN_BUTTON		32
+set_io LEFT_BUTTON		43	
+set_io RIGHT_BUTTON		37
+set_io A_BUTTON		    31
+set_io B_BUTTON		    34
+

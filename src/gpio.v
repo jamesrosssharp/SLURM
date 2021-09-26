@@ -7,34 +7,47 @@ module gpio
 	input [BITS - 1 : 0] DATA_IN,
 	output [BITS - 1 : 0] DATA_OUT,
 	input WR,  /* write memory */
-	output [7:0] PINS /* output pins */ 
+	output [7:0] PINS, /* output pins */ 
+	input  [7:0] INPUT_PINS
 );
 
 reg [7:0] gpio_reg;
 reg [7:0] gpio_reg_next;
 
+reg [7:0] gpio_in_reg_a;
+reg [7:0] gpio_in_reg_b;
+
 assign PINS = gpio_reg;
 
-assign DATA_OUT = {BITS {1'b0}};
+reg [7:0] dout_r;
+
+assign DATA_OUT = {8'h00, dout_r};
 
 always @(posedge CLK)
 begin
 	if (RSTb == 1'b0) begin
 		gpio_reg <= 8'h00;
+		gpio_in_reg_a <= 8'h00;
+		gpio_in_reg_b <= 8'h00;
 	end else begin
 		gpio_reg <= gpio_reg_next;
+		gpio_in_reg_a <= INPUT_PINS;
+		gpio_in_reg_b <= gpio_in_reg_a;
 	end
 end
 
 always @(*)
 begin
 	gpio_reg_next = gpio_reg;
+	dout_r = 8'h00;
 
 	case (ADDRESS)
 		8'h00:	/* Output register */
 			if (WR == 1'b1) begin
 				gpio_reg_next = DATA_IN[7:0];
 			end
+		8'h01: /* Input register */
+			dout_r = gpio_in_reg_b;
 		default:;
 	endcase
 end
