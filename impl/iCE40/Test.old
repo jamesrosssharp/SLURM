@@ -7,53 +7,19 @@ PWM_LED			equ 	0x1200
 HIRAM			equ 	0x2000
 UPPER_HIRAM		equ		0x8000
 
-		mov r3, HIRAM
-		mov r1, the_string
+GFX_SPRITE_FRAME	equ 0x2012
+GFX_SPRITE_X		equ 0x2010
+GFX_SPRITE_Y		equ 0x2011
+GFX_SPRITE_FLIP		equ 0x2013
+GFX_FRAME			equ 0x2000
+
+GPIO_IN				equ 0x1101
+
+		nop
 		
-the_loop:
-		ld r0, [r1]
-		inc r1
-		or r0, r0
-		bz end_loop
-		st [r3], r0
-		inc r3
-		ba the_loop
-end_loop:
-		mov r0, 0
-		st [r3], r0
-		inc r3
-
-		mov r3, UPPER_HIRAM
-		mov r0, 0xffff
-		mov r1, 0
-		st  [r3], r0
-		inc r3
-		st  [r3], r1
-		inc r3
-		st  [r3], r1
-		inc r3
-		st  [r3], r1
-		inc r3
-		st  [r3], r0
-		inc r3
-		st  [r3], r1
-		inc r3
-		st  [r3], r1
-		inc r3
-		st  [r3], r1
-		inc r3
-		st  [r3], r0
-		inc r3
-		st  [r3], r0
-		inc r3
-		st  [r3], r0
-		inc r3
-		st  [r3], r0
-		inc r3
-
 run:
 
-		mov r0, HIRAM
+		mov r0, the_string
 loop:
 		ld r1, [r0]
 		inc r0
@@ -67,59 +33,148 @@ test_loop:
 
 		ba loop
 
-
 die:
+		// r0 = sprite frame
+		// r1 = sprite x
+		// r2 = sprite y
+		// r3 = frame number
+		// r5 = state
 
-		mov r3, 0x4
-		
-		mov r2, UPPER_HIRAM
-outer:
-		ld r4, [r2]
-		inc r2
-		st [PWM_LED], r4
-		ld r5, [r2]
-		inc r2
-		st [PWM_LED+1], r5
-		ld r6, [r2]
-		inc r2
-		st [PWM_LED+2], r6
+		mov r5, 0
+		mov r0, 0
+		mov r1, 320 + 48
+		mov r2, 240 + 33
+		ld r3, [GFX_FRAME]		
 
-		mov r0, 20
-delay:
-		mov r1, 0xffff
-delay_1:
-		or r4,r4
-		bz noinc1
-		sub r4, 1
-		st [PWM_LED], r4
-noinc1:
-		or r5,r5
-		bz noinc2
-		sub r5, 1
-		st [PWM_LED+1], r5
-noinc2:
-		or r6,r6
-		bz noinc3
-		sub r6, 1
-		st [PWM_LED+2], r6
-noinc3:
-
-
-
-		sub r1, 1
-		bnz delay_1
+gfx_loop:
+		// Check buttons
 	
-		sub r0, 1
-		bnz delay
+		mov r7, 0
+		mov r8, 0	
+		ld r6, [GPIO_IN]
+		test r6, 32
+		bz   test_b
 
-		sub r3, 1
-		bnz outer
+		mov r7, 0xffff
+
+test_b:
+		test r6, 16
+		bz no_up
+
+		mov r8, 0xffff
+
+no_up:
+		and r6, 15
 		
-		ba run
+		mov r9, 12
+shift_loop:
+		lsl r6
+		sub r9, 1
+		bnz shift_loop
+
+
+		st [PWM_LED], r7
+		st [PWM_LED + 1], r8
+		st [PWM_LED + 2], r6
+		ba don_button
+
+
+don_button:
+
+
+
+		st  [GFX_SPRITE_FLIP], r5
+
+		mov r4, r0
+		lsr r4
+		lsr r4
+		st [GFX_SPRITE_FRAME], r4
+		st [GFX_SPRITE_X], r1
+		st [GFX_SPRITE_Y], r2
+
+		// Wait for retrace
+
+wait_frame:
+		ld r4, [GFX_FRAME]
+		cmp r4, r3
+		bz wait_frame
+		mov r3, r4
+
+		add r0, 1
+		cmp r0, 12
+		bnz no_trunc
+		mov r0, 0
+no_trunc:
+	
+		cmp r5, 0
+		bz  state_0
+
+		cmp r5, 1
+		bz state_1
+
+		cmp r5, 2
+		bz state_2
+
+		ba state_3
+
+
+state_0:
+
+		add r1, 4
+		cmp r1, 700
+		bs  done_state_0
+
+		add r5, 1
+		and r5, 3
+
+done_state_0:
+		ba gfx_loop
+
+state_1:
+
+		sub r1, 4
+		cmp r1, 40
+		bns  done_state_1
+
+		mov r1, 320 + 48
+		mov r2, 0
+
+		add r5, 1
+		and r5, 3
+
+done_state_1:
+		ba gfx_loop
+
+state_2:
+
+		add r2, 4
+		cmp r2, 500
+		bs  done_state_2
+
+		add r5, 1
+		and r5, 3
+
+done_state_2:
+		ba gfx_loop
+
+state_3:
+
+		sub r2, 4
+		cmp r2, 40
+		bns  done_state_3
+
+		mov r1, 0
+		mov r2, 240 + 33
+
+		add r5, 1
+		and r5, 3
+
+done_state_3:
+		ba gfx_loop
 
 		dw 0
 the_string:
-		dw "Hello world!\r\nHello from SLURM16, 5 stage pipeline\r\n"
+		dw "SLURM16 Sprite test\r\n"
 		dw 0
 
 		.end

@@ -15,6 +15,18 @@ GFX_FRAME			equ 0x2000
 
 GPIO_IN				equ 0x1101
 
+UP_BUTTON			equ 1<<0
+DOWN_BUTTON			equ 1<<1
+LEFT_BUTTON			equ 1<<2
+RIGHT_BUTTON		equ 1<<3
+A_BUTTON			equ 1<<4
+B_BUTTON			equ 1<<5
+
+SPRITE_NORMAL		equ 0
+SPRITE_90_DEG		equ 2
+SPRITE_180_DEG		equ 1
+SPRITE_270_DEG		equ 3
+
 		nop
 		
 run:
@@ -52,36 +64,56 @@ gfx_loop:
 		mov r7, 0
 		mov r8, 0	
 		ld r6, [GPIO_IN]
-		test r6, 32
-		bz   test_b
-
-		mov r7, 0xffff
-
-test_b:
-		test r6, 16
-		bz no_up
-
-		mov r8, 0xffff
-
-no_up:
-		and r6, 15
+		cmp r6, UP_BUTTON
+		bnz  not_up
 		
-		mov r9, 12
-shift_loop:
-		lsl r6
-		sub r9, 1
-		bnz shift_loop
+		// Up pressed
 
+		mov r5, SPRITE_270_DEG
+		sub r2, 1
+		add r0, 1
+		ba done_button
 
-		st [PWM_LED], r7
-		st [PWM_LED + 1], r8
-		st [PWM_LED + 2], r6
-		ba don_button
+not_up:
+		cmp r6, DOWN_BUTTON
+		bnz not_down	
 
+		// Down pressed
+		
+		mov r5, SPRITE_90_DEG
+		add r2, 1
+		add r0, 1
+		ba done_button
 
-don_button:
+not_down:
 
+		cmp r6, LEFT_BUTTON
+		bnz not_left
 
+		// Left pressed
+		
+		mov r5, SPRITE_180_DEG
+		sub r1, 1
+		add r0, 1
+		ba done_button
+		
+not_left:
+
+		cmp r6, RIGHT_BUTTON
+		bnz not_right
+
+		// Right pressed
+		
+		mov r5, SPRITE_NORMAL
+		add r1, 1
+		add r0, 1
+		ba done_button
+	
+not_right:
+		mov r0, 0
+
+done_button:
+		nop
 
 		st  [GFX_SPRITE_FLIP], r5
 
@@ -100,74 +132,10 @@ wait_frame:
 		bz wait_frame
 		mov r3, r4
 
-		add r0, 1
 		cmp r0, 12
 		bnz no_trunc
 		mov r0, 0
 no_trunc:
-	
-		cmp r5, 0
-		bz  state_0
-
-		cmp r5, 1
-		bz state_1
-
-		cmp r5, 2
-		bz state_2
-
-		ba state_3
-
-
-state_0:
-
-		add r1, 4
-		cmp r1, 700
-		bs  done_state_0
-
-		add r5, 1
-		and r5, 3
-
-done_state_0:
-		ba gfx_loop
-
-state_1:
-
-		sub r1, 4
-		cmp r1, 40
-		bns  done_state_1
-
-		mov r1, 320 + 48
-		mov r2, 0
-
-		add r5, 1
-		and r5, 3
-
-done_state_1:
-		ba gfx_loop
-
-state_2:
-
-		add r2, 4
-		cmp r2, 500
-		bs  done_state_2
-
-		add r5, 1
-		and r5, 3
-
-done_state_2:
-		ba gfx_loop
-
-state_3:
-
-		sub r2, 4
-		cmp r2, 40
-		bns  done_state_3
-
-		mov r1, 0
-		mov r2, 240 + 33
-
-		add r5, 1
-		and r5, 3
 
 done_state_3:
 		ba gfx_loop

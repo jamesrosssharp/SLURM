@@ -60,25 +60,25 @@ end
 always @(*)
 begin
 	case (flip_r)
-		2'b00: begin
+		2'b00: begin	// Normal
 			spriteRomAddress[3:0] = (display_y - sprite_y);
 			// Generate data 1 clock early
 			spriteRomAddress[7:4] = (display_x - sprite_x + 1);
 			spriteRomAddress[9:8] = spriteFrame_r[1:0];
 		end
-		2'b10: begin
+		2'b10: begin // Rotate 90 Deg
 			spriteRomAddress[7:4] = (display_y - sprite_y);
 			// Generate data 1 clock early
 			spriteRomAddress[3:0] = (display_x - sprite_x + 1);
 			spriteRomAddress[9:8] = spriteFrame_r[1:0];
 		end
-		2'b01: begin
+		2'b01: begin // Rotate 180 Deg
 			spriteRomAddress[3:0] = 15 - (display_y - sprite_y);
 			// Generate data 1 clock early
 			spriteRomAddress[7:4] = 15 - ((display_x + 1) - sprite_x);
 			spriteRomAddress[9:8] = spriteFrame_r[1:0];
 		end
-		2'b11: begin
+		2'b11: begin // Rotate 270 Deg
 			spriteRomAddress[7:4] = 15 - (display_y - sprite_y);
 			// Generate data 1 clock early
 			spriteRomAddress[3:0] = 15 - (display_x - sprite_x + 1);
