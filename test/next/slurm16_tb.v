@@ -15,11 +15,13 @@ initial begin
 end
 
 wire [31:0] PINS;
+reg  [7:0] INPUT_PINS = 8'h00;
 
 slurm16 #(.CLOCK_FREQ(10000000)) slm0 (
 	CLK,
 	RSTb,
-	PINS
+	PINS,
+	INPUT_PINS
 );
 
 

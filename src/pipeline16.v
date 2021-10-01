@@ -145,8 +145,8 @@ reg flagsModifiedStage2_r_next;
 reg flagsModifiedStage2_r;
 reg flagsModifiedStage3_r;
 
-reg [1:0] stall_count_r;
-reg [1:0] stall_count_r_next;
+reg [2:0] stall_count_r;
+reg [2:0] stall_count_r_next;
 
 wire partial_pipeline_stall_r = (stall_count_r > 1);
 
@@ -178,7 +178,7 @@ begin
 		flagsModifiedStage2_r		 <= 1'b0;
 		flagsModifiedStage3_r		 <= 1'b0;
 		memory_op_r 				 <= 1'b0;
-		stall_count_r				 <= 2'b00;
+		stall_count_r				 <= 3'b000;
 	end
 	else begin
 		pc_r <= pc_r_next;
@@ -341,7 +341,11 @@ begin
 	hazard1_r_next = hazard1_r;
 	hazard2_r_next = 5'd16;
 
-	if (stall_count_r == 2'b00) begin
+	if (stall_count_r == 3'b001) begin
+		hazard1_r_next = 5'd16;
+		hazard2_r_next = hazard1_r;
+	end else
+	if (stall_count_r == 3'b000) begin
 		hazard2_r_next = hazard1_r;
 		hazard1_r_next = 5'd16;
 
@@ -390,7 +394,7 @@ begin
 	flagsModifiedStage1_r_next = flagsModifiedStage1_r;
 	flagsModifiedStage2_r_next = 1'b0;
 	
-	if (stall_count_r == 2'b00) begin
+	if (stall_count_r == 3'b000) begin
 		flagsModifiedStage1_r_next = 1'b0;
 		flagsModifiedStage2_r_next = flagsModifiedStage1_r;
 	
@@ -415,7 +419,7 @@ end
 always @(*)
 begin
 
-	stall_count_r_next = (stall_count_r == 2'b00) ? stall_count_r : stall_count_r - 1;
+	stall_count_r_next = (stall_count_r == 3'b000) ? stall_count_r : stall_count_r - 1;
 
 	if (partial_pipeline_stall_r == 1'b0) begin
 		
@@ -437,11 +441,11 @@ begin
 		else
 		if ((regARdAddr_stage0_r != 5'd16) && 
 			(hazard1_r == regARdAddr_stage0_r))
-				stall_count_r_next = 3;
+				stall_count_r_next = 4;
 		else
 		if ((regBRdAddr_stage0_r != 5'd16) && 
 			(hazard1_r == regBRdAddr_stage0_r))
-				stall_count_r_next = 3;
+				stall_count_r_next = 4;
 		else begin
 		/* flags hazard */
 		
@@ -489,7 +493,12 @@ begin
 	pipelineStage3_r_next = pipelineStage2_r;
 	pipelineStage4_r_next = pipelineStage3_r;
 
-	if (stall_count_r != 2'b00) begin
+	if (stall_count_r == 3'b001) begin
+		pipelineStage0_r_next = pipelineStage0_r;
+		pipelineStage2_r_next = pipelineStage1_r;
+		pipelineStage1_r_next = NOP_INSTRUCTION;	
+	end
+	else if (stall_count_r > 3'b001) begin
 		pipelineStage0_r_next = pipelineStage0_r;
 		pipelineStage1_r_next = pipelineStage1_r;
 		pipelineStage2_r_next = NOP_INSTRUCTION;	
@@ -550,7 +559,7 @@ begin
 
 	/* Branch in pipeline stage 1 ? */
 
-	if (stall_count_r == 2'b00) begin
+	if (stall_count_r <= 3'b001) begin
 		casex (pipelineStage1_r)
 			16'h4xxx:	begin /* branch */
 				if (branch_taken_from_ins(pipelineStage1_r, Z, S, C) == 1'b1) begin
@@ -758,7 +767,7 @@ begin
 	if (pipelineStage1_r == 16'h0000) 
 		imm_r_next = imm_r;
 
-	if (stall_count_r != 2'b00)
+	if (stall_count_r > 3'b001)
 		imm_r_next = imm_r;
 
 	imm_stage2_r_next 	= {imm_r, imm_lo_from_ins(pipelineStage1_r)};

@@ -69,7 +69,6 @@ no_up:
 		mov r9, 12
 shift_loop:
 		lsl r6
-		nop
 		sub r9, 1
 		bnz shift_loop
 
@@ -88,7 +87,6 @@ don_button:
 
 		mov r4, r0
 		lsr r4
-		nop
 		lsr r4
 		st [GFX_SPRITE_FRAME], r4
 		st [GFX_SPRITE_X], r1

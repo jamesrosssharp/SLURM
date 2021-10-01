@@ -7,7 +7,7 @@ module audio
 	input [BITS - 1 : 0] DATA_IN,
 	output [BITS - 1 : 0] DATA_OUT,
 	input WR,  /* write memory */
-	output [3:0] PINS, /* output pins */ 
+	output [3:0] PINS /* output pins */ 
 );
 
 localparam MCLK_FREQ  = CLK_FREQ / 2;
