@@ -85,9 +85,9 @@ alu0
 (
 	.CLK(CLK),
 	.RSTb(RSTb),
-	.A(aluA),
-	.B(aluB),
-	.aluOp(aluOp),
+	.A_in(aluA),
+	.B_in(aluB),
+	.aluOp_in(aluOp),
 	.aluOut(aluOut),
 	.C(C), 
 	.Z(Z), 	

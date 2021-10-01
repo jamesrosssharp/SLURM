@@ -787,13 +787,6 @@ begin
 			result_stage3_r_next = regB - 1;
 		end
 	endcase
-
-	casex (pipelineStage3_r)
-		16'h2xxx, 16'h3xxx, 16'h04xx: begin /* alu op */
-			result_stage4_r_next = aluOut;
-		end
-		default: ;
-	endcase
 end
 
 
@@ -805,13 +798,17 @@ begin
 	reg_out_r = result_stage4_r;
 
 	casex (pipelineStage4_r)
-		16'h02xx, 16'h03xx, 16'h04xx: begin /* inc / dec / alu op reg */
+		16'h02xx, 16'h03xx: begin /* inc / dec / alu op reg */
 			reg_wr_addr_r 	= reg_src_from_ins(pipelineStage4_r);
 			reg_out_r 		= result_stage4_r; 	
 		end
+		16'h04xx: begin /* inc / dec / alu op reg */
+			reg_wr_addr_r 	= reg_src_from_ins(pipelineStage4_r);
+			reg_out_r 		= aluOut; 	
+		end
 		16'h3xxx, 16'h2xxx: begin /* alu op */
 			reg_wr_addr_r 	= reg_dest_from_ins(pipelineStage4_r);
-			reg_out_r 		= result_stage4_r; 	
+			reg_out_r 		= aluOut; 	
 		end
 		16'h4xxx: begin /* branch */
 			if (is_branch_link_from_ins(pipelineStage4_r) == 1'b1) begin
