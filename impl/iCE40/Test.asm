@@ -27,6 +27,9 @@ SPRITE_90_DEG		equ 2
 SPRITE_180_DEG		equ 1
 SPRITE_270_DEG		equ 3
 
+AUDIO_PHASE			equ 0x1300
+AUDIO_AMPL			equ 0x1301
+
 		nop
 		
 run:
@@ -51,6 +54,7 @@ die:
 		// r2 = sprite y
 		// r3 = frame number
 		// r5 = state
+		// r7 = audio freq
 
 		mov r5, 0
 		mov r0, 0
@@ -58,11 +62,12 @@ die:
 		mov r2, 240 + 33
 		ld r3, [GFX_FRAME]		
 
+		mov r7, 0x7fff
+		st [AUDIO_AMPL], r7
+
 gfx_loop:
 		// Check buttons
 	
-		mov r7, 0
-		mov r8, 0	
 		ld r6, [GPIO_IN]
 		cmp r6, UP_BUTTON
 		bnz  not_up
@@ -72,6 +77,12 @@ gfx_loop:
 		mov r5, SPRITE_270_DEG
 		sub r2, 1
 		add r0, 1
+
+		or r7, r7
+		bnz done_button		
+
+		mov r7, 1000
+
 		ba done_button
 
 not_up:
@@ -83,6 +94,12 @@ not_up:
 		mov r5, SPRITE_90_DEG
 		add r2, 1
 		add r0, 1
+
+		or r7, r7
+		bnz done_button		
+
+		mov r7, 1000
+
 		ba done_button
 
 not_down:
@@ -95,6 +112,12 @@ not_down:
 		mov r5, SPRITE_180_DEG
 		sub r1, 1
 		add r0, 1
+
+		or r7, r7
+		bnz done_button		
+
+		mov r7, 1000
+
 		ba done_button
 		
 not_left:
@@ -107,13 +130,26 @@ not_left:
 		mov r5, SPRITE_NORMAL
 		add r1, 1
 		add r0, 1
+
+		or r7, r7
+		bnz done_button		
+
+		mov r7, 1000
+
 		ba done_button
 	
 not_right:
 		mov r0, 0
+		mov r7, 0
+
 
 done_button:
 		nop
+
+		cmp r0, 12
+		bnz no_trunc
+		mov r0, 0
+no_trunc:
 
 		st  [GFX_SPRITE_FLIP], r5
 
@@ -124,6 +160,12 @@ done_button:
 		st [GFX_SPRITE_X], r1
 		st [GFX_SPRITE_Y], r2
 
+	    st [AUDIO_PHASE], r7
+		or r7,r7
+		bz wait_frame
+		
+		sub r7, 100
+
 		// Wait for retrace
 
 wait_frame:
@@ -131,11 +173,6 @@ wait_frame:
 		cmp r4, r3
 		bz wait_frame
 		mov r3, r4
-
-		cmp r0, 12
-		bnz no_trunc
-		mov r0, 0
-no_trunc:
 
 done_state_3:
 		ba gfx_loop

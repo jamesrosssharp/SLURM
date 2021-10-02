@@ -32,7 +32,7 @@ reg WR_UART;
 reg WR_GPIO;
 reg WR_PWM;
 reg WR_GFX;
-reg WR_AUDIO = 1'b0;
+reg WR_AUDIO;
 
 wire [BITS - 1 : 0] DATA_OUT_HIRAM;
 wire [BITS - 1 : 0] DATA_OUT_HIRAM2;
@@ -93,6 +93,7 @@ begin
 	WR_GPIO  = 1'b0;
 	WR_PWM   = 1'b0;
 	WR_GFX   = 1'b0;
+	WR_AUDIO = 1'b0;
 
 	dout_next = dout;
 
@@ -108,6 +109,10 @@ begin
 		16'h12xx: begin
 			dout_next = DATA_OUT_PWM;
 			WR_PWM = memWR;
+		end
+		16'h13xx: begin
+			dout_next = DATA_OUT_AUDIO;
+			WR_AUDIO = memWR;
 		end
 		16'h2xxx: begin
 			dout_next = DATA_OUT_GFX;
@@ -138,13 +143,7 @@ begin
 		16'h0xxx: begin
 			DATA_OUT_REG = DATA_OUT_ROM;
 		end
-		16'h10xx: begin
-			DATA_OUT_REG = dout;
-		end
-		16'h11xx: begin
-			DATA_OUT_REG = dout;
-		end
-		16'h12xx: begin
+		16'h10xx, 16'h11xx, 16'h12xx, 16'h13xx: begin
 			DATA_OUT_REG = dout;
 		end
 		16'h2xxx: begin
