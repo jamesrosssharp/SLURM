@@ -33,6 +33,7 @@ reg WR_GPIO;
 reg WR_PWM;
 reg WR_GFX;
 reg WR_AUDIO;
+reg WR_SPI;
 
 wire [BITS - 1 : 0] DATA_OUT_HIRAM;
 wire [BITS - 1 : 0] DATA_OUT_HIRAM2;
@@ -44,6 +45,7 @@ wire [BITS - 1 : 0] DATA_OUT_GPIO;
 wire [BITS - 1 : 0] DATA_OUT_PWM;
 wire [BITS - 1 : 0] DATA_OUT_GFX;
 wire [BITS - 1 : 0] DATA_OUT_AUDIO;
+wire [BITS - 1 : 0] DATA_OUT_SPI;
 
 reg [BITS - 1 : 0] dout_next;
 reg [BITS - 1 : 0] dout;
@@ -94,6 +96,7 @@ begin
 	WR_PWM   = 1'b0;
 	WR_GFX   = 1'b0;
 	WR_AUDIO = 1'b0;
+	WR_SPI   = 1'b0;
 
 	dout_next = dout;
 
@@ -113,6 +116,10 @@ begin
 		16'h13xx: begin
 			dout_next = DATA_OUT_AUDIO;
 			WR_AUDIO = memWR;
+		end
+		16'h14xx: begin
+			dout_next = DATA_OUT_SPI;
+			WR_SPI = memWR;
 		end
 		16'h2xxx: begin
 			dout_next = DATA_OUT_GFX;
@@ -143,7 +150,7 @@ begin
 		16'h0xxx: begin
 			DATA_OUT_REG = DATA_OUT_ROM;
 		end
-		16'h10xx, 16'h11xx, 16'h12xx, 16'h13xx: begin
+		16'h10xx, 16'h11xx, 16'h12xx, 16'h13xx, 16'h14xx: begin
 			DATA_OUT_REG = dout;
 		end
 		16'h2xxx: begin
@@ -232,8 +239,8 @@ gpio
 	DATA_IN,
 	DATA_OUT_GPIO,
 	WR_GPIO,  // write memory 
-	PINS[7:0], // output pins  
-	INPUT_PINS // input pins
+	PINS[3:0], // output pins  
+	INPUT_PINS[5:0] // input pins
 );
 
 
@@ -289,5 +296,22 @@ audio
 	WR_AUDIO, 
 	PINS[14:11]
 );
+
+spi_flash
+#(.BITS(BITS), .ADDRESS_BITS(8), .CLK_FREQ(CLOCK_FREQ)) spi_flash0
+(
+	CLK,	
+	RSTb,
+	ADDRESS,
+	DATA_IN,
+	DATA_OUT_SPI,
+	WR_SPI,
+	PINS[4],
+	PINS[5],
+	PINS[6],
+	INPUT_PINS[7]
+);
+
+assign PINS[7] = 1'b0;
 
 endmodule

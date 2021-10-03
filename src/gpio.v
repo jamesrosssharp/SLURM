@@ -7,15 +7,15 @@ module gpio
 	input [BITS - 1 : 0] DATA_IN,
 	output [BITS - 1 : 0] DATA_OUT,
 	input WR,  /* write memory */
-	output [7:0] PINS, /* output pins */ 
-	input  [7:0] INPUT_PINS
+	output [3:0] PINS, /* output pins */ 
+	input  [5:0] INPUT_PINS
 );
 
-reg [7:0] gpio_reg;
-reg [7:0] gpio_reg_next;
+reg [3:0] gpio_reg;
+reg [3:0] gpio_reg_next;
 
-reg [7:0] gpio_in_reg_a;
-reg [7:0] gpio_in_reg_b;
+reg [5:0] gpio_in_reg_a;
+reg [5:0] gpio_in_reg_b;
 
 assign PINS = gpio_reg;
 
@@ -47,7 +47,7 @@ begin
 				gpio_reg_next = DATA_IN[7:0];
 			end
 		8'h01: /* Input register */
-			dout_r = gpio_in_reg_b;
+			dout_r = {2'b00, gpio_in_reg_b};
 		default:;
 	endcase
 end

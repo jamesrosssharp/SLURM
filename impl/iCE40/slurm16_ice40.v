@@ -28,7 +28,13 @@ module top
 	output DAC_MCLK,
 	output DAC_LRCLK,
 	output DAC_SCLK,
-	output DAC_SDIN
+	output DAC_SDIN,
+
+	output SPI_FLASH_MOSI,
+	input  SPI_FLASH_MISO,
+	output SPI_FLASH_SCK,
+	output SPI_FLASH_CSb
+
 );
 
 wire clk;
@@ -70,7 +76,7 @@ assign INPUT_PINS[3] = RIGHT_BUTTON;
 assign INPUT_PINS[4] = A_BUTTON;
 assign INPUT_PINS[5] = B_BUTTON;
 assign INPUT_PINS[6] = 1'b0;
-assign INPUT_PINS[7] = 1'b0;
+assign INPUT_PINS[7] = SPI_FLASH_MISO;
 
 assign UART_TX = PINS[15];
 
@@ -88,6 +94,10 @@ assign DAC_MCLK = PINS[11];
 assign DAC_LRCLK = PINS[12];
 assign DAC_SCLK = PINS[13];
 assign DAC_SDIN = PINS[14];
+
+assign SPI_FLASH_MOSI = PINS[4];  
+assign SPI_FLASH_SCK  =	PINS[5];	
+assign SPI_FLASH_CSb  = PINS[6];
 
 slurm16 #(
 	.CLOCK_FREQ(CLOCKFREQ)
