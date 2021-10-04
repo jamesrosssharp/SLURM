@@ -64,7 +64,7 @@ begin
 				address_r_next = DATA_IN[7:0];
 			end
 		8'h01: /* Data out reg */
-			dout_r = data_out_r;
+			dout_r = data_in_r;
 		8'h02: /* Data in reg */
 			if (WR == 1'b1) begin
 				data_in_r_next = DATA_IN[7:0];
@@ -74,7 +74,7 @@ begin
 				cmd_r_next = DATA_IN[7:0];
 			end
 		8'h04: /* Status bits reg */
-			dout_r = status_r;
+			dout_r = 8'h03;
 		default:;
 	endcase
 end

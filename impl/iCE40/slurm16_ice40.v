@@ -96,8 +96,8 @@ assign DAC_SCLK = PINS[13];
 assign DAC_SDIN = PINS[14];
 
 assign SPI_FLASH_MOSI = PINS[4];  
-assign SPI_FLASH_SCK  =	PINS[5];	
-assign SPI_FLASH_CSb  = PINS[6];
+assign SPI_FLASH_SCK  =	PINS[6];	
+assign SPI_FLASH_CSb  = PINS[5];
 
 slurm16 #(
 	.CLOCK_FREQ(CLOCKFREQ)

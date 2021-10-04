@@ -91,7 +91,8 @@ SB_SPI SB_SPI_inst( .SBCLKI(CLK),
       				.MI(MISO), 
       				.MO(MOSI), 
 					.SCKO(SCK),
-					.MCSNO0(SSb)
+					.SCSNI(1'b1),
+					.MCSNO1(SSb)
    );
 
 

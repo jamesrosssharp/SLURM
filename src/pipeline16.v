@@ -505,36 +505,49 @@ begin
 	end
 	else begin
 
-	/* If branch taken in stage 1, insert nop as new instruction in stage 1 */
+		/* If branch taken in stage 1, insert nop as new instruction in stage 1 */
 
-	casex (pipelineStage1_r)
-		16'h4xxx:	begin /* branch */
-			if (branch_taken_from_ins(pipelineStage1_r, Z, S, C) == 1'b1) begin
+		casex (pipelineStage1_r)
+			16'h01xx:   begin
 				pipelineStage0_r_next = NOP_INSTRUCTION;
 				pipelineStage1_r_next = NOP_INSTRUCTION;
 			end
-			/* branch and link? */
-			else if (is_branch_link_from_ins(pipelineStage1_r) == 1'b1) begin
-				pipelineStage0_r_next = NOP_INSTRUCTION;
-				pipelineStage1_r_next = NOP_INSTRUCTION;
+			16'h4xxx:	begin /* branch */
+				if (branch_taken_from_ins(pipelineStage1_r, Z, S, C) == 1'b1) begin
+					pipelineStage0_r_next = NOP_INSTRUCTION;
+					pipelineStage1_r_next = NOP_INSTRUCTION;
+				end
+				/* branch and link? */
+				else if (is_branch_link_from_ins(pipelineStage1_r) == 1'b1) begin
+					pipelineStage0_r_next = NOP_INSTRUCTION;
+					pipelineStage1_r_next = NOP_INSTRUCTION;
+				end
 			end
-		end
-	endcase	
+		endcase	
 
-	/* If branch taken in stage 2, insert nop as new instruction in stage 1 */
+		/* If branch taken in stage 2, insert nop as new instruction in stage 1 */
 
-	casex (pipelineStage2_r)
-		16'h4xxx: begin
-			if (is_branch_reg_ind_from_ins(pipelineStage1_r) == 1'b0 && branch_taken2_r == 1'b1) begin 
-				pipelineStage1_r_next = NOP_INSTRUCTION;
-				pipelineStage0_r_next = NOP_INSTRUCTION;
+		casex (pipelineStage2_r)
+			16'h01xx: begin
+					pipelineStage0_r_next = NOP_INSTRUCTION;
 			end
-			else if (branch_taken2_r == 1'b1)
-				pipelineStage0_r_next = NOP_INSTRUCTION;
-		end
-	endcase
+			16'h4xxx: begin
+				if (is_branch_reg_ind_from_ins(pipelineStage1_r) == 1'b0 && branch_taken2_r == 1'b1) begin 
+					pipelineStage1_r_next = NOP_INSTRUCTION;
+					pipelineStage0_r_next = NOP_INSTRUCTION;
+				end
+				else if (branch_taken2_r == 1'b1)
+					pipelineStage0_r_next = NOP_INSTRUCTION;
+			end
+		endcase
+
+		casex (pipelineStage3_r)
+			16'h01xx: begin
+					pipelineStage0_r_next = NOP_INSTRUCTION;
+			end
+		endcase
+
 	end
-
 end
 
 
@@ -784,7 +797,7 @@ end
 
 always @(*)
 begin
-	result_stage2_r_next = pc_r_prev; // PC for write back of link register 
+	result_stage2_r_next = pc_r_prev - 1; // PC for write back of link register 
 	result_stage3_r_next = result_stage2_r;
 	result_stage4_r_next = result_stage3_r;
 

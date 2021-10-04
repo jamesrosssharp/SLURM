@@ -38,8 +38,8 @@ set_io DAC_LRCLK		27
 set_io DAC_SCLK			42
 set_io DAC_SDIN			26
 
-set_io SPI_FLASH_MOSI	17
-set_io SPI_FLASH_MISO	14
+set_io SPI_FLASH_MOSI	14
+set_io SPI_FLASH_MISO	17
 set_io SPI_FLASH_SCK	15
 set_io SPI_FLASH_CSb	16
 
