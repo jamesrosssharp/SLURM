@@ -6,7 +6,7 @@ SRCDIR=../../src
 
 SOURCE = $(SRCDIR)/pipeline16.v $(SRCDIR)/slurm16.v $(SRCDIR)/alu.v $(SRCDIR)/register_file.v $(SRCDIR)/memory_controller.v \
 		 $(SRCDIR)/uart.v $(SRCDIR)/uart_tx.v $(SRCDIR)/baudgen.v $(SRCDIR)/gpio.v pwm_led.v $(SRCDIR)/gfx.v  memory.v rom.v slurm16_ice40.v	\
-		 $(SRCDIR)/pacman_sprite.v $(SRCDIR)/pacman_sprite_rom.v $(SRCDIR)/audio.v $(SRCDIR)/spi_flash.v 
+		 $(SRCDIR)/pacman_sprite.v $(SRCDIR)/pacman_sprite_rom.v $(SRCDIR)/audio.v spi_flash.v 
 
 ICEPACK = icepack
 ICETIME = icetime
