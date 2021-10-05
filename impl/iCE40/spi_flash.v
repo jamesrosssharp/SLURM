@@ -13,10 +13,17 @@ module spi_flash
 	input [BITS - 1 : 0] DATA_IN,
 	output [BITS - 1 : 0] DATA_OUT,
 	input WR,  /* write memory */
-	output MOSI,
+	output MO,
+	output MO_OE,
+	input  MI,
+	output SO,
+	output SO_OE,
+	input  SI,
 	output SSb,
-	output SCK,
-	input MISO
+	output SSb_OE,
+	output SCK_O,
+	input  SCK_I,
+	output SCK_OE
 );
 
 localparam idle = 3'b000;
@@ -57,7 +64,8 @@ reg [7:0] spi_data_out_r_next;
 reg read_done_r, read_done_r_next;
 reg write_done_r, write_done_r_next;
 
-SB_SPI SB_SPI_inst( .SBCLKI(CLK), 
+SB_SPI #(.BUS_ADDR74("0b0000")) 
+	SB_SPI_inst( .SBCLKI(CLK), 
 					.SBSTBI(spi_stb), 
 					.SBRWI(spi_rw),
 					/* address bus */
@@ -88,11 +96,18 @@ SB_SPI SB_SPI_inst( .SBCLKI(CLK),
 					.SBDATO6(spi_data_out[6]), 
 					.SBDATO7(spi_data_out[7]),
       				.SBACKO(spi_ack),
-      				.MI(MISO), 
-      				.MO(MOSI), 
-					.SCKO(SCK),
+      				.MI(MI), 
+      				.MO(MO), 
+					.MOE(MO_OE),
+					.SI(SI),
+					.SO(SO),
+					.SOE(SO_OE),
+					.SCKI(SCK_I),
+					.SCKO(SCK_O),
+					.SCKOE(SCK_OE),
 					.SCSNI(1'b1),
-					.MCSNO1(SSb)
+					.MCSNO1(SSb),
+					.MCSNOE1(SSb_OE)
    );
 
 
@@ -137,7 +152,7 @@ begin
 				address_r_next = DATA_IN[7:0];
 			end
 		8'h01: /* Data out reg */
-			dout_r = spi_data_out_r;
+			dout_r = {8'h00, spi_data_out_r};
 		8'h02: /* Data in reg */
 			if (WR == 1'b1) begin
 				data_in_r_next = DATA_IN[7:0];
@@ -148,7 +163,7 @@ begin
 				go_read_r_next  = DATA_IN[1];
 			end
 		8'h04: /* Status bits reg */
-			dout_r = {6'b000000, read_done_r, write_done_r};
+			dout_r = {14'd0, read_done_r, write_done_r};
 		default:;
 	endcase
 end
@@ -168,10 +183,14 @@ begin
 	case (state_r)
 		idle:
 			if (go_write_r == 1'b1) begin
+				spi_stb = 1'b1;
+				spi_rw = 1'b1;
 				state_r_next 		= write;
 				write_done_r_next 	= 1'b0;
 			end
 			else if (go_read_r == 1'b1) begin
+				spi_stb = 1'b1;
+				spi_rw = 1'b0;
 				state_r_next 		= read;
 				read_done_r_next 	= 1'b0;
 			end

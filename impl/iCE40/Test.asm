@@ -8,6 +8,7 @@ SPI_FLASH_CMD		equ (SPI_FLASH_BASE + 3)
 SPI_FLASH_STATUS	equ (SPI_FLASH_BASE + 4)
 
 UART_TX_REG 	equ 	0x1000
+UART_TX_STATUS  equ		0x1001
 
 // Registers for SPI core
 
@@ -31,15 +32,17 @@ SPISR_MDF  equ 1 << 0
 
 	nop
 
-//	bl wait_tx_ready
+	mov r8, 0
 
+do_tx:
+	bl wait_tx_ready
+	
 	mov r0, SPICR0
-	mov r1, 0x00
+	mov r1, 0xff
 	bl write_spi_reg
 
-
-
-/*	
+	bl wait_tx_ready
+	
 	mov r0, SPICR1
 	mov r1, 0x80
 	bl write_spi_reg
@@ -47,7 +50,7 @@ SPISR_MDF  equ 1 << 0
 	bl wait_tx_ready
 	
 	mov r0, SPIBR
-	mov r1, 24
+	mov r1, 0x3f
 	bl write_spi_reg
 
 	bl wait_tx_ready
@@ -58,29 +61,24 @@ SPISR_MDF  equ 1 << 0
 
 	bl wait_tx_ready
 
-	mov r0, SPICSR
-	mov r1, 0xd
-	bl write_spi_reg
-
-do_tx:
+	//mov r0, SPICSR
+	//mov r1, 0xd
+	//bl write_spi_reg
 
 	mov r0, SPICR2
 	mov r1, 0xC0
 	bl write_spi_reg
 
-wait_no_busy:
-	mov r0, SPISR
-	bl read_spi_reg
-	test r0, SPISR_BUSY
-	bnz wait_no_busy
+	bl wait_tx_ready
+	
+	mov r9, 3
+do_tx_loop:
 
-	nop
-	nop
-
+	
 	mov r0, SPITXDR
-	mov r1, 0xaa
+	mov r1, r8
+	add r8, 1
 	bl write_spi_reg
-
 
 wait_rx_ready:
 	mov r0, SPISR
@@ -88,26 +86,53 @@ wait_rx_ready:
 	test r0, SPISR_RRDY
 	bz wait_rx_ready
 
-	mov r0, SPIRXDR
+	//mov r0, SPIRXDR
+	//bl read_spi_reg
+
+	sub r9, 1
+	bnz do_tx_loop
+
+	mov r0, SPITXDR
+	mov r1, r8
+	add r8, 1
+	bl write_spi_reg
+
+wait_rx_ready2:
+	mov r0, SPISR
 	bl read_spi_reg
+	test r0, SPISR_RRDY
+	bz wait_rx_ready2
 
 	mov r0, SPICR2
 	mov r1, 0x80
 	bl write_spi_reg
-*/
+
+wait_no_tip:
+	mov r0, SPISR
+	bl read_spi_reg
+	test r0, SPISR_TIP
+	bnz wait_no_tip
+
+	//mov r0, SPICR2
+	//mov r1, 0x00
+	//bl write_spi_reg
+
 do_wait:
+	mov r3, 0x20
+wait_outer:
 	mov r2, 0xffff
 wait_loop:
 	sub r2, 1
 	bnz wait_loop
+	sub r3, 1
+	bnz wait_outer
 
-	mov r0, SPICR0
+	mov r0, SPISR
 	bl read_spi_reg
 
-	add r0, 'A'
-	st [UART_TX_REG], r0
+	bl print_hex_byte
 
-	ba do_wait	
+	ba do_tx
 
 die:
 	ba die
@@ -141,6 +166,9 @@ read_spi_reg.wait:
 	bz read_spi_reg.wait
 	ld r0, [SPI_FLASH_DATA_OUT]
 	ret
+	nop
+	nop
+	nop	
 
 wait_tx_ready:
 	
@@ -152,5 +180,48 @@ rdy_loop:
 	bz rdy_loop
 	mov r15, r7
 	ret
+	nop
+	nop
+	nop
+
+
+print_hex_byte:
+	mov r7, r15
+	mov r1, r0
+	lsr r1
+	lsr r1
+	lsr r1
+	lsr r1
+	and r1, 0xf
+	bl print_hex_nibble
+	nop
+	mov r1, r0
+	and r1, 0xf
+	bl print_hex_nibble
+
+	mov r15, r7
+	ret
+	nop
+	nop
+	nop
+
+print_hex_nibble:
+	cmp r1, 0xa
+	bs not_gt_9
+	add r1, 'a' - 0xa
+	ba done_nibble
+not_gt_9:
+	add r1, '0'
+done_nibble:
+	st [UART_TX_REG], r1
+test_loop:
+    ld r2, [UART_TX_STATUS]
+    test r2, 1
+    bz test_loop
+	ret
+	nop
+	nop
+	nop
+
 
 	.end

@@ -18,7 +18,18 @@ module memory_controller
 	input memRD,  /* read request */
 	output memBUSY, /* memory is busy (GFX / SND mem) */
 	output [31:0] PINS, /* output pins */ 
-	input [7:0] INPUT_PINS /* input pins */
+	input [7:0] INPUT_PINS, /* input pins */
+	output MO,
+    output MO_OE,
+    input  MI,
+    output SO,
+    output SO_OE,
+    input  SI,
+    output SSb,
+    output SSb_OE,
+    output SCK_O,
+    input  SCK_I,
+    output SCK_OE
 );
 
 /* memory is never busy for now */
@@ -306,10 +317,20 @@ spi_flash
 	DATA_IN,
 	DATA_OUT_SPI,
 	WR_SPI,
-	PINS[4],
-	PINS[5],
-	PINS[6],
-	INPUT_PINS[7]
+
+	MO,
+    MO_OE,
+    MI,
+    SO,
+    SO_OE,
+    SI,
+    SSb,
+    SSb_OE,
+    SCK_O,
+    SCK_I,
+    SCK_OE
+
+
 );
 
 assign PINS[7] = 1'b0;

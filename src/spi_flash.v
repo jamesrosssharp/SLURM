@@ -13,10 +13,17 @@ module spi_flash
 	input [BITS - 1 : 0] DATA_IN,
 	output [BITS - 1 : 0] DATA_OUT,
 	input WR,  /* write memory */
-	output MOSI,
-	output SSb,
-	output SCK,
-	input MISO
+ 	output MO,
+    output MO_OE,
+    input  MI,
+    output SO,
+    output SO_OE,
+    input  SI,
+    output SSb,
+    output SSb_OE,
+    output SCK_O,
+    input  SCK_I,
+    output SCK_OE
 );
 
 reg [7:0] address_r;
