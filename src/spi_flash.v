@@ -123,7 +123,7 @@ begin
 				wake_r_next = DATA_IN[1];
 			end
 		8'h03: /* Data reg */
-			dout_r = data_out_r;
+			dout_r = {data_out_r[7:0], data_out_r[15:8]};
 		8'h04: /* Status bits reg */
 			dout_r = {15'd0, done_r};
 		default:;
