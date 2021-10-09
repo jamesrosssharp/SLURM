@@ -12,21 +12,7 @@ module slurm16 #(
 	input CLK,
 	input RSTb,
 	output [31:0] PINS,
-	input  [7:0]  INPUT_PINS,
-
-	/* SPI 1 */
-	output MO,
-    output MO_OE,
-    input  MI,
-    output SO,
-    output SO_OE,
-    input  SI,
-    output SSb,
-    output SSb_OE,
-    output SCK_O,
-    input  SCK_I,
-    output SCK_OE
-
+	input  [7:0]  INPUT_PINS
 );
 
 wire C;
@@ -121,20 +107,7 @@ mem0
 	.memRD(mem_RD), 
 	.memBUSY(memBUSY),
 	.PINS(PINS),
-	.INPUT_PINS(INPUT_PINS), 
-	.MO(MO),
-    .MO_OE(MO_OE),
-    .MI(MI),
-    .SO(SO),
-    .SO_OE(SO_OE),
-    .SI(SI),
-    .SSb(SSb),
-    .SSb_OE(SSb_OE),
-    .SCK_O(SCK_O),
-    .SCK_I(SCK_I),
-    .SCK_OE(SCK_OE)
+	.INPUT_PINS(INPUT_PINS) 
 );
-
-
 
 endmodule

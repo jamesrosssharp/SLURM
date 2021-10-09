@@ -30,10 +30,10 @@ module top
 	output DAC_SCLK,
 	output DAC_SDIN,
 
-	inout SPI_FLASH_MOSI,
-	inout  SPI_FLASH_MISO,
-	inout SPI_FLASH_SCK,
-	inout SPI_FLASH_CSb
+	output SPI_FLASH_MOSI,
+	input  SPI_FLASH_MISO,
+	output SPI_FLASH_SCK,
+	output SPI_FLASH_CSb
 
 );
 
@@ -76,6 +76,7 @@ assign INPUT_PINS[3] = RIGHT_BUTTON;
 assign INPUT_PINS[4] = A_BUTTON;
 assign INPUT_PINS[5] = B_BUTTON;
 assign INPUT_PINS[6] = 1'b0;
+assign INPUT_PINS[7] = SPI_FLASH_MISO;
 
 assign UART_TX = PINS[15];
 
@@ -94,55 +95,9 @@ assign DAC_LRCLK = PINS[12];
 assign DAC_SCLK = PINS[13];
 assign DAC_SDIN = PINS[14];
 
-wire MO;
-wire MO_OE;
-wire MI;
-wire SO;
-wire SO_OE;
-wire SI;
-wire SSb;
-wire SSb_OE;
-wire SCK_O;
-wire SCK_I;
-wire SCK_OE;
-
-SB_IO #(
-  .PIN_TYPE(6'b101001),
-) miso_io (
-  .PACKAGE_PIN(SPI_FLASH_MISO),
-  .OUTPUT_ENABLE(SO_OE),
-  .D_OUT_0(SO),
-  .D_IN_0(MI)
-);
-
-SB_IO #(
-  .PIN_TYPE(6'b101001),
-) mosi_io (
-  .PACKAGE_PIN(SPI_FLASH_MOSI),
-  .OUTPUT_ENABLE(MO_OE),
-  .D_OUT_0(MO),
-  .D_IN_0(SI)
-);
-
-SB_IO #(
-  .PIN_TYPE(6'b101001),
-) sck_io (
-  .PACKAGE_PIN(SPI_FLASH_SCK),
-  .OUTPUT_ENABLE(SCK_OE),
-  .D_OUT_0(SCK_O),
-  .D_IN_0(SCK_I)
-);
-
-wire dummy;
-
-SB_IO #(
-  .PIN_TYPE(6'b1010_01),
-) csb_io (
-  .PACKAGE_PIN(SPI_FLASH_CSb),
-  .OUTPUT_ENABLE(SSb_OE),
-  .D_OUT_0(SSb),
-  .D_IN_0(dummy)
-);
+assign SPI_FLASH_MOSI = PINS[4];
+assign SPI_FLASH_SCK = PINS[5];
+assign SPI_FLASH_CSb = PINS[6];
 
 slurm16 #(
 	.CLOCK_FREQ(CLOCKFREQ)
@@ -150,18 +105,7 @@ slurm16 #(
 	clk,
 	RSTb,
 	PINS,
-	INPUT_PINS,
- 	MO,
-    MO_OE,
-    MI,
-    SO,
-    SO_OE,
-    SI,
-    SSb,
-    SSb_OE,
-    SCK_O,
-    SCK_I,
-    SCK_OE
+	INPUT_PINS
 );
 
 endmodule

@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.103 (w)1999-2019 BSI
-[*] Mon Oct  4 20:27:27 2021
+[*] Fri Oct  8 23:25:51 2021
 [*]
 [dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/spi_flash/dump.vcd"
-[dumpfile_mtime] "Mon Oct  4 20:27:13 2021"
-[dumpfile_size] 66907081
+[dumpfile_mtime] "Fri Oct  8 23:25:05 2021"
+[dumpfile_size] 64792445
 [savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/spi_flash/config.gtkw"
-[timestart] 2107000
+[timestart] 26260000
 [size] 1710 811
 [pos] -1 -1
-*-20.000000 3200000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-22.000000 3200000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] slurm16_tb.
 [treeopen] slurm16_tb.slm0.
 [treeopen] slurm16_tb.slm0.mem0.
@@ -25,6 +25,13 @@ slurm16_tb.slm0.RSTb
 slurm16_tb.slm0.mem0.ADDRESS[15:0]
 slurm16_tb.slm0.mem0.DATA_IN[15:0]
 slurm16_tb.slm0.mem0.DATA_OUT[15:0]
+@28
+slurm16_tb.slm0.mem0.spi_flash0.MOSI
+slurm16_tb.slm0.mem0.spi_flash0.SCK
+slurm16_tb.slm0.mem0.spi_flash0.CSb
+slurm16_tb.slm0.mem0.u0.TX
+@29
+slurm16_tb.slm0.mem0.spi_flash0.done_r
 @200
 -
 -registers
@@ -82,7 +89,7 @@ slurm16_tb.slm0.pip0.partial_pipeline_stall_r
 slurm16_tb.slm0.pip0.flagsModifiedStage1_r
 slurm16_tb.slm0.pip0.flagsModifiedStage2_r
 slurm16_tb.slm0.pip0.flagsModifiedStage3_r
-@23
+@22
 slurm16_tb.slm0.pip0.regWrAddr[4:0]
 [pattern_trace] 1
 [pattern_trace] 0
