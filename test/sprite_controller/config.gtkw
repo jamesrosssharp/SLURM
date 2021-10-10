@@ -1,0 +1,49 @@
+[*]
+[*] GTKWave Analyzer v3.3.103 (w)1999-2019 BSI
+[*] Sun Oct 10 08:00:35 2021
+[*]
+[dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/sprite_controller/sprite_test.vcd"
+[dumpfile_mtime] "Sun Oct 10 08:00:02 2021"
+[dumpfile_size] 37493100
+[savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/sprite_controller/config.gtkw"
+[timestart] 239203000
+[size] 1710 811
+[pos] -1 -1
+*-19.000000 241500000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] sprite_tb.
+[treeopen] sprite_tb.con0.
+[treeopen] sprite_tb.con0.Gen_sprites[0].
+[treeopen] sprite_tb.con0.Gen_sprites[1].
+[treeopen] sprite_tb.con0.Gen_sprites[2].
+[treeopen] sprite_tb.con0.Gen_sprites[3].
+[treeopen] sprite_tb.con0.Gen_sprites[7].
+[sst_width] 290
+[signals_width] 383
+[sst_expanded] 1
+[sst_vpaned_height] 218
+@28
+sprite_tb.CLK
+sprite_tb.RSTb
+@24
+sprite_tb.con0.display_x_r[9:0]
+sprite_tb.con0.display_y_r[9:0]
+@28
+sprite_tb.con0.sprite_address_valid_1_r
+@22
+sprite_tb.con0.sprite_address_1_r[17:0]
+@28
+sprite_tb.con0.sprite_address_valid_2_r
+@22
+sprite_tb.con0.sprite_address_2_r[17:0]
+@28
+sprite_tb.con0.Gen_sprites[0].sp_inst.isActive
+sprite_tb.con0.Gen_sprites[1].sp_inst.isActive
+sprite_tb.con0.Gen_sprites[2].sp_inst.isActive
+sprite_tb.con0.Gen_sprites[3].sp_inst.isActive
+@29
+sprite_tb.con0.Gen_sprites[7].sp_inst.isActive
+@22
+sprite_tb.con0.Gen_sprites[0].sp_inst.sprite_x[9:0]
+sprite_tb.con0.Gen_sprites[0].sp_inst.sprite_y[9:0]
+[pattern_trace] 1
+[pattern_trace] 0

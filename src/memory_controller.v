@@ -290,7 +290,7 @@ audio
 (
 	CLK,	
 	RSTb,
-	ADDRESS,
+	ADDRESS[7:0],
 	DATA_IN,
 	DATA_OUT_AUDIO,
 	WR_AUDIO, 
@@ -302,7 +302,7 @@ spi_flash
 (
 	CLK,	
 	RSTb,
-	ADDRESS,
+	ADDRESS[7:0],
 	DATA_IN,
 	DATA_OUT_SPI,
 	WR_SPI,

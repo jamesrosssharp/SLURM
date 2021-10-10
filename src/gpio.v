@@ -26,9 +26,9 @@ assign DATA_OUT = {8'h00, dout_r};
 always @(posedge CLK)
 begin
 	if (RSTb == 1'b0) begin
-		gpio_reg <= 8'h00;
-		gpio_in_reg_a <= 8'h00;
-		gpio_in_reg_b <= 8'h00;
+		gpio_reg <= 4'h00;
+		gpio_in_reg_a <= 6'h00;
+		gpio_in_reg_b <= 6'h00;
 	end else begin
 		gpio_reg <= gpio_reg_next;
 		gpio_in_reg_a <= INPUT_PINS;
@@ -44,7 +44,7 @@ begin
 	case (ADDRESS)
 		8'h00:	/* Output register */
 			if (WR == 1'b1) begin
-				gpio_reg_next = DATA_IN[7:0];
+				gpio_reg_next = DATA_IN[3:0];
 			end
 		8'h01: /* Input register */
 			dout_r = {2'b00, gpio_in_reg_b};

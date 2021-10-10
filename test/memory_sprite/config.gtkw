@@ -1,0 +1,38 @@
+[*]
+[*] GTKWave Analyzer v3.3.103 (w)1999-2019 BSI
+[*] Sun Oct 10 04:19:29 2021
+[*]
+[dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/memory_sprite/sprite_test.vcd"
+[dumpfile_mtime] "Sun Oct 10 04:19:07 2021"
+[dumpfile_size] 6104324
+[savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/memory_sprite/config.gtkw"
+[timestart] 0
+[size] 1710 811
+[pos] -1 -1
+*-26.000000 158400000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] sprite_tb.
+[sst_width] 290
+[signals_width] 383
+[sst_expanded] 1
+[sst_vpaned_height] 218
+@28
+sprite_tb.sp0.RSTb
+sprite_tb.sp0.CLK
+@22
+sprite_tb.sp0.ADDRESS[3:0]
+sprite_tb.sp0.DATA_IN[15:0]
+sprite_tb.sp0.sprite_height[9:0]
+sprite_tb.sp0.sprite_width[9:0]
+@24
+sprite_tb.sp0.sprite_x[9:0]
+sprite_tb.sp0.sprite_y[9:0]
+@22
+sprite_tb.sp0.sprite_base_address_r[15:0]
+sprite_tb.sp0.sprite_address[17:0]
+@29
+sprite_tb.sp0.isActive
+@22
+sprite_tb.sp0.display_x[9:0]
+sprite_tb.sp0.display_y[9:0]
+[pattern_trace] 1
+[pattern_trace] 0

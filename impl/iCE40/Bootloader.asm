@@ -14,10 +14,10 @@ UART_TX_STATUS 	equ 	0x1001
 
 	mov r6, 0xffff
 
+	// Wake up flash
 	mov r0, 2
 	st [SPI_FLASH_CMD], r0
 
-do_it:
 	mov r4, 20
 outer:
 	mov r3, 0xffff
@@ -27,9 +27,11 @@ wait_loop:
 	sub r4, 1
 	bnz outer
 
+	mov r11, 0x4000
+do_it:
 	add r6, 1
 	mov r0, r6
-	mov r1, 0
+	mov r1, 8
 	st	[SPI_FLASH_ADDR_LO], r0
 	st	[SPI_FLASH_ADDR_HI], r1
 	mov r0, 1
@@ -41,60 +43,12 @@ loop:
 	bz loop
 
 	ld r0, [SPI_FLASH_DATA]
+	st [r11], r0
+	inc r11
 
-/*	lsr r0
-	lsr r0
-	lsr r0
-	lsr r0
-	lsr r0
-	lsr r0
-	lsr r0
-	lsr r0
-*/
-
-	bl print_hex_byte
+	or r11,r11
+	bz 0x4000	// Jump to bootloaded code
 
 	ba do_it
-die:
-	ba die
-
-
-print_hex_byte:
-	mov r7, r15
-	mov r1, r0
-	lsr r1
-	lsr r1
-	lsr r1
-	lsr r1
-	and r1, 0xf
-	bl print_hex_nibble
-	nop
-	mov r1, r0
-	and r1, 0xf
-	bl print_hex_nibble
-
-	mov r15, r7
-	ret
-	nop
-	nop
-	nop
-
-print_hex_nibble:
-	cmp r1, 0xa
-	bs not_gt_9
-	add r1, 'a' - 0xa
-	ba done_nibble
-not_gt_9:
-	add r1, '0'
-done_nibble:
-	st [UART_TX_REG], r1
-test_loop:
-    ld r2, [UART_TX_STATUS]
-    test r2, 1
-    bz test_loop
-	ret
-	nop
-	nop
-	nop
 
 	.end

@@ -151,23 +151,23 @@ begin
 				state_r_next 	= send_cmd;
 				done_r_next 	= 1'b0;
 				serialOut_r_next = readCmd; 
-				tick_counter_r_next <= 3'd0;
-				bit_counter_r_next  <= 5'd0;
-				CSb_r				<= 1'b0;
-				SCK_r_next			<= 1'b0;
+				tick_counter_r_next = 3'd0;
+				bit_counter_r_next  = 5'd0;
+				CSb_r				= 1'b0;
+				SCK_r_next			= 1'b0;
 			end else if (wake_r == 1'b1) begin
 				state_r_next 	= send_wake_cmd;
 				done_r_next 	= 1'b0;
 				serialOut_r_next = wakeCmd; 
-				tick_counter_r_next <= 3'd0;
-				bit_counter_r_next  <= 5'd0;
-				CSb_r				<= 1'b0;
-				SCK_r_next			<= 1'b0;
+				tick_counter_r_next = 3'd0;
+				bit_counter_r_next  = 5'd0;
+				CSb_r				= 1'b0;
+				SCK_r_next			= 1'b0;
 			end
 		send_wake_cmd: begin
 			tick_counter_r_next = tick_counter_r + 1;	
-			CSb_r		<= 1'b0;
-			MOSI_r		<= serialOut_r[23];
+			CSb_r		= 1'b0;
+			MOSI_r		= serialOut_r[23];
 
 			if (tick_counter_r == 3'b100)
 				SCK_r_next = 1'b1;
@@ -185,8 +185,8 @@ begin
 		end
 		send_cmd: begin
 			tick_counter_r_next = tick_counter_r + 1;	
-			CSb_r		<= 1'b0;
-			MOSI_r		<= serialOut_r[23];
+			CSb_r		= 1'b0;
+			MOSI_r		= serialOut_r[23];
 
 			if (tick_counter_r == 3'b100)
 				SCK_r_next = 1'b1;
@@ -200,15 +200,15 @@ begin
 				if (bit_counter_r == 5'd7) begin
 					state_r_next = send_address;
 					serialOut_r_next = {address_hi_r[6:0], address_lo_r[15:0], 1'b0}; 
-					tick_counter_r_next <= 3'd0;
-					bit_counter_r_next  <= 5'd0;
+					tick_counter_r_next = 3'd0;
+					bit_counter_r_next  = 5'd0;
 				end
 			end
 		end
 		send_address: begin
 			tick_counter_r_next = tick_counter_r + 1;	
-			CSb_r		<= 1'b0;
-			MOSI_r		<= serialOut_r[23];
+			CSb_r		= 1'b0;
+			MOSI_r		= serialOut_r[23];
 
 			if (tick_counter_r == 3'b100)
 				SCK_r_next = 1'b1;
@@ -221,14 +221,14 @@ begin
 
 				if (bit_counter_r == 5'd23) begin
 					state_r_next = get_data;
-					tick_counter_r_next <= 3'd0;
-					bit_counter_r_next  <= 5'd0;
+					tick_counter_r_next = 3'd0;
+					bit_counter_r_next  = 5'd0;
 				end
 			end
 		end
 		get_data: begin
 			tick_counter_r_next = tick_counter_r + 1;	
-			CSb_r		<= 1'b0;
+			CSb_r		= 1'b0;
 
 			if (tick_counter_r == 3'b100) begin
 				SCK_r_next = 1'b1;

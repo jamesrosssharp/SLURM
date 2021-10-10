@@ -56,6 +56,9 @@ assign VS = (vcount >= (V_LINES - V_SYNC_PULSE)) ? 1'b0 : 1'b1;
 
 wire frameTick = (hcount == 10'd0 && vcount == 10'd0) ? 1'b1 : 1'b0;
 
+wire V_tick = frameTick;
+wire H_tick = (hcount == 10'd0) ? 1'b1 : 1'b0;
+
 wire [9:0] x = hcount;
 wire [9:0] y = vcount;
 
@@ -77,21 +80,35 @@ begin
 	end
 end
 
-pacman_sprite pac0
+wire [7:0] spcon_color_index;
+
+wire [15:0] spcon_memory_address;
+reg [15:0] spcon_memory_data;
+wire spcon_rvalid;
+reg  spcon_rready;
+
+sprite_controller spcon0
 (
 	CLK,
 	RSTb,
-	ADDRESS[3:0],
+
+	ADDRESS[9:0],
 	DATA_IN,
 	WR_sprite,
-	frameTick,
+
+	V_tick,
+	H_tick,
+
 	x,
-	y,
-	spriteColor,
-	spriteActive
+	spcon_color_index,
+
+	spcon_memory_address,
+	spcon_memory_data,
+	spcon_rvalid, 
+	spcon_rready
 );
 
-wire [11:0] color_next = spriteActive ? spriteColor : 12'h00f; 
+wire [11:0] color_next = spcon_color_index == 8'd0 ? 12'h000 : 12'h00f; 
 reg [11:0] color;
 
 always @(posedge CLK)
@@ -118,9 +135,9 @@ begin
 	WR_sprite = 1'b0;
 	dout_r = {BITS{1'b0}};
 	casex (ADDRESS)
-		16'h0000:	/* frame count register */
+		12'hf00:	/* frame count register */
 			dout_r = frameCount;
-		16'h001x: /* sprite 1 */
+		default: /* sprite 1 */
 			WR_sprite = WR;
 		default: ;
 	endcase
