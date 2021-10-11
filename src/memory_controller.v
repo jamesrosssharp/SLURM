@@ -244,7 +244,7 @@ gpio
 );
 
 
-pwm_led
+/*pwm_led
 #(.CLK_FREQ(CLOCK_FREQ), .BITS(BITS)) led0
 (
 	CLK,	
@@ -255,6 +255,7 @@ pwm_led
 	WR_PWM,  // write memory 
 	PINS[10:8] // output pins 
 );
+*/
 
 assign PINS[31:30] = 2'b00;
 

@@ -32,7 +32,7 @@ module sprite_controller
 
 );
 
-localparam LOG2_SPRITES = 3;
+localparam LOG2_SPRITES = 2;
 localparam N_SPRITES = 2**LOG2_SPRITES;
 
 reg [9:0] display_x_r;
@@ -132,7 +132,7 @@ always @(*)
 begin
 	if (V_tick == 1'b1)
 		display_y_next = 10'd0;
-	if (H_tick == 1'b1)
+	else if (H_tick == 1'b1)
 		display_y_next = display_y_r + 1;		
 	else
 		display_y_next = display_y_r;
