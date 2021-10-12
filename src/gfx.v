@@ -108,7 +108,7 @@ sprite_controller spcon0
 	spcon_rready
 );
 
-wire [11:0] color_next = spcon_color_index == 8'd0 ? 12'h000 : 12'h00f; 
+wire [11:0] color_next = {4'b0000, spcon_color_index};
 reg [11:0] color;
 
 always @(posedge CLK)
@@ -139,7 +139,6 @@ begin
 			dout_r = frameCount;
 		default: /* sprite 1 */
 			WR_sprite = WR;
-		default: ;
 	endcase
 end
 
