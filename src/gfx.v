@@ -100,6 +100,8 @@ sprite_controller spcon0
 	H_tick,
 
 	x,
+	y,
+	1'b1, 
 	spcon_color_index,
 
 	spcon_memory_address,

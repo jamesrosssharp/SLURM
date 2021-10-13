@@ -1,7 +1,7 @@
 
 SRCDIR=../../src
 
-SOURCE=$(SRCDIR)/sprite_controller.v $(SRCDIR)/memory_sprite.v
+SOURCE=$(SRCDIR)/sprite_controller.v $(SRCDIR)/bram.v 
 
 PROJECT=sprite_test
 

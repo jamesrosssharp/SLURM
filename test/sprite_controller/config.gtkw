@@ -1,22 +1,17 @@
 [*]
 [*] GTKWave Analyzer v3.3.103 (w)1999-2019 BSI
-[*] Sun Oct 10 08:00:35 2021
+[*] Wed Oct 13 07:33:42 2021
 [*]
 [dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/sprite_controller/sprite_test.vcd"
-[dumpfile_mtime] "Sun Oct 10 08:00:02 2021"
-[dumpfile_size] 37493100
+[dumpfile_mtime] "Wed Oct 13 07:33:07 2021"
+[dumpfile_size] 12522872
 [savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/sprite_controller/config.gtkw"
-[timestart] 239203000
+[timestart] 159003000
 [size] 1710 811
 [pos] -1 -1
-*-19.000000 241500000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-19.000000 160200000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] sprite_tb.
 [treeopen] sprite_tb.con0.
-[treeopen] sprite_tb.con0.Gen_sprites[0].
-[treeopen] sprite_tb.con0.Gen_sprites[1].
-[treeopen] sprite_tb.con0.Gen_sprites[2].
-[treeopen] sprite_tb.con0.Gen_sprites[3].
-[treeopen] sprite_tb.con0.Gen_sprites[7].
 [sst_width] 290
 [signals_width] 383
 [sst_expanded] 1
@@ -24,26 +19,29 @@
 @28
 sprite_tb.CLK
 sprite_tb.RSTb
-@24
-sprite_tb.con0.display_x_r[9:0]
-sprite_tb.con0.display_y_r[9:0]
-@28
-sprite_tb.con0.sprite_address_valid_1_r
+sprite_tb.con0.H_tick
+sprite_tb.con0.V_tick
 @22
-sprite_tb.con0.sprite_address_1_r[17:0]
+sprite_tb.con0.cur_sprite_r[7:0]
+sprite_tb.con0.xram.DATA_OUT[15:0]
+sprite_tb.con0.yram.DATA_OUT[15:0]
+sprite_tb.con0.hram.DATA_OUT[15:0]
+sprite_tb.DATA_IN[15:0]
+sprite_tb.con0.cur_sprite_x[9:0]
+sprite_tb.con0.xram.RD_ADDRESS[7:0]
 @28
-sprite_tb.con0.sprite_address_valid_2_r
+sprite_tb.con0.WR
 @22
-sprite_tb.con0.sprite_address_2_r[17:0]
+sprite_tb.con0.xram.WR_ADDRESS[7:0]
+sprite_tb.con0.xram.DATA_IN[15:0]
 @28
-sprite_tb.con0.Gen_sprites[0].sp_inst.isActive
-sprite_tb.con0.Gen_sprites[1].sp_inst.isActive
-sprite_tb.con0.Gen_sprites[2].sp_inst.isActive
-sprite_tb.con0.Gen_sprites[3].sp_inst.isActive
-@29
-sprite_tb.con0.Gen_sprites[7].sp_inst.isActive
+sprite_tb.con0.xram.WR
 @22
-sprite_tb.con0.Gen_sprites[0].sp_inst.sprite_x[9:0]
-sprite_tb.con0.Gen_sprites[0].sp_inst.sprite_y[9:0]
+sprite_tb.con0.r_state[3:0]
+sprite_tb.con0.color_index[7:0]
+sprite_tb.display_x[9:0]
+sprite_tb.display_y[9:0]
+@23
+sprite_tb.con0.cur_sprite_x_count[6:0]
 [pattern_trace] 1
 [pattern_trace] 0

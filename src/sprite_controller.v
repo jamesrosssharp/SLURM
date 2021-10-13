@@ -22,6 +22,8 @@ module sprite_controller
 
 	/* display uses this channel to read scanline block RAM */
 	input [9:0]   display_x,
+	input [9:0]   display_y,
+	input         re,	// render enable
 	output [7:0] color_index,
 
 	/* memory channel to memory arbiter */
@@ -73,8 +75,8 @@ xram
 //
 //	16 bits.
 //
-//	Bit 0 - 8: Y coord
-//	Bit 9 - 15: width 
+//	Bit 0 - 9: Y coord
+//	Bit 10 - 15: width 
 
 wire [7:0] yram_rd_addr;
 
@@ -102,8 +104,8 @@ yram
 //
 //	16 bits.
 //
-//	Bit 0 - 8: Y coord end
-//	Bit 9 - 15: reserved
+//	Bit 0 - 9: Y coord end
+//	Bit 10 - 15: reserved
 
 wire [7:0]  hram_rd_addr;
 
@@ -175,19 +177,6 @@ begin
 	endcase
 end
 
-// Y count
-
-reg [8:0] y_count = 9'd0;
-
-always @(posedge CLK)
-begin
-	if (V_tick == 1'b1)
-		y_count <= 9'd0;
-	else if (H_tick == 1'b1)
-		y_count <= y_count + 1;
-end
-
-
 // Sprite render state machine
 
 reg [3:0] r_state, r_state_next;
@@ -242,81 +231,8 @@ begin
 
 	cur_sprite_x_next = cur_sprite_x; 
 	cur_sprite_x_count_next = cur_sprite_x_count;
+	cur_sprite_palette_next = cur_sprite_palette;
 	
-	case (r_state)
-		r_idle: ;
-		r_load_sprite_regs: begin
-			cur_sprite_r_next = cur_sprite_r + 1;
-			cur_sprite_x_next = xram_out[9:0]; 
-			cur_sprite_x_count_next = yram_out[15:9];
-	
-			if (xram_out[10] == 1'b1 && y_count >= yram_out[8:0] && y_count <= hram_out[8:0]) begin
-				// Sprite enabled
-				r_state_next = r_wait_mem_0;
-			end
-		end
-		r_wait_mem_0:
-			r_state_next = r_blit_0;
-		r_blit_0: begin
-			cur_sprite_x_next = cur_sprite_x + 1;
-			cur_sprite_x_count_next = cur_sprite_x_count - 1;
-
-			scanline_wr[active_buffer] = 1'b1;
-			scanline_wr_data[active_buffer] = 8'hff;			
-
-			if (cur_sprite_x_count == 7'd0)
-				r_state_next = r_finish;
-			else
-				r_state_next = r_blit_1;
-		end	
-		r_blit_1: begin
-			cur_sprite_x_next = cur_sprite_x + 1;
-			cur_sprite_x_count_next = cur_sprite_x_count - 1;
-
-			scanline_wr[active_buffer] = 1'b1;
-			scanline_wr_data[active_buffer] = 8'hff;			
-
-			if (cur_sprite_x_count == 7'd0)
-				r_state_next = r_finish;
-			else
-				r_state_next = r_blit_2;
-		end
-		r_blit_2: begin
-
-			cur_sprite_x_next = cur_sprite_x + 1;
-			cur_sprite_x_count_next = cur_sprite_x_count - 1;
-
-			scanline_wr[active_buffer] = 1'b1;
-			scanline_wr_data[active_buffer] = 8'hff;			
-
-			if (cur_sprite_x_count == 7'd0)
-				r_state_next = r_finish;
-			else
-				r_state_next = r_blit_3;
-	
-		end
-		r_blit_3: begin
-		
-			cur_sprite_x_next = cur_sprite_x + 1;
-			cur_sprite_x_count_next = cur_sprite_x_count - 1;
-
-			scanline_wr[active_buffer] = 1'b1;
-			scanline_wr_data[active_buffer] = 8'hff;			
-
-			if (cur_sprite_x_count == 7'd0)
-				r_state_next = r_finish;
-			else
-				r_state_next = r_wait_mem_0;
-	
-		end
-		r_finish: begin
-			if (cur_sprite_r == 8'hff) 
-				r_state_next = r_idle;
-			else
-				r_state_next = r_load_sprite_regs;
-		end
-	endcase
-
 	// If we get a H tick, start next scanline
 	if (H_tick == 1'b1)
 	begin
@@ -324,7 +240,87 @@ begin
 		r_state_next = r_load_sprite_regs;
 		cur_sprite_r_next = 8'd0;
 	end
+	else begin
+		case (r_state)
+			r_idle: ;
+			r_load_sprite_regs: begin
+				cur_sprite_x_next = xram_out[9:0]; 
+				cur_sprite_x_count_next = yram_out[15:10];
+				cur_sprite_palette_next = xram_out[14:11];
+				if ((xram_out[10] == 1'b1) && (display_y >= yram_out[9:0]) && (display_y <= hram_out[9:0])) begin
+					// Sprite enabled
+					r_state_next = r_wait_mem_0;
+				end
+				else begin
+					cur_sprite_r_next = cur_sprite_r + 1;
+					if (cur_sprite_r == 8'hff)
+						r_state_next = r_idle;
+				end
+			end
+			r_wait_mem_0:
+				r_state_next = r_blit_0;
+			r_blit_0: begin
+				cur_sprite_x_next = cur_sprite_x + 1;
+				cur_sprite_x_count_next = cur_sprite_x_count - 1;
 
+				scanline_wr[active_buffer] = 1'b1;
+				scanline_wr_data[active_buffer] = {cur_sprite_palette, cur_sprite_palette};			
+
+				if (cur_sprite_x_count == 7'd0)
+					r_state_next = r_finish;
+				else
+					r_state_next = r_blit_1;
+			end	
+			r_blit_1: begin
+				cur_sprite_x_next = cur_sprite_x + 1;
+				cur_sprite_x_count_next = cur_sprite_x_count - 1;
+
+				scanline_wr[active_buffer] = 1'b1;
+				scanline_wr_data[active_buffer] = {cur_sprite_palette, cur_sprite_palette};			
+
+				if (cur_sprite_x_count == 7'd0)
+					r_state_next = r_finish;
+				else
+					r_state_next = r_blit_2;
+			end
+			r_blit_2: begin
+
+				cur_sprite_x_next = cur_sprite_x + 1;
+				cur_sprite_x_count_next = cur_sprite_x_count - 1;
+
+				scanline_wr[active_buffer] = 1'b1;
+				scanline_wr_data[active_buffer] = {cur_sprite_palette, cur_sprite_palette};			
+
+				if (cur_sprite_x_count == 7'd0)
+					r_state_next = r_finish;
+				else
+					r_state_next = r_blit_3;
+		
+			end
+			r_blit_3: begin
+			
+				cur_sprite_x_next = cur_sprite_x + 1;
+				cur_sprite_x_count_next = cur_sprite_x_count - 1;
+
+				scanline_wr[active_buffer] = 1'b1;
+				scanline_wr_data[active_buffer] = {cur_sprite_palette, cur_sprite_palette};	
+		
+
+				if (cur_sprite_x_count == 7'd0)
+					r_state_next = r_finish;
+				else
+					r_state_next = r_wait_mem_0;
+		
+			end
+			r_finish: begin
+				cur_sprite_r_next = cur_sprite_r + 1;
+				if (cur_sprite_r == 8'hff) 
+					r_state_next = r_idle;
+				else
+					r_state_next = r_load_sprite_regs;
+			end
+		endcase
+	end
 end
 
 

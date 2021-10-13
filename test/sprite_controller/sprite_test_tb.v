@@ -42,7 +42,9 @@ sprite_controller con0
     V_tick,
     H_tick,
 
-    display_x - 10'd48,
+    display_x,
+	display_y,
+	1'b1,
     color_index,
 
     memory_address,
@@ -54,52 +56,46 @@ sprite_controller con0
 initial begin 
 	#150 RSTb = 1'b1;
 	// Sprite channel 0
-	#100 ADDRESS = 0;
-		 DATA_IN = 10'd2;
+	#100 ADDRESS = 16'h0;
+		 DATA_IN = 16'h0002 | 16'h0400;
 		 WR = 1;
 	#100 WR = 0;
-	#100 ADDRESS = 1;
-		 DATA_IN = 10'd2;
+	#100 ADDRESS = 16'h100;
+		 DATA_IN = 16'h0002 | 16'hfc00;
 		 WR = 1;
 	#100 WR = 0;
-	#100 ADDRESS = 10'd3;
-		 DATA_IN = 10'd1;
+	#100 ADDRESS = 10'h200;
+		 DATA_IN = 16'h0012;
 		 WR = 1;
 	#100 WR = 0;
 	// Sprite channel 1
-	#100 ADDRESS = 16;
-		 DATA_IN = 10'd4;
+	#100 ADDRESS = 16'h1;
+		 DATA_IN = 16'h0010 | 16'h0400 | 16'h3800;
 		 WR = 1;
 	#100 WR = 0;
-	#100 ADDRESS = 17;
-		 DATA_IN = 10'd3;
+	#100 ADDRESS = 16'h101;
+		 DATA_IN = 16'h0002 | 16'hfc00;
 		 WR = 1;
 	#100 WR = 0;
-	#100 ADDRESS = 10'd19;
-		 DATA_IN = 10'd1;
+	#100 ADDRESS = 10'h201;
+		 DATA_IN = 16'h0012;
 		 WR = 1;
 	#100 WR = 0;
-	#100 ADDRESS = 10'd18;
-		 DATA_IN = 16'hc000;
+	// Sprite channel 2
+	#100 ADDRESS = 16'h2;
+		 DATA_IN = 16'h0011 | 16'h0400 | 16'h7800;
 		 WR = 1;
 	#100 WR = 0;
-	// Sprite channel 7
-	#100 ADDRESS = 7*16;
-		 DATA_IN = 10'd5;
+	#100 ADDRESS = 16'h102;
+		 DATA_IN = 16'h0003 | 16'hfc00;
 		 WR = 1;
 	#100 WR = 0;
-	#100 ADDRESS = 7*16 + 1;
-		 DATA_IN = 10'd3;
+	#100 ADDRESS = 10'h202;
+		 DATA_IN = 16'h0012;
 		 WR = 1;
 	#100 WR = 0;
-	#100 ADDRESS = 7*16 + 3;
-		 DATA_IN = 10'd1;
-		 WR = 1;
-	#100 WR = 0;
-	#100 ADDRESS = 7 * 16 + 2;
-		 DATA_IN = 16'h8000;
-		 WR = 1;
-	#100 WR = 0;
+	
+	
 	
 
 end
@@ -123,7 +119,7 @@ reg  [7:0] INPUT_PINS = 8'h00;
 initial begin
     $dumpfile("sprite_test.vcd");
     $dumpvars(0, sprite_tb);
-	# 5000000 $finish;
+	# 10000000 $finish;
 end
 
 endmodule
