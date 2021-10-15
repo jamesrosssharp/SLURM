@@ -216,7 +216,7 @@ int main(int argc, char** argv) {
 
     g_ast.assemble();
 
-    g_ast.printAssembly();
+    //g_ast.printAssembly();
 
     // TODO: relaxation to remove unnecessary NOPs introduced when assembling
     // after symbols are known - how to do this?

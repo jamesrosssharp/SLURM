@@ -3,7 +3,7 @@ SRCDIR=../../src
 
 SOURCE=$(SRCDIR)/pipeline16.v $(SRCDIR)/slurm16.v $(SRCDIR)/alu.v $(SRCDIR)/register_file.v $(SRCDIR)/memory_controller.v $(SRCDIR)/rom.v \
 		$(SRCDIR)/uart.v $(SRCDIR)/uart_tx.v $(SRCDIR)/baudgen.v $(SRCDIR)/pwm_led.v $(SRCDIR)/gpio.v $(SRCDIR)/memory.v $(SRCDIR)/gfx.v  \
-		$(SRCDIR)/sprite_controller.v $(SRCDIR)/bram.v $(SRCDIR)/audio.v $(SRCDIR)/spi_flash.v
+		$(SRCDIR)/sprite_controller.v $(SRCDIR)/bram.v $(SRCDIR)/audio.v $(SRCDIR)/spi_flash.v $(SRCDIR)/gfx_memory_arbiter.v
 
 PROJECT=slurm16
 

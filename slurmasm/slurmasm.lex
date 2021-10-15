@@ -39,7 +39,7 @@ int g_str_idx = 0;
 [0-9]+         { yylval.ival = atoi(yytext); return INT; }
 0x[0-9a-fA-F]+|[0-9a-fA-F]+h         { yylval.ival = strtol(yytext, NULL, 16); return HEXVAL; }
 
-\.org|\.align|dw|dd {yylval.pseudoopval = strdup(yytext); return PSEUDOOP; }
+\.org|\.align|dw|dd|.padto {yylval.pseudoopval = strdup(yytext); return PSEUDOOP; }
 \.times {return TIMES; }
 
 equ {return EQU; }

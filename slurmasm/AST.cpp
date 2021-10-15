@@ -532,6 +532,10 @@ PseudoOp AST::convertPseudoOp(char* pseudoOp)
     {
         return PseudoOp::DD;
     }
+	else if (s == ".PADTO")
+	{
+		return PseudoOp::PADTO;
+	}
 
 	return PseudoOp::None;
 

@@ -164,11 +164,46 @@ void Statement::firstPassAssemble(uint32_t& curAddress, SymbolTable& syms)
                         throw std::runtime_error(ss.str());
                     }
 
-                    assembledWords.resize((exprValue - curAddress%exprValue) >> 1);
+                    assembledWords.resize(exprValue - curAddress%exprValue);
 
                     break;
                 }
-                case PseudoOp::DW:
+				case PseudoOp::PADTO:
+				{
+				    int32_t exprValue = 0;
+
+					int32_t caddr = curAddress;
+
+                    if (! expression.evaluate(exprValue, syms))
+                    {
+                        std::stringstream ss;
+                        ss << "Error: could not evaluate align expression on line " << lineNum << std::endl;
+                        throw std::runtime_error(ss.str());
+                    }
+
+                    if ((exprValue < 0) || ((exprValue & 1) != 0))
+                    {
+                        std::stringstream ss;
+                        ss << "Error: invalid alignment expression on line " << lineNum << std::endl;
+                        throw std::runtime_error(ss.str());
+                    }
+
+					printf("CurAddress: %d\n", caddr);
+					printf("ExprValue: %d\n",  exprValue);
+					fflush(0);	
+
+					if (exprValue < caddr)
+					{
+					   	std::stringstream ss;
+						ss << "Error: invalid padto expression on line " << lineNum << std::endl;
+						throw std::runtime_error(ss.str());
+					}
+
+		            assembledWords.resize(exprValue - caddr);
+
+					break;
+                }
+				case PseudoOp::DW:
 
                     // If DW string literal, then set the word count to the length of the string
 

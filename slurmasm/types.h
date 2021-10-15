@@ -89,6 +89,7 @@ enum class PseudoOp : uint32_t
     ALIGN,
     DW,
     DD,
+	PADTO,
     None
 };
 

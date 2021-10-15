@@ -16,20 +16,24 @@ module gfx #(parameter BITS = 16, parameter BANK_ADDRESS_BITS = 14, parameter AD
 	// Memory Bank DMA ports
 
 	output [BANK_ADDRESS_BITS - 1 : 0] B1_ADDR,
-	input  [BITS - 1 : 0] B1_DOUT,
-	output B1_RD,
+	input  [BITS - 1 : 0] B1_DIN,
+	output B1_VALID,
+	input  B1_READY,
 
 	output [BANK_ADDRESS_BITS - 1 : 0] B2_ADDR,
-	input  [BITS - 1 : 0] B2_DOUT,
-	output B2_RD,
+	input  [BITS - 1 : 0] B2_DIN,
+	output B2_VALID,
+	input  B2_READY,
 
 	output [BANK_ADDRESS_BITS - 1 : 0] B3_ADDR,
-	input  [BITS - 1 : 0] B3_DOUT,
-	output B3_RD,
+	input  [BITS - 1 : 0] B3_DIN,
+	output B3_VALID,
+	input  B3_READY,
 
 	output [BANK_ADDRESS_BITS - 1 : 0] B4_ADDR,
-	input  [BITS - 1 : 0] B4_DOUT,
-	output B4_RD
+	input  [BITS - 1 : 0] B4_DIN,
+	output B4_VALID,
+	input  B4_READY
 
 );
 
@@ -83,9 +87,60 @@ end
 wire [7:0] spcon_color_index;
 
 wire [15:0] spcon_memory_address;
-reg [15:0] spcon_memory_data;
+wire [15:0] spcon_memory_data;
 wire spcon_rvalid;
-reg  spcon_rready;
+wire  spcon_rready;
+
+wire [15:0] bg_memory_address;
+wire [15:0] bg_memory_data;
+wire bg_rvalid;
+wire bg_rready;
+
+wire [15:0] ov_memory_address;
+wire [15:0] ov_memory_data;
+wire ov_rvalid;
+wire  ov_rready;
+
+gfx_memory_arbiter arb0
+(
+	/* sprite controller */
+	spcon_memory_address,
+	spcon_memory_data,
+	spcon_rvalid, 
+	spcon_rready, 
+
+	/* background controller */
+	bg_memory_address,
+	bg_memory_data,
+	bg_rvalid,
+	bg_rready, 
+
+	/* overlay controller */
+	ov_memory_address,
+	ov_memory_data,
+	ov_rvalid, 
+	ov_rready,  
+
+	B1_ADDR,
+	B1_DIN,
+	B1_VALID,
+	B1_READY,
+
+	B2_ADDR,
+	B2_DIN,
+	B2_VALID,
+	B2_READY,
+
+	B3_ADDR,
+	B3_DIN,
+	B3_VALID,
+	B3_READY,
+
+	B4_ADDR,
+	B4_DIN,
+	B4_VALID,
+	B4_READY
+);
 
 sprite_controller spcon0
 (
@@ -110,12 +165,23 @@ sprite_controller spcon0
 	spcon_rready
 );
 
-wire [11:0] color_next = {4'b0000, spcon_color_index};
-reg [11:0] color;
+wire [11:0] color;
+reg WR_pal;
+
+bram #(.BITS(12), .ADDRESS_BITS(8)) pal0  (
+	CLK,
+	spcon_color_index,
+	color,
+	
+	ADDRESS[7:0],
+	DATA_IN,
+	WR_pal  
+);
+
+
 
 always @(posedge CLK)
 begin
-	color <= color_next;
 	if (frameTick)
 		frameCount <= frameCount + 1;
 end
@@ -135,10 +201,13 @@ assign DATA_OUT = dout_r;
 always @(*)
 begin
 	WR_sprite = 1'b0;
+	WR_pal = 1'b0;
 	dout_r = {BITS{1'b0}};
 	casex (ADDRESS)
 		12'hf00:	/* frame count register */
 			dout_r = frameCount;
+		12'hexx:    /* palette regiser */
+			WR_pal = WR;
 		default: /* sprite 1 */
 			WR_sprite = WR;
 	endcase

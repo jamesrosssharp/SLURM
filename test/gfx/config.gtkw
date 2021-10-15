@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.103 (w)1999-2019 BSI
-[*] Tue Oct 12 09:45:50 2021
+[*] Fri Oct 15 09:25:32 2021
 [*]
 [dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/gfx/dump.vcd"
-[dumpfile_mtime] "Tue Oct 12 09:45:34 2021"
-[dumpfile_size] 59478725
+[dumpfile_mtime] "Fri Oct 15 09:25:17 2021"
+[dumpfile_size] 57905053
 [savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/gfx/config.gtkw"
-[timestart] 4159710000
+[timestart] 3501000000
 [size] 1710 811
 [pos] -1 -1
-*-21.000000 4164900000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-28.000000 4164900000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] slurm16_tb.
 [treeopen] slurm16_tb.slm0.
 [treeopen] slurm16_tb.slm0.mem0.
@@ -49,7 +49,6 @@ slurm16_tb.slm0.reg0.\regFileA[15][15:0]
 @200
 -
 @22
-slurm16_tb.slm0.mem0.gfx0.spcon0.y_count[8:0]
 slurm16_tb.slm0.mem0.gfx0.spcon0.color_index[7:0]
 slurm16_tb.slm0.mem0.gfx0.spcon0.cur_sprite_r[7:0]
 @23
