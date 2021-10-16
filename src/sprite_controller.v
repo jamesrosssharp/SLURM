@@ -240,8 +240,10 @@ reg [7:0] cur_sprite_v_next;
 reg [3:0] cur_sprite_palette;
 reg [3:0] cur_sprite_palette_next;
 
-reg [6:0] cur_sprite_x_count; 
-reg [6:0] cur_sprite_x_count_next; 
+reg [5:0] cur_sprite_x_count; 
+reg [5:0] cur_sprite_x_count_next; 
+
+wire [5:0] cur_sprite_u = cur_sprite_x_count;
 
 reg [17:0] sprite_addr_r;
 reg [17:0] sprite_addr_r_next;
@@ -305,7 +307,7 @@ begin
 				r_state_next = r_load_sprite_regs;
 			r_load_sprite_regs: begin
 				cur_sprite_x_next = xram_out[9:0]; 
-				cur_sprite_x_count_next = yram_out[15:10];
+				cur_sprite_x_count_next = 0;
 				cur_sprite_palette_next = xram_out[14:11];
 				if ((xram_out[10] == 1'b1) && (display_y >= yram_out[9:0]) && (display_y <= hram_out[9:0])) begin
 					// Sprite enabled
@@ -323,9 +325,9 @@ begin
 			r_load_mem_addr: begin
 
 				if (xram_out[15] == 1'b0)
-					sprite_addr_r_next = {7'd0, cur_sprite_x} + {3'd0, cur_sprite_v, 7'd0} + {aram_out, 2'b00};
+					sprite_addr_r_next = {10'd0, cur_sprite_u} + {3'd0, cur_sprite_v, 7'd0} + {aram_out, 2'b00};
 				else
-					sprite_addr_r_next = {7'd0, cur_sprite_x} + {2'd0, cur_sprite_v, 8'd0} + {aram_out, 2'b00};
+					sprite_addr_r_next = {10'd0, cur_sprite_u} + {2'd0, cur_sprite_v, 8'd0} + {aram_out, 2'b00};
 
 				r_state_next = r_wait_mem_0;
 			end
@@ -339,28 +341,28 @@ begin
 			end	
 			r_blit_0: begin
 				cur_sprite_x_next = cur_sprite_x + 1;
-				cur_sprite_x_count_next = cur_sprite_x_count - 1;
+				cur_sprite_x_count_next = cur_sprite_x_count + 1;
 
-				scanline_wr[active_buffer] = 1'b1;
+				scanline_wr[active_buffer] = cur_sprite_data[3:0] != 4'b000;
 			
 				if (cur_sprite_data[3:0] != 4'd0)
 					scanline_wr_data[active_buffer] = {cur_sprite_palette, cur_sprite_data[3:0]};			
 
-				if (cur_sprite_x_count == 7'd0)
+				if (cur_sprite_x_count == yram_out[15:10])
 					r_state_next = r_finish;
 				else
 					r_state_next = r_blit_1;
 			end	
 			r_blit_1: begin
 				cur_sprite_x_next = cur_sprite_x + 1;
-				cur_sprite_x_count_next = cur_sprite_x_count - 1;
+				cur_sprite_x_count_next = cur_sprite_x_count + 1;
 
-				scanline_wr[active_buffer] = 1'b1;
+				scanline_wr[active_buffer] = cur_sprite_data[7:4] != 4'b000;
 	
 				if (cur_sprite_data[7:4] != 4'd0)
 					scanline_wr_data[active_buffer] = {cur_sprite_palette, cur_sprite_data[7:4]};			
 
-				if (cur_sprite_x_count == 7'd0)
+				if (cur_sprite_x_count == yram_out[15:10])
 					r_state_next = r_finish;
 				else
 					r_state_next = r_blit_2;
@@ -368,14 +370,14 @@ begin
 			r_blit_2: begin
 
 				cur_sprite_x_next = cur_sprite_x + 1;
-				cur_sprite_x_count_next = cur_sprite_x_count - 1;
+				cur_sprite_x_count_next = cur_sprite_x_count + 1;
 
-				scanline_wr[active_buffer] = 1'b1;
+				scanline_wr[active_buffer] = cur_sprite_data[11:8] != 4'b000;
 				
 				if (cur_sprite_data[11:8] != 4'd0)
 					scanline_wr_data[active_buffer] = {cur_sprite_palette, cur_sprite_data[11:8]};			
 
-				if (cur_sprite_x_count == 7'd0)
+				if (cur_sprite_x_count == yram_out[15:10])
 					r_state_next = r_finish;
 				else
 					r_state_next = r_blit_3;
@@ -384,14 +386,14 @@ begin
 			r_blit_3: begin
 			
 				cur_sprite_x_next = cur_sprite_x + 1;
-				cur_sprite_x_count_next = cur_sprite_x_count - 1;
+				cur_sprite_x_count_next = cur_sprite_x_count + 1;
 
-				scanline_wr[active_buffer] = 1'b1;
+				scanline_wr[active_buffer] = cur_sprite_data[15:12] != 4'b000;
 				
 				if (cur_sprite_data[15:12] != 4'd0)
 					scanline_wr_data[active_buffer] = {cur_sprite_palette, cur_sprite_data[15:12]};	
 
-				if (cur_sprite_x_count == 7'd0)
+				if (cur_sprite_x_count == yram_out[15:10])
 					r_state_next = r_finish;
 				else
 					r_state_next = r_load_mem_addr;
@@ -404,6 +406,7 @@ begin
 				else
 					r_state_next = r_begin;
 			end
+			default: ;
 		endcase
 	end
 end

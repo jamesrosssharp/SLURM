@@ -28,7 +28,7 @@ slurm16 #(.CLOCK_FREQ(10000000)) slm0 (
 initial begin
     $dumpfile("slurm16.vcd");
     $dumpvars(0, slurm16_tb);
-	# 5000000 $finish;
+	# 1000000 $finish;
 end
 
 genvar j;

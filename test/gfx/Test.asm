@@ -6,9 +6,11 @@ UART_TX_STATUS  equ     0x1001
 SPRITE0_X equ 0x2000
 SPRITE0_Y equ 0x2100
 SPRITE0_H equ 0x2200
+SPRITE0_A equ 0x2300
 
 GFX_FRAME equ 0x2f00
 
+		ba die
         mov r0, the_string
 loop:
         ld r1, [r0]
@@ -24,8 +26,8 @@ test_loop:
         ba loop
 
 die:
-        mov r0, 48
-        mov r1, 32
+        mov r0, 2
+        mov r1, 2
 		mov r8, 0
 
 sprite_loop:
@@ -34,13 +36,15 @@ sprite_loop:
         and r2, 0x3ff
         or  r2, 0x0400
         mov r3, r1
-        or  r3, 8<<9
+        or  r3, 8<<10
         mov r4, r1
         add r4, 32
+		mov r5, 0x8000
 
-        st [SPRITE0_X + 1], r2
-        st [SPRITE0_Y + 1], r3
-        st [SPRITE0_H + 1], r4
+        st [SPRITE0_X], r2
+        st [SPRITE0_Y], r3
+        st [SPRITE0_H], r4
+		st [SPRITE0_A], r5
 
 	   add r0, 1
 

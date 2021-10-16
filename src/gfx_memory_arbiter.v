@@ -41,7 +41,7 @@ module gfx_memory_arbiter
 
 reg [15:0] 	sprite_memory_data_r;
 reg 		sprite_rready_r;
-reg 		b1_addr_r;
+reg [13:0]		b1_addr_r;
 reg			b1_valid_r;
 
 assign sprite_rready = sprite_rready_r; 
@@ -50,19 +50,19 @@ assign sprite_memory_data = sprite_memory_data_r;
 assign B1_ADDR 		 = b1_addr_r;
 assign B1_VALID		 = b1_valid_r;
 
-reg 		b2_addr_r;
+reg [13:0]		b2_addr_r;
 reg			b2_valid_r;
 
 assign B2_ADDR 		 = b2_addr_r;
 assign B2_VALID		 = b2_valid_r;
 
-reg 		b3_addr_r;
+reg [13:0]		b3_addr_r;
 reg			b3_valid_r;
 
 assign B3_ADDR 		 = b3_addr_r;
 assign B3_VALID		 = b3_valid_r;
 
-reg 		b4_addr_r;
+reg [13:0]		b4_addr_r;
 reg			b4_valid_r;
 
 assign B4_ADDR 		 = b4_addr_r;

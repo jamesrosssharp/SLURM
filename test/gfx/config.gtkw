@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.103 (w)1999-2019 BSI
-[*] Fri Oct 15 09:25:32 2021
+[*] Sat Oct 16 03:19:55 2021
 [*]
 [dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/gfx/dump.vcd"
-[dumpfile_mtime] "Fri Oct 15 09:25:17 2021"
-[dumpfile_size] 57905053
+[dumpfile_mtime] "Sat Oct 16 03:17:29 2021"
+[dumpfile_size] 12283841
 [savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/gfx/config.gtkw"
-[timestart] 3501000000
+[timestart] 0
 [size] 1710 811
 [pos] -1 -1
-*-28.000000 4164900000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-27.000000 12700000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] slurm16_tb.
 [treeopen] slurm16_tb.slm0.
 [treeopen] slurm16_tb.slm0.mem0.
@@ -51,15 +51,28 @@ slurm16_tb.slm0.reg0.\regFileA[15][15:0]
 @22
 slurm16_tb.slm0.mem0.gfx0.spcon0.color_index[7:0]
 slurm16_tb.slm0.mem0.gfx0.spcon0.cur_sprite_r[7:0]
-@23
 slurm16_tb.slm0.mem0.gfx0.spcon0.r_state[3:0]
-@22
 slurm16_tb.slm0.mem0.gfx0.color[11:0]
 slurm16_tb.slm0.mem0.gfx0.RR[3:0]
 slurm16_tb.slm0.mem0.gfx0.GG[3:0]
 slurm16_tb.slm0.mem0.gfx0.BB[3:0]
+slurm16_tb.slm0.mem0.gfx0.spcon0.cur_sprite_u[6:0]
+slurm16_tb.slm0.mem0.gfx0.spcon0.cur_sprite_x_count[6:0]
+slurm16_tb.slm0.mem0.gfx0.spcon0.cur_sprite_v[7:0]
+@23
+slurm16_tb.slm0.mem0.gfx0.spcon0.aram_out[15:0]
+@22
+slurm16_tb.slm0.mem0.gfx0.spcon0.hram_out[15:0]
+slurm16_tb.slm0.mem0.gfx0.spcon0.xram_out[15:0]
+slurm16_tb.slm0.mem0.gfx0.spcon0.yram_out[15:0]
+slurm16_tb.slm0.mem0.gfx0.spcon0.display_x[9:0]
+slurm16_tb.slm0.mem0.gfx0.spcon0.display_y[9:0]
 @200
 -
+@28
+slurm16_tb.slm0.mem0.gfx0.spcon0.aram_WR
+slurm16_tb.slm0.mem0.gfx0.spcon0.xram_WR
+@200
 -Flags
 @28
 slurm16_tb.slm0.alu0.C

@@ -32,8 +32,7 @@ begin
 		ready <= 1'b0;
 		if (WR == 1'b1)
 			RAM[ADDRESS] <= DATA_IN;
-		else
-			dout <= RAM[ADDRESS];
+		dout <= RAM[ADDRESS];
 	end
 end
 

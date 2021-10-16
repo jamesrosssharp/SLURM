@@ -165,19 +165,20 @@ sprite_controller spcon0
 	spcon_rready
 );
 
-wire [11:0] color;
+wire [11:0] spr_color;
 reg WR_pal;
 
 bram #(.BITS(12), .ADDRESS_BITS(8)) pal0  (
 	CLK,
 	spcon_color_index,
-	color,
+	spr_color,
 	
 	ADDRESS[7:0],
-	DATA_IN,
+	DATA_IN[11:0],
 	WR_pal  
 );
 
+wire [11:0] color = spr_color;
 
 
 always @(posedge CLK)
