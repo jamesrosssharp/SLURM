@@ -18,6 +18,12 @@ module gfx_memory_arbiter
 	input 			bg1_rvalid, // memory address valid
 	output  		bg1_rready,  // memory data valid
 
+	/* background controller 2 */
+	input  [15:0] 	bg2_memory_address,
+	output [15:0] 	bg2_memory_data,
+	input 			bg2_rvalid, // memory address valid
+	output  		bg2_rready,  // memory data valid
+
 	/* overlay controller */
 	input  [15:0] 	ov_memory_address,
 	output [15:0] 	ov_memory_data,
@@ -54,6 +60,11 @@ reg 		bg0_rready_r;
 reg [15:0] 	bg1_memory_data_r;
 reg 		bg1_rready_r;
 
+reg [15:0] 	bg2_memory_data_r;
+reg 		bg2_rready_r;
+
+
+
 assign sprite_rready = sprite_rready_r; 
 assign sprite_memory_data = sprite_memory_data_r;
 
@@ -62,6 +73,9 @@ assign bg0_memory_data = bg0_memory_data_r;
 
 assign bg1_rready = bg1_rready_r; 
 assign bg1_memory_data = bg1_memory_data_r;
+
+assign bg2_rready = bg2_rready_r; 
+assign bg2_memory_data = bg2_memory_data_r;
 
 reg [13:0]		b1_addr_r;
 reg			b1_valid_r;
@@ -103,8 +117,8 @@ always @(*) begin
 	bg0_rready_r = 1'b0;
 	bg1_memory_data_r = 16'h0000;
 	bg1_rready_r = 1'b0;
-
-
+	bg2_memory_data_r = 16'h0000;
+	bg2_rready_r = 1'b0;
 	
 	if (sprite_rvalid == 1'b1 && sprite_memory_address[15:14] == 2'b00) begin
 		b1_addr_r = sprite_memory_address;				
@@ -123,6 +137,12 @@ always @(*) begin
 		b1_valid_r = bg1_rvalid;
 		bg1_rready_r = B1_READY;
 		bg1_memory_data_r =  B1_DOUT;
+	end  else
+	if (bg2_rvalid == 1'b1 && bg2_memory_address[15:14] == 2'b00) begin
+		b1_addr_r = bg2_memory_address;				
+		b1_valid_r = bg2_rvalid;
+		bg2_rready_r = B1_READY;
+		bg2_memory_data_r =  B1_DOUT;
 	end 
 
 	if (sprite_rvalid == 1'b1 && sprite_memory_address[15:14] == 2'b01) begin
@@ -136,13 +156,20 @@ always @(*) begin
 		b2_valid_r = bg0_rvalid;
 		bg0_rready_r = B2_READY;
 		bg0_memory_data_r = B2_DOUT;
-	end
+	end else
 	if (bg1_rvalid == 1'b1 && bg1_memory_address[15:14] == 2'b01) begin
 		b2_addr_r = bg1_memory_address;				
-		b2_valid_r = b10_rvalid;
+		b2_valid_r = bg1_rvalid;
 		bg1_rready_r = B2_READY;
 		bg1_memory_data_r = B2_DOUT;
+	end  else
+	if (bg2_rvalid == 1'b1 && bg2_memory_address[15:14] == 2'b01) begin
+		b2_addr_r = bg2_memory_address;				
+		b2_valid_r = bg2_rvalid;
+		bg2_rready_r = B2_READY;
+		bg2_memory_data_r = B2_DOUT;
 	end
+
 		
 	if (sprite_rvalid == 1'b1 && sprite_memory_address[15:14] == 2'b10) begin
 		b3_addr_r = sprite_memory_address;				
@@ -161,7 +188,14 @@ always @(*) begin
 		b3_valid_r = bg1_rvalid;
 		bg1_rready_r = B3_READY;
 		bg1_memory_data_r = B3_DOUT;
+	end  else
+ 	if (bg2_rvalid == 1'b1 && bg2_memory_address[15:14] == 2'b10) begin
+		b3_addr_r = bg2_memory_address;				
+		b3_valid_r = bg2_rvalid;
+		bg2_rready_r = B3_READY;
+		bg2_memory_data_r = B3_DOUT;
 	end
+
  	
 	if (sprite_rvalid == 1'b1 && sprite_memory_address[15:14] == 2'b11) begin
 		b4_addr_r = sprite_memory_address;				
@@ -180,7 +214,14 @@ always @(*) begin
 		b4_valid_r = bg1_rvalid;
 		bg1_rready_r = B4_READY;
 		bg1_memory_data_r = B4_DOUT;
+	end else
+ 	if (bg2_rvalid == 1'b1 && bg2_memory_address[15:14] == 2'b11) begin
+		b4_addr_r = bg2_memory_address;				
+		b4_valid_r = bg2_rvalid;
+		bg2_rready_r = B4_READY;
+		bg2_memory_data_r = B4_DOUT;
 	end
+
  
 end
 

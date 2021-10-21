@@ -1,5 +1,5 @@
 module gpio
-#(parameter BITS = 16, ADDRESS_BITS = 8, CLK_FREQ = 12000000)
+#(parameter BITS = 16, ADDRESS_BITS = 4, CLK_FREQ = 12000000)
 (
 	input CLK,	
 	input RSTb,
@@ -42,11 +42,11 @@ begin
 	dout_r = 8'h00;
 
 	case (ADDRESS)
-		8'h00:	/* Output register */
+		4'h0:	/* Output register */
 			if (WR == 1'b1) begin
 				gpio_reg_next = DATA_IN[3:0];
 			end
-		8'h01: /* Input register */
+		4'h1: /* Input register */
 			dout_r = {2'b00, gpio_in_reg_b};
 		default:;
 	endcase

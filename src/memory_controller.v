@@ -110,27 +110,27 @@ begin
 	dout_next = dout;
 
 	casex (ADDRESS)
-		16'h10xx: begin
+		16'h010x: begin
 			dout_next = DATA_OUT_UART;
 			WR_UART = memWR;
 		end
-		16'h11xx: begin
+		16'h011x: begin
 			dout_next = DATA_OUT_GPIO;
 			WR_GPIO = memWR;
 		end
-		16'h12xx: begin
+		16'h012x: begin
 			dout_next = DATA_OUT_PWM;
 			WR_PWM = memWR;
 		end
-		16'h13xx: begin
+		16'h013x: begin
 			dout_next = DATA_OUT_AUDIO;
 			WR_AUDIO = memWR;
 		end
-		16'h14xx: begin
+		16'h014x: begin
 			dout_next = DATA_OUT_SPI;
 			WR_SPI = memWR;
 		end
-		16'h2xxx: begin
+		16'h1xxx: begin
 			dout_next = DATA_OUT_GFX;
 			WR_GFX = memWR;	
 		end
@@ -159,10 +159,10 @@ begin
 		16'h00xx: begin
 			DATA_OUT_REG = DATA_OUT_ROM;
 		end
-		16'h10xx, 16'h11xx, 16'h12xx, 16'h13xx, 16'h14xx: begin
+		16'h01xx, 16'h02xx, 16'h03xx, 16'h04xx, 16'h05xx: begin
 			DATA_OUT_REG = dout;
 		end
-		16'h2xxx: begin
+		16'h1xxx: begin
 			DATA_OUT_REG = dout;
 		end
 		16'b00xxxxxxxxxxxxxx: begin
@@ -243,7 +243,7 @@ uart
 (
 	CLK,	
 	RSTb,
-	ADDRESS[7:0],
+	ADDRESS[3:0],
 	DATA_IN,
 	DATA_OUT_UART,
 	WR_UART,  // write memory  
@@ -256,7 +256,7 @@ gpio
 (
 	CLK,	
 	RSTb,
-	ADDRESS[7:0],
+	ADDRESS[3:0],
 	DATA_IN,
 	DATA_OUT_GPIO,
 	WR_GPIO,  // write memory 
@@ -270,7 +270,7 @@ pwm_led
 (
 	CLK,	
 	RSTb,
-	ADDRESS[7:0],
+	ADDRESS[3:0],
 	DATA_IN,
 	DATA_OUT_PWM,
 	WR_PWM,  // write memory 
@@ -316,7 +316,7 @@ audio
 (
 	CLK,	
 	RSTb,
-	ADDRESS[7:0],
+	ADDRESS[3:0],
 	DATA_IN,
 	DATA_OUT_AUDIO,
 	WR_AUDIO, 
@@ -328,7 +328,7 @@ spi_flash
 (
 	CLK,	
 	RSTb,
-	ADDRESS[7:0],
+	ADDRESS[3:0],
 	DATA_IN,
 	DATA_OUT_SPI,
 	WR_SPI,

@@ -1,5 +1,5 @@
 module pwm_led
-#(parameter BITS = 16, ADDRESS_BITS = 8, CLK_FREQ = 12000000)
+#(parameter BITS = 16, ADDRESS_BITS = 4, CLK_FREQ = 12000000)
 (
 	input CLK,	
 	input RSTb,
@@ -62,15 +62,15 @@ begin
 	blue_reg_next  = blue_reg;
 
 	case (ADDRESS)
-		8'h00:	/* red value register */
+		4'h0:	/* red value register */
 			if (WR == 1'b1) begin
 				red_reg_next = DATA_IN;
 			end
-		8'h01:	/* green value register */
+		4'h1:	/* green value register */
 			if (WR == 1'b1) begin
 				green_reg_next = DATA_IN;
 			end
-		8'h02:	/* green value register */
+		4'h2:	/* green value register */
 			if (WR == 1'b1) begin
 				blue_reg_next = DATA_IN;
 			end

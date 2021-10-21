@@ -1,23 +1,36 @@
-		.org 0x4000
+		.org 0x2000
 
-UART_TX_REG 	equ 	0x1000
-UART_TX_STATUS 	equ 	0x1001
+UART_TX_REG 	equ 	0x0100
+UART_TX_STATUS 	equ 	0x0101
 
-SPRITE0_X equ 0x2000
-SPRITE0_Y equ 0x2100
-SPRITE0_H equ 0x2200
-SPRITE0_A equ 0x2300
+SPRITE0_X equ 0x1000
+SPRITE0_Y equ 0x1100
+SPRITE0_H equ 0x1200
+SPRITE0_A equ 0x1300
 
-GFX_FRAME equ 0x2f00
-GFX_PAL   equ 0x2e00
+GFX_FRAME equ 0x1f00
+GFX_PAL   equ 0x1e00
 
-N_SPRITES equ 11
+N_SPRITES equ 9
 
-GFX_BG0_CONTROL equ 0x2d00
-GFX_BG0_X equ 0x2d01
-GFX_BG0_Y equ 0x2d02
-GFX_TILEMAP_ADDR equ 0x2d03
-GFX_TILESET_ADDR equ 0x2d04
+GFX_BG0_CONTROL equ 0x1d00
+GFX_BG0_X equ 0x1d01
+GFX_BG0_Y equ 0x1d02
+GFX_BG0_TILEMAP_ADDR equ 0x1d03
+GFX_BG0_TILESET_ADDR equ 0x1d04
+
+GFX_BG1_CONTROL equ 0x1d10
+GFX_BG1_X equ 0x1d11
+GFX_BG1_Y equ 0x1d12
+GFX_BG1_TILEMAP_ADDR equ 0x1d13
+GFX_BG1_TILESET_ADDR equ 0x1d14
+
+GFX_BG2_CONTROL equ 0x1d20
+GFX_BG2_X equ 0x1d21
+GFX_BG2_Y equ 0x1d22
+GFX_BG2_TILEMAP_ADDR equ 0x1d23
+GFX_BG2_TILESET_ADDR equ 0x1d24
+
 
 		mov r0, the_string
 loop:
@@ -65,22 +78,35 @@ sprite_loop:
 
 		mov r0, 1 | (2<<1) |  (1 << 3) | (1 << 4);
 		st [GFX_BG0_CONTROL], r0
+		st [GFX_BG1_CONTROL], r0
+		st [GFX_BG2_CONTROL], r0
+		
+
 		ld r0, [bg0_x]
 		st [GFX_BG0_X], r0
+		st [GFX_BG1_X], r0
 		add r0, 1
 		st [bg0_x], r0
 		ld r0, [bg0_y]
 		st [GFX_BG0_Y], r0
+		st [GFX_BG2_Y], r0
 		add r0, 1
 		cmp r0, 1600 - 704
 		bs  no_y_gt
 		mov r0, 0
 no_y_gt:	
 		st [bg0_y], r0
-		mov r0, tilemap_BG2 
-		st [GFX_TILEMAP_ADDR], r0
+		mov r0, tilemap_BG3 
+		st [GFX_BG0_TILEMAP_ADDR], r0
+		mov r0, tilemap_BG1
+		st [GFX_BG1_TILEMAP_ADDR], r0
+		mov r0, tilemap_BG2
+		st [GFX_BG2_TILEMAP_ADDR], r0
 		mov r0, tileset
-		st [GFX_TILESET_ADDR],r0
+		st [GFX_BG0_TILESET_ADDR],r0
+		st [GFX_BG1_TILESET_ADDR],r0
+		st [GFX_BG2_TILESET_ADDR],r0
+
 
 
 
@@ -159,6 +185,7 @@ bg0_y:
 
 the_string:
 	dw "Hello World from Boot Loaded program!\n"
+	dw 0
 
 spr0:
 	dw 100	// X
@@ -260,7 +287,7 @@ spr10:
 	dw tileset + (16*64) + 4 
 	dw tileset + (16*64) + 4
 
-	.padto 0x8000	
+	.padto 0x4000	
 
 
 pacman_sprite_sheet:
@@ -10762,7 +10789,7 @@ pacman_palette:
 	dw 0x000
 	dw 0x000
 
-.padto 0xc000
+	.padto 0x8000
 
 tileset:
 	dw 0x0
@@ -13853,7 +13880,7 @@ tileset_palette:
 	dw 0x000
 	dw 0x000
 	dw 0x000
-
+	
 tilemap_BG1:
 	dw 0x262c
 	dw 0xff2e

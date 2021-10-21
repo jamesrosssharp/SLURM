@@ -1,14 +1,14 @@
         .org 0h
 
-SPI_FLASH_BASE 		equ	0x1400
+SPI_FLASH_BASE 		equ	0x0140
 SPI_FLASH_ADDR_LO 	equ (SPI_FLASH_BASE + 0)
 SPI_FLASH_ADDR_HI 	equ (SPI_FLASH_BASE + 1)
 SPI_FLASH_CMD		equ (SPI_FLASH_BASE + 2)
 SPI_FLASH_DATA		equ (SPI_FLASH_BASE + 3)
 SPI_FLASH_STATUS	equ (SPI_FLASH_BASE + 4)
 
-UART_TX_REG 	equ 	0x1000
-UART_TX_STATUS 	equ 	0x1001
+UART_TX_REG 	equ 	0x0100
+UART_TX_STATUS 	equ 	0x0101
 
 	nop
 
@@ -27,7 +27,7 @@ wait_loop:
 	sub r4, 1
 	bnz outer
 
-	mov r11, 0x4000
+	mov r11, 0x2000
 do_it:
 	add r6, 1
 	mov r0, r6
@@ -47,7 +47,7 @@ loop:
 	inc r11
 
 	or r11,r11
-	bz 0x4000	// Jump to bootloaded code
+	bz 0x2000	// Jump to bootloaded code
 
 	ba do_it
 

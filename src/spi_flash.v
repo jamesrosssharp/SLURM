@@ -5,7 +5,7 @@
  */
 
 module spi_flash
-#(parameter BITS = 16, ADDRESS_BITS = 8, CLK_FREQ = 25125000)
+#(parameter BITS = 16, ADDRESS_BITS = 4, CLK_FREQ = 25125000)
 (
 	input CLK,	
 	input RSTb,
@@ -109,22 +109,22 @@ begin
 	dout_r = {BITS{1'b0}};
 
 	case (ADDRESS)
-		8'h00:	/* Address lo reg */
+		4'h0:	/* Address lo reg */
 			if (WR == 1'b1) begin
 				address_lo_r_next = DATA_IN;
 			end
-		8'h01: /* Address hi reg */
+		4'h1: /* Address hi reg */
 			if (WR == 1'b1) begin
 				address_hi_r_next = DATA_IN;
 			end
-		8'h02: /* CMD reg */
+		4'h2: /* CMD reg */
 			if (WR == 1'b1) begin
 				go_r_next = DATA_IN[0];
 				wake_r_next = DATA_IN[1];
 			end
-		8'h03: /* Data reg */
+		4'h3: /* Data reg */
 			dout_r = {data_out_r[7:0], data_out_r[15:8]};
-		8'h04: /* Status bits reg */
+		4'h4: /* Status bits reg */
 			dout_r = {15'd0, done_r};
 		default:;
 	endcase

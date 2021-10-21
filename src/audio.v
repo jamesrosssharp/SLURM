@@ -1,5 +1,5 @@
 module audio
-#(parameter BITS = 16, ADDRESS_BITS = 8, CLK_FREQ = 25125000)
+#(parameter BITS = 16, ADDRESS_BITS = 4, CLK_FREQ = 25125000)
 (
 	input CLK,	
 	input RSTb,
@@ -106,11 +106,11 @@ begin
 
 
 	case (ADDRESS)
-		8'h00:	/* Freq reg */
+		4'h0:	/* Freq reg */
 			if (WR == 1'b1) begin
 				phase_r_next = DATA_IN; 
 			end
-		8'h01: /* Amplitude register */
+		4'h1: /* Amplitude register */
 			if (WR == 1'b1) begin
 				ampl_r_next = DATA_IN;
 				ampl_neg_r_next = -DATA_IN;

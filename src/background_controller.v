@@ -200,7 +200,7 @@ begin
 			r_idle: ;
 			r_begin: begin
 
-				if (display_x == H_START && display_y >= V_START && display_y <= V_END) // todo: replace with render enable 
+				//if (display_x == 10'd48) // todo: replace with render enable 
 					r_state_next = r_loadmap;
 	
 				//case (tilemap_stride)
@@ -306,7 +306,7 @@ begin
 				tilemap_index_r_next = tilemap_index_r + 1; 
 			end
 			r_finish: begin
-				if (cur_render_x >= H_END)
+				if (cur_render_x >= 700)
 					r_state_next = r_idle;
 				else
 					r_state_next = r_loadmap; 

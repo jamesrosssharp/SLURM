@@ -3,7 +3,7 @@ module uart
 (
 	input CLK,	
 	input RSTb,
-	input [7 : 0]  ADDRESS,
+	input [3 : 0]  ADDRESS,
 	input [BITS - 1 : 0] DATA_IN,
 	output [BITS - 1 : 0] DATA_OUT,
 	input WR,  /* write memory  */
@@ -58,7 +58,7 @@ begin
 	tx_reg_next = tx_reg;
 
 	case (ADDRESS)
-		8'h00:	/* TX register */
+		4'h0:	/* TX register */
 			if (WR == 1'b1) begin
 				tx_reg_next = DATA_IN[7:0];
 				go_reg_next = 1'b1;	

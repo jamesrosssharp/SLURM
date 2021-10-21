@@ -37,6 +37,8 @@ module gfx #(parameter BITS = 16, parameter BANK_ADDRESS_BITS = 14, parameter AD
 
 );
 
+localparam BG_COLOR = 12'h000;
+
 reg [9:0] hcount = 10'd0;
 reg [9:0] vcount = 10'd0;
 
@@ -110,6 +112,13 @@ wire bg1_rvalid;
 wire bg1_rready;
 reg WR_bg1;
 
+wire [7:0] bg2_color_index;
+wire [15:0] bg2_memory_address;
+wire [15:0] bg2_memory_data;
+wire bg2_rvalid;
+wire bg2_rready;
+reg WR_bg2;
+
 
 
 gfx_memory_arbiter arb0
@@ -131,7 +140,10 @@ gfx_memory_arbiter arb0
 	bg1_rvalid,
 	bg1_rready, 
 
-
+	bg2_memory_address,
+	bg2_memory_data,
+	bg2_rvalid,
+	bg2_rready, 
 
 	/* overlay controller */
 	ov_memory_address,
@@ -205,14 +217,14 @@ background_controller #(48, 369, 33, 513) bgcon0
 	bg0_rready 
 );
 
-background_controller #(369, 700, 33, 513) bgcon1
+background_controller #(48, 369, 33, 513) bgcon1
 (
 	CLK,
 	RSTb,
 
 	ADDRESS,
 	DATA_IN,
-	WR_bg0,
+	WR_bg1,
 
 	V_tick,
 	H_tick,
@@ -227,20 +239,46 @@ background_controller #(369, 700, 33, 513) bgcon1
 	bg1_rready 
 );
 
+background_controller #(48, 369, 33, 513) bgcon2
+(
+	CLK,
+	RSTb,
+
+	ADDRESS,
+	DATA_IN,
+	WR_bg2,
+
+	V_tick,
+	H_tick,
+
+	x,
+	y,
+	1'b1,
+	bg2_color_index,
+	bg2_memory_address,
+	bg2_memory_data,
+	bg2_rvalid,
+	bg2_rready 
+);
+
+
 wire [11:0] color;
 reg WR_pal;
-
 
 reg [7:0] color_index;
 
 always @(*)
 begin
-	if (spcon_color_index[3:0] != 4'd0) 
-		color_index = spcon_color_index;
-	else if (x < 10'd370)
-		color_index = bg0_color_index;
+	if (spcon_color_index[3:0] == 4'd0) 
+		 if (bg0_color_index[3:0] == 4'd0)
+			if (bg1_color_index[3:0] == 4'd0)
+					color_index = bg2_color_index;
+			else
+				color_index = bg1_color_index;
+		else
+			color_index = bg0_color_index;
 	else
-		color_index = bg1_color_index;
+		color_index = spcon_color_index;
 end
 
 
@@ -260,11 +298,13 @@ begin
 		frameCount <= frameCount + 1;
 end
 
+wire [11:0] theColor = color_index[3:0] == 4'h0 ? BG_COLOR : color;
+
 wire DE = (hcount >= H_BACK_PORCH && hcount < (H_BACK_PORCH + H_PIXELS + 32) && vcount >= V_BACK_PORCH && vcount < (V_DISPLAY_LINES + V_BACK_PORCH + 16));
 
-assign RR = DE ? color[11:8]  : 4'b0000;
-assign GG = DE ? color[7:4]  : 4'b0000;
-assign BB = DE ? color[3:0] : 4'b0000;
+assign RR = DE ? theColor[11:8]  : 4'b0000;
+assign GG = DE ? theColor[7:4]  : 4'b0000;
+assign BB = DE ? theColor[3:0] : 4'b0000;
 
 // Memory interface
 
@@ -277,6 +317,8 @@ begin
 	WR_sprite = 1'b0;
 	WR_pal = 1'b0;
 	WR_bg0 = 1'b0;
+	WR_bg1 = 1'b0;
+	WR_bg2 = 1'b0;
 	dout_r = {BITS{1'b0}};
 	casex (ADDRESS)
 		12'hf00:	/* frame count register */
@@ -285,6 +327,10 @@ begin
 			WR_pal = WR;
 		12'hd0x:    /* bg0 */
 			WR_bg0 = WR;
+		12'hd1x:    /* bg1 */
+			WR_bg1 = WR;
+		12'hd2x:	/* bg2 */
+			WR_bg2 = WR;
 		default: /* sprite 1 */
 			WR_sprite = WR;
 	endcase
