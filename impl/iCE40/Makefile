@@ -9,7 +9,7 @@ AS=../../slurmasm/slurmasm
 SOURCE = $(SRCDIR)/pipeline16.v $(SRCDIR)/slurm16.v $(SRCDIR)/alu.v $(SRCDIR)/register_file.v $(SRCDIR)/memory_controller.v \
 		 $(SRCDIR)/uart.v $(SRCDIR)/uart_tx.v $(SRCDIR)/baudgen.v $(SRCDIR)/gpio.v pwm_led.v $(SRCDIR)/gfx.v  memory.v rom.v slurm16_ice40.v	\
 		 $(SRCDIR)/pacman_sprite.v $(SRCDIR)/pacman_sprite_rom.v $(SRCDIR)/audio.v $(SRCDIR)/spi_flash.v \
-		 $(SRCDIR)/sprite_controller.v $(SRCDIR)/bram.v $(SRCDIR)/gfx_memory_arbiter.v 
+		 $(SRCDIR)/sprite_controller.v $(SRCDIR)/bram.v $(SRCDIR)/gfx_memory_arbiter.v $(SRCDIR)/background_controller.v 
 
 ICEPACK = icepack
 ICETIME = icetime

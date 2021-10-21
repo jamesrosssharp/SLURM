@@ -91,15 +91,26 @@ wire [15:0] spcon_memory_data;
 wire spcon_rvalid;
 wire  spcon_rready;
 
-wire [15:0] bg_memory_address;
-wire [15:0] bg_memory_data;
-wire bg_rvalid;
-wire bg_rready;
-
 wire [15:0] ov_memory_address;
 wire [15:0] ov_memory_data;
 wire ov_rvalid;
 wire  ov_rready;
+
+wire [7:0] bg0_color_index;
+wire [15:0] bg0_memory_address;
+wire [15:0] bg0_memory_data;
+wire bg0_rvalid;
+wire bg0_rready;
+reg WR_bg0;
+
+wire [7:0] bg1_color_index;
+wire [15:0] bg1_memory_address;
+wire [15:0] bg1_memory_data;
+wire bg1_rvalid;
+wire bg1_rready;
+reg WR_bg1;
+
+
 
 gfx_memory_arbiter arb0
 (
@@ -109,11 +120,18 @@ gfx_memory_arbiter arb0
 	spcon_rvalid, 
 	spcon_rready, 
 
-	/* background controller */
-	bg_memory_address,
-	bg_memory_data,
-	bg_rvalid,
-	bg_rready, 
+	/* background controllers */
+	bg0_memory_address,
+	bg0_memory_data,
+	bg0_rvalid,
+	bg0_rready, 
+
+	bg1_memory_address,
+	bg1_memory_data,
+	bg1_rvalid,
+	bg1_rready, 
+
+
 
 	/* overlay controller */
 	ov_memory_address,
@@ -165,21 +183,76 @@ sprite_controller spcon0
 	spcon_rready
 );
 
-wire [11:0] spr_color;
+background_controller #(48, 369, 33, 513) bgcon0
+(
+	CLK,
+	RSTb,
+
+	ADDRESS,
+	DATA_IN,
+	WR_bg0,
+
+	V_tick,
+	H_tick,
+
+	x,
+	y,
+	1'b1,
+	bg0_color_index,
+	bg0_memory_address,
+	bg0_memory_data,
+	bg0_rvalid,
+	bg0_rready 
+);
+
+background_controller #(369, 700, 33, 513) bgcon1
+(
+	CLK,
+	RSTb,
+
+	ADDRESS,
+	DATA_IN,
+	WR_bg0,
+
+	V_tick,
+	H_tick,
+
+	x,
+	y,
+	1'b1,
+	bg1_color_index,
+	bg1_memory_address,
+	bg1_memory_data,
+	bg1_rvalid,
+	bg1_rready 
+);
+
+wire [11:0] color;
 reg WR_pal;
+
+
+reg [7:0] color_index;
+
+always @(*)
+begin
+	if (spcon_color_index[3:0] != 4'd0) 
+		color_index = spcon_color_index;
+	else if (x < 10'd370)
+		color_index = bg0_color_index;
+	else
+		color_index = bg1_color_index;
+end
+
 
 bram #(.BITS(12), .ADDRESS_BITS(8)) pal0  (
 	CLK,
-	spcon_color_index,
-	spr_color,
+	color_index,
+	color,
 	
 	ADDRESS[7:0],
 	DATA_IN[11:0],
 	WR_pal  
 );
-
-wire [11:0] color = spr_color;
-
 
 always @(posedge CLK)
 begin
@@ -203,12 +276,15 @@ always @(*)
 begin
 	WR_sprite = 1'b0;
 	WR_pal = 1'b0;
+	WR_bg0 = 1'b0;
 	dout_r = {BITS{1'b0}};
 	casex (ADDRESS)
 		12'hf00:	/* frame count register */
 			dout_r = frameCount;
 		12'hexx:    /* palette regiser */
 			WR_pal = WR;
+		12'hd0x:    /* bg0 */
+			WR_bg0 = WR;
 		default: /* sprite 1 */
 			WR_sprite = WR;
 	endcase

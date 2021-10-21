@@ -156,7 +156,7 @@ begin
 	DATA_OUT_REG = {BITS{1'b0}};
 
 	casex (addr_reg)
-		16'h0xxx: begin
+		16'h00xx: begin
 			DATA_OUT_REG = DATA_OUT_ROM;
 		end
 		16'h10xx, 16'h11xx, 16'h12xx, 16'h13xx, 16'h14xx: begin
@@ -182,10 +182,10 @@ begin
 
 end
 
-rom #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 2)) theRom
+rom #(.BITS(BITS), .ADDRESS_BITS(8)) theRom
 (
 	CLK,
- 	ADDRESS[ADDRESS_BITS - 3 : 0],
+ 	ADDRESS[7 : 0],
 	DATA_OUT_ROM
 );
 

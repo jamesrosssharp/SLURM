@@ -218,11 +218,12 @@ localparam r_begin			  = 4'd1;
 localparam r_load_sprite_regs = 4'd2;
 localparam r_load_mem_addr	  = 4'd3;
 localparam r_wait_mem_0		  = 4'd4;
-localparam r_blit_0			  = 4'd5;
-localparam r_blit_1			  = 4'd6;
-localparam r_blit_2			  = 4'd7;
-localparam r_blit_3			  = 4'd8;
-localparam r_finish			  = 4'd9;
+localparam r_wait_mem_1		  = 4'd5;
+localparam r_blit_0			  = 4'd6;
+localparam r_blit_1			  = 4'd7;
+localparam r_blit_2			  = 4'd8;
+localparam r_blit_3			  = 4'd9;
+localparam r_finish			  = 4'd10;
 
 reg [7:0] cur_sprite_r, cur_sprite_r_next;
 
@@ -333,7 +334,10 @@ begin
 			end
 			r_wait_mem_0: begin
 				rvalid_r = 1'b1;
-
+				r_state_next = r_wait_mem_1;
+			end
+			r_wait_mem_1: begin
+				rvalid_r = 1'b1;
 				if (rready == 1'b1) begin
 					r_state_next = r_blit_0;
 					cur_sprite_data_next = memory_data;

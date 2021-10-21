@@ -29,7 +29,7 @@ wire wr_w = (GFX_VALID == 1'b1) ? 1'b0 : WR;
 
 always @(posedge CLK)
 begin
-	if (GFX_VALID == 1'b1)
+	if (GFX_VALID == 1'b1 && ready == 1'b0)
 		ready <= 1'b1;
 	else
 		ready <= 1'b0;
