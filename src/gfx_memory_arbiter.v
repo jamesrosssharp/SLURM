@@ -1,5 +1,8 @@
 module gfx_memory_arbiter
 (
+	input  CLK,
+	input  RSTb,
+	
 	/* sprite controller */
 	input  [15:0] 	sprite_memory_address,
 	output [15:0] 	sprite_memory_data,
@@ -101,6 +104,41 @@ reg			b4_valid_r;
 assign B4_ADDR 		 = b4_addr_r;
 assign B4_VALID		 = b4_valid_r;
 
+localparam s_idle = 3'd0;
+localparam s_grant_sp = 3'd1;
+localparam s_grant_bg0 = 3'd2;
+localparam s_grant_bg1 = 3'd3;
+localparam s_grant_bg2 = 3'd4;
+localparam s_grant_ov  = 3'd5;
+
+reg [2:0] state_r_0;
+reg [2:0] state_r_0_next;
+
+reg [2:0] state_r_1;
+reg [2:0] state_r_1_next;
+
+reg [2:0] state_r_2;
+reg [2:0] state_r_2_next;
+
+reg [2:0] state_r_3;
+reg [2:0] state_r_3_next;
+
+
+always @(posedge CLK)
+begin
+	if (RSTb == 1'b0) begin
+		state_r_0 = s_idle;
+		state_r_1 = s_idle;
+		state_r_2 = s_idle;
+		state_r_3 = s_idle;
+	end else begin
+		state_r_0 = state_r_0_next;
+		state_r_1 = state_r_1_next;
+		state_r_2 = state_r_2_next;
+		state_r_3 = state_r_3_next;
+	end
+end
+
 always @(*) begin
 
 	b1_addr_r 		= 16'h0000;
@@ -119,110 +157,243 @@ always @(*) begin
 	bg1_rready_r = 1'b0;
 	bg2_memory_data_r = 16'h0000;
 	bg2_rready_r = 1'b0;
-	
-	if (sprite_rvalid == 1'b1 && sprite_memory_address[15:14] == 2'b00) begin
-		b1_addr_r = sprite_memory_address;				
-		b1_valid_r = sprite_rvalid;
-		sprite_rready_r = B1_READY;
-		sprite_memory_data_r =  B1_DOUT;
-	end else
-	if (bg0_rvalid == 1'b1 && bg0_memory_address[15:14] == 2'b00) begin
-		b1_addr_r = bg0_memory_address;				
-		b1_valid_r = bg0_rvalid;
-		bg0_rready_r = B1_READY;
-		bg0_memory_data_r =  B1_DOUT;
-	end else
-	if (bg1_rvalid == 1'b1 && bg1_memory_address[15:14] == 2'b00) begin
-		b1_addr_r = bg1_memory_address;				
-		b1_valid_r = bg1_rvalid;
-		bg1_rready_r = B1_READY;
-		bg1_memory_data_r =  B1_DOUT;
-	end  else
-	if (bg2_rvalid == 1'b1 && bg2_memory_address[15:14] == 2'b00) begin
-		b1_addr_r = bg2_memory_address;				
-		b1_valid_r = bg2_rvalid;
-		bg2_rready_r = B1_READY;
-		bg2_memory_data_r =  B1_DOUT;
-	end 
 
-	if (sprite_rvalid == 1'b1 && sprite_memory_address[15:14] == 2'b01) begin
-		b2_addr_r = sprite_memory_address;				
-		b2_valid_r = sprite_rvalid;
-		sprite_rready_r = B2_READY;
-		sprite_memory_data_r = B2_DOUT;
-	end else
-	if (bg0_rvalid == 1'b1 && bg0_memory_address[15:14] == 2'b01) begin
-		b2_addr_r = bg0_memory_address;				
-		b2_valid_r = bg0_rvalid;
-		bg0_rready_r = B2_READY;
-		bg0_memory_data_r = B2_DOUT;
-	end else
-	if (bg1_rvalid == 1'b1 && bg1_memory_address[15:14] == 2'b01) begin
-		b2_addr_r = bg1_memory_address;				
-		b2_valid_r = bg1_rvalid;
-		bg1_rready_r = B2_READY;
-		bg1_memory_data_r = B2_DOUT;
-	end  else
-	if (bg2_rvalid == 1'b1 && bg2_memory_address[15:14] == 2'b01) begin
-		b2_addr_r = bg2_memory_address;				
-		b2_valid_r = bg2_rvalid;
-		bg2_rready_r = B2_READY;
-		bg2_memory_data_r = B2_DOUT;
-	end
+	state_r_0_next = state_r_0;
+	state_r_1_next = state_r_1;
+	state_r_2_next = state_r_2;
+	state_r_3_next = state_r_3;
 
-		
-	if (sprite_rvalid == 1'b1 && sprite_memory_address[15:14] == 2'b10) begin
-		b3_addr_r = sprite_memory_address;				
-		b3_valid_r = sprite_rvalid;
-		sprite_rready_r = B3_READY;
-		sprite_memory_data_r = B3_DOUT;
-	end else
- 	if (bg0_rvalid == 1'b1 && bg0_memory_address[15:14] == 2'b10) begin
-		b3_addr_r = bg0_memory_address;				
-		b3_valid_r = bg0_rvalid;
-		bg0_rready_r = B3_READY;
-		bg0_memory_data_r = B3_DOUT;
-	end else
- 	if (bg1_rvalid == 1'b1 && bg1_memory_address[15:14] == 2'b10) begin
-		b3_addr_r = bg1_memory_address;				
-		b3_valid_r = bg1_rvalid;
-		bg1_rready_r = B3_READY;
-		bg1_memory_data_r = B3_DOUT;
-	end  else
- 	if (bg2_rvalid == 1'b1 && bg2_memory_address[15:14] == 2'b10) begin
-		b3_addr_r = bg2_memory_address;				
-		b3_valid_r = bg2_rvalid;
-		bg2_rready_r = B3_READY;
-		bg2_memory_data_r = B3_DOUT;
-	end
+	case (state_r_0)
+		s_idle: begin
+			if (sprite_rvalid == 1'b1 && sprite_memory_address[15:14] == 2'b00) begin
+				b1_addr_r = sprite_memory_address;				
+				b1_valid_r = 1'b1;
+				state_r_0_next = s_grant_sp; 
+			end else
+			if (bg0_rvalid == 1'b1 && bg0_memory_address[15:14] == 2'b00) begin
+				b1_addr_r = bg0_memory_address;				
+				b1_valid_r = 1'b1;
+				state_r_0_next = s_grant_bg0;
+			end else
+			if (bg1_rvalid == 1'b1 && bg1_memory_address[15:14] == 2'b00) begin
+				b1_addr_r = bg1_memory_address;				
+				b1_valid_r = 1'b1;
+				state_r_0_next = s_grant_bg1;	
+			end  else
+			if (bg2_rvalid == 1'b1 && bg2_memory_address[15:14] == 2'b00) begin
+				b1_addr_r = bg2_memory_address;				
+				b1_valid_r = 1'b1;
+				state_r_0_next = s_grant_bg2;
+			end 
+		end
+		s_grant_sp: begin
+			b1_addr_r = sprite_memory_address;				
+			b1_valid_r = 1'b1;
+			if (sprite_rvalid == 1'b0)
+				state_r_0_next = s_idle;
+			sprite_memory_data_r = B1_DOUT;
+			sprite_rready_r = 1'b1;
+		end
+		s_grant_bg0: begin
+			b1_addr_r = bg0_memory_address;				
+			b1_valid_r = 1'b1;
+			if (bg0_rvalid == 1'b0)
+				state_r_0_next = s_idle;
+			bg0_memory_data_r = B1_DOUT;
+			bg0_rready_r = 1'b1;
+		end
+		s_grant_bg1: begin
+			b1_addr_r = bg1_memory_address;				
+			b1_valid_r = 1'b1;
+			if (bg1_rvalid == 1'b0)
+				state_r_0_next = s_idle;
+			bg1_memory_data_r = B1_DOUT;
+			bg1_rready_r = 1'b1;
+		end
+		s_grant_bg2: begin
+			b1_addr_r = bg2_memory_address;				
+			b1_valid_r = 1'b1;
+			if (bg2_rvalid == 1'b0)
+				state_r_0_next = s_idle;
+			bg2_memory_data_r = B1_DOUT;
+			bg2_rready_r = 1'b1;
+		end
+		default: ;
+	endcase
 
- 	
-	if (sprite_rvalid == 1'b1 && sprite_memory_address[15:14] == 2'b11) begin
-		b4_addr_r = sprite_memory_address;				
-		b4_valid_r = sprite_rvalid;
-		sprite_rready_r = B4_READY;
-		sprite_memory_data_r = B4_DOUT;
-	end else
- 	if (bg0_rvalid == 1'b1 && bg0_memory_address[15:14] == 2'b11) begin
-		b4_addr_r = bg0_memory_address;				
-		b4_valid_r = bg0_rvalid;
-		bg0_rready_r = B4_READY;
-		bg0_memory_data_r = B4_DOUT;
-	end else
- 	if (bg1_rvalid == 1'b1 && bg1_memory_address[15:14] == 2'b11) begin
-		b4_addr_r = bg1_memory_address;				
-		b4_valid_r = bg1_rvalid;
-		bg1_rready_r = B4_READY;
-		bg1_memory_data_r = B4_DOUT;
-	end else
- 	if (bg2_rvalid == 1'b1 && bg2_memory_address[15:14] == 2'b11) begin
-		b4_addr_r = bg2_memory_address;				
-		b4_valid_r = bg2_rvalid;
-		bg2_rready_r = B4_READY;
-		bg2_memory_data_r = B4_DOUT;
-	end
+	case (state_r_1)
+		s_idle: begin
+			if (sprite_rvalid == 1'b1 && sprite_memory_address[15:14] == 2'b01) begin
+				b2_addr_r = sprite_memory_address;				
+				b2_valid_r = 1'b1;
+				state_r_1_next = s_grant_sp; 
+			end else
+			if (bg0_rvalid == 1'b1 && bg0_memory_address[15:14] == 2'b01) begin
+				b2_addr_r = bg0_memory_address;				
+				b2_valid_r = 1'b1;
+				state_r_1_next = s_grant_bg0;
+			end else
+			if (bg1_rvalid == 1'b1 && bg1_memory_address[15:14] == 2'b01) begin
+				b2_addr_r = bg1_memory_address;				
+				b2_valid_r = 1'b1;
+				state_r_1_next = s_grant_bg1;	
+			end  else
+			if (bg2_rvalid == 1'b1 && bg2_memory_address[15:14] == 2'b01) begin
+				b2_addr_r = bg2_memory_address;				
+				b2_valid_r = 1'b1;
+				state_r_1_next = s_grant_bg2;
+			end 
+		end
+		s_grant_sp: begin
+			b2_addr_r = sprite_memory_address;				
+			b2_valid_r = 1'b1;
+			if (sprite_rvalid == 1'b0)
+				state_r_1_next = s_idle;
+			sprite_memory_data_r = B2_DOUT;
+			sprite_rready_r = 1'b1;
+		end
+		s_grant_bg0: begin
+			b2_addr_r = bg0_memory_address;				
+			b2_valid_r = 1'b1;
+			if (bg0_rvalid == 1'b0)
+				state_r_1_next = s_idle;
+			bg0_memory_data_r = B2_DOUT;
+			bg0_rready_r = 1'b1;
+		end
+		s_grant_bg1: begin
+			b2_addr_r = bg1_memory_address;				
+			b2_valid_r = 1'b1;
+			if (bg1_rvalid == 1'b0)
+				state_r_1_next = s_idle;
+			bg1_memory_data_r = B2_DOUT;
+			bg1_rready_r = 1'b1;
+		end
+		s_grant_bg2: begin
+			b2_addr_r = bg2_memory_address;				
+			b2_valid_r = 1'b1;
+			if (bg2_rvalid == 1'b0)
+				state_r_1_next = s_idle;
+			bg2_memory_data_r = B2_DOUT;
+			bg2_rready_r = 1'b1;
+		end
+		default: ;
+	endcase
 
- 
+	case (state_r_2)
+		s_idle: begin
+			if (sprite_rvalid == 1'b1 && sprite_memory_address[15:14] == 2'b10) begin
+				b3_addr_r = sprite_memory_address;				
+				b3_valid_r = 1'b1;
+				state_r_2_next = s_grant_sp; 
+			end else
+			if (bg0_rvalid == 1'b1 && bg0_memory_address[15:14] == 2'b10) begin
+				b3_addr_r = bg0_memory_address;				
+				b3_valid_r = 1'b1;
+				state_r_2_next = s_grant_bg0;
+			end else
+			if (bg1_rvalid == 1'b1 && bg1_memory_address[15:14] == 2'b10) begin
+				b3_addr_r = bg1_memory_address;				
+				b3_valid_r = 1'b1;
+				state_r_2_next = s_grant_bg1;	
+			end  else
+			if (bg2_rvalid == 1'b1 && bg2_memory_address[15:14] == 2'b10) begin
+				b3_addr_r = bg2_memory_address;				
+				b3_valid_r = 1'b1;
+				state_r_2_next = s_grant_bg2;
+			end 
+		end
+		s_grant_sp: begin
+			b3_addr_r = sprite_memory_address;				
+			b3_valid_r = 1'b1;
+			if (sprite_rvalid == 1'b0)
+				state_r_2_next = s_idle;
+			sprite_memory_data_r = B3_DOUT;
+			sprite_rready_r = 1'b1;
+		end
+		s_grant_bg0: begin
+			b3_addr_r = bg0_memory_address;				
+			b3_valid_r = 1'b1;
+			if (bg0_rvalid == 1'b0)
+				state_r_2_next = s_idle;
+			bg0_memory_data_r = B3_DOUT;
+			bg0_rready_r = 1'b1;
+		end
+		s_grant_bg1: begin
+			b3_addr_r = bg1_memory_address;				
+			b3_valid_r = 1'b1;
+			if (bg1_rvalid == 1'b0)
+				state_r_2_next = s_idle;
+			bg1_memory_data_r = B3_DOUT;
+			bg1_rready_r = 1'b1;
+		end
+		s_grant_bg2: begin
+			b3_addr_r = bg2_memory_address;				
+			b3_valid_r = 1'b1;
+			if (bg2_rvalid == 1'b0)
+				state_r_2_next = s_idle;
+			bg2_memory_data_r = B3_DOUT;
+			bg2_rready_r = 1'b1;
+		end
+		default: ;
+	endcase
+
+	case (state_r_3)
+		s_idle: begin
+			if (sprite_rvalid == 1'b1 && sprite_memory_address[15:14] == 2'b11) begin
+				b4_addr_r = sprite_memory_address;				
+				b4_valid_r = 1'b1;
+				state_r_3_next = s_grant_sp; 
+			end else
+			if (bg0_rvalid == 1'b1 && bg0_memory_address[15:14] == 2'b11) begin
+				b4_addr_r = bg0_memory_address;				
+				b4_valid_r = 1'b1;
+				state_r_3_next = s_grant_bg0;
+			end else
+			if (bg1_rvalid == 1'b1 && bg1_memory_address[15:14] == 2'b11) begin
+				b4_addr_r = bg1_memory_address;				
+				b4_valid_r = 1'b1;
+				state_r_3_next = s_grant_bg1;	
+			end  else
+			if (bg2_rvalid == 1'b1 && bg2_memory_address[15:14] == 2'b11) begin
+				b4_addr_r = bg2_memory_address;				
+				b4_valid_r = 1'b1;
+				state_r_3_next = s_grant_bg2;
+			end 
+		end
+		s_grant_sp: begin
+			b4_addr_r = sprite_memory_address;				
+			b4_valid_r = 1'b1;
+			if (sprite_rvalid == 1'b0)
+				state_r_3_next = s_idle;
+			sprite_memory_data_r = B4_DOUT;
+			sprite_rready_r = 1'b1;
+		end
+		s_grant_bg0: begin
+			b4_addr_r = bg0_memory_address;				
+			b4_valid_r = 1'b1;
+			if (bg0_rvalid == 1'b0)
+				state_r_3_next = s_idle;
+			bg0_memory_data_r = B4_DOUT;
+			bg0_rready_r = 1'b1;
+		end
+		s_grant_bg1: begin
+			b4_addr_r = bg1_memory_address;				
+			b4_valid_r = 1'b1;
+			if (bg1_rvalid == 1'b0)
+				state_r_3_next = s_idle;
+			bg1_memory_data_r = B4_DOUT;
+			bg1_rready_r = 1'b1;
+		end
+		s_grant_bg2: begin
+			b4_addr_r = bg2_memory_address;				
+			b4_valid_r = 1'b1;
+			if (bg2_rvalid == 1'b0)
+				state_r_3_next = s_idle;
+			bg2_memory_data_r = B4_DOUT;
+			bg2_rready_r = 1'b1;
+		end
+		default: ;
+	endcase 
 end
 
 endmodule

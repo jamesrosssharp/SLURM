@@ -123,6 +123,9 @@ reg WR_bg2;
 
 gfx_memory_arbiter arb0
 (
+	CLK,
+	RSTb,
+
 	/* sprite controller */
 	spcon_memory_address,
 	spcon_memory_data,
