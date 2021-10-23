@@ -306,9 +306,9 @@ begin
 				tilemap_index_r_next = tilemap_index_r + 1; 
 			end
 			r_finish: begin
-				if (cur_render_x >= 700)
-					r_state_next = r_idle;
-				else
+				//if (cur_render_x >= 700)
+				//	r_state_next = r_idle;
+				//else
 					r_state_next = r_loadmap; 
 			end
 			default:

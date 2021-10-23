@@ -1,0 +1,36 @@
+[*]
+[*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
+[*] Sat Oct 23 00:15:02 2021
+[*]
+[dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/background_controller2/background_controller2.vcd"
+[dumpfile_mtime] "Sat Oct 23 00:14:34 2021"
+[dumpfile_size] 5528989
+[savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/background_controller2/config.gtkw"
+[timestart] 0
+[size] 1710 811
+[pos] -1 -1
+*-22.000000 160200000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] sprite_tb.
+[treeopen] sprite_tb.con0.
+[sst_width] 290
+[signals_width] 383
+[sst_expanded] 1
+[sst_vpaned_height] 218
+@28
+sprite_tb.CLK
+sprite_tb.RSTb
+sprite_tb.con0.H_tick
+sprite_tb.con0.V_tick
+@22
+sprite_tb.DATA_IN[15:0]
+@28
+sprite_tb.con0.WR
+@22
+sprite_tb.con0.color_index[7:0]
+sprite_tb.display_x[9:0]
+sprite_tb.display_y[9:0]
+sprite_tb.con0.tile_map_address[15:0]
+@23
+sprite_tb.con0.tile_set_address[15:0]
+[pattern_trace] 1
+[pattern_trace] 0
