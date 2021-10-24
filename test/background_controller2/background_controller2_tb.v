@@ -26,7 +26,18 @@ wire V_tick = (display_y == 10'd0) ? 1'b1 : 1'b0;
 wire [7:0] color_index;
 wire [15:0] memory_address;
 
-reg [15:0] memory_data = 16'haa55;
+reg [15:0] memory [65535:0];
+
+initial begin
+        $display("Loading rom.");
+        $readmemh("ram_image.mem", memory);
+end
+
+initial memory[16'h4000] = 16'h0100;
+initial memory[16'h4001] = 16'h0302;
+initial memory[16'h4002] = 16'h0504;
+
+wire [15:0] memory_data = memory[memory_address];
 wire rvalid;
 wire rready = rvalid;
 
@@ -66,7 +77,7 @@ initial begin
 	// Set tilemap address
 
 	#100 ADDRESS = 16'h3;
-		 DATA_IN = 16'h4000;
+		 DATA_IN = 16'hc000;
 		 WR = 1;
 	#100 WR = 0;
 

@@ -9,7 +9,10 @@ all: sim
 
 .PHONY: sim
 
-sim: $(SOURCE) $(PROJECT)_tb.v
+ram_image.mem: App.asm
+	../../slurmasm/slurmasm App.asm -o ram_image
+
+sim: $(SOURCE) $(PROJECT)_tb.v ram_image.mem
 	iverilog -o $(PROJECT)_design -D SIM -Winfloop $(PROJECT)_tb.v $(SOURCE)
 	vvp      -n $(PROJECT)_design
 	gtkwave   dump.vcd config.gtkw 
