@@ -101,4 +101,12 @@ initial begin
 	# 10000000 $finish;
 end
 
+genvar j;
+for (j = 0; j < 2; j = j + 1) begin
+    initial $dumpvars(0, con0.fetchbuffer[j]);
+    initial $dumpvars(0, con0.fetchbuffer_next[j]);
+end
+
+
+
 endmodule

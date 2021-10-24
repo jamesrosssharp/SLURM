@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Sat Oct 23 00:15:02 2021
+[*] Sun Oct 24 09:21:01 2021
 [*]
-[dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/background_controller2/background_controller2.vcd"
-[dumpfile_mtime] "Sat Oct 23 00:14:34 2021"
-[dumpfile_size] 5528989
+[dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/background_controller2/dump.vcd"
+[dumpfile_mtime] "Sun Oct 24 09:20:27 2021"
+[dumpfile_size] 38361979
 [savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/background_controller2/config.gtkw"
-[timestart] 0
+[timestart] 151810000
 [size] 1710 811
 [pos] -1 -1
-*-22.000000 160200000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-21.000000 160200000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] sprite_tb.
 [treeopen] sprite_tb.con0.
 [sst_width] 290
@@ -30,7 +30,20 @@ sprite_tb.con0.color_index[7:0]
 sprite_tb.display_x[9:0]
 sprite_tb.display_y[9:0]
 sprite_tb.con0.tile_map_address[15:0]
-@23
 sprite_tb.con0.tile_set_address[15:0]
+@28
+sprite_tb.con0.f_state_r[2:0]
+@22
+sprite_tb.con0.cur_tile[7:0]
+sprite_tb.con0.memory_data[15:0]
+sprite_tb.con0.tilemap_index_r[20:0]
+sprite_tb.con0.\fetchbuffer[0][63:0]
+sprite_tb.con0.\fetchbuffer[1][63:0]
+@28
+sprite_tb.con0.blit_state_r
+@22
+sprite_tb.con0.cur_render_x[9:0]
+@29
+sprite_tb.con0.cur_fetchbuffer
 [pattern_trace] 1
 [pattern_trace] 0
