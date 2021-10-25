@@ -115,7 +115,7 @@ reg WR_bg1;
 wire [7:0] bg2_color_index;
 wire [15:0] bg2_memory_address;
 wire [15:0] bg2_memory_data;
-wire bg2_rvalid = 1'b0;
+wire bg2_rvalid;
 wire bg2_rready;
 reg WR_bg2;
 
@@ -242,7 +242,7 @@ background_controller2 #(48, 369, 33, 513) bgcon1
 	bg1_rready 
 );
 
-/*background_controller2 #(48, 369, 33, 513) bgcon2
+background_controller2 #(48, 369, 33, 513) bgcon2
 (
 	CLK,
 	RSTb,
@@ -263,7 +263,7 @@ background_controller2 #(48, 369, 33, 513) bgcon1
 	bg2_rvalid,
 	bg2_rready 
 );
-*/
+
 
 wire [11:0] color;
 reg WR_pal;
@@ -274,9 +274,9 @@ always @(*)
 begin
 	if (spcon_color_index[3:0] == 4'd0) 
 		 if (bg0_color_index[3:0] == 4'd0)
-			/*if (bg1_color_index[3:0] == 4'd0)
+			if (bg1_color_index[3:0] == 4'd0)
 					color_index = bg2_color_index;
-			else*/
+			else
 				color_index = bg1_color_index;
 		else
 			color_index = bg0_color_index;

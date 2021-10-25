@@ -44,12 +44,6 @@ module background_controller2
 reg bg_enable;
 reg bg_enable_next;
 
-reg [1:0] tilemap_stride;
-reg [1:0] tilemap_stride_next;
-
-reg tile_set_stride;
-reg tile_set_stride_next;
-
 reg [15:0] tile_map_x;
 reg [15:0] tile_map_x_next;
 
@@ -98,17 +92,6 @@ endgenerate
 
 // Fetch / blit
 
-localparam FETCH_BUFFER_BITS = 64;
-localparam FETCH_BUFFER_BITS_DIV4 = FETCH_BUFFER_BITS / 4;
-
-reg cur_fetchbuffer; // we double buffer the shift register so we can be fetching 
-reg cur_fetchbuffer_next;
-
-wire cur_blit_buffer = ! cur_fetchbuffer;
-reg [FETCH_BUFFER_BITS - 1:0] fetchbuffer[1:0]; // shift register
-reg [FETCH_BUFFER_BITS - 1:0] fetchbuffer_next[1:0]; // shift register
-reg blit_go; // signal to blitter to start blitting
-
 reg [20:0] tilemap_index_r;
 reg [20:0] tilemap_index_r_next;
 
@@ -129,8 +112,6 @@ localparam f_wait_tile_mem   = 4'd3;
 localparam f_fetch_tile_data = 4'd4;
 localparam f_wait_td_mem     = 4'd5;
 localparam f_wait_td_mem2    = 4'd6;
-localparam f_wait_blitter    = 4'd7;
-localparam f_dummy_blitter   = 4'd8;
 
 reg [3:0] f_state_r;
 reg [3:0] f_state_r_next;
@@ -140,17 +121,8 @@ reg [7:0] cur_tile_next;
 
 wire [15:0] tilemap_y_disp = tile_map_y + {6'd0, display_y};
 
-reg [3:0] fetch_count;
-reg [3:0] fetch_count_next;
-
-localparam b_idle = 1'b0;
-localparam b_blit = 1'b1;
-
-reg blit_state_r;
-reg blit_state_r_next;
-
-reg [3:0] blit_count;
-reg [3:0] blit_count_next;
+reg [1:0] fetch_count;
+reg [1:0] fetch_count_next;
 
 reg [17:0] tile_lookup;
 
@@ -158,7 +130,7 @@ always @(*)
 begin
 	tile_lookup = {10'd0, cur_tile[3:0], 4'd0}	+ 
 				  {2'd0, cur_tile[7:4], 12'd0}   +
-				{tilemap_y_disp[3:0], 8'd0} +  
+				{6'd0, tilemap_y_disp[3:0], 8'd0} +  
 				{14'd0, cur_render_x[3:0]} + {tile_set_address, 2'd0};
 end
 
@@ -213,19 +185,19 @@ begin
 	if (H_tick == 1'b1 && bg_enable == 1'b1)
 	begin
 		f_state_r_next = f_begin;
-		fetch_count_next = 4'd0;
+		fetch_count_next = 2'd0;
 		active_buffer_next = display_buffer;
 	end
 	else begin
 		case (f_state_r)
 			f_idle:	;
 			f_begin: begin
-				tilemap_index_r_next = {tile_map_address, 1'd0} + {2'd0, tilemap_y_disp[10:4], tile_map_x[10:4]}; 
+				tilemap_index_r_next = {tile_map_address, 1'd0} + {3'd0, tilemap_y_disp[10:4], tile_map_x[10:4]}; 
 				f_state_r_next 		 = f_fetch_tile;
 				cur_render_x_next    = 10'd48; 
 			end
 			f_fetch_tile: begin
-				if (cur_rendex_x > 10'd704)
+				if (cur_render_x == 10'd720)
 					f_state_r_next = f_idle;
 				else
 					f_state_r_next 			= f_wait_tile_mem;
@@ -266,8 +238,8 @@ begin
 				scanline_wr_data[active_buffer] = memory_data;
 				cur_render_x_next = cur_render_x + 4;
 				fetch_count_next = fetch_count + 1;
-				if (fetch_count == 4'd3) begin
-					fetch_count_next = 4'd0;
+				if (fetch_count == 2'd3) begin
+					fetch_count_next = 2'd0;
 					f_state_r_next = f_fetch_tile;	
 					tilemap_index_r_next = tilemap_index_r + 1;	
 				end
@@ -321,8 +293,6 @@ always @(*)
 begin
 
 	bg_enable_next 		  = bg_enable;
-	tilemap_stride_next   = tilemap_stride;
-	tile_set_stride_next  = tile_set_stride;
 	tile_map_x_next 	  = tile_map_x;
 	tile_map_y_next 	  = tile_map_y;
 	tile_map_address_next = tile_map_address;
@@ -334,13 +304,9 @@ begin
 		case (ADDRESS)
 			4'd0: begin /* control reg */
 				/* bit 0: enable (1 = enable)
-				   bit 1-2: tilemap stride (0 = 32 bytes, 1 = 64 bytes, 2 = 128 bytes, 3 = 256 bytes)
-				   bit 3: tile set stride (0 = 128 nibbles, 1 = 256 nibbles) 
 				   bit 7-4: palette hi
 				*/
 				bg_enable_next 		 = DATA_IN[0];
-				tilemap_stride_next  = DATA_IN[2:1];
-				tile_set_stride_next = DATA_IN[3];
 				pal_hi_next 		 = DATA_IN[7:4];
 			end
 			4'd1: /* tile map x register */
@@ -363,8 +329,6 @@ always @(posedge CLK)
 begin
 	if (RSTb == 1'b0) begin
 		bg_enable 		 <= 1'b0;
-		tilemap_stride 	 <= 2'b00;
-		tile_set_stride  <= 1'b0;
 		tile_map_x 		 <= 16'h0000;
 		tile_map_y 		 <= 16'h0000;
 		tile_map_address <= 16'h0000;
@@ -377,16 +341,10 @@ begin
 		f_state_r 		 <= f_idle;
 		cur_render_x 	 <= 10'd0;
 		cur_tile		 <= 8'd0;
-		for (i = 0; i < 2; i = i + 1)
-			fetchbuffer[i] = {FETCH_BUFFER_BITS{1'b0}};	
-		fetch_count		<= 4'd0;
-		blit_state_r	<= b_idle;
-		blit_count		<= 4'd0;
+		fetch_count		<= 2'd0;
 		color_index_r   <= 8'd0;
 	end else begin
 		bg_enable 		 <= bg_enable_next;
-		tilemap_stride 	 <= tilemap_stride_next;
-		tile_set_stride  <= tile_set_stride_next;
 		tile_map_x 		 <= tile_map_x_next;
 		tile_map_y 		 <= tile_map_y_next;
 		tile_map_address <= tile_map_address_next;
@@ -399,8 +357,6 @@ begin
 		f_state_r 		 <= f_state_r_next;
 		cur_render_x	 <= cur_render_x_next;
 		cur_tile		 <= cur_tile_next;
-		for (i = 0; i < 2; i = i + 1)
-			fetchbuffer[i] = fetchbuffer_next[i];	
 		fetch_count		<= fetch_count_next;
 		blit_state_r	<= blit_state_r_next;
 		blit_count		<= blit_count_next;
