@@ -86,6 +86,7 @@ sprite_loop:
 		st [GFX_BG0_X], r0
 		st [GFX_BG1_X], r0
 		add r0, 1
+		and r0, 0xff
 		st [bg0_x], r0
 		ld r0, [bg0_y]
 		st [GFX_BG0_Y], r0
@@ -179,9 +180,9 @@ die2:
 		ba die2
 
 bg0_x: 
-	dw 0
+	dw 1
 bg0_y:
-	dw 0
+	dw 2
 
 the_string:
 	dw "Hello World from Boot Loaded program!\n"

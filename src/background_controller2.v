@@ -26,7 +26,7 @@ module background_controller2
 	input H_tick,
 
 	/* display uses this channel to read scanline block RAM */
-	input [9:0]   display_x,
+	input [9:0]   display_x_,
 	input [9:0]   display_y,
 	input         re,	// render enable
 	output [7:0] color_index,
@@ -64,6 +64,8 @@ reg [15:0] tile_set_address_next;
 
 reg [3:0] pal_hi;
 reg [3:0] pal_hi_next;
+
+wire [9:0] display_x = display_x_ + {6'd0, tile_map_x[3:0]};
 
 // Scanline buffers
 
@@ -157,62 +159,10 @@ begin
 	tile_lookup = {10'd0, cur_tile[3:0], 4'd0}	+ 
 				  {2'd0, cur_tile[7:4], 12'd0}   +
 				{tilemap_y_disp[3:0], 8'd0} +  
-				{14'd0, tilemap_index_r[3:0]} + {tile_set_address, 2'd0};
+				{14'd0, cur_render_x[3:0]} + {tile_set_address, 2'd0};
 end
 
 
-task gen_shift (input [15:0] datin);
-begin
-
-		if (tilemap_index_r[1:0] == 2'b00 && fetch_count <= 4'd12)
-				begin
-						
-					fetchbuffer_next[cur_fetchbuffer][FETCH_BUFFER_BITS - 17:0] = fetchbuffer[cur_fetchbuffer][FETCH_BUFFER_BITS - 1:16];
-					fetchbuffer_next[cur_fetchbuffer][FETCH_BUFFER_BITS - 1 : FETCH_BUFFER_BITS - 16] = datin;
-					tilemap_index_r_next = tilemap_index_r_next + 21'd4;
-					fetch_count_next = fetch_count + 4;	
-					if (tilemap_index_r[3:0] == 4'd12)
-						f_state_r_next = f_fetch_tile;
-					if (fetch_count == 4'd12)
-						f_state_r_next = f_wait_blitter;
-				end
-				else if (tilemap_index_r[1:0] <= 2'b01 && fetch_count <= 4'd13)
-				begin
-					fetchbuffer_next[cur_fetchbuffer][FETCH_BUFFER_BITS - 13:0] = fetchbuffer[cur_fetchbuffer][FETCH_BUFFER_BITS - 1:12];
-					fetchbuffer_next[cur_fetchbuffer][FETCH_BUFFER_BITS - 1: FETCH_BUFFER_BITS - 12]  = datin[15:4];
-					tilemap_index_r_next = tilemap_index_r_next + 21'd3;
-					fetch_count_next = fetch_count + 3;
-					if (tilemap_index_r[3:0] == 4'd13)
-						f_state_r_next = f_fetch_tile;
-					if (fetch_count == 4'd13)
-						f_state_r_next = f_wait_blitter;
-				end
-				else if (tilemap_index_r[1:0] <= 2'b10 && fetch_count <= 4'd14)
-				begin
-					fetchbuffer_next[cur_fetchbuffer][FETCH_BUFFER_BITS - 9:0] = fetchbuffer[cur_fetchbuffer][FETCH_BUFFER_BITS - 1:8];
-					fetchbuffer_next[cur_fetchbuffer][FETCH_BUFFER_BITS - 1: FETCH_BUFFER_BITS - 8] = datin[15:8];
-					tilemap_index_r_next = tilemap_index_r_next + 21'd2;
-					fetch_count_next = fetch_count + 2;
-					if (tilemap_index_r[3:0] == 4'd14)
-						f_state_r_next = f_fetch_tile;
-					if (fetch_count == 4'd14)
-						f_state_r_next = f_wait_blitter;
-				end
-				else begin
-					fetchbuffer_next[cur_fetchbuffer][FETCH_BUFFER_BITS - 5:0] = fetchbuffer[cur_fetchbuffer][FETCH_BUFFER_BITS - 1:4];
-					fetchbuffer_next[cur_fetchbuffer][FETCH_BUFFER_BITS - 1: FETCH_BUFFER_BITS - 4] = datin[15:12];
-					tilemap_index_r_next = tilemap_index_r_next + 21'd1;
-					fetch_count_next = fetch_count + 1;
-					if (tilemap_index_r[3:0] == 4'd15)
-						f_state_r_next = f_fetch_tile;
-					if (fetch_count == 4'd15)
-						f_state_r_next = f_wait_blitter;
-				end
-
-end
-endtask
-
- 
 integer i;
 
 always @(*)
@@ -234,73 +184,6 @@ begin
 	
 	rvalid_r = 1'b0;
 
-	if (H_tick == 1'b1 && bg_enable == 1'b1)
-	begin
-		f_state_r_next = f_begin;
-		fetch_count_next = 4'd0;
-	end
-	else begin
-		case (f_state_r)
-			f_idle:	;
-			f_begin: begin
-				tilemap_index_r_next = {tile_map_address, 5'd0} + {1'd0, tilemap_y_disp[12:4], 1'd0, tile_map_x[9:0]}; 
-				f_state_r_next 		 = f_fetch_tile; 
-			end
-			f_fetch_tile: begin
-				f_state_r_next 			= f_wait_tile_mem;
-				memory_address_r_next   = tilemap_index_r[20:5]; // word address
-			end
-			f_wait_tile_mem: begin
-				rvalid_r = 1'b1;
-				if (rready == 1'b1) begin
-					if (tilemap_index_r[4] == 1'b0)
-						cur_tile_next = memory_data[7:0];
-					else
-						cur_tile_next = memory_data[15:8];
-					f_state_r_next = f_fetch_tile_data; 
-				end
-			end
-			f_fetch_tile_data: begin
-				if (cur_tile == 8'hff) begin
-					f_state_r_next = f_dummy_blitter;
-				end else begin
-					memory_address_r_next = tile_lookup[17:2];
-					f_state_r_next = f_wait_td_mem;
-				end
-			end
-			f_wait_td_mem: begin
-				rvalid_r = 1'b1;
-				
-				if (rready == 1'b1) begin
-					memory_address_r_next = memory_address_r + 1;
-					f_state_r_next = f_wait_td_mem2;
-				end
-			end
-			f_wait_td_mem2: begin
-				rvalid_r = 1'b1;
-				memory_address_r_next = memory_address_r + 1;
-				gen_shift(memory_data);	
-			end			
-			f_wait_blitter: begin 
-				cur_fetchbuffer_next = !cur_fetchbuffer;
-				blit_go = 1'b1;
-				//if (tilemap_index_r[3:0] == 4'd0)
-				f_state_r_next = f_fetch_tile;
-				//else begin
-				//	rvalid_r = 1'b1;
-				//	f_state_r_next = f_wait_td_mem2; 
-				//end				
-			end
-			f_dummy_blitter: begin
-				gen_shift(16'd0);
-			end
-			default:
-				f_state_r_next = f_idle;
-		endcase
-	end
-
-	// Blitter process: blit from shift register to block RAM
-
 	blit_state_r_next = blit_state_r;
 
 	scanline_wr_addr[0] = 8'd0;
@@ -319,7 +202,7 @@ begin
 	// Clear display buffer as it is read		
 	scanline_wr[display_buffer] 	= 1'b1;
 	scanline_wr_addr[display_buffer] = display_x[9:2] - 8'd1;
-	scanline_wr_data[display_buffer] = 16'h1234;	
+	scanline_wr_data[display_buffer] = 16'h0000;	
 
 	active_buffer_next = active_buffer;
 
@@ -327,32 +210,74 @@ begin
 
 	cur_render_x_next = cur_render_x;
 
-	if (H_tick == 1'b1) begin
-		if (bg_enable == 1'b1) begin	// Background layer enabled?
-			active_buffer_next = display_buffer;
-			blit_state_r_next = b_idle;
-			cur_render_x_next = 10'd48;
-		end
-	end 
+	if (H_tick == 1'b1 && bg_enable == 1'b1)
+	begin
+		f_state_r_next = f_begin;
+		fetch_count_next = 4'd0;
+		active_buffer_next = display_buffer;
+	end
 	else begin
-		case (blit_state_r)
-			b_idle:
-				if (blit_go == 1'b1) begin
-					blit_state_r_next = b_blit;
-					blit_count_next = 4'd3;
-				end
-			b_blit: begin
-				scanline_wr_data[active_buffer] = fetchbuffer[cur_blit_buffer][15:0];
-				scanline_wr[active_buffer] 		= 1'b1;
-				fetchbuffer_next[cur_blit_buffer][FETCH_BUFFER_BITS - 17 : 0] = fetchbuffer[cur_blit_buffer][FETCH_BUFFER_BITS - 1: 16];				
-				fetchbuffer_next[cur_blit_buffer][FETCH_BUFFER_BITS - 1 : FETCH_BUFFER_BITS - 16] = 16'd0;
-				blit_count_next = blit_count - 1;
-				if (blit_count == 4'd0)
-					blit_state_r_next = b_idle;
-				cur_render_x_next = cur_render_x + 10'd4;
+		case (f_state_r)
+			f_idle:	;
+			f_begin: begin
+				tilemap_index_r_next = {tile_map_address, 1'd0} + {2'd0, tilemap_y_disp[10:4], tile_map_x[10:4]}; 
+				f_state_r_next 		 = f_fetch_tile;
+				cur_render_x_next    = 10'd48; 
 			end
+			f_fetch_tile: begin
+				if (cur_rendex_x > 10'd704)
+					f_state_r_next = f_idle;
+				else
+					f_state_r_next 			= f_wait_tile_mem;
+				memory_address_r_next   = tilemap_index_r[16:1]; // word address
+			end
+			f_wait_tile_mem: begin
+				rvalid_r = 1'b1;
+				if (rready == 1'b1) begin
+					if (tilemap_index_r[0] == 1'b0)
+						cur_tile_next = memory_data[7:0];
+					else
+						cur_tile_next = memory_data[15:8];
+					f_state_r_next = f_fetch_tile_data; 
+				end
+			end
+			f_fetch_tile_data: begin
+				if (cur_tile == 8'hff) begin
+					cur_render_x_next = cur_render_x + 16;
+					tilemap_index_r_next = tilemap_index_r + 1;
+					f_state_r_next = f_fetch_tile;
+				end else begin
+					memory_address_r_next = tile_lookup[17:2];
+					f_state_r_next = f_wait_td_mem;
+				end
+			end
+			f_wait_td_mem: begin
+				rvalid_r = 1'b1;
+				
+				if (rready == 1'b1) begin
+					memory_address_r_next = memory_address_r + 1;
+					f_state_r_next = f_wait_td_mem2;
+				end
+			end
+			f_wait_td_mem2: begin
+				rvalid_r = 1'b1;
+				memory_address_r_next = memory_address_r + 1;
+				scanline_wr[active_buffer] 		= 1'b1;
+				scanline_wr_data[active_buffer] = memory_data;
+				cur_render_x_next = cur_render_x + 4;
+				fetch_count_next = fetch_count + 1;
+				if (fetch_count == 4'd3) begin
+					fetch_count_next = 4'd0;
+					f_state_r_next = f_fetch_tile;	
+					tilemap_index_r_next = tilemap_index_r + 1;	
+				end
+			end			
+			default:
+				f_state_r_next = f_idle;
 		endcase
 	end
+
+
 end
 
 
