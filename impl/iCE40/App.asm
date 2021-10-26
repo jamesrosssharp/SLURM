@@ -19,17 +19,17 @@ GFX_BG0_Y equ 0x1d02
 GFX_BG0_TILEMAP_ADDR equ 0x1d03
 GFX_BG0_TILESET_ADDR equ 0x1d04
 
-GFX_BG1_CONTROL equ 0x1d10
-GFX_BG1_X equ 0x1d11
-GFX_BG1_Y equ 0x1d12
-GFX_BG1_TILEMAP_ADDR equ 0x1d13
-GFX_BG1_TILESET_ADDR equ 0x1d14
+GFX_BG1_CONTROL equ 0x1d05
+GFX_BG1_X equ 0x1d06
+GFX_BG1_Y equ 0x1d07
+GFX_BG1_TILEMAP_ADDR equ 0x1d08
+GFX_BG1_TILESET_ADDR equ 0x1d09
 
-GFX_BG2_CONTROL equ 0x1d20
-GFX_BG2_X equ 0x1d21
-GFX_BG2_Y equ 0x1d22
-GFX_BG2_TILEMAP_ADDR equ 0x1d23
-GFX_BG2_TILESET_ADDR equ 0x1d24
+GFX_BG2_CONTROL equ 0x1d10
+GFX_BG2_X equ 0x1d11
+GFX_BG2_Y equ 0x1d12
+GFX_BG2_TILEMAP_ADDR equ 0x1d13
+GFX_BG2_TILESET_ADDR equ 0x1d14
 
 
 		mov r0, the_string
@@ -97,17 +97,17 @@ sprite_loop:
 		mov r0, 0
 no_y_gt:	
 		st [bg0_y], r0
-		mov r0, tilemap_BG2 
-		st [GFX_BG0_TILEMAP_ADDR], r0
 		mov r0, tilemap_BG1
 		st [GFX_BG1_TILEMAP_ADDR], r0
-		mov r0, tilemap_BG3_2
+		mov r0, tilemap_BG2
 		st [GFX_BG2_TILEMAP_ADDR], r0
+		mov r0, tilemap_BG3_2
+		st [GFX_BG0_TILEMAP_ADDR], r0
 		mov r0, tileset
-		st [GFX_BG0_TILESET_ADDR],r0
 		st [GFX_BG1_TILESET_ADDR],r0
-		mov r0, tileset2
 		st [GFX_BG2_TILESET_ADDR],r0
+		mov r0, tileset2
+		st [GFX_BG0_TILESET_ADDR],r0
 
 
 
