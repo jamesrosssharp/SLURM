@@ -81,7 +81,7 @@ Instruction Set
     the copper will wait for next row (scanline). Used to add a gradient background to every
     scanline.
 
-8. - 15. Reserved
+8 - 15. Reserved
 
 
 
