@@ -31,6 +31,8 @@ GFX_BG2_Y equ 0x1d12
 GFX_BG2_TILEMAP_ADDR equ 0x1d13
 GFX_BG2_TILESET_ADDR equ 0x1d14
 
+GFX_CPR_BGCOL equ 0x1d22
+GFX_CPR_LIST  equ 0x1400
 
 		mov r0, the_string
 loop:
@@ -47,6 +49,20 @@ test_loop:
 		ba loop
 
 die:
+
+		mov r0, 0xf0f
+		st [GFX_CPR_BGCOL], r0
+
+		mov r0, GFX_CPR_LIST
+		mov r1, 512
+		mov r2, 0x7000
+cpr_loop:
+		st [r0], r2
+		inc r0
+		inc r2
+		sub r1, 1
+		bnz cpr_loop
+
 
 		mov r0, GFX_PAL + 1
 		mov r1, pacman_palette
