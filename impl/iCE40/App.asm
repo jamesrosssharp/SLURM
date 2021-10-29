@@ -33,6 +33,7 @@ GFX_BG2_TILESET_ADDR equ 0x1d14
 
 GFX_CPR_BGCOL equ 0x1d22
 GFX_CPR_LIST  equ 0x1400
+GFX_CPR_ENABLE equ 0x1d20
 
 		mov r0, the_string
 loop:
@@ -49,19 +50,34 @@ test_loop:
 		ba loop
 
 die:
-
+/*
 		mov r0, 0xf0f
 		st [GFX_CPR_BGCOL], r0
 
 		mov r0, GFX_CPR_LIST
 		mov r1, 512
-		mov r2, 0x7000
+		mov r2, 0x6000
 cpr_loop:
 		st [r0], r2
 		inc r0
 		inc r2
 		sub r1, 1
 		bnz cpr_loop
+*/
+	
+		mov r0, GFX_CPR_LIST
+		mov r1, cpr_list_1
+		mov r2, cpr_list_1_end - cpr_list_1
+cpr_loop:
+		ld r3, [r1]
+		inc r1
+		st [r0], r3
+		inc r0
+		sub r2, 1
+		bnz cpr_loop
+
+		mov r0, 0x1
+		st [GFX_CPR_ENABLE], r0
 
 
 		mov r0, GFX_PAL + 1
@@ -195,6 +211,34 @@ wait_frame:
 		nop
 die2:
 		ba die2
+
+cpr_list_1:
+		dw 0x6ff0
+		dw 0x9d00
+		dw 1 | (2<<1) |  (1 << 3) | (1 << 4)
+		dw 0x7040
+		dw 0x60ff
+		dw 0x9d00
+		dw 0
+		dw 0x7040
+		dw 0x1000
+		 
+
+cpr_list_1_end:
+
+cpr_list_2:
+		dw 0x6ff0
+		dw 0x7040
+		dw 0x60ff
+		dw 0x7020
+		dw 0x4100
+		dw 0x1000
+		dw 0x2fff		 
+
+cpr_list_2_end:
+
+
+
 
 bg0_x: 
 	dw 0x101

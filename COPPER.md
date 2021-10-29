@@ -10,15 +10,13 @@ Copper can self-modify its own program memory, so copper lists can be dynamic.
 Instruction Set
 ---------------
 
-0. Register write
+0. Nop 
 
   |15 | 14 | 13 | 12 | 11 | 10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
   |---|----|----|----|----|----|---|---|---|---|---|---|---|---|---|---|
-  |0  | 0  | 0  | 0  | A  | A  | A | A | A | A | A | A | A | A | A | A |
+  |0  | 0  | 0  | 0  |  0 | 0  | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 
-    A[11:0] : address of register
 
-    Next word in the copper memory will be the data to write.
 
 1. Jump
 
@@ -46,42 +44,66 @@ Instruction Set
 
     C[9:0] : copper will idle until this column is reached
 
-4. Wait next row
+4. Skip if row greater than or equal
 
   |15 | 14 | 13 | 12 | 11 | 10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
   |---|----|----|----|----|----|---|---|---|---|---|---|---|---|---|---|
-  |0  | 1  | 0  | 0  | x  | x  | x | x | x | x | x | x | x | x | x | x |
-
-5. Skip if row greater than or equal
-
-  |15 | 14 | 13 | 12 | 11 | 10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
-  |---|----|----|----|----|----|---|---|---|---|---|---|---|---|---|---|
-  |0  | 1  | 0  | 1  | x  | x  | R | R | R | R | R | R | R | R | R | R |
+  |0  | 1  | 0  | 0  | x  | x  | R | R | R | R | R | R | R | R | R | R |
 
     R[9:0] : copper will skip next instruction if row has been reached, 
     used to break out of loops
 
-6. Skip if column greater than or equal
+5. Skip if column greater than or equal
 
   |15 | 14 | 13 | 12 | 11 | 10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
   |---|----|----|----|----|----|---|---|---|---|---|---|---|---|---|---|
-  |0  | 1  | 1  | 0  | x  | x  | C | C | C | C | C | C | C | C | C | C |
+  |0  | 1  | 0  | 1  | x  | x  | C | C | C | C | C | C | C | C | C | C |
 
     C[9:0] : copper will skip next instruction if column has been reached,
     used to break out of loops
 
-7. Load background color register and wait next row
+6. Load background color register and wait next row
 
 
   |15 | 14 | 13 | 12 | 11 | 10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
   |---|----|----|----|----|----|---|---|---|---|---|---|---|---|---|---|
-  |0  | 1  | 1  | 1  | B  | B  | B | B | B | B | B | B | B | B | B | B |
+  |0  | 1  | 1  | 0  | B  | B  | B | B | B | B | B | B | B | B | B | B |
 
     B[11:0] : color value to load background color. Once loaded,
     the copper will wait for next row (scanline). Used to add a gradient background to every
     scanline.
 
-8 - 15. Reserved
+7. Wait for N rows
+
+
+  |15 | 14 | 13 | 12 | 11 | 10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+  |---|----|----|----|----|----|---|---|---|---|---|---|---|---|---|---|
+  |0  | 1  | 1  | 1  | x  | x  | N | N | N | N | N | N | N | N | N | N |
+
+    N[9:0] : copper will idle until N rows have passed
+
+8. Wait for N columns
+
+
+  |15 | 14 | 13 | 12 | 11 | 10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+  |---|----|----|----|----|----|---|---|---|---|---|---|---|---|---|---|
+  |1  | 0  | 0  | 0  | x  | x  | N | N | N | N | N | N | N | N | N | N |
+
+    C[9:0] : copper will idle until N columns have passed
+
+9. Register write
+
+  |15 | 14 | 13 | 12 | 11 | 10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+  |---|----|----|----|----|----|---|---|---|---|---|---|---|---|---|---|
+  |1  | 0  | 0  | 1  | A  | A  | A | A | A | A | A | A | A | A | A | A |
+
+    A[11:0] : address of register
+
+    Next word in the copper memory will be the data to write.
+
+
+
+10 - 15. Reserved
 
 
 

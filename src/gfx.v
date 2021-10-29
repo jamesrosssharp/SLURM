@@ -119,6 +119,11 @@ wire [11:0] background_color;
 wire [9:0] display_x_out;
 wire [9:0] display_y_out;
 
+wire [11:0] addr = (COPPER_WR == 1'b1) ? COPPER_ADDRESS : ADDRESS;
+wire WR_sig = (COPPER_WR == 1'b1) ? 1'b1 : WR;
+wire [15:0] data_out_cpr = (COPPER_WR == 1'b1) ? COPPER_DATA_OUT : DATA_IN;
+
+
 gfx_memory_arbiter arb0
 (
 	CLK,
@@ -173,8 +178,8 @@ sprite_controller spcon0
 	CLK,
 	RSTb,
 
-	ADDRESS[9:0],
-	DATA_IN,
+	addr[9:0],
+	data_out_cpr,
 	WR_sprite,
 
 	V_tick,
@@ -196,8 +201,8 @@ background_controller2 #(48, 369, 33, 513) bgcon0
 	CLK,
 	RSTb,
 
-	ADDRESS,
-	DATA_IN,
+	addr,
+	data_out_cpr,
 	WR_bg0,
 
 	V_tick,
@@ -218,8 +223,8 @@ background_controller #(48, 369, 33, 513) bgcon1
 	CLK,
 	RSTb,
 
-	ADDRESS,
-	DATA_IN,
+	addr,
+	data_out_cpr,
 	WR_bg1,
 
 	V_tick,
@@ -239,8 +244,8 @@ copper cpr0 (
 	CLK,
 	RSTb,
 
-	ADDRESS,
-	DATA_IN,
+	addr,
+	data_out_cpr,
 	WR_cpr,
 
 	V_tick,
@@ -322,8 +327,6 @@ begin
 	endcase
 end
 
-wire [11:0] addr = (COPPER_WR == 1'b1) ? COPPER_ADDRESS : ADDRESS;
-wire WR_sig = (COPPER_WR == 1'b1) ? 1'b1 : WR;
 
 always @(*)
 begin
@@ -331,7 +334,6 @@ begin
 	WR_pal = 1'b0;
 	WR_bg0 = 1'b0;
 	WR_bg1 = 1'b0;
-	WR_bg2 = 1'b0;
 	WR_cpr = 1'b0;
 	casex (addr)
 		12'hf00:; 	/* frame count register */ 
