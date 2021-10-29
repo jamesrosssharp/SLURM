@@ -186,7 +186,7 @@ sprite_controller spcon0
 	H_tick,
 
 	x,
-	y,
+	display_y_out,
 	1'b1, 
 	spcon_color_index,
 
@@ -209,7 +209,7 @@ background_controller2 #(48, 369, 33, 513) bgcon0
 	H_tick,
 
 	x,
-	y,
+	display_y_out,
 	1'b1,
 	bg0_color_index,
 	bg0_memory_address,
@@ -231,7 +231,7 @@ background_controller #(48, 369, 33, 513) bgcon1
 	H_tick,
 
 	x,
-	y,
+	display_y_out,
 	1'b1,
 	bg1_color_index,
 	bg1_memory_address,

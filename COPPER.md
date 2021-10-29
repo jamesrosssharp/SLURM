@@ -101,9 +101,30 @@ Instruction Set
 
     Next word in the copper memory will be the data to write.
 
+10. X pan write
+
+  |15 | 14 | 13 | 12 | 11 | 10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+  |---|----|----|----|----|----|---|---|---|---|---|---|---|---|---|---|
+  |1  | 0  | 0  | 1  | x  | x  | P | P | P | P | P | P | P | P | P | P |
+
+    P[9:0] : x pan
+	
+	Short hand to write x panning register
+
+11. X pan write + wait next scanline
+
+  |15 | 14 | 13 | 12 | 11 | 10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+  |---|----|----|----|----|----|---|---|---|---|---|---|---|---|---|---|
+  |1  | 0  | 0  | 1  | x  | x  | P | P | P | P | P | P | P | P | P | P |
+
+    P[9:0] : x pan
+	
+	Short hand to write x panning register and wait for next scanline
 
 
-10 - 15. Reserved
+
+
+12 - 15. Reserved
 
 
 

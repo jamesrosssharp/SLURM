@@ -93,6 +93,52 @@ assign COPPER_DATA_OUT 	= c_dat;
 reg cpr_en;
 reg cpr_en_next;
 
+reg [9:0] y_flip;
+reg [9:0] y_flip_next;
+
+reg y_flip_en;
+reg y_flip_en_next;
+
+reg [9:0] x_pan;
+reg [9:0] x_pan_next;
+reg x_pan_wr;
+
+reg [9:0] display_y_out_r;
+reg [9:0] display_y_out_r_next;
+
+assign display_y_out = display_y_out_r;
+
+reg [9:0] display_x_out_r;
+
+assign display_x_out = display_x_out_r;
+
+// Y flip
+
+always @(*)
+begin
+	if (y_flip_en == 1'b1) begin
+		if (display_y >= y_flip)
+			display_y_out_r_next = y_flip + y_flip - display_y;
+		else
+			display_y_out_r_next = display_y;
+	end else 
+		display_y_out_r_next = display_y;
+end
+
+always @(posedge CLK)
+begin
+	display_y_out_r = display_y_out_r_next;
+end
+
+// X pan
+
+always @(posedge CLK)
+begin
+	display_x_out_r_next <= display_x + x_pan; 
+end
+
+// Copper execution
+
 always @(*)
 begin
 	bg_wr = 1'b0;
@@ -193,15 +239,23 @@ always @(*)
 begin
 	background_color_r_next = background_color_r;
 	copper_list_WR 			= 1'b0;
-	cpr_en_next = cpr_en;
+	cpr_en_next 			= cpr_en;
+	x_pan_next				= x_pan;
+	y_flip_next				= y_flip;
+	y_flip_en_next			= y_flip_en;
 
 	if (WR == 1'b1) begin
 		casex (ADDRESS)
-			12'hd20:	/* copper enable */
+			12'hd20:	/* copper control */
 				cpr_en_next = DATA_IN[0];
-			12'hd21:;	/* copper Y flip */
+			12'hd21: begin	/* copper Y flip */
+				y_flip_next = DATA_IN[9:0];
+				y_flip_en_next = DATA_IN[15];
+			end
 			12'hd22:	/* copper background color */
 				background_color_r_next = DATA_IN[11:0];
+			12'hd23:	/* x pan */
+				x_pan_next = DATA_IN[9:0];
 			12'h4xx, 12'h5xx:  /* copper list memory */
 				copper_list_WR = 1'b1;
 		endcase
@@ -223,7 +277,10 @@ begin
 		c_addr_r <= 12'd0;
 		cpr_en <= 1'b0;
 		c_dat <= 16'h0000;
-		copper_wr_r <= 1'b0;		
+		copper_wr_r <= 1'b0;	
+		y_flip <= 10'd0;
+		x_pan <= 10'd0;
+		y_flip_en <= 1'b0;	
 	end else begin
 		background_color_r <= background_color_r_next;
 		copper_list_pc 	   <= copper_list_pc_next;
@@ -233,6 +290,9 @@ begin
 		cpr_en 			   <= cpr_en_next;
 		c_dat <= c_dat_next;
 		copper_wr_r <= copper_wr_r_next;
+		y_flip <= y_flip_next;
+		x_pan <= x_pan_next;
+		y_flip_en <= y_flip_en_next;
 	end
 end
 

@@ -34,6 +34,8 @@ GFX_BG2_TILESET_ADDR equ 0x1d14
 GFX_CPR_BGCOL equ 0x1d22
 GFX_CPR_LIST  equ 0x1400
 GFX_CPR_ENABLE equ 0x1d20
+GFX_CPR_Y_FLIP  equ 0x1d21
+
 
 		mov r0, the_string
 loop:
@@ -65,9 +67,12 @@ cpr_loop:
 		bnz cpr_loop
 */
 	
+		mov r0, 300 | 1<<15
+		st [GFX_CPR_Y_FLIP], r0
+
 		mov r0, GFX_CPR_LIST
-		mov r1, cpr_list_1
-		mov r2, cpr_list_1_end - cpr_list_1
+		mov r1, cpr_list_3
+		mov r2, cpr_list_3_end - cpr_list_3
 cpr_loop:
 		ld r3, [r1]
 		inc r1
@@ -236,6 +241,73 @@ cpr_list_2:
 		dw 0x2fff		 
 
 cpr_list_2_end:
+
+cpr_list_3:
+		dw 0x6000
+		dw 0x7010
+		dw 0x6100
+		dw 0x7010
+		dw 0x6200
+		dw 0x7010
+		dw 0x6300
+		dw 0x7010
+		dw 0x6400
+		dw 0x7010
+		dw 0x6500
+		dw 0x7010
+		dw 0x6600
+		dw 0x7010
+		dw 0x6700
+		dw 0x7010
+		dw 0x6800
+		dw 0x7010
+		dw 0x6900
+		dw 0x7010
+		dw 0x6a00
+		dw 0x7010
+		dw 0x6b00
+		dw 0x7010
+		dw 0x6c00
+		dw 0x7010
+		dw 0x6d00
+		dw 0x7010
+		dw 0x6e00
+		dw 0x7010
+		dw 0x6f00
+		dw 0x7010
+		dw 0x212c
+		dw 0x6e00
+		dw 0x7010
+		dw 0x6d00
+		dw 0x7010
+		dw 0x6c00
+		dw 0x7010
+		dw 0x6b00
+		dw 0x7010
+		dw 0x6a00
+		dw 0x7010
+		dw 0x6900
+		dw 0x7010
+		dw 0x6800
+		dw 0x7010
+		dw 0x6700
+		dw 0x7010
+		dw 0x6600
+		dw 0x7010
+		dw 0x6500
+		dw 0x7010
+		dw 0x6400
+		dw 0x7010
+		dw 0x6300
+		dw 0x7010
+		dw 0x6200
+		dw 0x7010
+		dw 0x6100
+		dw 0x7010
+		dw 0x6000
+		dw 0x2fff	
+
+cpr_list_3_end:
 
 
 

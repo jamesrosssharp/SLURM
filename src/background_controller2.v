@@ -263,7 +263,7 @@ begin
 						layer_next = 1'b1; 
 					end
 					else 
-						f_state_r_nest = f_idle;
+						f_state_r_next = f_idle;
 				else
 					f_state_r_next 			= f_wait_tile_mem;
 				memory_address_r_next   = tilemap_index_r[16:1]; // word address
