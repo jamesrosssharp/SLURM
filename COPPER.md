@@ -105,7 +105,7 @@ Instruction Set
 
   |15 | 14 | 13 | 12 | 11 | 10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
   |---|----|----|----|----|----|---|---|---|---|---|---|---|---|---|---|
-  |1  | 0  | 0  | 1  | x  | x  | P | P | P | P | P | P | P | P | P | P |
+  |1  | 0  | 1  | 0 | x  | x  | P | P | P | P | P | P | P | P | P | P |
 
     P[9:0] : x pan
 	
@@ -115,12 +115,21 @@ Instruction Set
 
   |15 | 14 | 13 | 12 | 11 | 10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
   |---|----|----|----|----|----|---|---|---|---|---|---|---|---|---|---|
-  |1  | 0  | 0  | 1  | x  | x  | P | P | P | P | P | P | P | P | P | P |
+  |1  | 0  | 1  | 1  | x  | x  | P | P | P | P | P | P | P | P | P | P |
 
     P[9:0] : x pan
 	
 	Short hand to write x panning register and wait for next scanline
 
+12. Load background color register
+
+
+  |15 | 14 | 13 | 12 | 11 | 10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+  |---|----|----|----|----|----|---|---|---|---|---|---|---|---|---|---|
+  |1  | 1  | 0  | 0  | B  | B  | B | B | B | B | B | B | B | B | B | B |
+
+    B[11:0] : color value to load background color. Used to add a gradient background to every
+    scanline.
 
 
 

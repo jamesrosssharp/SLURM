@@ -134,7 +134,7 @@ end
 
 always @(posedge CLK)
 begin
-	display_x_out_r_next <= display_x + x_pan; 
+	display_x_out_r <= display_x + x_pan; 
 end
 
 // Copper execution
@@ -148,6 +148,7 @@ begin
 	copper_wr_r_next = 1'b0;
 	c_addr_r_next = c_addr_r;
 	c_dat_next = c_dat;
+	x_pan_wr = 1'b0;
 
 	if (V_tick == 1'b1) begin
 		c_state_r_next = c_state_begin;
@@ -155,8 +156,10 @@ begin
 	end else begin
 		case (c_state_r)
 			c_state_begin: 
-				if (cpr_en == 1'b1)
+				if (cpr_en == 1'b1) begin
 					c_state_r_next = c_state_execute;
+					copper_list_pc_next = copper_list_pc + 1;
+				end
 			c_state_execute: begin
 				case (copper_list_ins[15:12]) 
 					4'd1: begin /* jump */
@@ -182,7 +185,7 @@ begin
 					end
 					4'd5: begin /* skip H */
 						if (display_x >= copper_list_ins[9:0]) begin
-							copper_list_pc_next = copper_list_pc + 2;
+							copper_list_pc_next = copper_list_pc + 1;
 							c_state_r_next = c_state_begin; // synchronize
 						end
 						else
@@ -206,6 +209,19 @@ begin
 						c_state_r_next = c_state_write_reg;
 						copper_list_pc_next = copper_list_pc + 1;
 						c_addr_r_next = copper_list_ins[11:0];
+					end
+					4'd10: begin /* x pan write */
+						copper_list_pc_next = copper_list_pc + 1;
+						x_pan_wr = 1'b1;
+					end
+					4'd11: begin /* x pan write and v wait next scanline */
+						x_pan_wr = 1'b1;
+						c_state_r_next = c_state_wait_v;
+						v_wait_cnt_next = display_y + 1;	
+					end
+					4'd12: begin /* write background color */
+						bg_wr = 1'b1;
+						copper_list_pc_next = copper_list_pc + 1;
 					end
 					default:
 						copper_list_pc_next = copper_list_pc + 1;
@@ -263,6 +279,9 @@ begin
 
 	if (bg_wr == 1'b1)
 		background_color_r_next = copper_list_ins[11:0];
+
+	if (x_pan_wr == 1'b1)
+		x_pan_next = copper_list_ins[11:0];
 end
 
 // Sequential logic

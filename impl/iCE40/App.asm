@@ -111,6 +111,25 @@ pal_loop2:
 		mov r8, 0
 sprite_loop:
 
+		// Change copper list
+
+		mov r0, GFX_CPR_LIST
+		add r0, start_wave - cpr_list_3
+		ld r1, [wave_phase]
+		add r1, 1
+		and r1, 31
+		st [wave_phase], r1
+		lsr r1
+		mov r2, 16
+wave_loop:
+		ld r4, [r1, wave]
+		st [r0], r4
+		inc r0
+		inc r1
+		sub r2, 1
+		bnz wave_loop
+
+
 		// set up background
 
 		mov r0, 1 | (2<<1) |  (1 << 3) | (1 << 4);
@@ -128,7 +147,7 @@ sprite_loop:
 		ld r0, [bg0_y]
 		st [GFX_BG0_Y], r0
 		st [GFX_BG2_Y], r0
-		add r0, 1
+		//add r0, 1
 		cmp r0, 1600 - 704
 		bs  no_y_gt
 		mov r0, 0
@@ -243,6 +262,7 @@ cpr_list_2:
 cpr_list_2_end:
 
 cpr_list_3:
+		dw 0xb001
 		dw 0x6000
 		dw 0x7010
 		dw 0x6100
@@ -276,41 +296,71 @@ cpr_list_3:
 		dw 0x6f00
 		dw 0x7010
 		dw 0x212c
-		dw 0x6e00
-		dw 0x7010
-		dw 0x6d00
-		dw 0x7010
-		dw 0x6c00
-		dw 0x7010
-		dw 0x6b00
-		dw 0x7010
-		dw 0x6a00
-		dw 0x7010
-		dw 0x6900
-		dw 0x7010
-		dw 0x6800
-		dw 0x7010
-		dw 0x6700
-		dw 0x7010
-		dw 0x6600
-		dw 0x7010
-		dw 0x6500
-		dw 0x7010
-		dw 0x6400
-		dw 0x7010
-		dw 0x6300
-		dw 0x7010
-		dw 0x6200
-		dw 0x7010
-		dw 0x6100
-		dw 0x7010
-		dw 0x6000
-		dw 0x2fff	
+		
+start_mirror:
+		dw 0xc055
+		dw 0x41e0 // skip if v > 480
+		dw 0xc655
+		dw 0x41d0 // skip if v > 384 
+		dw 0xc755
+		dw 0x41c0 
+		dw 0xc855
+		dw 0x41b0 
+		dw 0xc955
+		dw 0x41a0 
+		dw 0xca55
+		dw 0x4190 
+		dw 0xcb55
+		dw 0x4180 
+		dw 0xcc55
+		dw 0x4160 
+		dw 0xcd55
+		dw 0x4140 // skip if v > 320 
+		dw 0xce55
+start_wave:
+		.times 16 dw 0xb000
+		dw 0x1000 | (start_mirror - cpr_list_3) // jump to start mirror
+		dw 0x2fff // wait forever
 
 cpr_list_3_end:
 
+wave:
+dw 0xb001
+	dw 0xb001
+	dw 0xb002
+	dw 0xb002
+	dw 0xb002
+	dw 0xb002
+	dw 0xb002
+	dw 0xb001
+	dw 0xb001
+	dw 0xb001
+	dw 0xb000
+	dw 0xb000
+	dw 0xb000
+	dw 0xb000
+	dw 0xb000
+	dw 0xb001
+	dw 0xb001
+	dw 0xb001
+	dw 0xb002
+	dw 0xb002
+	dw 0xb002
+	dw 0xb002
+	dw 0xb002
+	dw 0xb001
+	dw 0xb001
+	dw 0xb001
+	dw 0xb000
+	dw 0xb000
+	dw 0xb000
+	dw 0xb000
+	dw 0xb000
+	dw 0xb001
+	
 
-
+wave_phase: 
+	dw 0
 
 bg0_x: 
 	dw 0x101
