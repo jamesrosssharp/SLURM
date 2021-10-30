@@ -1,59 +1,3 @@
-		.org 0x2000
-
-UART_TX_REG 	equ 	0x0100
-UART_TX_STATUS 	equ 	0x0101
-
-SPRITE0_X equ 0x1000
-SPRITE0_Y equ 0x1100
-SPRITE0_H equ 0x1200
-SPRITE0_A equ 0x1300
-
-GFX_FRAME equ 0x1f00
-GFX_PAL   equ 0x1e00
-
-N_SPRITES equ 9
-
-GFX_BG0_CONTROL equ 0x1d00
-GFX_BG0_X equ 0x1d01
-GFX_BG0_Y equ 0x1d02
-GFX_BG0_TILEMAP_ADDR equ 0x1d03
-GFX_BG0_TILESET_ADDR equ 0x1d04
-
-GFX_BG1_CONTROL equ 0x1d05
-GFX_BG1_X equ 0x1d06
-GFX_BG1_Y equ 0x1d07
-GFX_BG1_TILEMAP_ADDR equ 0x1d08
-GFX_BG1_TILESET_ADDR equ 0x1d09
-
-GFX_BG2_CONTROL equ 0x1d10
-GFX_BG2_X equ 0x1d11
-GFX_BG2_Y equ 0x1d12
-GFX_BG2_TILEMAP_ADDR equ 0x1d13
-GFX_BG2_TILESET_ADDR equ 0x1d14
-
-GFX_CPR_BGCOL equ 0x1d22
-GFX_CPR_LIST  equ 0x1400
-GFX_CPR_ENABLE equ 0x1d20
-GFX_CPR_Y_FLIP  equ 0x1d21
-
-FB_ADDR equ 0x8000
-
-	// Set up the frame buffer
-
-	// Set up frame buffer palette
-
-
-
-
-// Fire buffer
-	.padto 0x4000
-
-fire_buffer:
-	dw 0
-
-// Plane bitmap
-	.padto 0x8000
-		
 plane:
 	dw 0xc0c
 	dw 0xc0c
@@ -32312,5 +32256,3 @@ plane_palette:
 	dw 0x000
 	dw 0x000
 	dw 0x000
-
-	.end

@@ -186,17 +186,9 @@ begin
 	tilemap_index_r_next 	= tilemap_index_r;
 	memory_address_r_next 	= memory_address_r;
 	cur_tile_next 			= cur_tile;
-	blit_go 				= 1'b0;
 	fetch_count_next		= fetch_count;
 
-	cur_fetchbuffer_next    = cur_fetchbuffer;
-
-	for (i = 0; i < 2; i = i + 1)
-		fetchbuffer_next[i] = fetchbuffer[i];
-	
 	rvalid_r = 1'b0;
-
-	blit_state_r_next = blit_state_r;
 
 	scanline_wr_addr[0] = 8'd0;
 	scanline_wr_addr[1] = 8'd0;
@@ -230,7 +222,6 @@ begin
 
 	active_buffer_next = active_buffer;
 
-	blit_count_next = blit_count;
 
 	cur_render_x_next = cur_render_x;
 
@@ -449,7 +440,6 @@ begin
 		tile_set_address2 <= 16'h0000;	
 		pal_hi2 			 <= 4'd0;
 		active_buffer 	 <= 1'b0;
-		cur_fetchbuffer <= 1'b0;
 		tilemap_index_r  <= 21'd0;
 		memory_address_r <= 16'd0;
 		f_state_r 		 <= f_idle;
@@ -473,7 +463,6 @@ begin
 		tile_set_address2 <= tile_set_address2_next;	
 		pal_hi2 			 <= pal_hi2_next;
 		active_buffer 	 <= active_buffer_next;
-		cur_fetchbuffer <= cur_fetchbuffer_next;
 		tilemap_index_r  <= tilemap_index_r_next;
 		memory_address_r <= memory_address_r_next;
 		f_state_r 		 <= f_state_r_next;
@@ -481,7 +470,6 @@ begin
 		cur_tile		 <= cur_tile_next;
 		fetch_count		<= fetch_count_next;
 		blit_state_r	<= blit_state_r_next;
-		blit_count		<= blit_count_next;
 		color_index_r <= color_index_r_next;
 		color_index2_r <= color_index2_r_next;
 		layer			<= layer_next;

@@ -345,6 +345,10 @@ begin
 			WR_bg1 = WR_sig;
 		12'hd2x:	/* copper registers */
 			WR_cpr = WR_sig;
+		12'hd3x:	/* framebuffer registers */
+
+		12'h6xx:	/* framebuffer palette */
+
 		12'h0xx, 12'h1xx, 12'h2xx, 12'h3xx: /* sprite */
 			WR_sprite = WR_sig;
 		12'h4xx, 12'h5xx:  /* copper list memory */
