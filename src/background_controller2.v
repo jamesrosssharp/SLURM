@@ -240,12 +240,12 @@ begin
 			f_begin: begin
 				tilemap_index_r_next = {tile_map_address, 1'd0} + {3'd0, tilemap_y_disp[10:4], tile_map_x[10:4]}; 
 				f_state_r_next 		 = f_fetch_tile;
-				cur_render_x_next    = 10'd48; 
+				cur_render_x_next    = 10'd32; 
 			end
 			f_begin2: begin
 				tilemap_index_r_next = {tile_map_address2, 1'd0} + {3'd0, tilemap_y_disp[10:4], tile_map_x2[10:4]}; 
 				f_state_r_next 		 = f_fetch_tile;
-				cur_render_x_next    = 10'd48;
+				cur_render_x_next    = 10'd32;
 			end
 			f_fetch_tile: begin
 				if (cur_render_x == 10'd720)

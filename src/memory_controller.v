@@ -311,7 +311,7 @@ gfx #(.BITS(BITS), .BANK_ADDRESS_BITS(14), .ADDRESS_BITS(12)) gfx0
 	.B4_READY(GFX_B4_READY)
 );
 
-audio
+/*audio
 #(.BITS(BITS), .ADDRESS_BITS(8), .CLK_FREQ(CLOCK_FREQ)) aud0
 (
 	CLK,	
@@ -321,7 +321,7 @@ audio
 	DATA_OUT_AUDIO,
 	WR_AUDIO, 
 	PINS[14:11]
-);
+);*/
 
 spi_flash
 #(.BITS(BITS), .ADDRESS_BITS(8), .CLK_FREQ(CLOCK_FREQ)) spi_flash0

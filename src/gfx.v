@@ -107,7 +107,7 @@ reg WR_bg0;
 wire [7:0] bg1_color_index;
 wire [15:0] bg1_memory_address;
 wire [15:0] bg1_memory_data;
-wire bg1_rvalid;
+wire bg1_rvalid = 1'b0;
 wire bg1_rready;
 reg WR_bg1;
 
@@ -122,6 +122,16 @@ wire [9:0] display_y_out;
 wire [11:0] addr = (COPPER_WR == 1'b1) ? COPPER_ADDRESS : ADDRESS;
 wire WR_sig = (COPPER_WR == 1'b1) ? 1'b1 : WR;
 wire [15:0] data_out_cpr = (COPPER_WR == 1'b1) ? COPPER_DATA_OUT : DATA_IN;
+
+reg WR_fb_reg;
+reg WR_fb_pal;
+
+wire [15:0] fb_color;
+
+wire [15:0] fb_memory_address;
+wire [15:0] fb_memory_data;
+wire fb_rvalid;
+wire fb_rready;
 
 
 gfx_memory_arbiter arb0
@@ -147,10 +157,10 @@ gfx_memory_arbiter arb0
 	bg1_rready, 
 
 	/* overlay controller */
-	ov_memory_address,
-	ov_memory_data,
-	ov_rvalid, 
-	ov_rready,  
+	fb_memory_address,
+	fb_memory_data,
+	fb_rvalid, 
+	fb_rready,  
 
 	B1_ADDR,
 	B1_DIN,
@@ -218,6 +228,31 @@ background_controller2 #(48, 369, 33, 513) bgcon0
 	bg0_rready 
 );
 
+fb_scale fb0
+(
+	CLK,
+	RSTb,
+
+	addr[7:0],
+	data_out_cpr,
+	WR_fb_reg,
+	WR_fb_pal,
+
+	V_tick,
+	H_tick,
+	
+	x,
+	y,
+	1'b1,
+	fb_color,
+
+	fb_memory_address,
+	fb_memory_data,
+	fb_rvalid,
+	fb_rready 
+);
+
+/*
 background_controller #(48, 369, 33, 513) bgcon1
 (
 	CLK,
@@ -239,6 +274,7 @@ background_controller #(48, 369, 33, 513) bgcon1
 	bg1_rvalid,
 	bg1_rready 
 );
+*/
 
 copper cpr0 (
 	CLK,
@@ -273,13 +309,13 @@ reg [7:0] color_index_r;
 always @(*)
 begin
 	if (spcon_color_index[3:0] == 4'd0) 
-		 if (bg1_color_index[3:0] == 4'd0)
+		// if (bg1_color_index[3:0] == 4'd0)
 			if (bg0_color_index[3:0] == 4'd0)
 					color_index = 0;
 			else
 				color_index = bg0_color_index;
-		else
-			color_index = bg1_color_index;
+		//else
+		//	color_index = bg1_color_index;
 	else
 		color_index = spcon_color_index;
 end
@@ -302,7 +338,7 @@ begin
 	color_index_r = color_index;
 end
 
-wire [11:0] theColor = color_index_r[3:0] == 4'h0 ? background_color : color;
+wire [11:0] theColor = fb_color; //color_index_r[3:0] == 4'h0 ? background_color : color;
 
 wire DE = (hcount >= H_BACK_PORCH && hcount < (H_BACK_PORCH + H_PIXELS + 32) && vcount >= V_BACK_PORCH && vcount < (V_DISPLAY_LINES + V_BACK_PORCH + 16));
 
@@ -335,6 +371,8 @@ begin
 	WR_bg0 = 1'b0;
 	WR_bg1 = 1'b0;
 	WR_cpr = 1'b0;
+	WR_fb_reg = 1'b0;
+	WR_fb_pal = 1'b0;
 	casex (addr)
 		12'hf00:; 	/* frame count register */ 
 		12'hexx:    /* palette regiser */
@@ -346,9 +384,9 @@ begin
 		12'hd2x:	/* copper registers */
 			WR_cpr = WR_sig;
 		12'hd3x:	/* framebuffer registers */
-
+			WR_fb_reg = WR_sig;
 		12'h6xx:	/* framebuffer palette */
-
+			WR_fb_pal = WR_sig;
 		12'h0xx, 12'h1xx, 12'h2xx, 12'h3xx: /* sprite */
 			WR_sprite = WR_sig;
 		12'h4xx, 12'h5xx:  /* copper list memory */

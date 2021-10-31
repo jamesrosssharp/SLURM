@@ -38,18 +38,73 @@ GFX_CPR_Y_FLIP  equ 0x1d21
 
 FB_ADDR equ 0x8000
 
-	// Set up the frame buffer
+GFX_FB_PAL equ 0x1600
+
+GFX_FB_CONTROL equ 0x1d30
+GFX_FB_X1	   equ 0x1d31
+GFX_FB_Y1	   equ 0x1d32
+GFX_FB_X2	   equ 0x1d33
+GFX_FB_Y2	   equ 0x1d34
+GFX_FB_U1	   equ 0x1d35
+GFX_FB_V1	   equ 0x1d36
+GFX_FB_U2	   equ 0x1d37
+GFX_FB_V2	   equ 0x1d38
+GFX_FB_STRIDE  equ 0x1d39
+GFX_FB_ADDR	   equ 0x1d3a
+GFX_FB_V1_M	   equ 0x1d3b
+GFX_FB_V2_M	   equ 0x1d3c
 
 	// Set up frame buffer palette
 
+	mov r0, 255
+pal_loop:
+	ld r1, [r0, plane_palette]
+	st [r0, GFX_FB_PAL], r1
+	sub r0, 1
+	bns pal_loop			
 
 
+	// Set up the frame buffer
+	mov r0, 100
+	st [GFX_FB_X1], r0
+	mov r0, 100
+	st [GFX_FB_Y1], r0
+	mov r0, 319
+	st [GFX_FB_X2], r0
+	mov r0, 150
+	st [GFX_FB_Y2], r0
+	mov r0, 0
+	st [GFX_FB_U1], r0
+	mov r0, 0
+	st [GFX_FB_V1], r0
+	mov r0, 319
+	st [GFX_FB_U2], r0
+	mov r0, 199
+	st [GFX_FB_V2], r0
+	mov r0, 320
+	st [GFX_FB_STRIDE], r0
+	mov r0, plane
+	st [GFX_FB_ADDR], r0
+	mov r0, 0
+	st [GFX_FB_V1_M], r0
+	mov r0, 199*320
+	st [GFX_FB_V2_M], r0
+
+	mov r0, 1
+	st [GFX_FB_CONTROL], r0
+		
+
+die:
+	ba die
 
 // Fire buffer
 	.padto 0x4000
 
 fire_buffer:
-	dw 0
+	dw 1
+	dw 2
+	dw 3
+	dw 4
 
 // Plane bitmap
 	.padto 0x8000
@@ -32056,7 +32111,16 @@ plane:
 	dw 0xc0c
 	dw 0xc0c
 plane_palette:
-	dw 0xffd
+	dw 0xf00
+	dw 0x0f0
+	dw 0x00f
+	dw 0xff0
+	dw 0x000
+	dw 0xf0f
+	dw 0xfff
+	dw 0x0ff	
+
+//	dw 0xffd
 	dw 0xedb
 	dw 0xff4
 	dw 0xdb9

@@ -7,7 +7,7 @@ always #50 CLK <= !CLK; // ~ 10MHz
 
 reg RSTb = 1'b0;
 
-reg [9:0] ADDRESS;
+reg [7:0] ADDRESS;
 reg [15:0] DATA_IN;
 reg WR_reg = 1'b0;
 reg WR_pal = 1'b0;
@@ -70,10 +70,64 @@ fb_scale fb0
 initial begin 
 	#150 RSTb = 1'b1;
 
-	#100 ADDRESS = 16'h1;
-		 DATA_IN = 16'd160;
+	#100 ADDRESS = 16'h1; // x1
+		 DATA_IN = 16'd24;
 		 WR_reg = 1;
 	#100 WR_reg = 0;
+	#100 ADDRESS = 16'h2; // y1
+		 DATA_IN = 16'd1;
+		 WR_reg = 1;
+	#100 WR_reg = 0;
+	#100 ADDRESS = 16'h3; // x2
+		 DATA_IN = 16'd344;
+		 WR_reg = 1;
+	#100 WR_reg = 0;
+	#100 ADDRESS = 16'h4; // y2
+		 DATA_IN = 16'd2;
+		 WR_reg = 1;
+	#100 WR_reg = 0;
+	#100 ADDRESS = 16'h5; // u1
+		 DATA_IN = 16'd0;
+		 WR_reg = 1;
+	#100 WR_reg = 0;
+	#100 ADDRESS = 16'h6; // v1
+		 DATA_IN = 16'd0;
+		 WR_reg = 1;
+	#100 WR_reg = 0;
+	#100 ADDRESS = 16'h7; // u2
+		 DATA_IN = 16'd320;
+		 WR_reg = 1;
+	#100 WR_reg = 0;
+	#100 ADDRESS = 16'h8; // v2
+		 DATA_IN = 16'd200;
+		 WR_reg = 1;
+	#100 WR_reg = 0;
+	#100 ADDRESS = 16'h9; // stride
+		 DATA_IN = 16'd320; 
+		 WR_reg = 1;
+	#100 WR_reg = 0;
+	#100 ADDRESS = 16'ha; // fb address
+		 DATA_IN = 16'h8000;
+		 WR_reg = 1;
+	#100 WR_reg = 0;
+	#100 ADDRESS = 16'hb; // v1 mult
+		 DATA_IN = 16'd0; // stride
+		 WR_reg = 1;
+	#100 WR_reg = 0;
+	#100 ADDRESS = 16'hc; // v2 mult
+		 DATA_IN = 16'hd64000;
+		 WR_reg = 1;
+	#100 WR_reg = 0;
+
+	// Write palette
+	#100 ADDRESS = 16'h0; 
+		 DATA_IN = 16'h0000;
+		 WR_pal = 1;
+	#100 WR_pal = 0;
+	#100 ADDRESS = 16'h1; 
+		 DATA_IN = 16'hffff;
+		 WR_pal = 1;
+	#100 WR_pal = 0;
 
 end
 

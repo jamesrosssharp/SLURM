@@ -57,8 +57,8 @@ reg 		bg0_rready_r;
 reg [15:0] 	bg1_memory_data_r;
 reg 		bg1_rready_r;
 
-
-
+reg [15:0] 	ov_memory_data_r;
+reg 		ov_rready_r;
 
 assign sprite_rready = sprite_rready_r; 
 assign sprite_memory_data = sprite_memory_data_r;
@@ -68,6 +68,10 @@ assign bg0_memory_data = bg0_memory_data_r;
 
 assign bg1_rready = bg1_rready_r; 
 assign bg1_memory_data = bg1_memory_data_r;
+
+assign ov_rready = ov_rready_r; 
+assign ov_memory_data = ov_memory_data_r;
+
 
 
 reg [13:0]		b1_addr_r;
@@ -98,7 +102,7 @@ localparam s_idle = 3'd0;
 localparam s_grant_sp = 3'd1;
 localparam s_grant_bg0 = 3'd2;
 localparam s_grant_bg1 = 3'd3;
-localparam s_grant_ov  = 3'd5;
+localparam s_grant_ov  = 3'd4;
 
 reg [2:0] state_r_0;
 reg [2:0] state_r_0_next;
@@ -144,6 +148,8 @@ always @(*) begin
 	bg0_rready_r = 1'b0;
 	bg1_memory_data_r = 16'h0000;
 	bg1_rready_r = 1'b0;
+	ov_memory_data_r = 16'h0000;
+	ov_rready_r = 1'b0;
 
 	state_r_0_next = state_r_0;
 	state_r_1_next = state_r_1;
@@ -166,7 +172,12 @@ always @(*) begin
 				b1_addr_r = bg1_memory_address;				
 				b1_valid_r = 1'b1;
 				state_r_0_next = s_grant_bg1;	
-			end  
+			end else
+			if (ov_rvalid == 1'b1 && ov_memory_address[15:14] == 2'b00) begin
+				b1_addr_r = ov_memory_address;				
+				b1_valid_r = 1'b1;
+				state_r_0_next = s_grant_ov;	
+			end 
 		end
 		s_grant_sp: begin
 			b1_addr_r = sprite_memory_address;				
@@ -192,6 +203,14 @@ always @(*) begin
 			bg1_memory_data_r = B1_DOUT;
 			bg1_rready_r = 1'b1;
 		end
+		s_grant_ov: begin
+			b1_addr_r = ov_memory_address;				
+			b1_valid_r = 1'b1;
+			if (ov_rvalid == 1'b0)
+				state_r_0_next = s_idle;
+			ov_memory_data_r = B1_DOUT;
+			ov_rready_r = 1'b1;
+		end
 		default: ;
 	endcase
 
@@ -211,6 +230,11 @@ always @(*) begin
 				b2_addr_r = bg1_memory_address;				
 				b2_valid_r = 1'b1;
 				state_r_1_next = s_grant_bg1;	
+			end
+			if (ov_rvalid == 1'b1 && ov_memory_address[15:14] == 2'b01) begin
+				b2_addr_r = ov_memory_address;				
+				b2_valid_r = 1'b1;
+				state_r_1_next = s_grant_ov;	
 			end
 		end
 		s_grant_sp: begin
@@ -237,6 +261,14 @@ always @(*) begin
 			bg1_memory_data_r = B2_DOUT;
 			bg1_rready_r = 1'b1;
 		end
+		s_grant_ov: begin
+			b2_addr_r = ov_memory_address;				
+			b2_valid_r = 1'b1;
+			if (ov_rvalid == 1'b0)
+				state_r_1_next = s_idle;
+			ov_memory_data_r = B2_DOUT;
+			ov_rready_r = 1'b1;
+		end
 		default: ;
 	endcase
 
@@ -256,6 +288,11 @@ always @(*) begin
 				b3_addr_r = bg1_memory_address;				
 				b3_valid_r = 1'b1;
 				state_r_2_next = s_grant_bg1;	
+			end
+			if (ov_rvalid == 1'b1 && ov_memory_address[15:14] == 2'b10) begin
+				b3_addr_r = ov_memory_address;				
+				b3_valid_r = 1'b1;
+				state_r_2_next = s_grant_ov;	
 			end
 		end
 		s_grant_sp: begin
@@ -282,6 +319,14 @@ always @(*) begin
 			bg1_memory_data_r = B3_DOUT;
 			bg1_rready_r = 1'b1;
 		end
+		s_grant_ov: begin
+			b3_addr_r = ov_memory_address;				
+			b3_valid_r = 1'b1;
+			if (ov_rvalid == 1'b0)
+				state_r_2_next = s_idle;
+			ov_memory_data_r = B3_DOUT;
+			ov_rready_r = 1'b1;
+		end
 		default: ;
 	endcase
 
@@ -301,7 +346,12 @@ always @(*) begin
 				b4_addr_r = bg1_memory_address;				
 				b4_valid_r = 1'b1;
 				state_r_3_next = s_grant_bg1;	
-			end 
+			end
+ 			if (ov_rvalid == 1'b1 && ov_memory_address[15:14] == 2'b11) begin
+				b4_addr_r = ov_memory_address;				
+				b4_valid_r = 1'b1;
+				state_r_3_next = s_grant_ov;	
+			end
 		end
 		s_grant_sp: begin
 			b4_addr_r = sprite_memory_address;				
@@ -326,6 +376,14 @@ always @(*) begin
 				state_r_3_next = s_idle;
 			bg1_memory_data_r = B4_DOUT;
 			bg1_rready_r = 1'b1;
+		end
+		s_grant_ov: begin
+			b4_addr_r = ov_memory_address;				
+			b4_valid_r = 1'b1;
+			if (ov_rvalid == 1'b0)
+				state_r_3_next = s_idle;
+			ov_memory_data_r = B4_DOUT;
+			ov_rready_r = 1'b1;
 		end
 		default: ;
 	endcase 
