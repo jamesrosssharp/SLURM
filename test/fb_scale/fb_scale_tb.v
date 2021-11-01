@@ -71,7 +71,7 @@ initial begin
 	#150 RSTb = 1'b1;
 
 	#100 ADDRESS = 16'h1; // x1
-		 DATA_IN = 16'd24;
+		 DATA_IN = 16'd10;
 		 WR_reg = 1;
 	#100 WR_reg = 0;
 	#100 ADDRESS = 16'h2; // y1
@@ -79,7 +79,7 @@ initial begin
 		 WR_reg = 1;
 	#100 WR_reg = 0;
 	#100 ADDRESS = 16'h3; // x2
-		 DATA_IN = 16'd344;
+		 DATA_IN = 16'd20;
 		 WR_reg = 1;
 	#100 WR_reg = 0;
 	#100 ADDRESS = 16'h4; // y2
@@ -95,11 +95,11 @@ initial begin
 		 WR_reg = 1;
 	#100 WR_reg = 0;
 	#100 ADDRESS = 16'h7; // u2
-		 DATA_IN = 16'd320;
+		 DATA_IN = 16'd20;
 		 WR_reg = 1;
 	#100 WR_reg = 0;
 	#100 ADDRESS = 16'h8; // v2
-		 DATA_IN = 16'd200;
+		 DATA_IN = 16'd2;
 		 WR_reg = 1;
 	#100 WR_reg = 0;
 	#100 ADDRESS = 16'h9; // stride

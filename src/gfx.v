@@ -61,8 +61,17 @@ assign VS = (vcount >= (V_LINES - V_SYNC_PULSE)) ? 1'b0 : 1'b1;
 
 wire frameTick = (hcount == 10'd0 && vcount == 10'd0) ? 1'b1 : 1'b0;
 
-wire V_tick = frameTick;
-wire H_tick = (hcount == 10'd0) ? 1'b1 : 1'b0;
+wire V_tick_next = frameTick;
+wire H_tick_next = (hcount == 10'd0) ? 1'b1 : 1'b0;
+
+reg V_tick;
+reg H_tick;
+
+always @(posedge CLK)
+begin
+	V_tick = V_tick_next;
+	H_tick = H_tick_next;
+end
 
 wire [9:0] x = hcount;
 wire [9:0] y = vcount;
@@ -107,7 +116,7 @@ reg WR_bg0;
 wire [7:0] bg1_color_index;
 wire [15:0] bg1_memory_address;
 wire [15:0] bg1_memory_data;
-wire bg1_rvalid = 1'b0;
+wire bg1_rvalid;
 wire bg1_rready;
 reg WR_bg1;
 
@@ -228,6 +237,7 @@ background_controller2 #(48, 369, 33, 513) bgcon0
 	bg0_rready 
 );
 
+/*
 fb_scale fb0
 (
 	CLK,
@@ -251,8 +261,8 @@ fb_scale fb0
 	fb_rvalid,
 	fb_rready 
 );
+*/
 
-/*
 background_controller #(48, 369, 33, 513) bgcon1
 (
 	CLK,
@@ -274,7 +284,7 @@ background_controller #(48, 369, 33, 513) bgcon1
 	bg1_rvalid,
 	bg1_rready 
 );
-*/
+
 
 copper cpr0 (
 	CLK,
@@ -309,13 +319,13 @@ reg [7:0] color_index_r;
 always @(*)
 begin
 	if (spcon_color_index[3:0] == 4'd0) 
-		// if (bg1_color_index[3:0] == 4'd0)
+		 if (bg1_color_index[3:0] == 4'd0)
 			if (bg0_color_index[3:0] == 4'd0)
 					color_index = 0;
 			else
 				color_index = bg0_color_index;
-		//else
-		//	color_index = bg1_color_index;
+		else
+			color_index = bg1_color_index;
 	else
 		color_index = spcon_color_index;
 end
@@ -338,7 +348,7 @@ begin
 	color_index_r = color_index;
 end
 
-wire [11:0] theColor = fb_color; //color_index_r[3:0] == 4'h0 ? background_color : color;
+wire [11:0] theColor = color_index_r[3:0] == 4'h0 ? fb_color : color;
 
 wire DE = (hcount >= H_BACK_PORCH && hcount < (H_BACK_PORCH + H_PIXELS + 32) && vcount >= V_BACK_PORCH && vcount < (V_DISPLAY_LINES + V_BACK_PORCH + 16));
 

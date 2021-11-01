@@ -123,6 +123,7 @@ localparam r_adjust_y		  = 3'd6;
 localparam r_wait_next_scanline = 3'd7; // Wait for buffer flip before starting next blit
 
 reg [16:0] cur_addr, cur_addr_next;
+reg [16:0] prev_addr, prev_addr_next;
 
 assign memory_address = cur_addr[16:1];
 
@@ -155,10 +156,11 @@ begin
 	r_state_next = r_state;
 	
 	cur_addr_next = cur_addr;
+	prev_addr_next = prev_addr;
 	du_next = du;
 	dv_next = dv;
-	dx_next = du;
-	dy_next = dv;
+	dx_next = dx;
+	dy_next = dy;
 	accu_u_next = accu_u;
 	accu_v_next = accu_v;
 	x_mem_incr_next = x_mem_incr;
@@ -180,7 +182,7 @@ begin
 	scanline_wr_data[1] = 8'h00;	
 
 	scanline_wr_addr[active_buffer] = x;
-	scanline_wr_data[active_buffer] = r_state;
+	//scanline_wr_data[active_buffer] = r_state;
 	scanline_wr[active_buffer] = 1'b0;
 
 	active_buffer_next = active_buffer;
@@ -190,7 +192,7 @@ begin
 
 	case (r_state)
 		r_idle: begin
-			if (H_tick == 1'b1 && display_y[9:1] >= y1 && display_y[9:1] <= y2)
+			if (H_tick == 1'b1 && display_y[9:1] >= y1 && display_y[9:1] < y2)
 				r_state_next = r_begin;
 		end
 		r_begin: begin
@@ -207,12 +209,16 @@ begin
 			end
 
 			// Set horizontal "gradients"
-			if (u1 > u2) begin
+			if (v1 > v2) begin
 				dv_next = {3'd0, v1} - {3'd0, v2};
 				y_mem_incr_next = - {8'd0, stride};
+				cur_addr_next = {fb_address, 1'b0} + {8'd0, u1} + {v2_mult, 1'b0};
+				prev_addr_next = {fb_address, 1'b0} + {8'd0, u1} + {v2_mult, 1'b0};
 			end else begin
 				dv_next = {3'd0, v2} - {3'd0, v1};
 				y_mem_incr_next = {8'd0, stride};
+				cur_addr_next = {fb_address, 1'b0} + {8'd0, u1} + {v1_mult, 1'b0};
+				prev_addr_next = {fb_address, 1'b0} + {8'd0, u1} + {v1_mult, 1'b0};
 			end
 
 			// dx , dy
@@ -227,7 +233,6 @@ begin
 			y_count_next = 1'b0;
 	
 			// Set starting memory offset
-			cur_addr_next = {fb_address, 1'b0} + {8'd0, u1} + {v1_mult, 1'b0};
 			r_state_next = r_fetch;
 		end
 		r_fetch: begin	// 2 cycles
@@ -244,25 +249,34 @@ begin
 			scanline_wr[active_buffer] 		= 1'b1;
 			scanline_wr_data[active_buffer] = cur_texel;
 
+			x_next = x + 1;
 			r_state_next = r_adjust_x;
 			accu_u_next = accu_u + du; 	
 		end
 		r_adjust_x: begin  // N cycles (depends on scale factor)
 			if (accu_u < dx) begin
-				if (x >= x2) begin
+				if (x > x2) begin
 					x_next = x1;
 					r_state_next = r_update_y;
 				end
 				else begin
-					x_next = x + 1;
 					r_state_next = r_fetch;
 				end
+			end
+			else if (accu_u == dx) begin
+				if (x > x2) begin
+					x_next = x1;
+					r_state_next = r_update_y;
+				end
+				else begin
+					r_state_next = r_fetch;
+				end
+				accu_u_next = 12'd0;
+				cur_addr_next = cur_addr + x_mem_incr;
 			end 
 			else begin
 				accu_u_next = accu_u - dx;
 				cur_addr_next = cur_addr + x_mem_incr;
-				r_state_next = r_fetch;
-				x_next = x + 1;
 			end
 		end
 		r_update_y: begin
@@ -279,8 +293,9 @@ begin
 				end
 			end 
 			else begin
+				cur_addr_next = prev_addr + y_mem_incr;
+				prev_addr_next = prev_addr + y_mem_incr;
 				accu_v_next = accu_v - dy;
-				cur_addr_next = cur_addr + y_mem_incr;
 			end
 		end
 		r_wait_next_scanline: begin
@@ -294,7 +309,6 @@ begin
 			end
 		end
 	endcase
-
 end
 
 // Buffer readout
@@ -314,12 +328,12 @@ always @(posedge CLK)
 begin
 	display_x_reg <= display_x;
 
-	/*if (display_x_reg[9:1] >= x1 && display_x_reg[9:1] <= x2 &&
-		display_y[9:1] >= (y1 + 9'd2) && display_y[9:1] <= (y2 + 9'd2) 
-		)*/
+	if (display_x_reg[9:1] >= x1 && display_x_reg[9:1] <= x2 &&
+		display_y[9:1]  >= (y1 + 9'd1) && display_y[9:1]  <= (y2 + 9'd1)  
+		)
 		color_index <= scanline_rd_data[display_buffer];
-	/*else
-		color_index <= 8'h00;*/
+	else
+		color_index <= 8'h00;
 end
 
 // Register interface to CPU
@@ -396,6 +410,7 @@ begin
 		r_state <= r_idle;
 		fb_address <= 16'd0;
 		cur_addr <= 17'd0;
+		prev_addr <= 17'd0;
 		du = 12'd0;
 		dv = 12'd0;
 		dx = 9'd0;
@@ -428,6 +443,7 @@ begin
 		dx <= dx_next;
 		dy <= dy_next;
 		cur_addr <= cur_addr_next;
+		prev_addr <= prev_addr_next;
 		accu_u <= accu_u_next;
 		accu_v <= accu_v_next;
 		x_mem_incr <= x_mem_incr_next;
