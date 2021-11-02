@@ -237,8 +237,8 @@ background_controller2 #(48, 369, 33, 513) bgcon0
 	bg0_rready 
 );
 
-/*
-fb_scale fb0
+
+fb_doubler fb0
 (
 	CLK,
 	RSTb,
@@ -261,7 +261,7 @@ fb_scale fb0
 	fb_rvalid,
 	fb_rready 
 );
-*/
+
 
 background_controller #(48, 369, 33, 513) bgcon1
 (

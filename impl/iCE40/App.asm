@@ -72,7 +72,7 @@ pal_loop:
 	st [GFX_FB_Y1], r0
 	mov r0, 344
 	st [GFX_FB_X2], r0
-	mov r0, 255
+	mov r0, 214
 	st [GFX_FB_Y2], r0
 	mov r0, 0
 	st [GFX_FB_U1], r0
@@ -93,7 +93,7 @@ pal_loop:
 	mov r0, 1
 	st [GFX_FB_CONTROL], r0
 
-	//ba die
+	ba die
 
 	mov r1, 120
 	mov r2, 220
