@@ -30,12 +30,23 @@ module copper (
 	// Copper can modulate x and y coordinates to e.g. flip or pan the whole display
 	// Individual layers can be panned with each core's pan registers
 	output [9:0]  display_x_out,
-	output [9:0]  display_y_out
+	output [9:0]  display_y_out,
+
+	output alpha_override_out,
+	output [3:0] alpha_out
 
 );
 
 reg [11:0] background_color_r;
 reg [11:0] background_color_r_next;
+
+reg alpha_override;
+reg alpha_override_next;
+
+reg [3:0] alpha, alpha_next;
+
+assign alpha_override_out = alpha_override;
+assign alpha_out = alpha;
 
 assign background_color = background_color_r;
 
@@ -260,6 +271,9 @@ begin
 	y_flip_next				= y_flip;
 	y_flip_en_next			= y_flip_en;
 
+	alpha_override_next		= alpha_override;
+	alpha_next				= alpha;
+
 	if (WR == 1'b1) begin
 		casex (ADDRESS)
 			12'hd20:	/* copper control */
@@ -272,6 +286,10 @@ begin
 				background_color_r_next = DATA_IN[11:0];
 			12'hd23:	/* x pan */
 				x_pan_next = DATA_IN[9:0];
+			12'hd24: begin	/* alpha override */
+				alpha_override_next = DATA_IN[15];
+				alpha_next = DATA_IN[3:0];
+			end
 			12'h4xx, 12'h5xx:  /* copper list memory */
 				copper_list_WR = 1'b1;
 		endcase
@@ -299,7 +317,9 @@ begin
 		copper_wr_r <= 1'b0;	
 		y_flip <= 10'd0;
 		x_pan <= 10'd0;
-		y_flip_en <= 1'b0;	
+		y_flip_en <= 1'b0;
+		alpha_override <= 1'b0;
+		alpha <= 4'd0;	
 	end else begin
 		background_color_r <= background_color_r_next;
 		copper_list_pc 	   <= copper_list_pc_next;
@@ -312,6 +332,8 @@ begin
 		y_flip <= y_flip_next;
 		x_pan <= x_pan_next;
 		y_flip_en <= y_flip_en_next;
+		alpha_override <= alpha_override_next;
+		alpha <= alpha_next;
 	end
 end
 

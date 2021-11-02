@@ -31,10 +31,11 @@ GFX_BG2_Y equ 0x1d12
 GFX_BG2_TILEMAP_ADDR equ 0x1d13
 GFX_BG2_TILESET_ADDR equ 0x1d14
 
-GFX_CPR_BGCOL equ 0x1d22
-GFX_CPR_LIST  equ 0x1400
+GFX_CPR_BGCOL  equ 0x1d22
+GFX_CPR_LIST   equ 0x1400
 GFX_CPR_ENABLE equ 0x1d20
-GFX_CPR_Y_FLIP  equ 0x1d21
+GFX_CPR_Y_FLIP equ 0x1d21
+GFX_CPR_ALPHA  equ 0x1d24
 
 FB_ADDR equ 0x8000
 
@@ -45,14 +46,8 @@ GFX_FB_X1	   equ 0x1d31
 GFX_FB_Y1	   equ 0x1d32
 GFX_FB_X2	   equ 0x1d33
 GFX_FB_Y2	   equ 0x1d34
-GFX_FB_U1	   equ 0x1d35
-GFX_FB_V1	   equ 0x1d36
-GFX_FB_U2	   equ 0x1d37
-GFX_FB_V2	   equ 0x1d38
 GFX_FB_STRIDE  equ 0x1d39
 GFX_FB_ADDR	   equ 0x1d3a
-GFX_FB_V1_M	   equ 0x1d3b
-GFX_FB_V2_M	   equ 0x1d3c
 
 	// Set up frame buffer palette
 
@@ -62,6 +57,11 @@ pal_loop:
 	st [r0, GFX_FB_PAL], r1
 	sub r0, 1
 	bns pal_loop			
+
+	mov r0, 0xfff
+	st  [GFX_CPR_BGCOL], r0
+
+	mov r10, 0
 
 	mov r8, 0
 
@@ -74,26 +74,14 @@ pal_loop:
 	st [GFX_FB_X2], r0
 	mov r0, 214
 	st [GFX_FB_Y2], r0
-	mov r0, 0
-	st [GFX_FB_U1], r0
-	mov r0, 0
-	st [GFX_FB_V1], r0
-	mov r0, 319
-	st [GFX_FB_U2], r0
-	mov r0, 199
-	st [GFX_FB_V2], r0
 	mov r0, 320
 	st [GFX_FB_STRIDE], r0
 	mov r0, plane
 	st [GFX_FB_ADDR], r0
-	mov r0, 0
-	st [GFX_FB_V1_M], r0
-	mov r0, 199*320
-	st [GFX_FB_V2_M], r0
 	mov r0, 1
 	st [GFX_FB_CONTROL], r0
 
-	ba die
+//	ba die
 
 	mov r1, 120
 	mov r2, 220
@@ -101,7 +89,7 @@ pal_loop:
 	mov r5, 170
 	mov r3, 0
 sprite_loop:		
-	st [GFX_FB_X1], r1
+/*	st [GFX_FB_X1], r1
 	st [GFX_FB_X2], r2
 	st [GFX_FB_Y1], r4
 	st [GFX_FB_Y2], r5
@@ -131,6 +119,21 @@ subby:
 	nop
 	mov r3, 1
 done_addy:
+*/
+	
+	mov r1, r10
+	asr r1
+	asr r1
+	asr r1
+
+
+	or r1, 0x8000
+	st  [GFX_CPR_ALPHA], r1
+
+	add r10, 1
+	cmp r10, 0x7f
+	bnz wait_frame
+	mov r10, 0
 
 wait_frame:
 	ld r7, [GFX_FRAME]
@@ -32168,20 +32171,20 @@ plane_palette:
 	dw 0xfff
 	dw 0x0ff	
 */
-	dw 0xffd
-	dw 0xedb
-	dw 0xff4
-	dw 0xdb9
-	dw 0xaab
-	dw 0xb97
-	dw 0xf82
-	dw 0xa76
-	dw 0x955
-	dw 0x733
-	dw 0x633
-	dw 0x522
-	dw 0x223
-	dw 0x80a
+	dw 0xcffd
+	dw 0xcedb
+	dw 0xcff4
+	dw 0xcdb9
+	dw 0xcaab
+	dw 0xcb97
+	dw 0xcf82
+	dw 0xca76
+	dw 0xc955
+	dw 0xc733
+	dw 0xc633
+	dw 0xc522
+	dw 0xc223
+	dw 0xc80a
 	dw 0x000
 	dw 0x000
 	dw 0x000

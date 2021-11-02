@@ -142,6 +142,9 @@ wire [15:0] fb_memory_data;
 wire fb_rvalid;
 wire fb_rready;
 
+wire alpha_override_out;
+wire [3:0] alpha_out;
+
 
 gfx_memory_arbiter arb0
 (
@@ -307,7 +310,10 @@ copper cpr0 (
 	background_color,	
 
 	display_x_out,
-	display_y_out
+	display_y_out,
+
+	alpha_override_out,
+	alpha_out
 );
 
 wire [11:0] color;
@@ -348,13 +354,41 @@ begin
 	color_index_r = color_index;
 end
 
-wire [11:0] theColor = color_index_r[3:0] == 4'h0 ? fb_color : color;
+wire [11:0] theColor = color_index_r[3:0] == 4'h0 ? background_color : color;
+
+wire [3:0] rout;
+wire [3:0] bout;
+wire [3:0] gout;
+
+reg [3:0] rout_r;
+reg [3:0] bout_r;
+reg [3:0] gout_r;
+
+alpha a0 (
+	theColor[11:8],
+	theColor[7:4],
+	theColor[3:0],
+	fb_color[11:8],
+	fb_color[7:4],
+	fb_color[3:0],
+	alpha_override_out ? alpha_out : fb_color[15:12],
+	rout,
+	bout,
+	gout
+);
+
+always @(posedge CLK)
+begin
+	rout_r <= rout;
+	bout_r <= gout;
+	gout_r <= bout;
+end
 
 wire DE = (hcount >= H_BACK_PORCH && hcount < (H_BACK_PORCH + H_PIXELS + 32) && vcount >= V_BACK_PORCH && vcount < (V_DISPLAY_LINES + V_BACK_PORCH + 16));
 
-assign RR = DE ? theColor[11:8]  : 4'b0000;
-assign GG = DE ? theColor[7:4]  : 4'b0000;
-assign BB = DE ? theColor[3:0] : 4'b0000;
+assign RR = DE ? rout_r  : 4'b0000;
+assign GG = DE ? gout_r  : 4'b0000;
+assign BB = DE ? bout_r  : 4'b0000;
 
 // Memory interface
 
