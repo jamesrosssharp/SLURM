@@ -9,6 +9,7 @@ SPRITE0_H equ 0x1200
 SPRITE0_A equ 0x1300
 
 GFX_FRAME equ 0x1f00
+GFX_Y equ 0x1f01
 GFX_PAL   equ 0x1e00
 
 N_SPRITES equ 9
@@ -47,6 +48,7 @@ GFX_FB_Y2	   equ 0x1d34
 GFX_FB_STRIDE  equ 0x1d39
 GFX_FB_ADDR	   equ 0x1d3a
 
+GFX_COLLISION_LIST equ 0x1700
 
 
 		mov r0, the_string
@@ -94,7 +96,7 @@ cpr_loop:
 		bnz cpr_loop
 
 		mov r0, 0x1
-		st [GFX_CPR_ENABLE], r0
+		//st [GFX_CPR_ENABLE], r0
 
 
 		mov r0, GFX_PAL + 1
@@ -128,6 +130,9 @@ pal_loop2:
 		mov r10, 0
 		mov r8, 0
 sprite_loop:
+		mov r0, 0xfff
+		st [GFX_CPR_BGCOL], r0
+
 
 		// Change copper list
 
@@ -258,6 +263,20 @@ no_pal:
 
 		add r10, 1
 
+		// Wait until rendering is finished and read out collision data
+
+wait_y:
+		ld r7, [GFX_Y]
+		cmp r7, 480
+		bnz wait_y
+
+		//ld r1, [GFX_COLLISION_LIST]
+		//or r1,r1
+		//bz wait_frame
+
+		mov r0, 0x000f
+		st [GFX_CPR_BGCOL], r0
+
 wait_frame:
 		ld r7, [GFX_FRAME]
 		cmp r8, r7
@@ -337,7 +356,7 @@ cpr_list_3:
 		dw 0x9d24
 		dw 0x8008
 start_mirror:
-		dw 0xcf00
+		dw 0xc600
 	//	dw 0x41e0 // skip if v > 480
 	//	dw 0xc655
 		dw 0x41d0 // skip if v > 384 
