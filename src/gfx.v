@@ -342,8 +342,8 @@ bram #(.BITS(12), .ADDRESS_BITS(8)) pal0  (
 	color_index,
 	color,
 	
-	ADDRESS[7:0],
-	DATA_IN[11:0],
+	addr[7:0],
+	data_out_cpr[11:0],
 	WR_pal  
 );
 

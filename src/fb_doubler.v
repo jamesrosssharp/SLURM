@@ -128,8 +128,6 @@ begin
 	
 	cur_addr_next = cur_addr;
 	prev_addr_next = prev_addr;
-	dx_next = dx;
-	dy_next = dy;
 	x_mem_incr_next = x_mem_incr;
 	y_mem_incr_next = y_mem_incr;
 	cur_texel_next  = cur_texel;
@@ -169,8 +167,6 @@ begin
 				r_state_next = r_begin;
 		end
 		r_begin: begin
-			accu_u_next = 12'd0;
-			accu_v_next = 12'd0;
 
 			// Set horizontal "gradients"
 		
@@ -293,8 +289,6 @@ begin
 		x2 <= 9'd0;
 		y1 <= 9'd0;
 		y2 <= 9'd0;
-		v1_mult <= 16'd0;
-		v2_mult <= 16'd0;
 		stride <= 9'd0;
 		r_state <= r_idle;
 		fb_address <= 16'd0;

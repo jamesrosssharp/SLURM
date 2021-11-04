@@ -131,12 +131,17 @@ Instruction Set
     B[11:0] : color value to load background color. Used to add a gradient background to every
     scanline.
 
+13. Load alpha register
+
+
+  |15 | 14 | 13 | 12 | 11 | 10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+  |---|----|----|----|----|----|---|---|---|---|---|---|---|---|---|---|
+  |1  | 1  | 0  | 1  | A  | A  | A | A | A | A | A | A | A | A | A | A |
+
+    A[11:0] : alpha 
+
 
 
 12 - 15. Reserved
-
-
-
-
 
 

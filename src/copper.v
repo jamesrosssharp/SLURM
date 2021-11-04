@@ -45,6 +45,8 @@ reg alpha_override_next;
 
 reg [3:0] alpha, alpha_next;
 
+reg alpha_wr;
+
 assign alpha_override_out = alpha_override;
 assign alpha_out = alpha;
 
@@ -160,7 +162,8 @@ begin
 	c_addr_r_next = c_addr_r;
 	c_dat_next = c_dat;
 	x_pan_wr = 1'b0;
-
+	alpha_wr = 1'b0;
+	
 	if (V_tick == 1'b1) begin
 		c_state_r_next = c_state_begin;
 		copper_list_pc_next = 9'd0;		
@@ -234,6 +237,10 @@ begin
 						bg_wr = 1'b1;
 						copper_list_pc_next = copper_list_pc + 1;
 					end
+					4'd13: begin /* write alpha */
+						alpha_wr = 1'b1;
+						copper_list_pc_next = copper_list_pc + 1;
+					end
 					default:
 						copper_list_pc_next = copper_list_pc + 1;
 				endcase
@@ -300,6 +307,9 @@ begin
 
 	if (x_pan_wr == 1'b1)
 		x_pan_next = copper_list_ins[11:0];
+
+	if (alpha_wr == 1'b1)
+		alpha_next = copper_list_ins[3:0];
 end
 
 // Sequential logic

@@ -65,7 +65,7 @@ test_loop:
 
 die:
 /*
-		mov r0, 0xf0f
+		mov r0, 0xfff
 		st [GFX_CPR_BGCOL], r0
 
 		mov r0, GFX_CPR_LIST
@@ -122,7 +122,7 @@ pal_loop2:
 		sub r2, 1
 		bnz pal_loop2
 
-		mov r0, 0x0000
+		mov r0, 0x088f
 		st [GFX_FB_PAL], r0
 
 		mov r10, 0
@@ -151,9 +151,9 @@ wave_loop:
 		st [GFX_FB_X1], r0
 		mov r0, 24
 		st [GFX_FB_Y1], r0
-		mov r0, 100
+		mov r0, 25
 		st [GFX_FB_X2], r0
-		mov r0, 50
+		mov r0, 25
 		st [GFX_FB_Y2], r0
 		mov r0, 256
 		st [GFX_FB_STRIDE], r0
@@ -161,8 +161,8 @@ wave_loop:
 		st [GFX_FB_ADDR], r0
 		mov r0, 1
 		st [GFX_FB_CONTROL], r0
-		//mov r0, 0x8002
-		//st [GFX_CPR_ALPHA], r0
+		mov r0, 0x8002
+		st [GFX_CPR_ALPHA], r0
 
 		// set up background
 
@@ -298,11 +298,13 @@ cpr_list_2:
 cpr_list_2_end:
 
 cpr_list_3:
+		dw 0x9d24
+		dw 0x8000
 		dw 0xb001
 		dw 0x6000
 		dw 0x7010
-		dw 0x6100
-		dw 0x7010
+		//dw 0x6100
+		//dw 0x7010
 		dw 0x6200
 		dw 0x7010
 		dw 0x6300
@@ -332,26 +334,28 @@ cpr_list_3:
 		dw 0x6f00
 		dw 0x7010
 		dw 0x212c
+		dw 0x9d24
+		dw 0x8008
 start_mirror:
-		dw 0xc055
-		dw 0x41e0 // skip if v > 480
-		dw 0xc655
+		dw 0xcf00
+	//	dw 0x41e0 // skip if v > 480
+	//	dw 0xc655
 		dw 0x41d0 // skip if v > 384 
-		dw 0xc755
+		dw 0xc700
 		dw 0x41c0 
-		dw 0xc855
+		dw 0xc800
 		dw 0x41b0 
-		dw 0xc955
+		dw 0xc900
 		dw 0x41a0 
-		dw 0xca55
+		dw 0xca00
 		dw 0x4190 
-		dw 0xcb55
+		dw 0xcb00
 		dw 0x4180 
-		dw 0xcc55
+		dw 0xcc00
 		dw 0x4160 
-		dw 0xcd55
+		dw 0xcd00
 		dw 0x4140 // skip if v > 320 
-		dw 0xce55
+		dw 0xce00
 start_wave:
 		.times 16 dw 0xb000
 		dw 0x1000 | (start_mirror - cpr_list_3) // jump to start mirror
@@ -33305,6 +33309,6 @@ tilemap_BG3:
 	dw 0xf2a
 
 frame_buffer:
-	.times 320*100 dw 0x0102
+	.times 320*10 dw 0x0102
 
 	.end
