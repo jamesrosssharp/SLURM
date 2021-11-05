@@ -10,7 +10,7 @@ SOURCE = $(SRCDIR)/pipeline16.v $(SRCDIR)/slurm16.v $(SRCDIR)/alu.v $(SRCDIR)/re
 		 $(SRCDIR)/uart.v $(SRCDIR)/uart_tx.v $(SRCDIR)/baudgen.v $(SRCDIR)/gpio.v pwm_led.v $(SRCDIR)/gfx.v  memory.v rom.v slurm16_ice40.v	\
 		 $(SRCDIR)/pacman_sprite.v $(SRCDIR)/pacman_sprite_rom.v $(SRCDIR)/audio.v $(SRCDIR)/spi_flash.v \
 		 $(SRCDIR)/sprite_controller.v $(SRCDIR)/bram.v $(SRCDIR)/gfx_memory_arbiter.v $(SRCDIR)/background_controller.v $(SRCDIR)/background_controller2.v	\
-		 $(SRCDIR)/copper.v $(SRCDIR)/fb_doubler.v $(SRCDIR)/alpha.v mult.v $(SRCDIR)/bram_mask.v 
+		 $(SRCDIR)/copper.v $(SRCDIR)/fb_doubler.v $(SRCDIR)/alpha.v mult.v bram_mask.v 
  
  
 

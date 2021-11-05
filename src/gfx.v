@@ -100,6 +100,8 @@ wire [15:0] spcon_memory_address;
 wire [15:0] spcon_memory_data;
 wire spcon_rvalid;
 wire  spcon_rready;
+wire [15:0] spcon_collision_data;
+
 
 wire [15:0] ov_memory_address;
 wire [15:0] ov_memory_data;
@@ -215,7 +217,9 @@ sprite_controller spcon0
 	spcon_memory_address,
 	spcon_memory_data,
 	spcon_rvalid, 
-	spcon_rready
+	spcon_rready,
+
+	spcon_collision_data
 );
 
 background_controller2 #(48, 369, 33, 513) bgcon0
@@ -404,6 +408,10 @@ begin
 	casex (ADDRESS)
 		12'hf00:	/* frame count register */
 			dout_r = frameCount;
+		12'hf01:	/* display y register */
+			dout_r[9:0] = y;
+		12'h7xx:	/* collision read out */
+			dout_r = spcon_collision_data;
 	endcase
 end
 
@@ -419,6 +427,7 @@ begin
 	WR_fb_pal = 1'b0;
 	casex (addr)
 		12'hf00:; 	/* frame count register */ 
+		12'hf01:;   /* display y register */
 		12'hexx:    /* palette regiser */
 			WR_pal = WR_sig;
 		12'hd0x:    /* bg0 */
@@ -431,6 +440,7 @@ begin
 			WR_fb_reg = WR_sig;
 		12'h6xx:	/* framebuffer palette */
 			WR_fb_pal = WR_sig;
+		12'h7xx:	; /* collision read out */ 
 		12'h0xx, 12'h1xx, 12'h2xx, 12'h3xx: /* sprite */
 			WR_sprite = WR_sig;
 		12'h4xx, 12'h5xx:  /* copper list memory */

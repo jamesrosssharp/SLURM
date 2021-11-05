@@ -12,7 +12,7 @@ GFX_FRAME equ 0x1f00
 GFX_Y equ 0x1f01
 GFX_PAL   equ 0x1e00
 
-N_SPRITES equ 9
+N_SPRITES equ 2
 
 GFX_BG0_CONTROL equ 0x1d00
 GFX_BG0_X equ 0x1d01
@@ -81,8 +81,8 @@ cpr_loop:
 		bnz cpr_loop
 */
 	
-		mov r0, 300 | 1<<15
-		st [GFX_CPR_Y_FLIP], r0
+//		mov r0, 300 | 1<<15
+//		st [GFX_CPR_Y_FLIP], r0
 
 		mov r0, GFX_CPR_LIST
 		mov r1, cpr_list_3
@@ -267,15 +267,26 @@ no_pal:
 
 wait_y:
 		ld r7, [GFX_Y]
-		cmp r7, 480
-		bnz wait_y
+		cmp r7, 420
+		bs wait_y
 
-		//ld r1, [GFX_COLLISION_LIST]
-		//or r1,r1
-		//bz wait_frame
+		mov r0, GFX_COLLISION_LIST
+		mov r2, N_SPRITES
+//check_col:
+//		ld r1, [r0]
+//		or r1,r1
+//		bnz ch_bg
+//		inc r0
+//		sub r2, 1
+//		bnz check_col
+//		ba wait_frame
+//ch_bg:
 
-		mov r0, 0x000f
-		st [GFX_CPR_BGCOL], r0
+		ld r1, [r0,1]
+		or r1, r1
+		bz wait_frame
+		mov r1, 0x00f
+		st [GFX_CPR_BGCOL], r1
 
 wait_frame:
 		ld r7, [GFX_FRAME]
@@ -432,17 +443,17 @@ the_string:
 spr0:
 	dw 100	// X
 	dw 340  // Y
-	dw 1    // vX
+	dw 0    // vX
 	dw 0    // vY
 	dw pacman_sprite_sheet   // frame 0
 	dw pacman_sprite_sheet + 4 // frame 1
 	dw pacman_sprite_sheet + 8 // frame 2
 	dw pacman_sprite_sheet + 4 // frame 3
 spr1:
-	dw 400
 	dw 100
-	dw 1
-	dw 1
+	dw 345
+	dw 0
+	dw 0
 	dw pacman_sprite_sheet + (16 * 5 * 64) + 12
 	dw  pacman_sprite_sheet + (16 * 5 * 64) + 8
 	dw  pacman_sprite_sheet + (16 * 5 * 64) + 12

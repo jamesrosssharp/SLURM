@@ -30,8 +30,9 @@ module sprite_controller
 	output [15:0] memory_address,
 	input  [15:0] memory_data,
 	output rvalid, // memory address valid
-	input  rready  // memory data valid
+	input  rready,  // memory data valid
 
+	output [15:0] collision_list_data
 );
 
 
@@ -185,6 +186,52 @@ begin:	scanline_buffers bram #(.BITS(8), .ADDRESS_BITS(10)) br_inst
 end
 endgenerate
 
+// Instantiate sprite collision double buffers
+
+reg [9:0]  collision_rd_addr[1:0];
+reg [9:0]  collision_wr_addr[1:0];
+wire [7:0] collision_rd_data[1:0];
+reg [7:0]  collision_wr_data[1:0];
+
+reg collision_wr[1:0];
+reg active_cbuffer;
+wire display_cbuffer = !active_cbuffer;
+reg active_cbuffer_next;
+
+wire [7:0] collision_wr_data_act = collision_wr_data[active_cbuffer];
+
+generate 
+for (j = 0; j < 2; j = j + 1)
+begin:	collision_buffers bram #(.BITS(4), .ADDRESS_BITS(10)) coll_br_inst
+(
+	CLK,
+	collision_rd_addr[j],
+	collision_rd_data[j],
+	collision_wr_addr[j],
+	collision_wr_data[j],
+	collision_wr[j]
+);
+end
+endgenerate
+
+// Collision ram
+
+reg [7:0]  collision_list_wr_addr;
+reg [15:0] collision_list_mask_r;
+reg collision_list_wr;
+
+reg [15:0] collision_wr_list_data;
+
+bram_mask #(.BITS(16), .ADDRESS_BITS(8)) bm0
+(
+	CLK,
+	ADDRESS[7:0],
+	collision_list_data,
+	collision_list_wr_addr,
+	collision_wr_list_data,
+	collision_list_wr,  
+	collision_list_mask_r
+);
 
 // Memory write
 
@@ -257,6 +304,8 @@ assign rvalid = rvalid_r;
 reg [15:0] cur_sprite_data;
 reg [15:0] cur_sprite_data_next;
 
+
+// Render process
 
 always @(*)
 begin
@@ -415,6 +464,108 @@ begin
 	end
 end
 
+// Collision process
+
+reg [9:0] cur_collision_x, cur_collision_x_next;
+
+integer k;
+
+task collision_check;
+begin
+	if (collision_rd_data[active_cbuffer] != 4'hf) begin
+		collision_wr_list_data = 16'hffff;
+		collision_list_mask_r[collision_rd_data[active_cbuffer]] = 1'b0;
+		collision_list_wr = 1'b1;
+	end
+end
+endtask
+
+always @(*)
+begin
+	cur_collision_x_next = cur_collision_x;
+
+	collision_list_wr 	  = 1'b0; 
+	collision_list_mask_r = 16'hffff;
+	collision_list_wr_addr = cur_sprite_r;
+	collision_wr_list_data = 16'h0000;
+
+	collision_wr_addr[0] = 10'd0;
+	collision_wr_addr[1] = 10'd0;
+
+	collision_wr[0] 		= 1'b0;
+	collision_wr[1] 		= 1'b0;
+
+	collision_wr_data[0] = 8'h00;	
+	collision_wr_data[1] = 8'h00;	
+
+	collision_wr_addr[active_cbuffer] = cur_sprite_x;
+	collision_wr[active_cbuffer] 	  = 1'b0;
+	collision_wr_data[active_cbuffer] = cur_sprite_r[7:4];	
+
+	// Clear display buffer as it is read		
+	collision_wr[display_cbuffer] 	  = 1'b1;
+	collision_wr_addr[display_cbuffer] = display_x - 1;
+	collision_wr_data[display_cbuffer] = 4'hf; // sprite class 15 (sprites 240 - 255) cannot collide	
+
+	collision_rd_addr[0]  = 10'd0;
+ 	collision_rd_addr[1]  = 10'd0;
+
+	collision_rd_addr[active_cbuffer] = cur_collision_x;
+
+	active_cbuffer_next = active_cbuffer;
+
+	if (H_tick == 1'b1)
+	begin
+		active_cbuffer_next = display_cbuffer;
+	end
+	else begin
+		case (r_state)
+			r_idle: ;
+			r_begin: ;
+			r_load_sprite_regs: begin
+				cur_collision_x_next = xram_out[9:0];
+			end
+			r_load_mem_addr: begin
+			end
+			r_wait_mem_0: begin
+			end
+			r_wait_mem_1: begin
+				if (rready == 1'b1) 
+					cur_collision_x_next = cur_collision_x + 1;
+			end	
+			r_blit_0: begin
+				collision_check();
+				cur_collision_x_next = cur_collision_x + 1;
+				collision_wr[active_cbuffer] = 1'b1;
+			end	
+			r_blit_1: begin
+				collision_check();
+				cur_collision_x_next = cur_collision_x + 1;
+				collision_wr[active_cbuffer] = 1'b1;
+			end
+			r_blit_2: begin
+				collision_check();
+				cur_collision_x_next = cur_collision_x + 1;
+				collision_wr[active_cbuffer] = 1'b1;
+			end
+			r_blit_3: begin
+				collision_check();
+				cur_collision_x_next = cur_collision_x + 1;
+				collision_wr[active_cbuffer] = 1'b1;
+			end
+			r_finish: begin
+			end
+			default: ;
+		endcase
+	end
+
+	if (display_y == 10'd0) begin
+		collision_list_wr 	  = 1'b1; 
+		collision_list_mask_r = 16'h0000;
+		collision_list_wr_addr = display_x[7:0];
+		collision_wr_list_data = 16'h0000;
+	end
+end
 
 // Read out scanline buffer
 
@@ -434,6 +585,7 @@ always @(posedge CLK)
 begin
 	if (RSTb == 1'b0) begin
 		active_buffer <= 1'b0;
+		active_cbuffer <= 1'b0;
 		r_state 	  <= r_idle;
 		cur_sprite_r  <= 8'd0;
 		cur_sprite_x  <= 10'd0; 
@@ -442,8 +594,10 @@ begin
 		cur_sprite_x_count <= 7'd0; 
 		sprite_addr_r <= 16'd0;
 		cur_sprite_data <= 16'd0;
+		cur_collision_x <= 10'd0;
 	end else begin
 		active_buffer <= active_buffer_next;
+		active_cbuffer <= active_cbuffer_next;
 		r_state 	  <= r_state_next;
 		cur_sprite_r  <= cur_sprite_r_next;
 		cur_sprite_x  <= cur_sprite_x_next; 
@@ -452,6 +606,7 @@ begin
 		cur_sprite_x_count <= cur_sprite_x_count_next; 
 		sprite_addr_r <= sprite_addr_r_next;
 		cur_sprite_data <= cur_sprite_data_next;
+		cur_collision_x <= cur_collision_x_next;
 	end
 end
 

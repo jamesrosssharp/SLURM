@@ -1,7 +1,8 @@
 
 SRCDIR=../../src
 
-SOURCE=$(SRCDIR)/sprite_controller.v $(SRCDIR)/bram.v 
+SOURCE=$(SRCDIR)/sprite_controller.v $(SRCDIR)/bram.v $(SRCDIR)/bram_mask.v 
+ 
 
 PROJECT=sprite_test
 
@@ -12,7 +13,7 @@ all: sim
 sim: $(SOURCE) $(PROJECT)_tb.v
 	iverilog -o $(PROJECT)_design -D SIM -Winfloop $(PROJECT)_tb.v $(SOURCE)
 	vvp      -n $(PROJECT)_design
-	gtkwave   $(PROJECT).vcd config.gtkw 
+	gtkwave   dump.vcd config.gtkw 
 
 clean: 
 	rm $(PROJECT)_design

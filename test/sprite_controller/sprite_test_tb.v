@@ -30,6 +30,8 @@ reg [15:0] memory_data = 16'haa55;
 wire rvalid;
 wire rready = rvalid;
 
+wire [15:0] collision_list_data;
+
 sprite_controller con0
 (
     CLK,
@@ -50,7 +52,8 @@ sprite_controller con0
     memory_address,
     memory_data,
     rvalid, 
-    rready 
+    rready,
+	collision_list_data
 );
 
 initial begin 
@@ -69,15 +72,15 @@ initial begin
 		 WR = 1;
 	#100 WR = 0;
 	// Sprite channel 1
-	#100 ADDRESS = 16'h1;
-		 DATA_IN = 16'h0010 | 16'h0400 | 16'h3800;
+	#100 ADDRESS = 16'hf;
+		 DATA_IN = 16'h003 | 16'h0400 | 16'h3800;
 		 WR = 1;
 	#100 WR = 0;
-	#100 ADDRESS = 16'h101;
+	#100 ADDRESS = 16'h10f;
 		 DATA_IN = 16'h0002 | 16'hfc00;
 		 WR = 1;
 	#100 WR = 0;
-	#100 ADDRESS = 10'h201;
+	#100 ADDRESS = 10'h20f;
 		 DATA_IN = 16'h0012;
 		 WR = 1;
 	#100 WR = 0;
@@ -94,10 +97,8 @@ initial begin
 		 DATA_IN = 16'h0012;
 		 WR = 1;
 	#100 WR = 0;
-	
-	
-	
-
+	//
+	#100 ADDRESS = 10'h000f;	
 end
 
 always @(posedge CLK)
@@ -120,6 +121,11 @@ initial begin
     $dumpfile("sprite_test.vcd");
     $dumpvars(0, sprite_tb);
 	# 10000000 $finish;
+end
+
+genvar j;
+for (j = 0; j < 256; j = j + 1) begin
+    initial $dumpvars(0, con0.bm0.RAM[j]);
 end
 
 endmodule
