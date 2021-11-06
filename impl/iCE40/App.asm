@@ -81,8 +81,8 @@ cpr_loop:
 		bnz cpr_loop
 */
 	
-//		mov r0, 300 | 1<<15
-//		st [GFX_CPR_Y_FLIP], r0
+		mov r0, 300 | 1<<15
+		//st [GFX_CPR_Y_FLIP], r0
 
 		mov r0, GFX_CPR_LIST
 		mov r1, cpr_list_3
@@ -96,7 +96,7 @@ cpr_loop:
 		bnz cpr_loop
 
 		mov r0, 0x1
-		//st [GFX_CPR_ENABLE], r0
+		st [GFX_CPR_ENABLE], r0
 
 
 		mov r0, GFX_PAL + 1
@@ -130,8 +130,8 @@ pal_loop2:
 		mov r10, 0
 		mov r8, 0
 sprite_loop:
-		mov r0, 0xfff
-		st [GFX_CPR_BGCOL], r0
+		//mov r0, 0xfff
+		//st [GFX_CPR_BGCOL], r0
 
 
 		// Change copper list
@@ -449,7 +449,7 @@ the_string:
 
 spr0:
 	dw 400	// X
-	dw 340  // Y
+	dw 240  // Y
 	dw 0    // vX
 	dw 0    // vY
 	dw pacman_sprite_sheet   // frame 0
@@ -458,7 +458,7 @@ spr0:
 	dw pacman_sprite_sheet + 4 // frame 3
 spr1:
 	dw 100
-	dw 340
+	dw 240
 	dw 1
 	dw 0
 	dw pacman_sprite_sheet + (16 * 5 * 64) + 12

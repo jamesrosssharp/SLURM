@@ -566,7 +566,6 @@ begin
 			r_blit_3: begin
 				if (cur_sprite_data[15:12] != 4'b000)
 					collision_check();
-				cur_collision_x_next = cur_collision_x + 1;
 				collision_wr[active_cbuffer] = cur_sprite_data[15:12] != 4'b000;
 			end
 			r_finish: begin
