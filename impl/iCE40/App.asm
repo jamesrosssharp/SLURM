@@ -12,7 +12,7 @@ GFX_FRAME equ 0x1f00
 GFX_Y equ 0x1f01
 GFX_PAL   equ 0x1e00
 
-N_SPRITES equ 2
+N_SPRITES equ 9
 
 GFX_BG0_CONTROL equ 0x1d00
 GFX_BG0_X equ 0x1d01
@@ -270,23 +270,22 @@ wait_y:
 		cmp r7, 420
 		bs wait_y
 
-		mov r0, GFX_COLLISION_LIST
-		mov r2, N_SPRITES
-//check_col:
-//		ld r1, [r0]
-//		or r1,r1
-//		bnz ch_bg
-//		inc r0
-//		sub r2, 1
-//		bnz check_col
-//		ba wait_frame
-//ch_bg:
+		mov r3, 5
+coll_outer:
 
-		ld r1, [r0,1]
-		or r1, r1
-		bz wait_frame
-		mov r1, 0x00f
+		mov r2, N_SPRITES - 1
+
+coll_loop:
+		ld r1, [r2,GFX_COLLISION_LIST]
+		lsl r1
+		lsl r1
+		lsl r1
 		st [GFX_CPR_BGCOL], r1
+		sub r2, 1
+		bnz coll_loop
+
+		sub r3, 1
+		bnz coll_outer
 
 wait_frame:
 		ld r7, [GFX_FRAME]

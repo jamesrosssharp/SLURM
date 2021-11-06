@@ -120,7 +120,7 @@ reg  [7:0] INPUT_PINS = 8'h00;
 initial begin
     $dumpfile("sprite_test.vcd");
     $dumpvars(0, sprite_tb);
-	# 10000000 $finish;
+	# 100000000 $finish;
 end
 
 genvar j;
