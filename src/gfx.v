@@ -219,6 +219,7 @@ sprite_controller spcon0
 	spcon_rvalid, 
 	spcon_rready,
 
+	ADDRESS[7:0],
 	spcon_collision_data
 );
 
@@ -402,10 +403,18 @@ assign DATA_OUT = dout_r;
 
 // Memory read
 
+reg [ADDRESS_BITS - 1:0] addr_r;
+
+always @(posedge CLK)
+begin
+	addr_r = ADDRESS;
+end
+
+
 always @(*)
 begin
 	dout_r = {BITS{1'b0}};
-	casex (ADDRESS)
+	casex (addr_r)
 		12'hf00:	/* frame count register */
 			dout_r = frameCount;
 		12'hf01:	/* display y register */

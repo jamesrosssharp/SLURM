@@ -267,25 +267,33 @@ no_pal:
 
 wait_y:
 		ld r7, [GFX_Y]
-		cmp r7, 420
+		cmp r7, 500
 		bs wait_y
 
-		mov r3, 5
-coll_outer:
 
-		mov r2, N_SPRITES - 1
+		mov r2, N_SPRITES
 
 coll_loop:
-		ld r1, [r2,GFX_COLLISION_LIST]
-		lsl r1
-		lsl r1
-		lsl r1
-		st [GFX_CPR_BGCOL], r1
+		mov r0, r2
+		sub r0, 1
+		ld r1, [r0,GFX_COLLISION_LIST + 1]
+		or r1, r1
+		bz next
+
+		lsl r0
+		lsl r0
+		lsl r0	// r0 = sprite structure
+		mov r3, 320
+		st [r0, spr0], r3
+		mov r3, 240
+		st [r0, spr0 + 1], r3	
+
+
+next:
 		sub r2, 1
 		bnz coll_loop
 
-		sub r3, 1
-		bnz coll_outer
+		ba wait_frame
 
 wait_frame:
 		ld r7, [GFX_FRAME]
@@ -440,7 +448,7 @@ the_string:
 	dw 0
 
 spr0:
-	dw 100	// X
+	dw 400	// X
 	dw 340  // Y
 	dw 0    // vX
 	dw 0    // vY
@@ -450,8 +458,8 @@ spr0:
 	dw pacman_sprite_sheet + 4 // frame 3
 spr1:
 	dw 100
-	dw 345
-	dw 0
+	dw 340
+	dw 1
 	dw 0
 	dw pacman_sprite_sheet + (16 * 5 * 64) + 12
 	dw  pacman_sprite_sheet + (16 * 5 * 64) + 8

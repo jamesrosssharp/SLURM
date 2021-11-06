@@ -32,6 +32,7 @@ module sprite_controller
 	output rvalid, // memory address valid
 	input  rready,  // memory data valid
 
+	input [7:0] collision_list_address,
 	output [15:0] collision_list_data
 );
 
@@ -170,7 +171,7 @@ reg active_buffer;
 wire display_buffer = !active_buffer;
 reg active_buffer_next;
 
-//assign color_index = scanline_rd_data[display_buffer];
+assign color_index = scanline_rd_data[display_buffer];
 
 generate 
 for (j = 0; j < 2; j = j + 1)
@@ -190,15 +191,15 @@ endgenerate
 
 reg [9:0]  collision_rd_addr[1:0];
 reg [9:0]  collision_wr_addr[1:0];
-wire [4:0] collision_rd_data[1:0];
-reg [4:0]  collision_wr_data[1:0];
+wire [3:0] collision_rd_data[1:0];
+reg [3:0]  collision_wr_data[1:0];
 
 reg collision_wr[1:0];
 reg active_cbuffer;
 wire display_cbuffer = !active_cbuffer;
 reg active_cbuffer_next;
 
-wire [4:0] collision_wr_data_act = collision_wr_data[active_cbuffer];
+wire [3:0] collision_wr_data_act = collision_wr_data[active_cbuffer];
 
 //assign color_index = collision_rd_data[display_buffer];
 
@@ -227,7 +228,7 @@ reg [15:0] collision_wr_list_data;
 wire [15:0] collision_list_data_w;
 assign collision_list_data = collision_list_data_w; //{8'h00, ADDRESS[7:0]};
 
-wire [7:0] collision_list_rd_addr = ADDRESS[7:0];
+wire [7:0] collision_list_rd_addr = collision_list_address;
 
 bram_mask #(.BITS(16), .ADDRESS_BITS(8)) bm0
 (
@@ -240,7 +241,7 @@ bram_mask #(.BITS(16), .ADDRESS_BITS(8)) bm0
 	collision_list_mask_r
 );
 
-assign color_index = collision_list_data_w;
+//assign color_index = collision_list_data_w;
 
 // Memory write
 
@@ -545,22 +546,26 @@ begin
 					cur_collision_x_next = cur_collision_x + 1;
 			end	
 			r_blit_0: begin
-				collision_check();
+				if (cur_sprite_data[3:0] != 4'b000)
+					collision_check();
 				cur_collision_x_next = cur_collision_x + 1;
 				collision_wr[active_cbuffer] = cur_sprite_data[3:0] != 4'b000;
 			end	
 			r_blit_1: begin
-				collision_check();
+				if (cur_sprite_data[7:4] != 4'b000)
+					collision_check();
 				cur_collision_x_next = cur_collision_x + 1;
 				collision_wr[active_cbuffer] = cur_sprite_data[7:4] != 4'b000;
 			end
 			r_blit_2: begin
-				collision_check();
+				if (cur_sprite_data[11:8] != 4'b000)
+					collision_check();
 				cur_collision_x_next = cur_collision_x + 1;
 				collision_wr[active_cbuffer] = cur_sprite_data[11:8] != 4'b000;
 			end
 			r_blit_3: begin
-				collision_check();
+				if (cur_sprite_data[15:12] != 4'b000)
+					collision_check();
 				cur_collision_x_next = cur_collision_x + 1;
 				collision_wr[active_cbuffer] = cur_sprite_data[15:12] != 4'b000;
 			end

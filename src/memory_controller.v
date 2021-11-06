@@ -162,11 +162,8 @@ begin
 		16'h01xx, 16'h02xx, 16'h03xx, 16'h04xx, 16'h05xx: begin
 			DATA_OUT_REG = dout;
 		end
-		16'h17xx: begin /* read out collision list (it's a block ram) */
+		16'h1xxx: begin /* gfx reads are already delayed by one cycle */ 
 			DATA_OUT_REG = DATA_OUT_GFX;
-		end
-		16'h1xxx: begin
-			DATA_OUT_REG = dout;
 		end
 		16'b00xxxxxxxxxxxxxx: begin
 			DATA_OUT_REG = DATA_OUT_HIRAM;
