@@ -56,28 +56,45 @@ reg [ADDRESS_BITS - 1 : 0] addr_reg;
 
 wire [ADDRESS_BITS - 3 : 0] GFX_B1_ADDR;
 wire [BITS - 1 : 0] 		GFX_B1_DIN;
-wire						GFX_B1_VALID;
-wire						GFX_B1_READY;
+wire						GFX_B1_REQ;
+wire [BITS - 1 : 0] 		GFX_B1_DOUT;
+wire						GFX_B1_WR;
 
 wire [ADDRESS_BITS - 3 : 0] GFX_B2_ADDR;
 wire [BITS - 1 : 0] 		GFX_B2_DIN;
-wire						GFX_B2_VALID;
-wire						GFX_B2_READY;
+wire						GFX_B2_REQ;
+wire [BITS - 1 : 0] 		GFX_B2_DOUT;
+wire						GFX_B2_WR;
 
 wire [ADDRESS_BITS - 3 : 0] GFX_B3_ADDR;
 wire [BITS - 1 : 0]			GFX_B3_DIN;
-wire						GFX_B3_VALID;
-wire						GFX_B3_READY;
+wire						GFX_B3_REQ;
+wire [BITS - 1 : 0] 		GFX_B3_DOUT;
+wire						GFX_B3_WR;
 
 wire [ADDRESS_BITS - 3 : 0] GFX_B4_ADDR;
 wire [BITS - 1 : 0]			GFX_B4_DIN;
-wire						GFX_B4_VALID;
-wire						GFX_B4_READY;
+wire						GFX_B4_REQ;
+wire [BITS - 1 : 0] 		GFX_B4_DOUT;
+wire						GFX_B4_WR;
 
 assign GFX_B1_DIN = DATA_OUT_HIRAM;
 assign GFX_B2_DIN = DATA_OUT_HIRAM2;
 assign GFX_B3_DIN = DATA_OUT_HIRAM3;
 assign GFX_B4_DIN = DATA_OUT_HIRAM4;
+
+/* busy signal from memory */
+wire B1_BUSY;
+wire B2_BUSY;
+wire B3_BUSY;
+wire B4_BUSY;
+
+wire spi_flash_wvalid;
+wire spi_flash_wready;
+wire [15:0] spi_flash_memory_address;
+wire [15:0] spi_flash_memory_data;
+
+reg busy_r, busy_r_next;
 
 always @(posedge CLK)
 begin
@@ -197,9 +214,11 @@ memory #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 2)) theRam
 	DATA_IN,
 	DATA_OUT_HIRAM,
 	WR_HIRAM,
+	B1_BUSY,	/* Busy handshake to CPU */
 	GFX_B1_ADDR,
-	GFX_B1_VALID,
-	GFX_B1_READY
+	GFX_B1_REQ,
+	GFX_B1_DOUT,
+	GFX_B1_WR
 );
 
 memory #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 2)) theRam2
@@ -209,9 +228,11 @@ memory #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 2)) theRam2
 	DATA_IN,
 	DATA_OUT_HIRAM2,
 	WR_HIRAM2,
+	B2_BUSY,
 	GFX_B2_ADDR,
-	GFX_B2_VALID,
-	GFX_B2_READY
+	GFX_B2_REQ,
+	GFX_B2_DOUT,
+	GFX_B2_WR
 );
 
 memory #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 2)) theRam3
@@ -221,9 +242,11 @@ memory #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 2)) theRam3
 	DATA_IN,
 	DATA_OUT_HIRAM3,
 	WR_HIRAM3,
+	B3_BUSY,
 	GFX_B3_ADDR,
-	GFX_B3_VALID,
-	GFX_B3_READY
+	GFX_B3_REQ,
+	GFX_B3_DOUT,
+	GFX_B3_WR
 );
 
 memory #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 2)) theRam4
@@ -233,9 +256,11 @@ memory #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 2)) theRam4
 	DATA_IN,
 	DATA_OUT_HIRAM4,
 	WR_HIRAM4,
+	B4_BUST,
 	GFX_B4_ADDR,
-	GFX_B4_VALID,
-	GFX_B4_READY
+	GFX_B4_REQ,
+	GFX_B4_DOUT,
+	GFX_B4_WR
 );
 
 uart 
@@ -249,7 +274,6 @@ uart
 	WR_UART,  // write memory  
 	PINS[15]   // UART output   
 );
-
 
 gpio
 #(.CLK_FREQ(CLOCK_FREQ), .BITS(BITS)) g0
@@ -295,20 +319,28 @@ gfx #(.BITS(BITS), .BANK_ADDRESS_BITS(14), .ADDRESS_BITS(12)) gfx0
 	.GG(PINS[27:24]),
 	.B1_ADDR(GFX_B1_ADDR),
 	.B1_DIN(GFX_B1_DIN),
-	.B1_VALID(GFX_B1_VALID),
-	.B1_READY(GFX_B1_READY),
+	.B1_REQ(GFX_B1_REQ),
+	.B1_DOUT(GFX_B1_DOUT),
+	.B1_WR(GFX_B1_WR),
 	.B2_ADDR(GFX_B2_ADDR),
 	.B2_DIN(GFX_B2_DIN),
-	.B2_VALID(GFX_B2_VALID),
-	.B2_READY(GFX_B2_READY),
+	.B2_REQ(GFX_B2_REQ),
+	.B2_DOUT(GFX_B2_DOUT),
+	.B2_WR(GFX_B2_WR),
 	.B3_ADDR(GFX_B3_ADDR),
 	.B3_DIN(GFX_B3_DIN),
-	.B3_VALID(GFX_B3_VALID),
-	.B3_READY(GFX_B3_READY),
+	.B3_REQ(GFX_B3_REQ),
+	.B3_DOUT(GFX_B3_DOUT),
+	.B3_WR(GFX_B3_WR),
 	.B4_ADDR(GFX_B4_ADDR),
 	.B4_DIN(GFX_B4_DIN),
-	.B4_VALID(GFX_B4_VALID),
-	.B4_READY(GFX_B4_READY)
+	.B4_REQ(GFX_B4_REQ),
+	.B4_DOUT(GFX_B4_DOUT),
+	.B4_WR(GFX_B4_WR),
+	.flash_dma_rrvalid(spi_flash_wvalid),
+	.flash_dma_rready(spi_flash_wready),
+	.flash_dma_address(spi_flash_memory_address),
+	.flash_dma_data(spi_flash_memory_data)
 );
 
 /*audio
@@ -335,7 +367,11 @@ spi_flash
 	PINS[4],
 	INPUT_PINS[7],
 	PINS[5],
-	PINS[6]
+	PINS[6],
+	spi_flash_wvalid,
+	spi_flash_wready,
+	spi_flash_memory_address,
+	spi_flash_memory_data
 );
 
 

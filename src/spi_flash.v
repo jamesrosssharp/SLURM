@@ -1,6 +1,5 @@
 /*
- *
- *	Place holder for SPI master IP on iCE40 (overridden in impl)
+ *	SPI flash with DMA
  *
  */
 
@@ -16,8 +15,18 @@ module spi_flash
  	output MOSI,
 	input MISO,
 	output SCK,
-	output CSb
+	output CSb,
+
+	// DMA memory write port
+
+	output wvalid,
+	input  wready,
+	output [15:0] memory_address,
+	output [15:0] memory_data
+
 );
+
+assign wvalid = 1'b0;
 
 localparam idle 	= 3'b000;
 localparam send_cmd = 3'b001;
@@ -42,6 +51,14 @@ reg [2:0] tick_counter_r;
 reg [2:0] tick_counter_r_next;
 reg [4:0] bit_counter_r;
 reg [4:0] bit_counter_r_next;
+
+reg [15:0] dma_memory_address_r;
+reg [15:0] dma_memory_address_r_next;
+
+reg [15:0] dma_count_r;
+reg [15:0] dma_count_r_next;
+
+
 
 reg MOSI_r;
 assign MOSI = MOSI_r;
@@ -83,6 +100,8 @@ begin
 		bit_counter_r  <= 5'd0;
 		serialOut_r	   <= 24'd0;
 		SCK_r		   <= 1'b0;
+		dma_memory_address_r <= 16'h0000;
+		dma_count_r			 <= 16'h0000;
 	end else begin
 		address_lo_r  <= address_lo_r_next;
 		address_hi_r  <= address_hi_r_next;
@@ -95,6 +114,8 @@ begin
 		tick_counter_r <= tick_counter_r_next;
 		bit_counter_r  <= bit_counter_r_next;
 		SCK_r		  <= SCK_r_next;
+		dma_memory_address_r <= dma_memory_address_r_next;
+		dma_count_r			 <= dma_count_r_next;
 	end
 end
 
@@ -106,14 +127,17 @@ begin
 	go_r_next = 1'b0;
 	wake_r_next = 1'b0;
 
+	dma_memory_address_r_next = dma_memory_address_r;
+	dma_count_r_next 		  = dma_count_r;
+
 	dout_r = {BITS{1'b0}};
 
 	case (ADDRESS)
-		4'h0:	/* Address lo reg */
+		4'h0:	/* Flash Address lo reg */
 			if (WR == 1'b1) begin
 				address_lo_r_next = DATA_IN;
 			end
-		4'h1: /* Address hi reg */
+		4'h1: /* Flash Address hi reg */
 			if (WR == 1'b1) begin
 				address_hi_r_next = DATA_IN;
 			end
@@ -126,6 +150,10 @@ begin
 			dout_r = {data_out_r[7:0], data_out_r[15:8]};
 		4'h4: /* Status bits reg */
 			dout_r = {15'd0, done_r};
+		4'h5:  /* DMA memory address */
+			dma_memory_address_r_next = dma_memory_address_r;
+		4'h6:  /* DMA transfer count (16-bit words) */
+			dma_count_r_next = dma_count_r;
 		default:;
 	endcase
 end

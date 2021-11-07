@@ -17,24 +17,34 @@ module gfx #(parameter BITS = 16, parameter BANK_ADDRESS_BITS = 14, parameter AD
 
 	output [BANK_ADDRESS_BITS - 1 : 0] B1_ADDR,
 	input  [BITS - 1 : 0] B1_DIN,
-	output B1_VALID,
-	input  B1_READY,
+	output B1_REQ,
+	output [BITS - 1 : 0] B1_DOUT,
+	output B1_WR,
 
 	output [BANK_ADDRESS_BITS - 1 : 0] B2_ADDR,
 	input  [BITS - 1 : 0] B2_DIN,
-	output B2_VALID,
-	input  B2_READY,
+	output B2_REQ,
+	output [BITS - 1 : 0] B2_DOUT,
+	output B2_WR,
 
 	output [BANK_ADDRESS_BITS - 1 : 0] B3_ADDR,
 	input  [BITS - 1 : 0] B3_DIN,
-	output B3_VALID,
-	input  B3_READY,
+	output B3_REQ,
+	output [BITS - 1 : 0] B3_DOUT,
+	output B3_WR,
 
 	output [BANK_ADDRESS_BITS - 1 : 0] B4_ADDR,
 	input  [BITS - 1 : 0] B4_DIN,
-	output B4_VALID,
-	input  B4_READY
+	output B4_REQ,
+	output [BITS - 1 : 0] B4_DOUT,
+	output B4_WR,
 
+	// DMA port from spi flash controller
+
+	input flash_dma_rrvalid,
+	output flash_dma_rready,
+	input [15:0] flash_dma_address,
+	input [15:0] flash_dma_data
 );
 
 
@@ -176,25 +186,36 @@ gfx_memory_arbiter arb0
 	fb_rvalid, 
 	fb_rready,  
 
+	/* spi flash controller */
+	flash_dma_address,
+	flash_dma_data,
+	flash_dma_rrvalid,
+	flash_dma_rready,
+
 	B1_ADDR,
 	B1_DIN,
-	B1_VALID,
-	B1_READY,
+	B1_REQ,
+	B1_DOUT,
+	B1_WR,
 
 	B2_ADDR,
 	B2_DIN,
-	B2_VALID,
-	B2_READY,
+	B2_REQ,
+	B2_DOUT,
+	B2_WR,
 
 	B3_ADDR,
 	B3_DIN,
-	B3_VALID,
-	B3_READY,
+	B3_REQ,
+	B3_DOUT,
+	B3_WR,
 
 	B4_ADDR,
 	B4_DIN,
-	B4_VALID,
-	B4_READY
+	B4_REQ,
+	B4_DOUT,
+	B4_WR
+
 );
 
 sprite_controller spcon0

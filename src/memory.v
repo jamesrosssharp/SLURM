@@ -8,10 +8,13 @@ module memory
 	input [BITS - 1 : 0] DATA_IN,
 	output [BITS - 1 : 0] DATA_OUT,
 	input WR,  /* write memory */  
+	output BUSY,
 
 	input [ADDRESS_BITS - 1 : 0] GFX_ADDRESS,
-	input GFX_VALID,
-	output GFX_READY
+	input GFX_REQ,
+	input [BITS - 1 : 0] GFX_DATA_IN,
+	input GFX_WR
+
 );
 
 reg [BITS - 1:0] RAM [(1 << ADDRESS_BITS) - 1:0];
@@ -19,17 +22,18 @@ reg [BITS - 1:0] dout;
 
 assign DATA_OUT = dout;
 
-reg ready;
-
-assign GFX_READY = ready;
+reg busy_r;
+assign BUSY = busy_r;
 
 always @(posedge CLK)
 begin
-	if (GFX_VALID == 1'b1) begin
-			dout <= RAM[GFX_ADDRESS];
-			ready <= 1'b1;
+	if (GFX_REQ == 1'b1) begin
+		dout <= RAM[GFX_ADDRESS];
+		if (GFX_WR == 1'b1)
+			RAM[GFX_ADDRESS] <= GFX_DATA_IN;	
+		busy_r = 1'b1;
 	end else begin
-		ready <= 1'b0;
+		busy_r = 1'b0;
 		if (WR == 1'b1)
 			RAM[ADDRESS] <= DATA_IN;
 		dout <= RAM[ADDRESS];
