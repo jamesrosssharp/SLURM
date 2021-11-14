@@ -1,3 +1,15 @@
+/*
+ *
+ *	slurm16 pipeline
+ *
+ *  NB: Memory contentions are not handled very well. The CPU won't load / execute a corrupt instruction from memory if
+ *  the memory is in use, but read / writes could have unexpected consequences. The best solution is to use the uppermost
+ *  32kB of RAM as the instruction memory, and the lower 3 banks as gfx / audio memory, which are written to using flash DMA,
+ *  or, not used by gfx core when written to by CPU.
+ *
+ *
+ */
+
 module 
 pipeline16
 (
@@ -150,6 +162,8 @@ reg [2:0] stall_count_r_next;
 
 wire partial_pipeline_stall_r = (stall_count_r > 1);
 
+reg BUSY_r;
+
 always @(posedge CLK)
 begin
 	if (RSTb == 1'b0) begin
@@ -179,6 +193,7 @@ begin
 		flagsModifiedStage3_r		 <= 1'b0;
 		memory_op_r 				 <= 1'b0;
 		stall_count_r				 <= 3'b000;
+		BUSY_r						 <= 1'b0;
 	end
 	else begin
 		pc_r <= pc_r_next;
@@ -207,6 +222,7 @@ begin
 		flagsModifiedStage3_r	<= flagsModifiedStage2_r;
 		stall_count_r				 <= stall_count_r_next;
 		memory_op_r <= memory_op_r_next;
+		BUSY_r	<= BUSY;
 	end
 end
 
@@ -487,7 +503,11 @@ end
 
 always @(*)
 begin
-	pipelineStage0_r_next = (memory_op_r == 1'b1) ? NOP_INSTRUCTION : memoryIn;
+	if (memory_op_r == 1'b1 || BUSY == 1'b1 || BUSY_r == 1'b1) 
+		pipelineStage0_r_next = NOP_INSTRUCTION;
+	else
+		pipelineStage0_r_next = memoryIn;
+
 	pipelineStage1_r_next = pipelineStage0_r;
 	pipelineStage2_r_next = pipelineStage1_r;
 	pipelineStage3_r_next = pipelineStage2_r;
@@ -558,7 +578,7 @@ begin
 	pc_r_next = pc_r + 1;
 	pc_r_prev_next = pc_r;
 	
-	if (partial_pipeline_stall_r == 1'b1) begin
+	if (partial_pipeline_stall_r == 1'b1 || BUSY == 1'b1) begin
 		pc_r_next = pc_r_prev;
 		pc_r_prev_next = pc_r_prev;
 	end else begin

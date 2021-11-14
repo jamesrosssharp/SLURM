@@ -21,8 +21,6 @@ module memory_controller
 	input [7:0] INPUT_PINS /* input pins */
 );
 
-/* memory is never busy for now */
-assign memBUSY = 1'b0;
 
 reg WR_HIRAM;
 reg WR_HIRAM2;
@@ -95,15 +93,18 @@ wire [15:0] spi_flash_memory_address;
 wire [15:0] spi_flash_memory_data;
 
 reg busy_r, busy_r_next;
+assign 	memBUSY = busy_r;
 
 always @(posedge CLK)
 begin
 	if (RSTb == 1'b0) begin
-		dout <= {BITS{1'b0}};
+		dout 	 <= {BITS{1'b0}};
 		addr_reg <= {ADDRESS_BITS{1'b0}};
+		busy_r 	 <= 1'b0;
 	end else begin
-		dout <= dout_next;
+		dout 	 <= dout_next;
 		addr_reg <= ADDRESS;
+		busy_r 	 <= busy_r_next;
 	end
 end
 
@@ -125,6 +126,7 @@ begin
 	WR_SPI   = 1'b0;
 
 	dout_next = dout;
+	busy_r_next = 1'b0;
 
 	casex (ADDRESS)
 		16'h010x: begin
@@ -153,15 +155,19 @@ begin
 		end
 		16'b00xxxxxxxxxxxxxx: begin
 			WR_HIRAM = memWR;
+			busy_r_next = B1_BUSY;
 		end
 		16'b01xxxxxxxxxxxxxx: begin
 			WR_HIRAM2 = memWR;
+			busy_r_next = B2_BUSY;
 		end
 		16'b10xxxxxxxxxxxxxx: begin
 			WR_HIRAM3 = memWR;
+			busy_r_next = B3_BUSY;
 		end
 		16'b11xxxxxxxxxxxxxx: begin
 			WR_HIRAM4 = memWR;
+			busy_r_next = B4_BUSY;
 		end
 		default: ;
 	endcase
