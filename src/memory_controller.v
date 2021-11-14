@@ -256,7 +256,7 @@ memory #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 2)) theRam4
 	DATA_IN,
 	DATA_OUT_HIRAM4,
 	WR_HIRAM4,
-	B4_BUST,
+	B4_BUSY,
 	GFX_B4_ADDR,
 	GFX_B4_REQ,
 	GFX_B4_DOUT,
@@ -337,8 +337,8 @@ gfx #(.BITS(BITS), .BANK_ADDRESS_BITS(14), .ADDRESS_BITS(12)) gfx0
 	.B4_REQ(GFX_B4_REQ),
 	.B4_DOUT(GFX_B4_DOUT),
 	.B4_WR(GFX_B4_WR),
-	.flash_dma_rrvalid(spi_flash_wvalid),
-	.flash_dma_rready(spi_flash_wready),
+	.flash_dma_wvalid(spi_flash_wvalid),
+	.flash_dma_wready(spi_flash_wready),
 	.flash_dma_address(spi_flash_memory_address),
 	.flash_dma_data(spi_flash_memory_data)
 );

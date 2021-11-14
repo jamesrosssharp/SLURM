@@ -78,16 +78,16 @@ assign INPUT_PINS[5] = B_BUTTON;
 assign INPUT_PINS[6] = 1'b0;
 assign INPUT_PINS[7] = SPI_FLASH_MISO;
 
-//assign UART_TX = PINS[15];
+assign UART_TX = PINS[15];
 
-//assign RED_LED = PINS[8];
-//assign GREEN_LED = PINS[9];
-//assign BLUE_LED = PINS[10];
+assign RED_LED = PINS[8];
+assign GREEN_LED = PINS[9];
+assign BLUE_LED = PINS[10];
 
-assign UART_TX = 1'b0;
-assign RED_LED   = 1'b1;
-assign GREEN_LED = 1'b1;
-assign BLUE_LED  = 1'b1;
+//assign UART_TX = 1'b0;
+//assign RED_LED   = 1'b1;
+//assign GREEN_LED = 1'b1;
+//assign BLUE_LED  = 1'b1;
 
 assign BB = PINS[19:16];
 assign RR = PINS[23:20];

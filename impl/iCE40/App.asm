@@ -50,7 +50,6 @@ GFX_FB_ADDR	   equ 0x1d3a
 
 GFX_COLLISION_LIST equ 0x1700
 
-
 		mov r0, the_string
 loop:
 		ld r1, [r0]
@@ -82,7 +81,7 @@ cpr_loop:
 */
 	
 		mov r0, 300 | 1<<15
-		//st [GFX_CPR_Y_FLIP], r0
+		st [GFX_CPR_Y_FLIP], r0
 
 		mov r0, GFX_CPR_LIST
 		mov r1, cpr_list_3
@@ -375,10 +374,10 @@ cpr_list_3:
 		dw 0x8008
 start_mirror:
 		dw 0xc600
-	//	dw 0x41e0 // skip if v > 480
-	//	dw 0xc655
-		dw 0x41d0 // skip if v > 384 
-		dw 0xc700
+		dw 0x41e0 // skip if v > 480
+		dw 0xc600
+		//dw 0x41d0 // skip if v > 384 
+		//dw 0xc700
 		dw 0x41c0 
 		dw 0xc800
 		dw 0x41b0 

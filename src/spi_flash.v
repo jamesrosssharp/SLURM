@@ -26,13 +26,13 @@ module spi_flash
 
 );
 
-assign wvalid = 1'b0;
-
 localparam idle 	= 3'b000;
 localparam send_cmd = 3'b001;
 localparam send_address = 3'b010;
 localparam get_data = 3'b011;
-localparam done     = 3'b100;
+localparam mem_wr1  = 3'b100;
+localparam mem_wr2  = 3'b101;
+localparam done     = 3'b110;
 localparam send_wake_cmd = 3'b101;
 
 reg [2:0] state_r;
@@ -58,7 +58,17 @@ reg [15:0] dma_memory_address_r_next;
 reg [15:0] dma_count_r;
 reg [15:0] dma_count_r_next;
 
+reg [15:0] dma_memory_address2_r;
+reg [15:0] dma_memory_address2_r_next;
 
+reg [15:0] dma_count2_r;
+reg [15:0] dma_count2_r_next;
+
+assign memory_address = dma_memory_address2_r;
+assign memory_data = {data_out_r[7:0], data_out_r[15:8]};
+
+reg wvalid_r;
+assign wvalid = wvalid_r; 
 
 reg MOSI_r;
 assign MOSI = MOSI_r;
@@ -67,7 +77,7 @@ reg SCK_r;
 reg SCK_r_next;
 assign SCK = SCK_r;
 
-reg CSb_r;
+reg CSb_r, CSb_r_next;
 assign CSb = CSb_r;
 
 reg [23:0] serialOut_r;
@@ -102,6 +112,9 @@ begin
 		SCK_r		   <= 1'b0;
 		dma_memory_address_r <= 16'h0000;
 		dma_count_r			 <= 16'h0000;
+		dma_memory_address2_r <= 16'h0000;
+		dma_count2_r		  <= 16'h0000;
+		CSb_r <= 1'b1;
 	end else begin
 		address_lo_r  <= address_lo_r_next;
 		address_hi_r  <= address_hi_r_next;
@@ -113,9 +126,12 @@ begin
 		serialOut_r	  <= serialOut_r_next;
 		tick_counter_r <= tick_counter_r_next;
 		bit_counter_r  <= bit_counter_r_next;
-		SCK_r		  <= SCK_r_next;
-		dma_memory_address_r <= dma_memory_address_r_next;
-		dma_count_r			 <= dma_count_r_next;
+		SCK_r		   <= SCK_r_next;
+		dma_memory_address_r  <= dma_memory_address_r_next;
+		dma_count_r			  <= dma_count_r_next;
+		dma_memory_address2_r <= dma_memory_address2_r_next;
+		dma_count2_r		  <= dma_count2_r_next;
+		CSb_r <= CSb_r_next;
 	end
 end
 
@@ -151,9 +167,9 @@ begin
 		4'h4: /* Status bits reg */
 			dout_r = {15'd0, done_r};
 		4'h5:  /* DMA memory address */
-			dma_memory_address_r_next = dma_memory_address_r;
+			dma_memory_address_r_next = DATA_IN;
 		4'h6:  /* DMA transfer count (16-bit words) */
-			dma_count_r_next = dma_count_r;
+			dma_count_r_next = DATA_IN;
 		default:;
 	endcase
 end
@@ -169,9 +185,14 @@ begin
 	tick_counter_r_next = tick_counter_r;
 	bit_counter_r_next  = bit_counter_r;
 	SCK_r_next			= SCK_r;
-	CSb_r				= 1'b1;
+	CSb_r_next			= CSb_r;
 	MOSI_r 				= 1'b0;
 	data_out_r_next		= data_out_r;
+
+	dma_memory_address2_r_next = dma_memory_address2_r;
+	dma_count2_r_next 		  = dma_count2_r;
+
+	wvalid_r = 1'b0;
 
 	case (state_r)
 		idle:
@@ -181,20 +202,21 @@ begin
 				serialOut_r_next = readCmd; 
 				tick_counter_r_next = 3'd0;
 				bit_counter_r_next  = 5'd0;
-				CSb_r				= 1'b0;
+				CSb_r_next				= 1'b0;
 				SCK_r_next			= 1'b0;
+				dma_memory_address2_r_next = dma_memory_address_r;
+				dma_count2_r_next = dma_count_r;	
 			end else if (wake_r == 1'b1) begin
 				state_r_next 	= send_wake_cmd;
 				done_r_next 	= 1'b0;
 				serialOut_r_next = wakeCmd; 
 				tick_counter_r_next = 3'd0;
 				bit_counter_r_next  = 5'd0;
-				CSb_r				= 1'b0;
+				CSb_r_next				= 1'b0;
 				SCK_r_next			= 1'b0;
 			end
 		send_wake_cmd: begin
 			tick_counter_r_next = tick_counter_r + 1;	
-			CSb_r		= 1'b0;
 			MOSI_r		= serialOut_r[23];
 
 			if (tick_counter_r == 3'b100)
@@ -213,7 +235,6 @@ begin
 		end
 		send_cmd: begin
 			tick_counter_r_next = tick_counter_r + 1;	
-			CSb_r		= 1'b0;
 			MOSI_r		= serialOut_r[23];
 
 			if (tick_counter_r == 3'b100)
@@ -235,7 +256,6 @@ begin
 		end
 		send_address: begin
 			tick_counter_r_next = tick_counter_r + 1;	
-			CSb_r		= 1'b0;
 			MOSI_r		= serialOut_r[23];
 
 			if (tick_counter_r == 3'b100)
@@ -256,7 +276,6 @@ begin
 		end
 		get_data: begin
 			tick_counter_r_next = tick_counter_r + 1;	
-			CSb_r		= 1'b0;
 
 			if (tick_counter_r == 3'b100) begin
 				SCK_r_next = 1'b1;
@@ -269,12 +288,30 @@ begin
 				SCK_r_next = 1'b0;
 
 				if (bit_counter_r == 5'd15) begin
-					state_r_next = done;
+					state_r_next = mem_wr1;
 				end
 			end
+		end
+		mem_wr1: begin
+			wvalid_r = 1'b1;
+			if (wready == 1'b1) begin
+				wvalid_r = 1'b0;
+				dma_memory_address2_r_next = dma_memory_address2_r + 1;
+				dma_count2_r_next = dma_count2_r - 1;
+				if (dma_count2_r == 16'd0)
+					state_r_next = done;
+				else begin
+					tick_counter_r_next = 3'd0;
+					bit_counter_r_next  = 5'd0;
+					state_r_next = get_data;
+				end
+			end
+		end
+		mem_wr2: begin
 
 		end
 		done: begin
+			CSb_r_next = 1'b1;
 			done_r_next = 1'b1;
 			state_r_next = idle;
 			SCK_r_next = 1'b1;

@@ -70,6 +70,8 @@ reg 		bg1_rready_r;
 reg [15:0] 	ov_memory_data_r;
 reg 		ov_rready_r;
 
+reg 		fl_wready_r;
+
 assign sprite_rready = sprite_rready_r; 
 assign sprite_memory_data = sprite_memory_data_r;
 
@@ -81,6 +83,8 @@ assign bg1_memory_data = bg1_memory_data_r;
 
 assign ov_rready = ov_rready_r; 
 assign ov_memory_data = ov_memory_data_r;
+
+assign fl_wready = fl_wready_r;
 
 reg [13:0]		b1_addr_r;
 reg			b1_req_r;
@@ -185,6 +189,8 @@ always @(*) begin
 	ov_memory_data_r 	 = 16'h0000;
 	ov_rready_r 		 = 1'b0;
 
+	fl_wready_r 		 = 1'b0;
+
 	state_r_0_next = state_r_0;
 	state_r_1_next = state_r_1;
 	state_r_2_next = state_r_2;
@@ -261,7 +267,7 @@ always @(*) begin
 				b1_wr_r 	   = 1'b0;
 			end
 			b1_data_r   = fl_memory_data;
-			fl_rready_r = 1'b1;
+			fl_wready_r = 1'b1;
 		end
 	default: ;
 	endcase
@@ -337,7 +343,7 @@ always @(*) begin
 				state_r_1_next = s_idle;
 				b2_wr_r = 1'b0;
 			end
-			fl_rready_r = 1'b1;
+			fl_wready_r = 1'b1;
 		end
 		default: ;
 	endcase
@@ -413,7 +419,7 @@ always @(*) begin
 				state_r_2_next = s_idle;
 				b3_wr_r = 1'b0;
 			end
-			fl_rready_r = 1'b1;
+			fl_wready_r = 1'b1;
 			b3_data_r = fl_memory_data;
 		end
 		default: ;
@@ -490,7 +496,7 @@ always @(*) begin
 				b4_wr_r = 1'b0;
 			end
 			b4_data_r = fl_memory_daya;
-			fl_rready_r = 1'b1;
+			fl_wready_r = 1'b1;
 		end
 		default: ;
 	endcase 

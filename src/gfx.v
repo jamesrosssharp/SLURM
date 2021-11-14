@@ -41,8 +41,8 @@ module gfx #(parameter BITS = 16, parameter BANK_ADDRESS_BITS = 14, parameter AD
 
 	// DMA port from spi flash controller
 
-	input flash_dma_rrvalid,
-	output flash_dma_rready,
+	input flash_dma_wvalid,
+	output flash_dma_wready,
 	input [15:0] flash_dma_address,
 	input [15:0] flash_dma_data
 );
@@ -125,12 +125,12 @@ wire bg0_rvalid;
 wire bg0_rready;
 reg WR_bg0;
 
-wire [7:0] bg1_color_index;
-wire [15:0] bg1_memory_address;
+wire [7:0] bg1_color_index = 8'd0;
+wire [15:0] bg1_memory_address = 16'd0;
 wire [15:0] bg1_memory_data;
 wire bg1_rvalid = 1'b0;
 wire bg1_rready;
-reg WR_bg1;
+reg WR_bg1 = 1'b0;
 
 reg WR_cpr;
 wire [11:0] COPPER_ADDRESS;
@@ -189,8 +189,8 @@ gfx_memory_arbiter arb0
 	/* spi flash controller */
 	flash_dma_address,
 	flash_dma_data,
-	flash_dma_rrvalid,
-	flash_dma_rready,
+	flash_dma_wvalid,
+	flash_dma_wready,
 
 	B1_ADDR,
 	B1_DIN,
