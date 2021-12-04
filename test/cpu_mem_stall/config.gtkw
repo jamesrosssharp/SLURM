@@ -1,10 +1,10 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Sat Dec  4 10:03:24 2021
+[*] Sat Dec  4 23:07:32 2021
 [*]
 [dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/cpu_mem_stall/dump.vcd"
-[dumpfile_mtime] "Sat Dec  4 10:02:35 2021"
-[dumpfile_size] 1699597
+[dumpfile_mtime] "Sat Dec  4 23:07:00 2021"
+[dumpfile_size] 1721118
 [savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/cpu_mem_stall/config.gtkw"
 [timestart] 0
 [size] 1710 811
@@ -61,5 +61,7 @@ cpu_mem_stall_tb.cpu0.pip0.regB[15:0]
 cpu_mem_stall_tb.cpu0.alu0.aluOut[15:0]
 cpu_mem_stall_tb.cpu0.pip0.imm_r_next[11:0]
 cpu_mem_stall_tb.cpu0.pip0.imm_r[11:0]
+@29
+cpu_mem_stall_tb.cpu0.pip0.stall_count_r[2:0]
 [pattern_trace] 1
 [pattern_trace] 0

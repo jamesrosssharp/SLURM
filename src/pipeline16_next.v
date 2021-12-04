@@ -140,6 +140,25 @@ reg [BITS - 1:0] result_stage3_r_next;
 reg [BITS - 1:0] result_stage4_r;
 reg [BITS - 1:0] result_stage4_r_next;
 
+/* stall logic */
+
+reg [REG_BITS-1:0] hazard1_r_next;
+reg [REG_BITS-1:0] hazard1_r;
+reg [REG_BITS-1:0] hazard2_r;
+reg [REG_BITS-1:0] hazard2_r_next;
+reg [REG_BITS-1:0] hazard3_r;
+
+reg flagsModifiedStage1_r_next;
+reg flagsModifiedStage1_r;
+reg flagsModifiedStage2_r_next;
+reg flagsModifiedStage2_r;
+reg flagsModifiedStage3_r;
+
+reg [2:0] stall_count_r;
+reg [2:0] stall_count_r_next;
+
+wire partial_pipeline_stall_r = (stall_count_r > 1);
+
 /* CPU state */
 
 reg [2:0] cpu_state_r, cpu_state_r_next;
@@ -149,7 +168,6 @@ localparam cpust_execute 	    = 3'b001; // CPU is executing instructions
 localparam cpust_wait_ins_mem   = 3'b010; // CPU is waiting to access the instruction memory
 localparam cpust_wait_data_rd   = 3'b011; // CPU is waiting for a data read
 localparam cpust_wait_data_wr   = 3'b100; // CPU is waiting for a data write
-localparam cpust_pipeline_stall = 3'b101; // Pipeline is stall due to interlock
 
 
 function is_branch_link_from_ins;
@@ -292,6 +310,13 @@ begin
 		alu_op_r		 <= 5'd0;
 		imm_r			 <= {12{1'b0}};
 		imm_stage2_r	 <= {BITS{1'b0}};
+		hazard1_r		 <= 5'd16;
+		hazard2_r		 <= 5'd16;
+		hazard3_r		 <= 5'd16;
+		flagsModifiedStage1_r		 <= 1'b0;
+		flagsModifiedStage2_r		 <= 1'b0;
+		flagsModifiedStage3_r		 <= 1'b0;
+		stall_count_r				 <= 3'b000;
 	end else begin
 		cpu_state_r <= cpu_state_r_next;
 		pc_r 		<= pc_r_next;
@@ -306,10 +331,151 @@ begin
 		alu_op_r	     <= alu_op_r_next;
 		imm_r			 <= imm_r_next;
 		imm_stage2_r	 <= imm_stage2_r_next;
+		hazard1_r		 <= hazard1_r_next;
+		hazard2_r		 <= hazard2_r_next;
+		hazard3_r		 <= hazard2_r;
+		flagsModifiedStage1_r	<= flagsModifiedStage1_r_next;
+		flagsModifiedStage2_r	<= flagsModifiedStage2_r_next;
+		flagsModifiedStage3_r	<= flagsModifiedStage2_r;
+		stall_count_r				 <= stall_count_r_next;
 	end
 end
 
 /* combinational logic */
+
+/* interlock logic - determine hazard */
+
+/* 1 - registers that will be written */
+
+always @(*)
+begin
+	hazard1_r_next = hazard1_r;
+	hazard2_r_next = 5'd16;
+
+	if (stall_count_r == 3'b001) begin
+		hazard1_r_next = 5'd16;
+		hazard2_r_next = hazard1_r;
+	end else
+	if (stall_count_r == 3'b000) begin
+		hazard2_r_next = hazard1_r;
+		hazard1_r_next = 5'd16;
+
+		casex (pipelineStage0_r)
+			16'h01xx:	begin	/* ret / iret */
+				hazard1_r_next = LINK_REGISTER;
+			end
+			16'h02xx, 16'h03xx: begin
+				hazard1_r_next = reg_src_from_ins(pipelineStage0_r);	
+			end
+			16'h04xx: begin /* alu op reg */
+				hazard1_r_next = reg_src_from_ins(pipelineStage0_r);
+			end
+			16'h2xxx:	begin	/* alu op, reg reg */
+				hazard1_r_next = reg_dest_from_ins(pipelineStage0_r);
+			end
+			16'h3xxx:	begin	/* alu op, reg imm */
+				hazard1_r_next = reg_dest_from_ins(pipelineStage0_r);
+			end
+			16'h5xxx:	begin	/* load / store reg, reg ind */	
+				if (is_load_store_from_ins(pipelineStage0_r) == 1'b0) begin /* load */
+					hazard1_r_next = reg_dest_from_ins(pipelineStage0_r);	// we will write to this register
+				end
+			end
+			16'h6xxx: 	begin /* load / store, reg, imm address */
+				if (is_load_store_from_ins(pipelineStage0_r) == 1'b0) begin /* load */
+					hazard1_r_next = reg_dest_from_ins(pipelineStage0_r);	// we will write to this register
+				end 
+			end
+			16'b110xxxxxxxxxxxxx: begin /* memory, reg, reg + immediate index */ 
+				if (is_load_store_from_ins(pipelineStage0_r) == 1'b0) begin /* load */
+					hazard1_r_next = reg_dest_from_ins(pipelineStage0_r);	// we will write to this register
+				end 
+			end
+			default: ;
+		endcase
+
+	end
+
+end
+
+/* 2 - flags that will be written */
+
+always @(*)
+begin
+	flagsModifiedStage1_r_next = flagsModifiedStage1_r;
+	flagsModifiedStage2_r_next = 1'b0;
+	
+	if (stall_count_r == 3'b000) begin
+		flagsModifiedStage1_r_next = 1'b0;
+		flagsModifiedStage2_r_next = flagsModifiedStage1_r;
+	
+		casex (pipelineStage0_r)
+			16'h04xx: begin 
+				flagsModifiedStage1_r_next = 1'b1;
+			end
+			16'h2xxx:	begin	
+				flagsModifiedStage1_r_next = 1'b1;
+			end
+			16'h3xxx:	begin	
+				flagsModifiedStage1_r_next = 1'b1;
+			end
+			default: ;
+		endcase
+	end
+
+end
+
+/* Determine any hazard and set stall_count_r */
+
+always @(*)
+begin
+
+	stall_count_r_next = (stall_count_r == 3'b000) ? stall_count_r : stall_count_r - 1;
+
+	if (partial_pipeline_stall_r == 1'b0) begin
+		
+		if ((regARdAddr_stage0_r != 5'd16) && 
+			(hazard3_r == regARdAddr_stage0_r))
+				stall_count_r_next = 3;
+		else
+		if ((regBRdAddr_stage0_r != 5'd16) && 
+			(hazard3_r == regBRdAddr_stage0_r))
+				stall_count_r_next = 3;
+		else
+		if ((regARdAddr_stage0_r != 5'd16) && 
+			(hazard2_r == regARdAddr_stage0_r))
+				stall_count_r_next = 4;
+		else
+		if ((regBRdAddr_stage0_r != 5'd16) && 
+			(hazard2_r == regBRdAddr_stage0_r))
+				stall_count_r_next = 4;
+		else
+		if ((regARdAddr_stage0_r != 5'd16) && 
+			(hazard1_r == regARdAddr_stage0_r))
+				stall_count_r_next = 5;
+		else
+		if ((regBRdAddr_stage0_r != 5'd16) && 
+			(hazard1_r == regBRdAddr_stage0_r))
+				stall_count_r_next = 5;
+		else begin
+		/* flags hazard */
+		
+		casex (pipelineStage0_r)
+			16'h4xxx:	begin 
+				if (uses_flags_for_branch(pipelineStage0_r) == 1'b1 && flagsModifiedStage2_r == 1'b1)
+					stall_count_r_next = 3;
+		
+				if (uses_flags_for_branch(pipelineStage0_r) == 1'b1 && flagsModifiedStage1_r == 1'b1)
+					stall_count_r_next = 3;
+			end
+		endcase
+		end
+	end 
+
+end
+
+
+
 
 // CPU state machine
 
@@ -329,7 +495,6 @@ begin
 		cpust_wait_data_wr:
 			if (wready == 1'b1)
 				cpu_state_r_next = cpust_execute;
-		cpust_pipeline_stall:	;	// We should go back to executing when the stall is cleared
 		default:
 			cpu_state_r_next = cpust_halt;
 	endcase
@@ -346,6 +511,11 @@ begin
 		cpust_execute: begin
 			pc_r_prev_next = pc_r;
 			pc_r_next = pc_r + 1;
+
+			if (partial_pipeline_stall_r == 1'b1) begin
+				pc_r_next = pc_r_prev;
+				pc_r_prev_next = pc_r_prev;
+			end 
 		end
 		cpust_wait_ins_mem:
 			if (rready == 1'b1) begin
@@ -403,6 +573,18 @@ begin
 			pipelineStage2_r_next = pipelineStage1_r;
 			pipelineStage3_r_next = pipelineStage2_r;
 			pipelineStage4_r_next = pipelineStage3_r;
+
+			if (stall_count_r == 3'b001) begin
+				pipelineStage0_r_next = pipelineStage0_r;
+				pipelineStage2_r_next = pipelineStage1_r;
+				pipelineStage1_r_next = NOP_INSTRUCTION;	
+			end
+			else if (stall_count_r > 3'b001) begin
+				pipelineStage0_r_next = pipelineStage0_r;
+				pipelineStage1_r_next = pipelineStage1_r;
+				pipelineStage2_r_next = NOP_INSTRUCTION;	
+			end
+
 		end
 		default: ;
 	endcase
@@ -451,6 +633,51 @@ begin
 		default: ;
 	endcase
 end
+
+always @(*)
+begin
+	regARdAddr_stage0_r = 5'd16;
+	regBRdAddr_stage0_r = 5'd16;
+
+	casex (pipelineStage0_r) /* instruction before its loaded */
+		16'h0000:	;	/* nop */
+		16'h01xx:	begin	/* ret / iret */
+			regARdAddr_stage0_r = LINK_REGISTER; // add iret later when needed
+		end
+		16'h02xx, 16'h03xx: begin
+			regBRdAddr_stage0_r	= reg_src_from_ins(pipelineStage0_r);
+		end
+		16'h04xx: begin /* alu op reg */
+			regBRdAddr_stage0_r	= reg_src_from_ins(pipelineStage0_r);
+		end
+		16'h2xxx:	begin	/* alu op, reg reg */
+			regARdAddr_stage0_r	= reg_dest_from_ins(pipelineStage0_r);
+			regBRdAddr_stage0_r	= reg_src_from_ins(pipelineStage0_r);
+		end
+		16'h3xxx:	begin	/* alu op, reg imm */
+			regARdAddr_stage0_r 		= reg_dest_from_ins(pipelineStage0_r);	
+		end
+		16'h4xxx:	begin /* branch */
+			if (is_branch_reg_ind_from_ins(memoryIn) == 1'b1) 
+				regARdAddr_stage0_r	= reg_branch_ind_from_ins(pipelineStage0_r);
+		end
+		16'h5xxx:	begin	/* load / store reg, reg ind */	
+			regBRdAddr_stage0_r 		= reg_src_from_ins(pipelineStage0_r);	
+			regARdAddr_stage0_r 		= reg_dest_from_ins(pipelineStage0_r);	
+		end
+		16'h6xxx: 	begin /* load / store, reg, imm address */
+			regARdAddr_stage0_r 		= reg_dest_from_ins(pipelineStage0_r);	
+		end
+		16'b110xxxxxxxxxxxxx: begin /* memory, reg, reg + immediate index */ 
+			regBRdAddr_stage0_r 		= reg_idx_from_ins(pipelineStage0_r);	
+			regARdAddr_stage0_r 		= reg_dest_from_ins(pipelineStage0_r);	
+		end
+		default: ;
+	endcase
+end
+
+
+
 
 /* immediate register */
 
