@@ -6,9 +6,9 @@ module alu
 	input CLK,	/* ALU has memory for flags */
 	input RSTb,
 
-	input [BITS-1:0]  A_in,
-	input [BITS-1:0]  B_in,
-	input [4:0]       aluOp_in,
+	input [BITS-1:0]  A,
+	input [BITS-1:0]  B,
+	input [4:0]       aluOp,
 	output [BITS-1:0] aluOut,
 
 	output C, /* carry flag */
@@ -30,10 +30,6 @@ reg S_flag_reg = 1'b0;
 reg S_flag_reg_next;
 
 assign S = S_flag_reg;
-
-reg [BITS - 1 : 0] A;
-reg [BITS - 1 : 0] B;
-reg [4 : 0] aluOp;
 
 wire [BITS : 0] addOp = {1'b0,A} + {1'b0,B}; 
 wire [BITS : 0] subOp = {1'b0,A} - {1'b0,B}; 
@@ -60,19 +56,12 @@ begin
 		Z_flag_reg <= 1'b0;
 		S_flag_reg <= 1'b0;
 		out_r <= {BITS{1'b0}};
-		aluOp <= 5'b00000;
-		A <= {BITS{1'b0}};
-		B <= {BITS{1'b0}};
-
 	end
 	else begin
 		C_flag_reg <= C_flag_reg_next;
 		Z_flag_reg <= Z_flag_reg_next;
 		S_flag_reg <= S_flag_reg_next;
 		out_r <= out;
-		aluOp <= aluOp_in;
-		A <= A_in;
-		B <= B_in;
 	end
 end
 

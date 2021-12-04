@@ -8,12 +8,14 @@ module cpu_harness #(
 ) (
 	input CLK,
 	input RSTb,
-	input  memBUSY,
 	input [15:0] memoryIn,
 	output [15:0] memoryOut,
 	output [15:0] memoryAddr,
-	output mem_RD,
-	output mem_WR
+	output memoryRvalid,
+	input  memoryRready,
+	output memoryWvalid,
+	input  memoryWready,
+	input [3:0] irq
 );
 
 wire C;
@@ -64,12 +66,14 @@ pipeline16 pip0
 	.regBRdAddr(regOutB),
 	.regA(regOutA_data),
 	.regB(regOutB_data),
-	.BUSY(memBUSY),
 	.memoryIn(memoryIn),
 	.memoryOut(memoryOut),
 	.memoryAddr(memoryAddr),
-	.mem_RD(mem_RD),
-	.mem_WR(mem_WR)  
+	.rvalid(memoryRvalid),
+	.rready(memoryRready),
+	.wvalid(memoryWvalid),
+	.wready(memoryWready),
+	.irq(irq)
 );
 
 
@@ -79,9 +83,9 @@ alu0
 (
 	.CLK(CLK),
 	.RSTb(RSTb),
-	.A_in(aluA),
-	.B_in(aluB),
-	.aluOp_in(aluOp),
+	.A(aluA),
+	.B(aluB),
+	.aluOp(aluOp),
 	.aluOut(aluOut),
 	.C(C), 
 	.Z(Z), 	

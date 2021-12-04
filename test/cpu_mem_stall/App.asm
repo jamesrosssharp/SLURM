@@ -1,6 +1,6 @@
 		.org 0x0000
 		
-		mov r0, 0x8000
+/*		mov r0, 0x8000
 		mov r1, 0xc000
 		mov r2, 0x4000
 loop:
@@ -13,6 +13,14 @@ loop:
 
 die:
 		ba die
+*/
+
+		mov r0, 3
+		mov r1, 2
+		add r0, r1
+
+die2:
+		ba die2
 
 		.padto 0x8000
 

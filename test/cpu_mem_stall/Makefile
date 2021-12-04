@@ -1,7 +1,7 @@
 
 SRCDIR=../../src
 
-SOURCE=$(SRCDIR)/pipeline16.v $(SRCDIR)/alu.v $(SRCDIR)/register_file.v cpu_harness.v 
+SOURCE=$(SRCDIR)/pipeline16_next.v $(SRCDIR)/alu.v $(SRCDIR)/register_file.v cpu_harness.v 
  
 
 PROJECT=cpu_mem_stall

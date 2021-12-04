@@ -17,13 +17,23 @@ initial begin
 end
 
 wire [15:0] memoryAddr;
-reg [15:0] memoryIn;
+reg [15:0]  memoryIn;
 wire [15:0] memoryOut;
-wire mem_RD;
-wire mem_WR;
+wire  memoryRvalid;
+reg   memoryRvalid_r;
+wire  memoryRready = (memBUSY == 1'b0) ? memoryRvalid_r : 1'b0;
+wire  memoryWvalid;
+reg   memoryWvalid_r;
+wire  memoryWready = (memBUSY == 1'b0) ? memoryWvalid_r : 1'b0;
+
+
+always @(posedge CLK)
+begin
+	memoryRvalid_r <= memoryRvalid;
+	memoryWvalid_r <= memoryWvalid;
+end
 
 initial begin
-	#3005 memBUSY = 1'b1;
 	#1000 memBUSY = 1'b0;
 	#3000 memBUSY = 1'b1;
 	#1000 memBUSY = 1'b0;
@@ -38,7 +48,7 @@ end
 always @(posedge CLK)
 begin
 	if (memBUSY == 1'b0) begin
-		if (mem_WR == 1'b1)
+		if (memoryWvalid == 1'b1)
 			memory[memoryAddr] <= memoryOut;
 		memoryIn <= memory[memoryAddr];
 	end else
@@ -47,14 +57,18 @@ end
 
 cpu_harness cpu0 
 (
+
+
 	CLK,
 	RSTb,
-	memBUSY,
 	memoryIn,
 	memoryOut,
 	memoryAddr,
-	mem_RD,
-	mem_WR
+	memoryRvalid,
+	memoryRready,
+	memoryWvalid,
+	memoryWready,
+	irq
 );
 
 initial begin

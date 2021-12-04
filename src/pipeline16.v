@@ -112,7 +112,6 @@ reg [REG_BITS-1:0] regBRdAddr_r;
 reg [REG_BITS-1:0] regARdAddr_stage0_r;
 reg [REG_BITS-1:0] regBRdAddr_stage0_r;
 
-
 assign regARdAddr = regARdAddr_r;
 assign regBRdAddr = regBRdAddr_r;
 

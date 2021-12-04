@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Sun Nov 14 05:27:20 2021
+[*] Sat Dec  4 10:03:24 2021
 [*]
 [dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/cpu_mem_stall/dump.vcd"
-[dumpfile_mtime] "Sun Nov 14 05:27:12 2021"
-[dumpfile_size] 5641453
+[dumpfile_mtime] "Sat Dec  4 10:02:35 2021"
+[dumpfile_size] 1699597
 [savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/cpu_mem_stall/config.gtkw"
-[timestart] 2058000
+[timestart] 0
 [size] 1710 811
 [pos] -1 -1
-*-19.000000 3000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-18.000000 600000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] cpu_mem_stall_tb.
 [treeopen] cpu_mem_stall_tb.cpu0.
 [sst_width] 290
@@ -23,12 +23,6 @@ cpu_mem_stall_tb.cpu0.RSTb
 cpu_mem_stall_tb.cpu0.memoryAddr[15:0]
 cpu_mem_stall_tb.cpu0.memoryIn[15:0]
 cpu_mem_stall_tb.cpu0.memoryOut[15:0]
-@28
-cpu_mem_stall_tb.cpu0.memBUSY
-@29
-cpu_mem_stall_tb.cpu0.pip0.BUSY
-@28
-cpu_mem_stall_tb.cpu0.pip0.BUSY_r
 @200
 -
 @22
@@ -44,15 +38,28 @@ cpu_mem_stall_tb.cpu0.reg0.\regFileA[7][15:0]
 -
 @22
 cpu_mem_stall_tb.cpu0.alu0.out[15:0]
-cpu_mem_stall_tb.cpu0.alu0.A_in[15:0]
-cpu_mem_stall_tb.cpu0.alu0.B_in[15:0]
 @200
 -
+@28
+cpu_mem_stall_tb.cpu0.pip0.cpu_state_r[2:0]
+cpu_mem_stall_tb.cpu0.pip0.rvalid
+cpu_mem_stall_tb.cpu0.pip0.rready
+cpu_mem_stall_tb.cpu0.pip0.wvalid
+cpu_mem_stall_tb.cpu0.pip0.wready
 @22
+cpu_mem_stall_tb.cpu0.pip0.pc_r[15:0]
+cpu_mem_stall_tb.cpu0.pip0.memoryAddr[15:0]
 cpu_mem_stall_tb.cpu0.pip0.pipelineStage0_r[15:0]
 cpu_mem_stall_tb.cpu0.pip0.pipelineStage1_r[15:0]
 cpu_mem_stall_tb.cpu0.pip0.pipelineStage2_r[15:0]
 cpu_mem_stall_tb.cpu0.pip0.pipelineStage3_r[15:0]
 cpu_mem_stall_tb.cpu0.pip0.pipelineStage4_r[15:0]
+cpu_mem_stall_tb.cpu0.pip0.aluA[15:0]
+cpu_mem_stall_tb.cpu0.pip0.aluB[15:0]
+cpu_mem_stall_tb.cpu0.pip0.regA[15:0]
+cpu_mem_stall_tb.cpu0.pip0.regB[15:0]
+cpu_mem_stall_tb.cpu0.alu0.aluOut[15:0]
+cpu_mem_stall_tb.cpu0.pip0.imm_r_next[11:0]
+cpu_mem_stall_tb.cpu0.pip0.imm_r[11:0]
 [pattern_trace] 1
 [pattern_trace] 0
