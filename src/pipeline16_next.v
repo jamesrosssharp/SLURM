@@ -131,23 +131,24 @@ assign regFileIn = reg_out_r;
 reg [REG_BITS - 1:0] reg_wr_addr_r;
 assign regWrAddr = reg_wr_addr_r;
 
+// Needs to track pipeline
 reg [BITS - 1:0] result_stage2_r;
 reg [BITS - 1:0] result_stage2_r_next;
-
 reg [BITS - 1:0] result_stage3_r;
 reg [BITS - 1:0] result_stage3_r_next;
-
 reg [BITS - 1:0] result_stage4_r;
 reg [BITS - 1:0] result_stage4_r_next;
 
 /* stall logic */
 
+// Needs to track pipeline
 reg [REG_BITS-1:0] hazard1_r_next;
 reg [REG_BITS-1:0] hazard1_r;
 reg [REG_BITS-1:0] hazard2_r;
 reg [REG_BITS-1:0] hazard2_r_next;
 reg [REG_BITS-1:0] hazard3_r;
 
+// Needs to track pipeline
 reg flagsModifiedStage1_r_next;
 reg flagsModifiedStage1_r;
 reg flagsModifiedStage2_r_next;
@@ -158,6 +159,14 @@ reg [2:0] stall_count_r;
 reg [2:0] stall_count_r_next;
 
 wire partial_pipeline_stall_r = (stall_count_r > 1);
+
+/* branch logic */
+
+// Needs to track pipeline
+reg branch_taken2_r;
+reg branch_taken2_r_next;
+reg branch_taken3_r;
+reg branch_taken4_r; 
 
 /* CPU state */
 
@@ -317,6 +326,9 @@ begin
 		flagsModifiedStage2_r		 <= 1'b0;
 		flagsModifiedStage3_r		 <= 1'b0;
 		stall_count_r				 <= 3'b000;
+		branch_taken2_r  <= 1'b0;
+		branch_taken3_r  <= 1'b0;
+		branch_taken4_r  <= 1'b0;	
 	end else begin
 		cpu_state_r <= cpu_state_r_next;
 		pc_r 		<= pc_r_next;
@@ -331,13 +343,17 @@ begin
 		alu_op_r	     <= alu_op_r_next;
 		imm_r			 <= imm_r_next;
 		imm_stage2_r	 <= imm_stage2_r_next;
+		/* track to pipeline */
 		hazard1_r		 <= hazard1_r_next;
 		hazard2_r		 <= hazard2_r_next;
 		hazard3_r		 <= hazard2_r;
 		flagsModifiedStage1_r	<= flagsModifiedStage1_r_next;
 		flagsModifiedStage2_r	<= flagsModifiedStage2_r_next;
 		flagsModifiedStage3_r	<= flagsModifiedStage2_r;
-		stall_count_r				 <= stall_count_r_next;
+		stall_count_r			<= stall_count_r_next;
+		branch_taken2_r		<= branch_taken2_r_next;
+		branch_taken3_r		<= branch_taken2_r;
+		branch_taken4_r		<= branch_taken3_r;
 	end
 end
 
@@ -516,6 +532,41 @@ begin
 				pc_r_next = pc_r_prev;
 				pc_r_prev_next = pc_r_prev;
 			end 
+
+			/* Branch in pipeline stage 1 ? */
+
+			if (stall_count_r <= 3'b001) begin
+				casex (pipelineStage1_r)
+					16'h4xxx:	begin /* branch */
+						if (branch_taken_from_ins(pipelineStage1_r, Z, S, C) == 1'b1) begin
+							if (is_branch_reg_ind_from_ins(pipelineStage1_r) == 1'b0) begin
+								pc_r_next = {imm_r, imm_lo_from_ins(pipelineStage1_r)};
+							end
+						end
+						/* branch and link? */
+						else if (is_branch_link_from_ins(pipelineStage1_r) == 1'b1) begin
+							if (is_branch_reg_ind_from_ins(pipelineStage1_r) == 1'b0) begin
+								pc_r_next = {imm_r, imm_lo_from_ins(pipelineStage1_r)};
+							end	
+						end
+					end
+					default: ;
+				endcase
+			end
+
+			/* Branch in pipeline stage 2 ? */
+
+			casex (pipelineStage2_r)
+				16'h01xx:	begin /* ret / iret */
+					pc_r_next = regA;
+				end
+				16'h4xxx:	 begin /* branch */
+					if (is_branch_reg_ind_from_ins(pipelineStage2_r) == 1'b1 && branch_taken2_r == 1'b1) begin
+						pc_r_next = regA + imm_stage2_r;
+					end
+				end
+				default: ;
+			endcase
 		end
 		cpust_wait_ins_mem:
 			if (rready == 1'b1) begin
@@ -555,6 +606,26 @@ begin
 	endcase
 end
 
+/* branch logic */
+
+always @(*)
+begin
+	branch_taken2_r_next = 1'b0;
+
+	casex (pipelineStage1_r)
+		16'h4xxx:	begin /* branch */
+			if (branch_taken_from_ins(pipelineStage1_r, Z, S, C) == 1'b1) begin	
+				branch_taken2_r_next = 1'b1;
+			end
+			/* branch and link? */
+			else if (is_branch_link_from_ins(pipelineStage1_r) == 1'b1) begin
+				branch_taken2_r_next = 1'b1;
+			end
+		end
+		default: ;
+	endcase
+end
+
 // Pipeline
 
 always @(*)
@@ -584,7 +655,50 @@ begin
 				pipelineStage1_r_next = pipelineStage1_r;
 				pipelineStage2_r_next = NOP_INSTRUCTION;	
 			end
+			else begin
 
+				/* If branch taken in stage 1, insert nop as new instruction in stage 1 */
+
+				casex (pipelineStage1_r)
+					16'h01xx:   begin
+						pipelineStage0_r_next = NOP_INSTRUCTION;
+						pipelineStage1_r_next = NOP_INSTRUCTION;
+					end
+					16'h4xxx:	begin /* branch */
+						if (branch_taken_from_ins(pipelineStage1_r, Z, S, C) == 1'b1) begin
+							pipelineStage0_r_next = NOP_INSTRUCTION;
+							pipelineStage1_r_next = NOP_INSTRUCTION;
+						end
+						/* branch and link? */
+						else if (is_branch_link_from_ins(pipelineStage1_r) == 1'b1) begin
+							pipelineStage0_r_next = NOP_INSTRUCTION;
+							pipelineStage1_r_next = NOP_INSTRUCTION;
+						end
+					end
+				endcase	
+
+				/* If branch taken in stage 2, insert nop as new instruction in stage 1 */
+
+				casex (pipelineStage2_r)
+					16'h01xx: begin
+							pipelineStage0_r_next = NOP_INSTRUCTION;
+					end
+					16'h4xxx: begin
+						if (is_branch_reg_ind_from_ins(pipelineStage1_r) == 1'b0 && branch_taken2_r == 1'b1) begin 
+							pipelineStage1_r_next = NOP_INSTRUCTION;
+							pipelineStage0_r_next = NOP_INSTRUCTION;
+						end
+						else if (branch_taken2_r == 1'b1)
+							pipelineStage0_r_next = NOP_INSTRUCTION;
+					end
+				endcase
+
+				casex (pipelineStage3_r)
+					16'h01xx: begin
+							pipelineStage0_r_next = NOP_INSTRUCTION;
+					end
+				endcase
+			end
 		end
 		default: ;
 	endcase
@@ -689,8 +803,8 @@ begin
 	if (pipelineStage1_r == 16'h0000) 
 		imm_r_next = imm_r;
 
-	//if (stall_count_r > 3'b001)
-	//	imm_r_next = imm_r;
+	if (stall_count_r > 3'b001)
+		imm_r_next = imm_r;
 
 	imm_stage2_r_next 	= {imm_r, imm_lo_from_ins(pipelineStage1_r)};
 
