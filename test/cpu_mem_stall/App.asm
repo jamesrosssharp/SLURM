@@ -19,6 +19,9 @@ die:
 		mov r1, 2
 		add r0, r1
 
+		mov r2, 0x8000
+		ld	r3, [r2]
+
 die2:
 		ba die2
 

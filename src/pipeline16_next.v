@@ -168,6 +168,11 @@ reg branch_taken2_r_next;
 reg branch_taken3_r;
 reg branch_taken4_r; 
 
+// Memory load
+
+reg load_memory; // asserted when the CPU is about to execute a load instruction
+
+
 /* CPU state */
 
 reg [2:0] cpu_state_r, cpu_state_r_next;
@@ -490,9 +495,6 @@ begin
 
 end
 
-
-
-
 // CPU state machine
 
 always @(*)
@@ -501,7 +503,13 @@ begin
 
 	case (cpu_state_r)
 		cpust_halt: ;	 // We should wake on interrupt here	
-		cpust_execute: ; // Do nothing 
+		cpust_execute: begin
+
+			if (load_memory == 1'b1) begin
+				cpu_state_r_next = cpust_wait_data_rd;
+			end
+
+		end 
 		cpust_wait_ins_mem:
 			if (rready == 1'b1)
 				cpu_state_r_next = cpust_execute;
@@ -605,6 +613,28 @@ begin
 		default: ;
 	endcase
 end
+
+/* load memory? */
+
+always @(*)
+begin
+
+	load_memory = 1'b0;
+
+	case (cpu_state_r)
+		cpust_execute: begin 
+			casex (pipelineStage2_r)
+				16'h5xxx, 16'h6xxx, 16'b110xxxxxxxxxxxxx:	begin /* memory */
+					if (is_load_store_from_ins(pipelineStage2_r) == 1'b0) begin /* load */
+						load_memory = 1'b1;
+					end
+				end
+			endcase
+		end
+	endcase 
+
+end
+
 
 /* branch logic */
 
