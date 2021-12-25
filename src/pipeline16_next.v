@@ -29,7 +29,6 @@ pipeline16
 
 	input  [15:0]   aluOut,
 
-
 	/* register file interface */
 
 	output [15:0]   regFileIn,
@@ -47,13 +46,9 @@ pipeline16
 	output [15:0] 	memoryOut,
 	output [15:0] 	memoryAddr,
 
-	/* memory read channel */
-	output rvalid,
-	input  rready,
-
-	/* memory write channel */
-	output wvalid,
-	input  wready,
+	output valid,
+	input  ready,
+	output wr,
 
 	/* interrupt lines: spi flash dma, audio, video */
 
@@ -73,12 +68,12 @@ reg [BITS - 1:0] pc_r_next;
 reg [BITS - 1:0] pc_r_prev_next;
 
 reg [BITS - 1:0] memoryAddr_r;
-reg rvalid_r;
-reg wvalid_r;
+reg valid_r;
+reg wr_r;
 
-assign rvalid = rvalid_r;
-assign wvalid = wvalid_r;
+assign valid = valid_r;
 assign memoryAddr = memoryAddr_r;
+assign wr = wr_r;
 
 /* pipeline registers */
 
@@ -171,18 +166,23 @@ reg branch_taken4_r;
 // Memory load
 
 reg load_memory; // asserted when the CPU is about to execute a load instruction
-
+reg store_memory; // asserted when the CPU is about to execute a store instruction
 
 /* CPU state */
 
-reg [2:0] cpu_state_r, cpu_state_r_next;
+reg [3:0] cpu_state_r, cpu_state_r_next;
 
-localparam cpust_halt 	 	    = 3'b000; // CPU is halted; instructions not fetched
-localparam cpust_execute 	    = 3'b001; // CPU is executing instructions
-localparam cpust_wait_ins_mem   = 3'b010; // CPU is waiting to access the instruction memory
-localparam cpust_wait_data_rd   = 3'b011; // CPU is waiting for a data read
-localparam cpust_wait_data_wr   = 3'b100; // CPU is waiting for a data write
-
+localparam cpust_halt 	 	     = 4'b0000; // CPU is halted; instructions not fetched
+localparam cpust_execute 	     = 4'b0001; // CPU is executing non-memory instructions
+localparam cpust_wait_mem_ready1 = 4'b0010; // Wait state when switching banks
+localparam cpust_wait_mem_ready2 = 4'b0011; // CPU is waiting to access a new memory bank for fetching non-memory instructions
+localparam cpust_execute_load    = 4'b0100; // CPU is executing load instruction
+localparam cpust_wait_mem_load1  = 4'b0101; // Wait state when switching banks to load memory from
+localparam cpust_wait_mem_load2  = 4'b0110; // CPU is waiting for memory grant to load from
+localparam cpust_execute_store   = 4'b0111; // CPU is executing load instruction
+localparam cpust_wait_mem_store1 = 4'b1000; // Wait state when switching banks to store to memory
+localparam cpust_wait_mem_store2 = 4'b1001; // CPU is waiting for memory grant to store to
+ 
 
 function is_branch_link_from_ins;
 input [15:0] ins;
@@ -311,7 +311,7 @@ endfunction
 always @(posedge CLK)
 begin
 	if (RSTb == 1'b0) begin
-		cpu_state_r <= cpust_wait_ins_mem;	// We bring CPU out of reset waiting to access instruction memory
+		cpu_state_r <= cpust_wait_mem_ready1;	// We bring CPU out of reset waiting to access instruction memory
 		pc_r 		<= 16'd0;				// CPU comes out of reset with PC set to 0x0000
 		pc_r_prev 	<= 16'd0;
 		pipelineStage0_r <= NOP_INSTRUCTION;
@@ -503,22 +503,42 @@ begin
 
 	case (cpu_state_r)
 		cpust_halt: ;	 // We should wake on interrupt here	
+		/* non-memory instructions (access program memory) */
 		cpust_execute: begin
-
-			if (load_memory == 1'b1) begin
-				cpu_state_r_next = cpust_wait_data_rd;
-			end
-
+			// TODO: If we are not changing bank, we don't need the penalty
+			// and can jump straight to the corresponding execute state
+			if (load_memory == 1'b1) 
+				cpu_state_r_next = cpust_wait_mem_load1;
+			else if (store_memory == 1'b1) 
+				cpu_state_r_next = cpust_wait_mem_store1;
 		end 
-		cpust_wait_ins_mem:
-			if (rready == 1'b1)
+		cpust_wait_mem_ready1:
+			cpu_state_r_next = cpust_wait_mem_ready2;
+		cpust_wait_mem_ready2:
+			if (ready == 1'b1)
 				cpu_state_r_next = cpust_execute;
-		cpust_wait_data_rd:
-			if (rready == 1'b1)
-				cpu_state_r_next = cpust_execute;
-		cpust_wait_data_wr:
-			if (wready == 1'b1)
-				cpu_state_r_next = cpust_execute;
+		/* load instructions (access data memory) */
+		cpust_execute_load: begin
+			if (load_memory == 1'b0) begin
+				cpu_state_r_next = cpust_wait_mem_ready1;
+			end
+		end 
+		cpust_wait_mem_load1:
+			cpu_state_r_next = cpust_wait_mem_load2;
+		cpust_wait_mem_load2:
+			if (ready == 1'b1)
+				cpu_state_r_next = cpust_execute_load;
+		/* store instructions (write to data memory) */
+		cpust_execute_store: begin
+			if (store_memory == 1'b0) begin
+				cpu_state_r_next = cpust_wait_mem_ready1;
+			end
+		end
+		cpust_wait_mem_store1:
+			cpu_state_r_next = cpust_wait_mem_store2;
+		cpust_wait_mem_store2:
+			if (ready == 1'b1)
+				cpu_state_r_next = cpust_execute_store;
 		default:
 			cpu_state_r_next = cpust_halt;
 	endcase
@@ -576,8 +596,8 @@ begin
 				default: ;
 			endcase
 		end
-		cpust_wait_ins_mem:
-			if (rready == 1'b1) begin
+		cpust_wait_mem_ready2:
+			if (ready == 1'b1) begin
 				pc_r_prev_next = pc_r;
 				pc_r_next = pc_r + 1;
 			end
@@ -589,26 +609,18 @@ end
 
 always @(*)
 begin
-	rvalid_r = 1'b0;
-	wvalid_r = 1'b0;
+	valid_r = 1'b0;
 	memoryAddr_r = 16'd0;
 
 	case (cpu_state_r)
-		cpust_execute: begin 
-			rvalid_r 	 = 1'b1;
+		cpust_execute: begin
+			if (load_memory == 1'b0) 
+				valid_r 	 = 1'b1;
 			memoryAddr_r = pc_r;
 		end
-		cpust_wait_ins_mem: begin
-			rvalid_r 	 = 1'b1;
+		cpust_wait_mem_ready2: begin
+			valid_r 	 = 1'b1;
 			memoryAddr_r = pc_r;
-		end
-		cpust_wait_data_rd: begin
-			rvalid_r 	 = 1'b1;
-			memoryAddr_r = 16'hffff;  // Change this to memory address for mem rd instruction
-		end
-		cpust_wait_data_wr: begin
-			rvalid_r 	 = 1'b1;
-			memoryAddr_r = 16'heeee;  // Change this to memory address for mem wr instruction
 		end
 		default: ;
 	endcase
@@ -621,17 +633,15 @@ begin
 
 	load_memory = 1'b0;
 
-	case (cpu_state_r)
-		cpust_execute: begin 
-			casex (pipelineStage2_r)
-				16'h5xxx, 16'h6xxx, 16'b110xxxxxxxxxxxxx:	begin /* memory */
-					if (is_load_store_from_ins(pipelineStage2_r) == 1'b0) begin /* load */
-						load_memory = 1'b1;
-					end
-				end
-			endcase
+	casex (pipelineStage2_r)
+		16'h5xxx, 16'h6xxx, 16'b110xxxxxxxxxxxxx:	begin /* memory */
+			if (is_load_store_from_ins(pipelineStage2_r) == 1'b0) begin /* load */
+				load_memory = 1'b1;
+			end else begin
+				store_memory = 1'b1;
+			end
 		end
-	endcase 
+	endcase
 
 end
 
@@ -778,6 +788,7 @@ begin
 	endcase
 end
 
+/* reg A / B in pipeline stage 0 */
 always @(*)
 begin
 	regARdAddr_stage0_r = 5'd16;

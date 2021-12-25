@@ -11,10 +11,9 @@ module cpu_harness #(
 	input [15:0] memoryIn,
 	output [15:0] memoryOut,
 	output [15:0] memoryAddr,
-	output memoryRvalid,
-	input  memoryRready,
-	output memoryWvalid,
-	input  memoryWready,
+	output memoryValid,
+	input  memoryReady,
+	output memoryWr,
 	input [3:0] irq
 );
 
@@ -69,10 +68,9 @@ pipeline16 pip0
 	.memoryIn(memoryIn),
 	.memoryOut(memoryOut),
 	.memoryAddr(memoryAddr),
-	.rvalid(memoryRvalid),
-	.rready(memoryRready),
-	.wvalid(memoryWvalid),
-	.wready(memoryWready),
+	.valid(memoryValid),
+	.ready(memoryReady),
+	.wr(memoryWr),
 	.irq(irq)
 );
 

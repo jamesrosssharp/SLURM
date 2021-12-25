@@ -16,22 +16,42 @@ initial begin
         $readmemh("ram_image.mem", memory);
 end
 
-wire [15:0] memoryAddr;
-reg [15:0]  memoryIn;
-wire [15:0] memoryOut;
-wire  memoryRvalid;
-reg   memoryRvalid_r;
-wire  memoryRready = (memBUSY == 1'b0) ? memoryRvalid_r : 1'b0;
-wire  memoryWvalid;
-reg   memoryWvalid_r;
-wire  memoryWready = (memBUSY == 1'b0) ? memoryWvalid_r : 1'b0;
+wire  [15:0] memoryAddr;
+reg   [15:0]  memoryIn;
+wire  [15:0] memoryOut;
+wire  memoryValid;
+wire  memoryWr;
 
+wire [3:0] irq;
+
+localparam state_idle = 2'b00;
+localparam state_grant = 2'b01;
+
+reg [1:0] state = state_idle, state_next;
+
+wire   memoryReady = (state == state_grant) ? 1'b1 : 1'b0;
+
+always @(*)
+begin
+	state_next = state;
+
+	case (state)
+		state_idle:
+			if (memoryValid == 1'b1 && !memBUSY) begin
+				state_next = state_grant;
+			end
+		state_grant:
+			if (memoryValid == 1'b0)
+				state_next = state_idle;
+	endcase
+
+end
 
 always @(posedge CLK)
 begin
-	memoryRvalid_r <= memoryRvalid;
-	memoryWvalid_r <= memoryWvalid;
+	state <= state_next;
 end
+
 
 initial begin
 	#1000 memBUSY = 1'b0;
@@ -47,27 +67,26 @@ end
 
 always @(posedge CLK)
 begin
-	if (memBUSY == 1'b0) begin
-		if (memoryWvalid == 1'b1)
+	if (state == state_grant) begin
+		if (memoryWr == 1'b1)
 			memory[memoryAddr] <= memoryOut;
 		memoryIn <= memory[memoryAddr];
-	end else
+	end else if (memBUSY == 1'b1)
 		memoryIn <= 16'hbeef;
+	else
+		memoryIn <= 16'h0000;
 end
 
 cpu_harness cpu0 
 (
-
-
 	CLK,
 	RSTb,
 	memoryIn,
 	memoryOut,
 	memoryAddr,
-	memoryRvalid,
-	memoryRready,
-	memoryWvalid,
-	memoryWready,
+	memoryValid,
+	memoryReady,
+	memoryWr,
 	irq
 );
 
