@@ -165,6 +165,9 @@ reg branch_taken4_r;
 
 // Memory load
 
+reg [BITS - 1:0] loadStoreAddr_stage3_r;
+reg [BITS - 1:0] loadStoreAddr_stage3_r_next;
+
 reg load_memory; // asserted when the CPU is about to execute a load instruction
 reg store_memory; // asserted when the CPU is about to execute a store instruction
 
@@ -334,6 +337,7 @@ begin
 		branch_taken2_r  <= 1'b0;
 		branch_taken3_r  <= 1'b0;
 		branch_taken4_r  <= 1'b0;	
+		loadStoreAddr_stage3_r		 <= {BITS{1'b0}};
 	end else begin
 		cpu_state_r <= cpu_state_r_next;
 		pc_r 		<= pc_r_next;
@@ -359,6 +363,7 @@ begin
 		branch_taken2_r		<= branch_taken2_r_next;
 		branch_taken3_r		<= branch_taken2_r;
 		branch_taken4_r		<= branch_taken3_r;
+		loadStoreAddr_stage3_r	<= loadStoreAddr_stage3_r_next;
 	end
 end
 
@@ -611,16 +616,24 @@ always @(*)
 begin
 	valid_r = 1'b0;
 	memoryAddr_r = 16'd0;
+	wr_r = 1'b1;
 
 	case (cpu_state_r)
-		cpust_execute: begin
-			if (load_memory == 1'b0) 
-				valid_r 	 = 1'b1;
-			memoryAddr_r = pc_r;
-		end
+		cpust_execute,
 		cpust_wait_mem_ready2: begin
 			valid_r 	 = 1'b1;
 			memoryAddr_r = pc_r;
+		end
+		cpust_execute_load,
+		cpust_wait_mem_load2: begin
+			memoryAddr_r = loadStoreAddr_stage3_r;
+			valid_r = 1'b1; 
+		end
+		cpust_execute_store,
+		cpust_wait_mem_store2: begin
+			memoryAddr_r = loadStoreAddr_stage3_r;
+			valid_r = 1'b1; 
+			wr_r = 1'b1;
 		end
 		default: ;
 	endcase
@@ -678,7 +691,10 @@ begin
 	pipelineStage4_r_next = pipelineStage4_r;
 
 	case (cpu_state_r)
-		cpust_execute: begin 	
+		cpust_execute,
+		cpust_execute_load,
+		cpust_execute_store
+		: begin 	
 			pipelineStage0_r_next = memoryIn;
 			pipelineStage1_r_next = pipelineStage0_r;
 			pipelineStage2_r_next = pipelineStage1_r;
@@ -739,6 +755,18 @@ begin
 					end
 				endcase
 			end
+		end
+		cpust_wait_mem_ready1,
+		cpust_wait_mem_ready2,
+		cpust_wait_mem_load1, 
+		cpust_wait_mem_load2,
+		cpust_wait_mem_store1,
+		cpust_wait_mem_store2: begin
+			pipelineStage0_r_next = pipelineStage0_r;
+			pipelineStage1_r_next = pipelineStage1_r;
+			pipelineStage2_r_next = pipelineStage2_r;
+			pipelineStage3_r_next = pipelineStage3_r;
+			pipelineStage4_r_next = NOP_INSTRUCTION; // Need to clear final pipeline stage (write back) during these wait states
 		end
 		default: ;
 	endcase
@@ -855,6 +883,27 @@ begin
 		default: ;
 	endcase
 
+end
+
+/* determine memory output and memory address */
+
+always @(*)
+begin
+	loadStoreAddr_stage3_r_next = regB;
+
+	casex (pipelineStage2_r)
+		16'h5xxx:	begin /* load store, reg address */
+			loadStoreAddr_stage3_r_next = regB;
+		end
+		16'h6xxx:	begin /* load store, imm address */
+			// Store address
+			loadStoreAddr_stage3_r_next = imm_stage2_r;
+		end
+		16'b110xxxxxxxxxxxxx: begin /* memory, reg, reg + immediate index */ 
+			loadStoreAddr_stage3_r_next = regB + imm_stage2_r;
+		end
+	endcase
+	
 end
 
 /* determine ALU operation */
