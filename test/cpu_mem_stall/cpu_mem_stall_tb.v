@@ -74,7 +74,7 @@ begin
 	end else if (memBUSY == 1'b1)
 		memoryIn <= 16'hbeef;
 	else
-		memoryIn <= 16'h0000;
+		memoryIn <= 16'hdead;
 end
 
 cpu_harness cpu0 

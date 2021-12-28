@@ -535,10 +535,22 @@ begin
 		cpust_execute: begin
 			// TODO: If we are not changing bank, we don't need the penalty
 			// and can jump straight to the corresponding execute state
-			if (load_memory == 1'b1) 
-				cpu_state_r_next = cpust_wait_mem_load1;
-			else if (store_memory == 1'b1) 
-				cpu_state_r_next = cpust_wait_mem_store1;
+			if (load_memory == 1'b1) begin 
+				// If in same bank, short circuit 
+				if (pc_r[15:14] == loadStoreAddr_stage3_r_next[15:14])
+					cpu_state_r_next = cpust_execute_load;
+				else 
+					cpu_state_r_next = cpust_wait_mem_load1;
+			end
+			else if (store_memory == 1'b1) begin
+				if (pc_r[15:14] == loadStoreAddr_stage3_r_next[15:14])
+					cpu_state_r_next = cpust_execute_store;
+				else
+					cpu_state_r_next = cpust_wait_mem_store1;
+			end else begin
+				if (pc_r[15:14] != pc_r_next[15:14])
+					cpu_state_r_next = cpust_wait_mem_ready1;
+			end
 		end 
 		cpust_wait_mem_ready1:
 			cpu_state_r_next = cpust_wait_mem_ready2;
@@ -548,7 +560,10 @@ begin
 		/* load instructions (access data memory) */
 		cpust_execute_load: begin
 			if (load_memory == 1'b0) begin
-				cpu_state_r_next = cpust_wait_mem_ready1;
+				if (pc_r_next[15:14] == loadStoreAddr_stage3_r[15:14])
+					cpu_state_r_next = cpust_execute;
+				else
+					cpu_state_r_next = cpust_wait_mem_ready1;
 			end
 		end 
 		cpust_wait_mem_load1:
@@ -559,7 +574,10 @@ begin
 		/* store instructions (write to data memory) */
 		cpust_execute_store: begin
 			if (store_memory == 1'b0) begin
-				cpu_state_r_next = cpust_wait_mem_ready1;
+				if (pc_r_next[15:14] == loadStoreAddr_stage3_r[15:14])
+					cpu_state_r_next = cpust_execute;
+				else
+					cpu_state_r_next = cpust_wait_mem_ready1;
 			end
 		end
 		cpust_wait_mem_store1:
@@ -625,7 +643,7 @@ begin
 			endcase
 		end
 		cpust_wait_mem_ready2:
-			if (ready == 1'b1) begin
+			if (ready == 1'b1 && stall_count_r == 3'b000  ) begin
 				pc_r_prev_next = pc_r;
 				pc_r_next = pc_r + 1;
 			end
@@ -945,23 +963,35 @@ end
 always @(*)
 begin
 
-	aluA_r_next = regA;
-	aluB_r_next = regB;
-	alu_op_r_next = 5'd0; /* mov - noop */
+	aluA_r_next = aluA_r;
+	aluB_r_next = aluB_r;
+	alu_op_r_next = alu_op_r; 
+	
+	case (prev_cpu_state_r)
+		cpust_execute,
+		cpust_execute_load,
+		cpust_execute_store: begin
+	
+			aluA_r_next = regA;
+			aluB_r_next = regB;
+			alu_op_r_next = 5'd0; /* mov - noop */
 
-	casex (pipelineStage2_r)
-		16'h04xx:	begin /* alu op, reg */
-			alu_op_r_next 	= single_reg_alu_op_from_ins(pipelineStage2_r);
+			casex (pipelineStage2_r)
+				16'h04xx:	begin /* alu op, reg */
+					alu_op_r_next 	= single_reg_alu_op_from_ins(pipelineStage2_r);
+				end
+				16'h2xxx:   begin /* alu op, reg reg */
+					alu_op_r_next 	= alu_op_from_ins(pipelineStage2_r);
+				end
+				16'h3xxx:	begin	/* alu op, reg imm */
+					aluB_r_next 	= imm_stage2_r;
+					alu_op_r_next 	= alu_op_from_ins(pipelineStage2_r);
+				end
+				default: ;
+			endcase
 		end
-		16'h2xxx:   begin /* alu op, reg reg */
-			alu_op_r_next 	= alu_op_from_ins(pipelineStage2_r);
-		end
-		16'h3xxx:	begin	/* alu op, reg imm */
-			aluB_r_next 	= imm_stage2_r;
-			alu_op_r_next 	= alu_op_from_ins(pipelineStage2_r);
-		end
-		default: ;
 	endcase
+
 end
 
 /* determine result of execution */

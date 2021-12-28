@@ -1,8 +1,8 @@
 		.org 0x0000
 		
-/*		mov r0, 0x8000
-		mov r1, 0xc000
-		mov r2, 0x4000
+		mov r0, 0x2000
+		mov r1, 0x3000
+		mov r2, 4
 loop:
 		ld r3,[r0]
 		st [r1], r3
@@ -11,27 +11,49 @@ loop:
 		sub r2, 1
 		bnz loop
 
+		ba other_bank
+
 die:
 		ba die
-*/
 
-		mov r0, 3
+
+/*		mov r0, 3
 		mov r1, 2
 		add r0, r1
 
 		mov r2, 0x8000
 		ld	r3, [r2]
-
+*/		
 die2:
 		ba die2
+
+		.padto 0x2000
+	dw 0x1111
+	dw 0x2222
+	dw 0x3333
+	dw 0x4444
+		.padto 0x4000
+other_bank:
+		mov r0, 0x2000
+		mov r1, 0x3000
+		mov r2, 4
+loop2:
+		ld r3,[r0]
+		st [r1], r3
+		inc r0
+		inc r1
+		sub r2, 1
+		bnz loop2
+
+		ba die
 
 		.padto 0x8000
 
 tileset:
-	dw 0x0
-	dw 0x0
-	dw 0x0
-	dw 0x0
+	dw 0x55aa
+	dw 0x55bb
+	dw 0x55cc
+	dw 0x55dd
 	dw 0x5580
 	dw 0x5555
 	dw 0x9977
