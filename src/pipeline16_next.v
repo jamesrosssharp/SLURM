@@ -71,6 +71,11 @@ reg [BITS - 1:0] memoryAddr_r;
 reg valid_r;
 reg wr_r;
 
+reg [BITS - 1:0] memoryOut_stage3_r;
+reg [BITS - 1:0] memoryOut_stage3_r_next;
+
+
+assign memoryOut = memoryOut_stage3_r;
 assign valid = valid_r;
 assign memoryAddr = memoryAddr_r;
 assign wr = wr_r;
@@ -173,7 +178,7 @@ reg store_memory; // asserted when the CPU is about to execute a store instructi
 
 /* CPU state */
 
-reg [3:0] cpu_state_r, cpu_state_r_next;
+reg [3:0] cpu_state_r, cpu_state_r_next, prev_cpu_state_r;
 
 localparam cpust_halt 	 	     = 4'b0000; // CPU is halted; instructions not fetched
 localparam cpust_execute 	     = 4'b0001; // CPU is executing non-memory instructions
@@ -315,6 +320,7 @@ always @(posedge CLK)
 begin
 	if (RSTb == 1'b0) begin
 		cpu_state_r <= cpust_wait_mem_ready1;	// We bring CPU out of reset waiting to access instruction memory
+		prev_cpu_state_r <= cpust_halt;
 		pc_r 		<= 16'd0;				// CPU comes out of reset with PC set to 0x0000
 		pc_r_prev 	<= 16'd0;
 		pipelineStage0_r <= NOP_INSTRUCTION;
@@ -338,8 +344,13 @@ begin
 		branch_taken3_r  <= 1'b0;
 		branch_taken4_r  <= 1'b0;	
 		loadStoreAddr_stage3_r		 <= {BITS{1'b0}};
+		memoryOut_stage3_r			 <= {BITS{1'b0}};
+		result_stage2_r  <= {BITS{1'b0}};
+		result_stage3_r  <= {BITS{1'b0}};
+		result_stage4_r  <= {BITS{1'b0}};
 	end else begin
 		cpu_state_r <= cpu_state_r_next;
+		prev_cpu_state_r <= cpu_state_r;
 		pc_r 		<= pc_r_next;
 		pc_r_prev 	<= pc_r_prev_next;
 		pipelineStage0_r <= pipelineStage0_r_next;
@@ -364,6 +375,10 @@ begin
 		branch_taken3_r		<= branch_taken2_r;
 		branch_taken4_r		<= branch_taken3_r;
 		loadStoreAddr_stage3_r	<= loadStoreAddr_stage3_r_next;
+		memoryOut_stage3_r		<= memoryOut_stage3_r_next;
+		result_stage2_r <= result_stage2_r_next;
+		result_stage3_r <= result_stage3_r_next;
+		result_stage4_r <= result_stage4_r_next;
 	end
 end
 
@@ -456,7 +471,15 @@ end
 always @(*)
 begin
 
-	stall_count_r_next = (stall_count_r == 3'b000) ? stall_count_r : stall_count_r - 1;
+	stall_count_r_next = stall_count_r;
+
+	case (cpu_state_r)
+		cpust_execute,
+		cpust_execute_load,
+		cpust_execute_store:
+			stall_count_r_next = (stall_count_r == 3'b000) ? stall_count_r : stall_count_r - 1;
+	endcase	
+
 
 	if (partial_pipeline_stall_r == 1'b0) begin
 		
@@ -616,7 +639,7 @@ always @(*)
 begin
 	valid_r = 1'b0;
 	memoryAddr_r = 16'd0;
-	wr_r = 1'b1;
+	wr_r = 1'b0;
 
 	case (cpu_state_r)
 		cpust_execute,
@@ -645,6 +668,7 @@ always @(*)
 begin
 
 	load_memory = 1'b0;
+	store_memory = 1'b0;
 
 	casex (pipelineStage2_r)
 		16'h5xxx, 16'h6xxx, 16'b110xxxxxxxxxxxxx:	begin /* memory */
@@ -889,21 +913,31 @@ end
 
 always @(*)
 begin
-	loadStoreAddr_stage3_r_next = regB;
-
-	casex (pipelineStage2_r)
-		16'h5xxx:	begin /* load store, reg address */
-			loadStoreAddr_stage3_r_next = regB;
-		end
-		16'h6xxx:	begin /* load store, imm address */
-			// Store address
-			loadStoreAddr_stage3_r_next = imm_stage2_r;
-		end
-		16'b110xxxxxxxxxxxxx: begin /* memory, reg, reg + immediate index */ 
-			loadStoreAddr_stage3_r_next = regB + imm_stage2_r;
-		end
-	endcase
+	loadStoreAddr_stage3_r_next = loadStoreAddr_stage3_r;
+	memoryOut_stage3_r_next 	= memoryOut_stage3_r;
 	
+	case (prev_cpu_state_r)
+		cpust_execute,
+		cpust_execute_load,
+		cpust_execute_store: begin
+			casex (pipelineStage2_r)
+				16'h5xxx:	begin /* load store, reg address */
+					loadStoreAddr_stage3_r_next = regB;
+					memoryOut_stage3_r_next = regA;
+				end
+				16'h6xxx:	begin /* load store, imm address */
+					// Store address
+					loadStoreAddr_stage3_r_next = imm_stage2_r;
+					memoryOut_stage3_r_next = regA;
+				end
+				16'b110xxxxxxxxxxxxx: begin /* memory, reg, reg + immediate index */ 
+					loadStoreAddr_stage3_r_next = regB + imm_stage2_r;
+					memoryOut_stage3_r_next = regA;
+				end
+			endcase
+		end
+		default: ;
+	endcase	
 end
 
 /* determine ALU operation */
@@ -927,6 +961,34 @@ begin
 			alu_op_r_next 	= alu_op_from_ins(pipelineStage2_r);
 		end
 		default: ;
+	endcase
+end
+
+/* determine result of execution */
+always @(*)
+begin
+	result_stage2_r_next = result_stage2_r; 
+	result_stage3_r_next = result_stage3_r;
+	result_stage4_r_next = result_stage4_r;
+
+	case (prev_cpu_state_r)
+		cpust_execute,
+		cpust_execute_load,
+		cpust_execute_store: begin
+	
+			result_stage2_r_next = pc_r_prev - 1; // PC for write back of link register 
+			result_stage3_r_next = result_stage2_r;
+			result_stage4_r_next = result_stage3_r;
+
+			casex (pipelineStage2_r)
+				16'h02xx:	begin /* inc */
+					result_stage3_r_next = regB + 1;
+				end
+				16'h03xx:   begin /* dec */
+					result_stage3_r_next = regB - 1;
+				end
+			endcase
+		end
 	endcase
 end
 
