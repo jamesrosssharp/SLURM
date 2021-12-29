@@ -1,24 +1,23 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Tue Dec 28 09:10:34 2021
+[*] Wed Dec 29 00:56:27 2021
 [*]
 [dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/cpu_mem_stall/dump.vcd"
-[dumpfile_mtime] "Tue Dec 28 09:08:50 2021"
-[dumpfile_size] 3924046
+[dumpfile_mtime] "Wed Dec 29 00:55:19 2021"
+[dumpfile_size] 4858762
 [savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/cpu_mem_stall/config.gtkw"
 [timestart] 0
 [size] 1920 996
 [pos] -1 -1
-*-21.000000 2300000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-20.000000 2100000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] cpu_mem_stall_tb.
 [treeopen] cpu_mem_stall_tb.cpu0.
 [sst_width] 290
 [signals_width] 383
 [sst_expanded] 1
 [sst_vpaned_height] 281
-@29
-cpu_mem_stall_tb.memBUSY
 @28
+cpu_mem_stall_tb.memBUSY
 cpu_mem_stall_tb.state[1:0]
 cpu_mem_stall_tb.cpu0.CLK
 cpu_mem_stall_tb.cpu0.RSTb
@@ -30,15 +29,20 @@ cpu_mem_stall_tb.cpu0.memoryOut[15:0]
 cpu_mem_stall_tb.cpu0.memoryWr
 @200
 -
-@22
+@24
 cpu_mem_stall_tb.cpu0.reg0.\regFileA[0][15:0]
 cpu_mem_stall_tb.cpu0.reg0.\regFileA[1][15:0]
+@22
 cpu_mem_stall_tb.cpu0.reg0.\regFileA[2][15:0]
+@24
 cpu_mem_stall_tb.cpu0.reg0.\regFileA[3][15:0]
+@22
 cpu_mem_stall_tb.cpu0.reg0.\regFileA[4][15:0]
 cpu_mem_stall_tb.cpu0.reg0.\regFileA[5][15:0]
 cpu_mem_stall_tb.cpu0.reg0.\regFileA[6][15:0]
 cpu_mem_stall_tb.cpu0.reg0.\regFileA[7][15:0]
+@23
+cpu_mem_stall_tb.cpu0.reg0.\regFileA[15][15:0]
 @200
 -
 @22
@@ -67,6 +71,7 @@ cpu_mem_stall_tb.cpu0.pip0.regA[15:0]
 cpu_mem_stall_tb.cpu0.pip0.regB[15:0]
 cpu_mem_stall_tb.cpu0.alu0.aluOut[15:0]
 cpu_mem_stall_tb.cpu0.pip0.imm_r_next[11:0]
+cpu_mem_stall_tb.cpu0.pip0.imm_stage2_r[15:0]
 cpu_mem_stall_tb.cpu0.pip0.imm_r[11:0]
 @28
 cpu_mem_stall_tb.cpu0.pip0.stall_count_r[2:0]

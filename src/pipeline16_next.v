@@ -615,12 +615,14 @@ begin
 						if (branch_taken_from_ins(pipelineStage1_r, Z, S, C) == 1'b1) begin
 							if (is_branch_reg_ind_from_ins(pipelineStage1_r) == 1'b0) begin
 								pc_r_next = {imm_r, imm_lo_from_ins(pipelineStage1_r)};
+								pc_r_prev_next = pc_r_next;	
 							end
 						end
 						/* branch and link? */
 						else if (is_branch_link_from_ins(pipelineStage1_r) == 1'b1) begin
 							if (is_branch_reg_ind_from_ins(pipelineStage1_r) == 1'b0) begin
 								pc_r_next = {imm_r, imm_lo_from_ins(pipelineStage1_r)};
+								pc_r_prev_next = pc_r_next;
 							end	
 						end
 					end
@@ -633,10 +635,12 @@ begin
 			casex (pipelineStage2_r)
 				16'h01xx:	begin /* ret / iret */
 					pc_r_next = regA;
+					pc_r_prev_next = pc_r_next;
 				end
 				16'h4xxx:	 begin /* branch */
 					if (is_branch_reg_ind_from_ins(pipelineStage2_r) == 1'b1 && branch_taken2_r == 1'b1) begin
 						pc_r_next = regA + imm_stage2_r;
+						pc_r_prev_next = pc_r_next;
 					end
 				end
 				default: ;
@@ -647,7 +651,10 @@ begin
 				pc_r_prev_next = pc_r;
 				pc_r_next = pc_r + 1;
 			end
-		default: ;
+		default: begin
+			pc_r_next = pc_r_prev;
+			pc_r_prev_next = pc_r_prev;
+		end
 	endcase
 end
 
@@ -737,7 +744,10 @@ begin
 		cpust_execute_load,
 		cpust_execute_store
 		: begin 	
-			pipelineStage0_r_next = memoryIn;
+			if (cpu_state_r == cpust_execute) 
+				pipelineStage0_r_next = memoryIn;
+			else
+				pipelineStage0_r_next = NOP_INSTRUCTION;
 			pipelineStage1_r_next = pipelineStage0_r;
 			pipelineStage2_r_next = pipelineStage1_r;
 			pipelineStage3_r_next = pipelineStage2_r;
@@ -901,9 +911,6 @@ begin
 	endcase
 end
 
-
-
-
 /* immediate register */
 
 always @(*)
@@ -917,7 +924,24 @@ begin
 	if (stall_count_r > 3'b001)
 		imm_r_next = imm_r;
 
-	imm_stage2_r_next 	= {imm_r, imm_lo_from_ins(pipelineStage1_r)};
+	case (cpu_state_r)
+		cpust_execute,
+		cpust_execute_load,
+		cpust_execute_store: ;
+		default: imm_r_next = imm_r;
+	endcase
+
+	imm_stage2_r_next = imm_stage2_r;
+
+	case (prev_cpu_state_r)
+		cpust_execute,
+		cpust_execute_load,
+		cpust_execute_store: begin
+	
+			imm_stage2_r_next 	= {imm_r, imm_lo_from_ins(pipelineStage1_r)};
+	
+		end
+	endcase
 
 	casex (pipelineStage1_r)
 		16'h1xxx:   	/* imm */
