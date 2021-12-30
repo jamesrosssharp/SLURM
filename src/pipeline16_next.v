@@ -15,7 +15,6 @@ pipeline16
 	input CLK,
 	input RSTb,
 
-
 	/* flags from ALU */
 	input C,	
 	input Z,
@@ -49,6 +48,14 @@ pipeline16
 	output valid,
 	input  ready,
 	output wr,
+
+	/* IO port signals */
+
+	input  [15:0] portIn,
+	output [15:0] portOut,
+	output [15:0] portAddress,
+	output portRd,
+	output portWr, 
 
 	/* interrupt lines: spi flash dma, audio, video */
 

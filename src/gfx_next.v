@@ -33,7 +33,7 @@ module gfx #(parameter BITS = 16, parameter BANK_ADDRESS_BITS = 14, parameter AD
 
 	// BG1
 
-	output [15:0] bg1_memory_address = 16'd0,
+	output [15:0] bg1_memory_address,
 	input [15:0] bg1_memory_data,
 	output bg1_rvalid,
 	input bg1_rready,

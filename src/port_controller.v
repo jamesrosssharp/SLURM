@@ -15,24 +15,54 @@ module port_controller
 	output [BITS - 1 : 0] DATA_OUT,
 	input memWR,  /* write memory */
 	input memRD,  /* read request */
-	output [31:0] PINS, /* output pins */ 
-	input [7:0] INPUT_PINS /* input pins */
+	output [31:0] 	PINS, /* output pins */ 
+	input [7:0] 	INPUT_PINS /* input pins */
 
 	// Memory ports
 
 	// Sprite
+	output  [15:0] 	spcon_memory_address,
+	input [15:0] 	spcon_memory_data,
+	output 			spcon_rvalid, // memory address valid
+	input  			spcon_rready,  // memory data valid
 
 	// BGCON0
-	
+	output  [15:0] 	bg0_memory_address,
+	input [15:0] 	bg0_memory_data,
+	output 			bg0_rvalid, // memory address valid
+	input  			bg0_rready,  // memory data valid
+
 	// BGCON1
-	
+	output  [15:0] 	bg1_memory_address,
+	input [15:0] 	bg1_memory_data,
+	output 			bg1_rvalid, // memory address valid
+	input  			bg1_rready,  // memory data valid
+
 	// OV
+	output  [15:0] 	ov_memory_address,
+	input [15:0] 	ov_memory_data,
+	output 			ov_rvalid, // memory address valid
+	input  			ov_rready,  // memory data valid
 
 	// Spi flash (write)
-
+	output  [15:0] 	fl_memory_address,
+	output [15:0] 	fl_memory_data,
+	output 			fl_wvalid, // memory address valid
+	input  			fl_wready,  // memory data valid
+	
 	// Audio 
+	output  [15:0] 	au_memory_address,
+	input [15:0] 	au_memory_data,
+	output 			au_rvalid, // memory address valid
+	input  			au_rready,  // memory data valid
+
+	// Interrupt request quotients
+	output [3:0]	irq
 
 );
+
+// TODO: remove this when we add in the audio core
+assign au_rvalid = 1'b0;
 
 
 reg WR_UART;
@@ -192,6 +222,22 @@ gfx #(.BITS(BITS), .BANK_ADDRESS_BITS(14), .ADDRESS_BITS(12)) gfx0
 	.BB(PINS[19:16]),
 	.RR(PINS[23:20]),
 	.GG(PINS[27:24]),
+	.spcon_memory_address(spcon_memory_address),
+	.spcon_memory_data(spcon_memory_data),
+	.spcon_rvalid(spcon_rvalid),
+	.spcon_rready(spcon_rready),
+	.bg0_memory_address(bg0_memory_address),
+	.bg0_memory_data(bg0_memory_data),
+	.bg0_rvalid(bg0_rvalid),
+	.bg0_rready(bg0_rready),
+	.bg1_memory_address(bg1_memory_address),
+	.bg1_memory_data(bg1_memory_data),
+	.bg1_rvalid(bg1_rvalid),
+	.bg1_rready(bg1_rready),
+	.ov_memory_address(ov_memory_address),
+	.ov_memory_data(ov_memory_data),
+	.ov_rvalid(ov_rvalid),
+	.ov_rready(ov_rready)
 );
 
 /*audio
@@ -219,10 +265,10 @@ spi_flash
 	INPUT_PINS[7],
 	PINS[5],
 	PINS[6],
-	spi_flash_wvalid,
-	spi_flash_wready,
-	spi_flash_memory_address,
-	spi_flash_memory_data
+	fl_wvalid,
+	fl_wready,
+	fl_memory_address,
+	fl_memory_data
 );
 
 
