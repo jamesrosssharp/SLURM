@@ -131,7 +131,6 @@ begin
 	x_mem_incr_next = x_mem_incr;
 	y_mem_incr_next = y_mem_incr;
 	cur_texel_next  = cur_texel;
-	y_count_next = y_count;
 
 	x_next = x;
 
@@ -178,7 +177,6 @@ begin
 
 			x_next = x1;
 
-			y_count_next = 1'b0;
 	
 			// Set starting memory offset
 			r_state_next = r_fetch;

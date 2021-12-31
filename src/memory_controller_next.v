@@ -76,40 +76,40 @@ wire [15:0] B4_DOUT;
 wire [15:0] B4_DIN;
 wire B4_WR;
 
-memory #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 2)) mb1
+memory #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 2), .MEM_INIT_FILE("mem_init1.rom")) mb1
 (
 	CLK,
 	B1_ADDR,
 	B1_DIN,
 	B1_DOUT,
-	B1_WR,
+	B1_WR
 );
 
-memory #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 2)) mb2
+memory #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 2), .MEM_INIT_FILE("mem_init2.rom")) mb2
 (
 	CLK,
 	B2_ADDR,
 	B2_DIN,
 	B2_DOUT,
-	B2_WR,
+	B2_WR
 );
 
-memory #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 2)) mb3
+memory #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 2), .MEM_INIT_FILE("mem_init3.rom")) mb3
 (
 	CLK,
 	B3_ADDR,
 	B3_DIN,
 	B3_DOUT,
-	B3_WR,
+	B3_WR
 );
 
-memory #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 2)) mb4
+memory #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 2), .MEM_INIT_FILE("mem_init4.rom")) mb4
 (
 	CLK,
 	B4_ADDR,
 	B4_DIN,
 	B4_DOUT,
-	B4_WR,
+	B4_WR
 );
 
 wire [15:0] cpu_memory_data_w;

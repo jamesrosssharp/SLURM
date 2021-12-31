@@ -124,9 +124,9 @@ alu0
 (
 	.CLK(CLK),
 	.RSTb(RSTb),
-	.A_in(aluA),
-	.B_in(aluB),
-	.aluOp_in(aluOp),
+	.A(aluA),
+	.B(aluB),
+	.aluOp(aluOp),
 	.aluOut(aluOut),
 	.C(C), 
 	.Z(Z), 	
@@ -138,8 +138,9 @@ alu0
 
 // Port controller
 
-port_controller pc0
+port_controller
 #(.BITS(16), .ADDRESS_BITS(16), .CLOCK_FREQ(CLOCK_FREQ))
+pc0
 (
 	.CLK(CLK),	
 	.RSTb(RSTb),
@@ -177,8 +178,9 @@ port_controller pc0
 	.irq(cpuIRQ)
 );
 
-module memory_controller
-#(parameter BITS = 16, ADDRESS_BITS = 16, CLOCK_FREQ = 10000000)
+memory_controller
+#(.BITS(16), .ADDRESS_BITS(16), .CLOCK_FREQ(CLOCK_FREQ))
+mem0
 (
 	CLK,	
 	RSTb,

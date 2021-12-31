@@ -469,7 +469,6 @@ begin
 		cur_render_x	 <= cur_render_x_next;
 		cur_tile		 <= cur_tile_next;
 		fetch_count		<= fetch_count_next;
-		blit_state_r	<= blit_state_r_next;
 		color_index_r <= color_index_r_next;
 		color_index2_r <= color_index2_r_next;
 		layer			<= layer_next;

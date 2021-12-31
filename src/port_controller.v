@@ -16,7 +16,7 @@ module port_controller
 	input memWR,  /* write memory */
 	input memRD,  /* read request */
 	output [31:0] 	PINS, /* output pins */ 
-	input [7:0] 	INPUT_PINS /* input pins */
+	input [7:0] 	INPUT_PINS, /* input pins */
 
 	// Memory ports
 
@@ -257,7 +257,7 @@ spi_flash
 (
 	CLK,	
 	RSTb,
-	ADDRESS[3:0],
+	ADDRESS[7:0],
 	DATA_IN,
 	DATA_OUT_SPI,
 	WR_SPI,

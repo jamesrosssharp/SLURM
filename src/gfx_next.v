@@ -166,67 +166,6 @@ wire fb_rready;
 wire alpha_override_out;
 wire [3:0] alpha_out;
 
-
-gfx_memory_arbiter arb0
-(
-	CLK,
-	RSTb,
-
-	/* sprite controller */
-	spcon_memory_address,
-	spcon_memory_data,
-	spcon_rvalid, 
-	spcon_rready, 
-
-	/* background controllers */
-	bg0_memory_address,
-	bg0_memory_data,
-	bg0_rvalid,
-	bg0_rready, 
-
-	bg1_memory_address,
-	bg1_memory_data,
-	bg1_rvalid,
-	bg1_rready, 
-
-	/* overlay controller */
-	fb_memory_address,
-	fb_memory_data,
-	fb_rvalid, 
-	fb_rready,  
-
-	/* spi flash controller */
-	flash_dma_address,
-	flash_dma_data,
-	flash_dma_wvalid,
-	flash_dma_wready,
-
-	B1_ADDR,
-	B1_DIN,
-	B1_REQ,
-	B1_DOUT,
-	B1_WR,
-
-	B2_ADDR,
-	B2_DIN,
-	B2_REQ,
-	B2_DOUT,
-	B2_WR,
-
-	B3_ADDR,
-	B3_DIN,
-	B3_REQ,
-	B3_DOUT,
-	B3_WR,
-
-	B4_ADDR,
-	B4_DIN,
-	B4_REQ,
-	B4_DOUT,
-	B4_WR
-
-);
-
 sprite_controller spcon0
 (
 	CLK,
@@ -258,7 +197,7 @@ background_controller2 #(48, 369, 33, 513) bgcon0
 	CLK,
 	RSTb,
 
-	addr,
+	addr[3:0],
 	data_out_cpr,
 	WR_bg0,
 

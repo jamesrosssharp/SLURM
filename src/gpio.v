@@ -26,7 +26,7 @@ assign DATA_OUT = {8'h00, dout_r};
 always @(posedge CLK)
 begin
 	if (RSTb == 1'b0) begin
-		gpio_reg <= 4'h00;
+		gpio_reg <= 4'h0;
 		gpio_in_reg_a <= 6'h00;
 		gpio_in_reg_b <= 6'h00;
 	end else begin

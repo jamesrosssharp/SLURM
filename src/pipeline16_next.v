@@ -81,6 +81,8 @@ reg wr_r;
 reg [BITS - 1:0] memoryOut_stage3_r;
 reg [BITS - 1:0] memoryOut_stage3_r_next;
 
+reg [BITS - 1:0] portAddress_r, portAddress_r_next;
+assign portAddress = portAddress_r;
 
 assign memoryOut = memoryOut_stage3_r;
 assign valid = valid_r;
@@ -258,6 +260,13 @@ input [15:0] p0;
     is_load_store_from_ins = p0[8]; // 0 = load, 1 = store
 endfunction
 
+function is_io_poke_from_ins;
+input [15:0] p0;
+    is_io_poke_from_ins = p0[8]; // 0 = poke, 1 = peek
+endfunction
+
+
+
 function uses_flags_for_branch;
 input [15:0] ins;
 begin
@@ -355,6 +364,7 @@ begin
 		result_stage2_r  <= {BITS{1'b0}};
 		result_stage3_r  <= {BITS{1'b0}};
 		result_stage4_r  <= {BITS{1'b0}};
+		portAddress_r    <= {BITS{1'b0}};
 	end else begin
 		cpu_state_r <= cpu_state_r_next;
 		prev_cpu_state_r <= cpu_state_r;
@@ -386,6 +396,7 @@ begin
 		result_stage2_r <= result_stage2_r_next;
 		result_stage3_r <= result_stage3_r_next;
 		result_stage4_r <= result_stage4_r_next;
+		portAddress_r <= portAddress_r_next;
 	end
 end
 
@@ -438,6 +449,11 @@ begin
 				if (is_load_store_from_ins(pipelineStage0_r) == 1'b0) begin /* load */
 					hazard1_r_next = reg_dest_from_ins(pipelineStage0_r);	// we will write to this register
 				end 
+			end
+			16'b111xxxxxxxxxxxxx: begin /* io poke? */
+				if (is_io_poke_from_ins(pipelineStage0_r) == 1'b0) begin
+					hazard1_r_next = reg_dest_from_ins(pipelineStage0_r);
+				end
 			end
 			default: ;
 		endcase
@@ -871,6 +887,10 @@ begin
 			regBRdAddr_r 		= reg_idx_from_ins(pipelineStage1_r);	
 			regARdAddr_r 		= reg_dest_from_ins(pipelineStage1_r);	
 		end
+		16'b111xxxxxxxxxxxxx: begin /* io peek / poke */
+			regBRdAddr_r 		= reg_idx_from_ins(pipelineStage1_r);	
+			regARdAddr_r 		= reg_dest_from_ins(pipelineStage1_r);		
+		end
 		default: ;
 	endcase
 end
@@ -914,8 +934,33 @@ begin
 			regBRdAddr_stage0_r 		= reg_idx_from_ins(pipelineStage0_r);	
 			regARdAddr_stage0_r 		= reg_dest_from_ins(pipelineStage0_r);	
 		end
+		16'b111xxxxxxxxxxxxx: begin /* io peek / poke */
+			regBRdAddr_stage0_r 		= reg_idx_from_ins(pipelineStage0_r);	
+			regARdAddr_stage0_r 		= reg_dest_from_ins(pipelineStage0_r);		
+		end
 		default: ;
 	endcase
+end
+
+/* io peek / poke */
+
+always @(*)
+begin
+	portAddress_r_next = portAddress_r;
+
+	case (prev_cpu_state_r)
+		cpust_execute,
+		cpust_execute_load,
+		cpust_execute_store: begin
+	
+			casex (pipelineStage2_r)
+				16'b111xxxxxxxxxxxxx:
+					portAddress_r_next 	= regB + imm_stage2_r;
+				default: ;
+			endcase
+		end
+	endcase
+
 end
 
 /* immediate register */

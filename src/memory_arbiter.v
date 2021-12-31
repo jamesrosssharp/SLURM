@@ -84,7 +84,7 @@ reg [15:0] 	au_memory_data_r;
 reg 		au_rready_r;
 
 reg [15:0] 	cpu_memory_data_r;
-reg 		cpu_rready_r;
+reg 		cpu_ready_r;
 
 reg 		fl_wready_r;
 
@@ -103,7 +103,7 @@ assign ov_memory_data = ov_memory_data_r;
 assign au_rready = au_rready_r;
 assign au_memory_data = au_memory_data_r;
 
-assign cpu_rready 		= cpu_rready_r;
+assign cpu_ready 		= cpu_ready_r;
 assign cpu_memory_data 	= cpu_memory_data_r;
 
 assign fl_wready = fl_wready_r;
@@ -552,7 +552,7 @@ always @(*) begin
 				state_r_3_next = s_idle;
 				b4_wr_r = 1'b0;
 			end
-			b4_data_r = fl_memory_daya;
+			b4_data_r = fl_memory_data;
 			fl_wready_r = 1'b1;
 		end
 		s_grant_au: begin
