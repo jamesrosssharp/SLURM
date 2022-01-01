@@ -408,7 +408,7 @@ xor_num_no_C:
 
 
 banner:
-	dw "\n\nTEST_START\nALU Regression Test\n===================\n\n"
+	dw "ALU Regression Test\n===================\n\n"
 	dw 0
 
 string1:
@@ -416,23 +416,23 @@ string1:
 	dw 0
 
 string2:
-	dw "SUBTRACTION:\n"
+	dw "\nSUBTRACTION:\n"
 	dw 0
 
 string3:
-	dw "AND:\n"
+	dw "\nAND:\n"
 	dw 0
 
 string4:
-	dw "OR:\n"
+	dw "\nOR:\n"
 	dw 0
 
 string5:
-	dw "XOR:\n"
+	dw "\nXOR:\n"
 	dw 0
 
 banner_end:
-	dw "\n\nTEST_END\n\nsee you!\n"
+	dw "\n\nsee you!\n"
 	dw 0
 
 	.end

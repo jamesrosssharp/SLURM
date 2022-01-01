@@ -2,3 +2,4 @@ dump.vcd
 alu_design
 rom_image*
 mem_init*
+*.txt
