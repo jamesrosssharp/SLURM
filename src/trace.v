@@ -15,9 +15,11 @@ module trace (
 	input memRD  /* read request */
 );
 
-reg [15:0] traceVal_r; 
+reg signed [15:0] traceVal_r; 
 reg [7:0]  traceChar_r;
 reg [15:0] traceHex_r;
+
+wire signed [15:0] signed_data = DATA_IN;
 
 
 always @(posedge CLK)
@@ -31,7 +33,7 @@ begin
 		case (ADDRESS)
 			4'd0:  begin 
 				traceVal_r <= DATA_IN;
-				$write("%d\n", DATA_IN);
+				$write("%0d", signed_data);
 			end
 			4'd1:  begin
 				traceChar_r <= DATA_IN[7:0]; 
@@ -39,7 +41,7 @@ begin
 			end
 			4'd2:  begin
 				traceHex_r <= DATA_IN;
-				$write("%h\n", DATA_IN);
+				$write("%h", DATA_IN);
 			end
 			default: ;
 		endcase

@@ -58,3 +58,5 @@ clean:
 	rm dump.vcd
 	rm rom_image
 	rm rom_image.mem
+	rm mem_init2
+	rm mem_init2.mem

@@ -105,14 +105,20 @@ begin
 		end
 		5'd5: begin /* and */
 			out = andOp;
-			Z_flag_reg_next = (andOp[BITS - 1:0] == {BITS{1'b0}}) ? 1'b1 : 1'b0;	
+			Z_flag_reg_next = (andOp[BITS - 1:0] == {BITS{1'b0}}) ? 1'b1 : 1'b0;
+			C_flag_reg_next = 1'b0;
+			S_flag_reg_next = andOp[BITS - 1] ? 1'b1 : 1'b0;
 		end
 		5'd6: begin /* or */
 			out = orOp;
 			Z_flag_reg_next = (orOp[BITS - 1:0] == {BITS{1'b0}}) ? 1'b1 : 1'b0;	
+			C_flag_reg_next = 1'b0;
+			S_flag_reg_next = orOp[BITS - 1] ? 1'b1 : 1'b0;	
 		end
 		5'd7: begin /* xor */
 			out = xorOp;
+			C_flag_reg_next = 1'b0;
+			S_flag_reg_next = orOp[BITS - 1] ? 1'b1 : 1'b0;	
 			Z_flag_reg_next = (xorOp[BITS - 1:0] == {BITS{1'b0}}) ? 1'b1 : 1'b0;	
 		end
 		/* multiplier? */
