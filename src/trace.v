@@ -21,6 +21,12 @@ reg [15:0] traceHex_r;
 
 wire signed [15:0] signed_data = DATA_IN;
 
+integer f;
+
+initial begin
+	f = $fopen("simout.txt", "w");
+end
+
 
 always @(posedge CLK)
 begin
@@ -34,14 +40,17 @@ begin
 			4'd0:  begin 
 				traceVal_r <= DATA_IN;
 				$write("%0d", signed_data);
+				$fwrite(f, "%0d", signed_data);
 			end
 			4'd1:  begin
 				traceChar_r <= DATA_IN[7:0]; 
 				$write("%c", DATA_IN[7:0]);
+				$fwrite(f, "%c", DATA_IN[7:0]);
 			end
 			4'd2:  begin
 				traceHex_r <= DATA_IN;
 				$write("%h", DATA_IN);
+				$fwrite(f, "%h", DATA_IN);
 			end
 			default: ;
 		endcase

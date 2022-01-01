@@ -44,11 +44,15 @@ rom_image.mem: Boot.asm
 mem_init2.mem: App.asm
 	$(AS) App.asm -o mem_init2
 
-sim:	dump.vcd
-
+sim: $(SOURCE) $(PROJECT)_tb.v rom_image.mem mem_init2.mem
+	iverilog -o $(PROJECT)_design -D SIM -Winfloop $(PROJECT)_tb.v $(SOURCE)
+	vvp      -n $(PROJECT)_design 2>&1
+	@diff -q	simout.txt simout.correct || (echo "TEST FAILED :("; exit 1)
+	@echo "==============\nTEST PASSED!\n==============\n" 
+	
 dump.vcd: $(SOURCE) $(PROJECT)_tb.v rom_image.mem mem_init2.mem
 	iverilog -o $(PROJECT)_design -D SIM -Winfloop $(PROJECT)_tb.v $(SOURCE)
-	vvp      -n $(PROJECT)_design
+	vvp      -n $(PROJECT)_design 2>&1
 
 view: dump.vcd config.gtkw
 	gtkwave   dump.vcd config.gtkw 

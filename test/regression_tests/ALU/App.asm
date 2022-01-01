@@ -93,8 +93,9 @@ TRACE_HEX_PORT  equ 0x6002
 		mov r4, 0xffee
 		bl xor_num
 
-
-	
+		// Print end banner
+		mov r2, banner_end
+		bl tr_string
 
 die:
 		ba die
@@ -428,6 +429,10 @@ string4:
 
 string5:
 	dw "XOR:\n"
+	dw 0
+
+banner_end:
+	dw "\n\nTEST_END\n\nsee you!\n"
 	dw 0
 
 	.end
