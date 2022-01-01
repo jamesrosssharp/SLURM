@@ -1,0 +1,88 @@
+[*]
+[*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
+[*] Sat Jan  1 09:40:33 2022
+[*]
+[dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/LOAD_STORE/dump.vcd"
+[dumpfile_mtime] "Sat Jan  1 09:31:43 2022"
+[dumpfile_size] 12806419
+[savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/LOAD_STORE/config.gtkw"
+[timestart] 161322000
+[size] 1920 996
+[pos] -1 -1
+*-19.194408 162600000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] tb.
+[treeopen] tb.cpu0.
+[treeopen] tb.cpu0.pc0.
+[sst_width] 290
+[signals_width] 383
+[sst_expanded] 1
+[sst_vpaned_height] 281
+@22
+tb.cpu0.pip0.memoryAddr[15:0]
+tb.cpu0.pip0.memoryIn[15:0]
+tb.cpu0.pip0.memoryOut[15:0]
+@200
+-
+-
+@22
+tb.cpu0.pip0.pc_r[15:0]
+@200
+-
+@22
+tb.cpu0.pip0.pipelineStage0_r[15:0]
+tb.cpu0.pip0.pipelineStage1_r[15:0]
+tb.cpu0.pip0.pipelineStage2_r[15:0]
+tb.cpu0.pip0.pipelineStage3_r[15:0]
+tb.cpu0.pip0.pipelineStage4_r[15:0]
+@200
+-
+-
+@22
+tb.cpu0.pip0.regA[15:0]
+tb.cpu0.pip0.regB[15:0]
+@23
+tb.cpu0.pip0.cpu_state_r[3:0]
+@200
+-
+@22
+tb.cpu0.pc0.tr0.traceChar_r[7:0]
+tb.cpu0.pc0.tr0.traceHex_r[15:0]
+tb.cpu0.pc0.tr0.traceVal_r[15:0]
+@200
+-
+@22
+tb.cpu0.pip0.portAddress[15:0]
+tb.cpu0.pip0.portIn[15:0]
+tb.cpu0.pip0.portOut[15:0]
+@28
+tb.cpu0.pip0.portRd
+tb.cpu0.pip0.portWr
+@200
+-
+@22
+tb.cpu0.reg0.\regFileA[0][15:0]
+tb.cpu0.reg0.\regFileA[1][15:0]
+tb.cpu0.reg0.\regFileA[2][15:0]
+tb.cpu0.reg0.\regFileA[3][15:0]
+tb.cpu0.reg0.\regFileA[4][15:0]
+tb.cpu0.reg0.\regFileA[5][15:0]
+tb.cpu0.reg0.\regFileA[6][15:0]
+tb.cpu0.reg0.\regFileA[7][15:0]
+tb.cpu0.reg0.\regFileA[8][15:0]
+tb.cpu0.reg0.\regFileA[15][15:0]
+@200
+-
+@22
+tb.cpu0.pip0.aluA[15:0]
+tb.cpu0.pip0.aluB[15:0]
+tb.cpu0.alu0.A[15:0]
+tb.cpu0.alu0.B[15:0]
+tb.cpu0.alu0.out[15:0]
+tb.cpu0.alu0.aluOut[15:0]
+tb.cpu0.alu0.aluOp[4:0]
+@200
+-
+@28
+tb.cpu0.pip0.stall_count_r[2:0]
+[pattern_trace] 1
+[pattern_trace] 0

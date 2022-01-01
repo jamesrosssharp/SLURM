@@ -1,8 +1,10 @@
-TESTS := $(wildcard */.)
+TESTS := $(filter-out Makefile, $(wildcard *))
 
 all: $(TESTS)
+
 $(TESTS):
-	make -C $@
+	@echo "Running test: $@"
+	@make -C $@
 
 .PHONY: all $(TESTS)
 
