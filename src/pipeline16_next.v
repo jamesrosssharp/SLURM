@@ -84,6 +84,13 @@ reg [BITS - 1:0] memoryOut_stage3_r_next;
 reg [BITS - 1:0] portAddress_r, portAddress_r_next;
 assign portAddress = portAddress_r;
 
+reg [BITS - 1:0] portOut_r, portOut_r_next;
+assign portOut = portOut_r;
+
+reg portRd_r, portWr_r;
+assign portRd = portRd_r;
+assign portWr = portWr_r;
+
 assign memoryOut = memoryOut_stage3_r;
 assign valid = valid_r;
 assign memoryAddr = memoryAddr_r;
@@ -262,7 +269,7 @@ endfunction
 
 function is_io_poke_from_ins;
 input [15:0] p0;
-    is_io_poke_from_ins = p0[8]; // 0 = poke, 1 = peek
+    is_io_poke_from_ins = p0[8]; // 1 = poke, 0 = peek
 endfunction
 
 
@@ -365,6 +372,7 @@ begin
 		result_stage3_r  <= {BITS{1'b0}};
 		result_stage4_r  <= {BITS{1'b0}};
 		portAddress_r    <= {BITS{1'b0}};
+		portOut_r    <= {BITS{1'b0}};
 	end else begin
 		cpu_state_r <= cpu_state_r_next;
 		prev_cpu_state_r <= cpu_state_r;
@@ -397,6 +405,7 @@ begin
 		result_stage3_r <= result_stage3_r_next;
 		result_stage4_r <= result_stage4_r_next;
 		portAddress_r <= portAddress_r_next;
+		portOut_r    <= portOut_r_next;
 	end
 end
 
@@ -451,7 +460,7 @@ begin
 				end 
 			end
 			16'b111xxxxxxxxxxxxx: begin /* io poke? */
-				if (is_io_poke_from_ins(pipelineStage0_r) == 1'b0) begin
+				if (is_io_poke_from_ins(pipelineStage0_r) == 1'b1) begin
 					hazard1_r_next = reg_dest_from_ins(pipelineStage0_r);
 				end
 			end
@@ -947,6 +956,9 @@ end
 always @(*)
 begin
 	portAddress_r_next = portAddress_r;
+	portOut_r_next = portOut_r;
+	portRd_r = 1'b0;
+	portWr_r = 1'b0;
 
 	case (prev_cpu_state_r)
 		cpust_execute,
@@ -954,13 +966,25 @@ begin
 		cpust_execute_store: begin
 	
 			casex (pipelineStage2_r)
-				16'b111xxxxxxxxxxxxx:
+				16'b111xxxxxxxxxxxxx: begin
 					portAddress_r_next 	= regB + imm_stage2_r;
+				
+					if (is_io_poke_from_ins(pipelineStage2_r) == 1'b1) 
+						portOut_r_next = regA;
+				end
+				default: ;
+			endcase
+
+			casex (pipelineStage3_r)
+				16'b111xxxxxxxxxxxxx:
+					if (is_io_poke_from_ins(pipelineStage3_r) == 1'b1) 
+						portWr_r = 1'b1; //poke
+					else
+						portRd_r = 1'b1; // peek
 				default: ;
 			endcase
 		end
 	endcase
-
 end
 
 /* immediate register */
@@ -989,9 +1013,7 @@ begin
 		cpust_execute,
 		cpust_execute_load,
 		cpust_execute_store: begin
-	
 			imm_stage2_r_next 	= {imm_r, imm_lo_from_ins(pipelineStage1_r)};
-	
 		end
 	endcase
 
@@ -1130,6 +1152,12 @@ begin
 				reg_wr_addr_r = reg_dest_from_ins(pipelineStage4_r);
 				reg_out_r = memoryIn;
 			end	
+		end
+		16'b111xxxxxxxxxxxxx: begin /* io peek? */
+			if (is_io_poke_from_ins(pipelineStage4_r) == 1'b0) begin
+				reg_wr_addr_r = reg_dest_from_ins(pipelineStage4_r);
+				reg_out_r = portIn;
+			end
 		end
 		default: ;
 	endcase

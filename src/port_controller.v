@@ -2,7 +2,13 @@
 
 /* Memory map:
  *
- *
+ * 0x0000 - 0x0fff: UART
+ * 0x1000 - 0x1fff: GPIO
+ * 0x2000 - 0x2fff: PWM
+ * 0x3000 - 0x3fff: Audio
+ * 0x4000 - 0x4fff: SPI
+ * 0x5000 - 0x5fff: GFX
+ * 0x6000 - 0x6fff: Trace port 
  */
 
 module port_controller
@@ -71,6 +77,9 @@ reg WR_PWM;
 reg WR_GFX;
 reg WR_AUDIO;
 reg WR_SPI;
+reg WR_TRACE;
+
+wire RD_TRACE = 1'b0;
 
 wire [BITS - 1 : 0] DATA_OUT_ROM;
 wire [BITS - 1 : 0] DATA_OUT_UART;
@@ -79,6 +88,7 @@ wire [BITS - 1 : 0] DATA_OUT_PWM;
 wire [BITS - 1 : 0] DATA_OUT_GFX;
 wire [BITS - 1 : 0] DATA_OUT_AUDIO;
 wire [BITS - 1 : 0] DATA_OUT_SPI;
+wire [BITS - 1 : 0] DATA_OUT_TRACE;
 
 reg [BITS - 1 : 0] dout_next;
 reg [BITS - 1 : 0] dout;
@@ -91,9 +101,6 @@ wire spi_flash_wvalid;
 wire spi_flash_wready;
 wire [15:0] spi_flash_memory_address;
 wire [15:0] spi_flash_memory_data;
-
-reg busy_r, busy_r_next;
-assign 	memBUSY = busy_r;
 
 always @(posedge CLK)
 begin
@@ -118,34 +125,37 @@ begin
 	WR_GFX   = 1'b0;
 	WR_AUDIO = 1'b0;
 	WR_SPI   = 1'b0;
+	WR_TRACE = 1'b0;
 
 	dout_next = dout;
-	busy_r_next = 1'b0;
 
 	casex (ADDRESS)
-		16'h010x: begin
+		16'h0xxx: begin
 			dout_next = DATA_OUT_UART;
 			WR_UART = memWR;
 		end
-		16'h011x: begin
+		16'h1xxx: begin
 			dout_next = DATA_OUT_GPIO;
 			WR_GPIO = memWR;
 		end
-		16'h012x: begin
+		16'h2xxx: begin
 			dout_next = DATA_OUT_PWM;
 			WR_PWM = memWR;
 		end
-		16'h013x: begin
+		16'h3xxx: begin
 			dout_next = DATA_OUT_AUDIO;
 			WR_AUDIO = memWR;
 		end
-		16'h014x: begin
+		16'h4xxx: begin
 			dout_next = DATA_OUT_SPI;
 			WR_SPI = memWR;
 		end
-		16'h1xxx: begin
+		16'h5xxx: begin
 			dout_next = DATA_OUT_GFX;
 			WR_GFX = memWR;	
+		end
+		16'h6xxx: begin
+			WR_TRACE = memWR;
 		end
 		default: ;
 	endcase
@@ -157,16 +167,28 @@ begin
 	DATA_OUT_REG = {BITS{1'b0}};
 
 	casex (addr_reg)
-		16'h01xx, 16'h02xx, 16'h03xx, 16'h04xx, 16'h05xx: begin
+		16'h0xxx, 16'h1xxx, 16'h2xxx, 16'h3xxx, 16'h4xxx, 16'h6xxx: begin
 			DATA_OUT_REG = dout;
 		end
-		16'h1xxx: begin /* gfx reads are already delayed by one cycle */ 
+		16'h5xxx: begin /* gfx reads are already delayed by one cycle */ 
 			DATA_OUT_REG = DATA_OUT_GFX;
 		end
 		default: ;
 	endcase
 
 end
+
+// Debug trace port for simulations
+
+trace tr0 (
+	CLK,
+	RSTb,
+	ADDRESS[3:0],
+	DATA_IN,
+	DATA_OUT_TRACE,
+	WR_TRACE,
+	RD_TRACE
+);
 
 uart 
 #(.CLK_FREQ(CLOCK_FREQ), .BAUD_RATE(115200), .BITS(BITS)) u0

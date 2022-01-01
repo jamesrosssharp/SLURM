@@ -1,0 +1,106 @@
+[*]
+[*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
+[*] Sat Jan  1 03:55:58 2022
+[*]
+[dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/next_next/dump.vcd"
+[dumpfile_mtime] "Sat Jan  1 03:54:43 2022"
+[dumpfile_size] 10509088
+[savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/next_next/config.gtkw"
+[timestart] 0
+[size] 1920 996
+[pos] -1 -1
+*-19.194408 1400000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] cpu_mem_stall_tb.
+[treeopen] cpu_mem_stall_tb.cpu0.
+[treeopen] cpu_mem_stall_tb.cpu0.pc0.
+[sst_width] 290
+[signals_width] 383
+[sst_expanded] 1
+[sst_vpaned_height] 281
+@28
+cpu_mem_stall_tb.cpu0.CLK
+cpu_mem_stall_tb.cpu0.RSTb
+@22
+cpu_mem_stall_tb.cpu0.pip0.memoryIn[15:0]
+cpu_mem_stall_tb.cpu0.pip0.memoryOut[15:0]
+cpu_mem_stall_tb.cpu0.pip0.memoryAddr[15:0]
+cpu_mem_stall_tb.cpu0.pip0.portAddress_r[15:0]
+cpu_mem_stall_tb.cpu0.pip0.portIn[15:0]
+cpu_mem_stall_tb.cpu0.pip0.portOut[15:0]
+cpu_mem_stall_tb.cpu0.pip0.portOut_r[15:0]
+@23
+cpu_mem_stall_tb.cpu0.pip0.portOut_r_next[15:0]
+@28
+cpu_mem_stall_tb.cpu0.pip0.portRd
+cpu_mem_stall_tb.cpu0.pip0.portWr
+cpu_mem_stall_tb.cpu0.pip0.valid
+cpu_mem_stall_tb.cpu0.pip0.ready
+@200
+-
+@22
+cpu_mem_stall_tb.cpu0.pc0.tr0.traceVal_r[15:0]
+@28
+cpu_mem_stall_tb.cpu0.pc0.tr0.memWR
+@22
+cpu_mem_stall_tb.cpu0.pc0.ADDRESS[15:0]
+@28
+cpu_mem_stall_tb.cpu0.pc0.WR_TRACE
+@200
+-
+@24
+cpu_mem_stall_tb.cpu0.reg0.\regFileA[0][15:0]
+@22
+cpu_mem_stall_tb.cpu0.reg0.\regFileA[1][15:0]
+cpu_mem_stall_tb.cpu0.reg0.\regFileA[2][15:0]
+@24
+cpu_mem_stall_tb.cpu0.reg0.\regFileA[3][15:0]
+@22
+cpu_mem_stall_tb.cpu0.reg0.\regFileA[4][15:0]
+cpu_mem_stall_tb.cpu0.reg0.\regFileA[5][15:0]
+cpu_mem_stall_tb.cpu0.reg0.\regFileA[6][15:0]
+cpu_mem_stall_tb.cpu0.reg0.\regFileA[7][15:0]
+cpu_mem_stall_tb.cpu0.reg0.\regFileA[15][15:0]
+@200
+-
+@28
+cpu_mem_stall_tb.cpu0.pip0.cpu_state_r[3:0]
+@22
+cpu_mem_stall_tb.cpu0.pip0.loadStoreAddr_stage3_r[15:0]
+cpu_mem_stall_tb.cpu0.pip0.memoryOut_stage3_r[15:0]
+@200
+-
+@22
+cpu_mem_stall_tb.cpu0.pip0.pc_r[15:0]
+cpu_mem_stall_tb.cpu0.pip0.memoryAddr[15:0]
+cpu_mem_stall_tb.cpu0.pip0.pipelineStage0_r[15:0]
+cpu_mem_stall_tb.cpu0.pip0.pipelineStage1_r[15:0]
+cpu_mem_stall_tb.cpu0.pip0.pipelineStage2_r[15:0]
+cpu_mem_stall_tb.cpu0.pip0.pipelineStage3_r[15:0]
+cpu_mem_stall_tb.cpu0.pip0.pipelineStage4_r[15:0]
+cpu_mem_stall_tb.cpu0.pip0.aluA[15:0]
+cpu_mem_stall_tb.cpu0.pip0.aluB[15:0]
+cpu_mem_stall_tb.cpu0.pip0.regA[15:0]
+cpu_mem_stall_tb.cpu0.pip0.regB[15:0]
+cpu_mem_stall_tb.cpu0.alu0.aluOut[15:0]
+cpu_mem_stall_tb.cpu0.pip0.imm_r_next[11:0]
+cpu_mem_stall_tb.cpu0.pip0.imm_stage2_r[15:0]
+cpu_mem_stall_tb.cpu0.pip0.imm_r[11:0]
+@28
+cpu_mem_stall_tb.cpu0.pip0.stall_count_r[2:0]
+cpu_mem_stall_tb.cpu0.pip0.load_memory
+@22
+cpu_mem_stall_tb.cpu0.pip0.loadStoreAddr_stage3_r[15:0]
+cpu_mem_stall_tb.cpu0.pip0.loadStoreAddr_stage3_r_next[15:0]
+@200
+-
+@22
+cpu_mem_stall_tb.cpu0.pc0.ADDRESS[15:0]
+cpu_mem_stall_tb.cpu0.pc0.DATA_IN[15:0]
+cpu_mem_stall_tb.cpu0.pc0.DATA_OUT[15:0]
+@28
+cpu_mem_stall_tb.cpu0.pc0.memRD
+cpu_mem_stall_tb.cpu0.pc0.memWR
+@200
+-
+[pattern_trace] 1
+[pattern_trace] 0

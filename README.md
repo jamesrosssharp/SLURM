@@ -1,20 +1,28 @@
-SLURM16 - SLightly Useful RISC Machine, 16 bit
-==============================================
+SLURM16 SoC - SLightly Useful RISC Machine, 16 bit, system-on-chip
+==================================================================
 
-A simple microcontroller core, with emphasis on simplicity of instruction set and verilog implementation. 
+Video console system-on-chip made for the iCE40 UP5K FPGA.
 
-Goal: synthesize SLURM for multiple targets, e.g. FPGAs, ASIC, or discrete 74 series logic gates.
+64k x 16bit memory, shared between CPU and gfx / sound / flash DMA. Split into 4 banks so CPU, GPU, sound core, and flash dma can access the (single port) memory banks simultaneously.
 
-Most components in the design are parameterizable, e.g. configurable number of registers, and bus width etc.
+Peripherals are on an IO bus, which is separate from the main memory space (so there is no
+memory hole, and there is no penalty for accessing IO memory).
 
-SLURM16
-=======
+Peripherals include UART, GFX core (sprites, tiled background, and framebuffer, collision detection), audio mixer (I2S - TODO), SPI flash DMAC, GPIO, RGB LED driver, debug trace port (TODO: for simulation).
 
-SLURM16 is the 16 bit core, with 16 16-bit registers. R15 = link 
+Interrupts (TODO): Vblank, Hblank, Audio interrupt, SPI flash DMA complete. 
+
+
+SLURM16 CPU
+===========
+
+SLURM16 is a 16 bit core, with 16x 16-bit registers. R15 = link 
 register (LR), R14 = interrupt link register (ILR), R13 = stack pointer (SP), R0-R12 are general purpose. Although unintended, the architecture bears a strong resemblance to
 Jan Gray's XR16 RISC machine.
 
 Five stage pipeline. 
+
+Penalties for accessing memory (bubble inserted into pipeline), especially when out of execution bank.
 
 Instruction Set
 ===============
@@ -180,10 +188,10 @@ Class 6: immediate memory operation
     REG: source for store, destination for load
     IMM: immediate address of memory location
     
-Class 7: 
+Class 7:
 --------
 
-RESERVED
+Reserved
 
 
 Class 8: ALU operations 0-15 with separate destination register
@@ -237,13 +245,19 @@ Class 12: immediate + register memory operation
     REG: source for store, destination for load
     IMM: immediate address of memory location, effective address = [IDX] + IMM
 
+Classes 14: Port IO
+-------------------
 
 
+|15 | 14 | 13 | 12 - 9  |    8   | 7 - 4 | 3 - 0 |
+|---|----|----|---------|--------|-------|-------|
+|1  | 1  | 1  | REGP    | RDb/WR | REGV  | IMM   |
 
-Classes 14:
-----------------
+    IMM: immediate value
+    REGP: port address = IMM + REGP
+    REGV: value
+    RDb/WR: 0 = port read, 1 = port wr
 
-Reserved
 
 
 Assembler Mnemonics
