@@ -46,14 +46,14 @@ begin
 	regFileA[regIn] <= regIn_data;
 	regFileB[regIn] <= regIn_data;
 
-//	if (regOutA == regIn)
-//		outA <= regIn_data;
-//	else
+	if (regOutA == regIn)
+		outA <= regIn_data;
+	else
 		outA <= regFileA[regOutA];
 
-//	if (regOutB == regIn)
-//		outB <= regIn_data;
-//	else
+	if (regOutB == regIn)
+		outB <= regIn_data;
+	else
 		outB <= regFileB[regOutB];
 end
 

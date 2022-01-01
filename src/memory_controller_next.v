@@ -76,7 +76,7 @@ wire [15:0] B4_DOUT;
 wire [15:0] B4_DIN;
 wire B4_WR;
 
-memory #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 2), .MEM_INIT_FILE("mem_init1.rom")) mb1
+memory #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 2), .MEM_INIT_FILE("mem_init1.mem")) mb1
 (
 	CLK,
 	B1_ADDR,
@@ -85,7 +85,7 @@ memory #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 2), .MEM_INIT_FILE("mem_init1
 	B1_WR
 );
 
-memory #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 2), .MEM_INIT_FILE("mem_init2.rom")) mb2
+memory #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 2), .MEM_INIT_FILE("mem_init2.mem")) mb2
 (
 	CLK,
 	B2_ADDR,
@@ -94,7 +94,7 @@ memory #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 2), .MEM_INIT_FILE("mem_init2
 	B2_WR
 );
 
-memory #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 2), .MEM_INIT_FILE("mem_init3.rom")) mb3
+memory #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 2), .MEM_INIT_FILE("mem_init3.mem")) mb3
 (
 	CLK,
 	B3_ADDR,
@@ -103,7 +103,7 @@ memory #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 2), .MEM_INIT_FILE("mem_init3
 	B3_WR
 );
 
-memory #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 2), .MEM_INIT_FILE("mem_init4.rom")) mb4
+memory #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 2), .MEM_INIT_FILE("mem_init4.mem")) mb4
 (
 	CLK,
 	B4_ADDR,
