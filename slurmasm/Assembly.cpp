@@ -456,6 +456,56 @@ void Assembly::makeLoadStoreWithIndexAndExpression(OpCode opcode, uint32_t lineN
 	}
 }
 
+
+void Assembly::makePortIO(OpCode opcode, uint32_t lineNum, std::vector<uint16_t>& assembledWords, int32_t value,
+                                           Register regDest, Register regInd)
+{
+	uint16_t LS = 0;
+
+	switch (opcode)
+	{
+		case OpCode::IN:
+			LS = 0;
+			break;
+		case OpCode::OUT:
+			LS = 1;
+			break; 
+		default:
+		{
+	        std::stringstream ss;
+            ss << "Upsupported load store operation on line " << lineNum << std::endl;
+            throw std::runtime_error(ss.str());  
+		}
+	}
+
+	uint16_t op = SLRM_PORT_INSTRUCTION | (LS << 8) | ((uint16_t)regDest << 4) | ((uint16_t)value & 0xf) | ((uint16_t)regInd << 9); 	
+	
+	if (value >= 0 && value < 16)
+    {
+		if (assembledWords.size() == 2)
+    	{
+		    assembledWords[0] = SLRM_IMM_INSTRUCTION;
+        	assembledWords[1] = op;
+		}
+		else 	
+			assembledWords[0] = op;
+	}
+	else
+	{
+        if (assembledWords.size() != 2)
+        {
+            std::stringstream ss;
+            ss << "Error: not enough space allocated for instruction on line " << lineNum << std::endl;
+            throw std::runtime_error(ss.str());
+        }
+		assembledWords[0] = SLRM_IMM_INSTRUCTION | ((uint16_t)value >> 4);
+        assembledWords[1] = op;
+	}
+}
+
+
+
+
 void Assembly::makeIncDecInstruction(OpCode opcode, std::vector<uint16_t>& assembledWords,  uint32_t lineNum, Register reg)
 {
 	uint16_t op;

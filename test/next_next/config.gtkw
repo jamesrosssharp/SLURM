@@ -1,12 +1,12 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Sat Jan  1 03:55:58 2022
+[*] Sat Jan  1 04:53:32 2022
 [*]
 [dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/next_next/dump.vcd"
-[dumpfile_mtime] "Sat Jan  1 03:54:43 2022"
-[dumpfile_size] 10509088
+[dumpfile_mtime] "Sat Jan  1 04:52:37 2022"
+[dumpfile_size] 11583377
 [savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/next_next/config.gtkw"
-[timestart] 0
+[timestart] 2517000
 [size] 1920 996
 [pos] -1 -1
 *-19.194408 1400000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
@@ -28,7 +28,6 @@ cpu_mem_stall_tb.cpu0.pip0.portAddress_r[15:0]
 cpu_mem_stall_tb.cpu0.pip0.portIn[15:0]
 cpu_mem_stall_tb.cpu0.pip0.portOut[15:0]
 cpu_mem_stall_tb.cpu0.pip0.portOut_r[15:0]
-@23
 cpu_mem_stall_tb.cpu0.pip0.portOut_r_next[15:0]
 @28
 cpu_mem_stall_tb.cpu0.pip0.portRd
@@ -39,6 +38,8 @@ cpu_mem_stall_tb.cpu0.pip0.ready
 -
 @22
 cpu_mem_stall_tb.cpu0.pc0.tr0.traceVal_r[15:0]
+@23
+cpu_mem_stall_tb.cpu0.pc0.tr0.traceChar_r[7:0]
 @28
 cpu_mem_stall_tb.cpu0.pc0.tr0.memWR
 @22

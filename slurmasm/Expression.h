@@ -4,6 +4,7 @@
 #include <functional>
 
 #include "Symbol.h"
+#include <stdexcept>
 
 enum class ExpressionElementType : uint32_t
 {

@@ -388,6 +388,10 @@ OpCode AST::convertOpCode(char* opcode)
     {
         return OpCode::IMM;
     }
+	else if (s == "IN")
+	{
+		return OpCode::IN;
+	}
     else if (s == "INC")
     {
         return OpCode::INC;
@@ -420,6 +424,10 @@ OpCode AST::convertOpCode(char* opcode)
     {
         return OpCode::OR;
     }
+	else if (s == "OUT")
+	{
+		return OpCode::OUT;
+	}
     else if (s == "RET")
     {
         return OpCode::RET;

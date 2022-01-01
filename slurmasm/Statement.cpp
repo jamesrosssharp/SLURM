@@ -95,8 +95,10 @@ void Statement::firstPassAssemble(uint32_t& curAddress, SymbolTable& syms)
 				case OpCode::BZ:
 				case OpCode::IMM:
 				case OpCode::LD:
+				case OpCode::IN:
 				case OpCode::MOV:
 				case OpCode::OR:
+				case OpCode::OUT:
 				case OpCode::SBB:
 				case OpCode::SUB:
 				case OpCode::ST:
@@ -561,6 +563,10 @@ void Statement::assemble(uint32_t &curAddress)
     			case OpCode::LD:
 				case OpCode::ST:
            			Assembly::makeLoadStoreWithIndexAndExpression(opcode, lineNum, words, expression.value, regDest, regInd);
+					break;
+				case OpCode::IN:
+				case OpCode::OUT:
+					Assembly::makePortIO(opcode, lineNum, words, expression.value, regDest, regInd);
 					break;	
 			    default:
                 {

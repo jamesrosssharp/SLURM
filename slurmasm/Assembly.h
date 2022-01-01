@@ -44,6 +44,9 @@ public:
     static void makeLoadStore(OpCode opcode, uint32_t lineNum, std::vector<uint16_t>& words, Register regInd, Register regDest, bool postIncrement, bool postDecrement);
 
 	static void makeIncDecInstruction(OpCode opcode, std::vector<uint16_t>& words,  uint32_t lineNum, Register reg);
+ 
+    static void makePortIO(OpCode opcode, uint32_t lineNum, std::vector<uint16_t>& words, int32_t value,
+                                            Register regDest, Register regInd);
    
 };
 
