@@ -1,18 +1,17 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Sun Jan  2 05:55:49 2022
+[*] Sun Jan  2 06:59:54 2022
 [*]
-[dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/LOAD_STORE/dump.vcd"
-[dumpfile_mtime] "Sun Jan  2 05:53:48 2022"
-[dumpfile_size] 17075026
-[savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/LOAD_STORE/config.gtkw"
-[timestart] 592300000
+[dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/UART/dump.vcd"
+[dumpfile_mtime] "Sun Jan  2 06:58:34 2022"
+[dumpfile_size] 30665593
+[savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/UART/config.gtkw"
+[timestart] 0
 [size] 1920 996
 [pos] -1 -1
-*-18.194408 593200000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-27.194408 8700000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tb.
 [treeopen] tb.cpu0.
-[treeopen] tb.cpu0.mem0.
 [treeopen] tb.cpu0.pc0.
 [sst_width] 290
 [signals_width] 383
@@ -26,8 +25,25 @@ tb.cpu0.pip0.memoryOut[15:0]
 tb.cpu0.pip0.wr
 tb.cpu0.pip0.valid
 tb.cpu0.pip0.ready
-@23
+@22
 tb.cpu0.mem0.ma0.cpu_memory_data[15:0]
+@200
+-
+@28
+tb.UART_TX
+@821
+tb.UART_BYTE[7:0]
+@28
+tb.cpu0.pc0.u0.tick
+@200
+-
+@22
+tb.cpu0.pc0.u0.DATA_OUT[15:0]
+tb.cpu0.pc0.u0.ADDRESS[3:0]
+@28
+tb.cpu0.pc0.u0.go_reg
+@22
+tb.cpu0.pc0.u0.tx_reg[7:0]
 @200
 -
 @28
@@ -49,6 +65,9 @@ tb.cpu0.pip0.pipelineStage3_r[15:0]
 tb.cpu0.pip0.pipelineStage4_r[15:0]
 @200
 -
+@28
+tb.cpu0.alu0.Z
+@200
 -
 @22
 tb.cpu0.pip0.regA[15:0]

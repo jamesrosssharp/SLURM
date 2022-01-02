@@ -9,3 +9,7 @@ Store to address: 2000 ff00
 Load from address: 2000 ff00
 Store to address: 5000 1234
 Load from address: 5000 1234
+Double store to addresses: 5000 1234 8000 4321
+Load from address: 5000 1234
+Load from address: 8000 4321
+Double load from addresses: 5000 8000 1234 4321

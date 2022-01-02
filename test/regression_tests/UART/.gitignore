@@ -1,0 +1,6 @@
+dump.vcd 
+uart_design
+rom_image*
+mem_init*
+!mem_init*.asm
+*.txt

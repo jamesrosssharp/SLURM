@@ -464,8 +464,8 @@ begin
 					hazard1_r_next = reg_dest_from_ins(pipelineStage0_r);	// we will write to this register
 				end 
 			end
-			16'b111xxxxxxxxxxxxx: begin /* io poke? */
-				if (is_io_poke_from_ins(pipelineStage0_r) == 1'b1) begin
+			16'b111xxxxxxxxxxxxx: begin /* io peek? */
+				if (is_io_poke_from_ins(pipelineStage0_r) == 1'b0) begin
 					hazard1_r_next = reg_dest_from_ins(pipelineStage0_r);
 				end
 			end
@@ -612,6 +612,8 @@ begin
 				else
 					cpu_state_r_next = cpust_wait_mem_ready1;
 			end
+			else if (loadStoreAddr_stage3_r[15:14] != loadStoreAddr_stage3_r_next[15:14])
+				cpu_state_r_next = cpust_wait_mem_load1;
 		end 
 		cpust_wait_mem_load1:
 			cpu_state_r_next = cpust_wait_mem_load2;
@@ -626,6 +628,8 @@ begin
 				else
 					cpu_state_r_next = cpust_wait_mem_ready1;
 			end
+			else if (loadStoreAddr_stage3_r[15:14] != loadStoreAddr_stage3_r_next[15:14])
+				cpu_state_r_next = cpust_wait_mem_store1;
 		end
 		cpust_wait_mem_store1:
 			cpu_state_r_next = cpust_wait_mem_store2;
