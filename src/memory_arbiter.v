@@ -200,8 +200,11 @@ always @(*) begin
 	bg1_rready_r 		 = 1'b0;
 	ov_memory_data_r 	 = 16'h0000;
 	ov_rready_r 		 = 1'b0;
-
 	fl_wready_r 		 = 1'b0;
+	au_memory_data_r	 = 16'h0000;
+	au_rready_r			 = 1'b0;
+	cpu_memory_data_r	 = 16'h0000;
+	cpu_ready_r = 1'b0;
 
 	state_r_0_next = state_r_0;
 	state_r_1_next = state_r_1;

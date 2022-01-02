@@ -28,6 +28,8 @@ pipeline16
 
 	input  [15:0]   aluOut,
 
+	output aluExecute,
+
 	/* register file interface */
 
 	output [15:0]   regFileIn,
@@ -95,6 +97,9 @@ assign memoryOut = memoryOut_stage3_r;
 assign valid = valid_r;
 assign memoryAddr = memoryAddr_r;
 assign wr = wr_r;
+
+reg aluExecute_r;
+assign aluExecute = aluExecute_r;
 
 /* pipeline registers */
 
@@ -196,16 +201,16 @@ reg store_memory; // asserted when the CPU is about to execute a store instructi
 
 reg [3:0] cpu_state_r, cpu_state_r_next, prev_cpu_state_r;
 
-localparam cpust_halt 	 	     = 4'b0000; // CPU is halted; instructions not fetched
-localparam cpust_execute 	     = 4'b0001; // CPU is executing non-memory instructions
-localparam cpust_wait_mem_ready1 = 4'b0010; // Wait state when switching banks
-localparam cpust_wait_mem_ready2 = 4'b0011; // CPU is waiting to access a new memory bank for fetching non-memory instructions
-localparam cpust_execute_load    = 4'b0100; // CPU is executing load instruction
-localparam cpust_wait_mem_load1  = 4'b0101; // Wait state when switching banks to load memory from
-localparam cpust_wait_mem_load2  = 4'b0110; // CPU is waiting for memory grant to load from
-localparam cpust_execute_store   = 4'b0111; // CPU is executing load instruction
-localparam cpust_wait_mem_store1 = 4'b1000; // Wait state when switching banks to store to memory
-localparam cpust_wait_mem_store2 = 4'b1001; // CPU is waiting for memory grant to store to
+localparam cpust_halt 	 	     = 4'b0000; // 0 CPU is halted; instructions not fetched
+localparam cpust_execute 	     = 4'b0001; // 1 CPU is executing non-memory instructions
+localparam cpust_wait_mem_ready1 = 4'b0010; // 2 Wait state when switching banks
+localparam cpust_wait_mem_ready2 = 4'b0011; // 3 CPU is waiting to access a new memory bank for fetching non-memory instructions
+localparam cpust_execute_load    = 4'b0100; // 4 CPU is executing load instruction
+localparam cpust_wait_mem_load1  = 4'b0101; // 5 Wait state when switching banks to load memory from
+localparam cpust_wait_mem_load2  = 4'b0110; // 6 CPU is waiting for memory grant to load from
+localparam cpust_execute_store   = 4'b0111; // 7 CPU is executing store instruction
+localparam cpust_wait_mem_store1 = 4'b1000; // 8 Wait state when switching banks to store to memory
+localparam cpust_wait_mem_store2 = 4'b1001; // 9 CPU is waiting for memory grant to store to
  
 
 function is_branch_link_from_ins;
@@ -559,6 +564,16 @@ end
 
 always @(*)
 begin
+	aluExecute_r = 1'b0;
+
+	case (prev_cpu_state_r)
+		cpust_execute, cpust_execute_load, cpust_execute_store:
+			aluExecute_r = 1'b1;
+	endcase
+end
+
+always @(*)
+begin
 	cpu_state_r_next = cpu_state_r;
 
 	case (cpu_state_r)
@@ -621,6 +636,7 @@ begin
 			cpu_state_r_next = cpust_halt;
 	endcase
 end
+
 
 // Handle PC
 

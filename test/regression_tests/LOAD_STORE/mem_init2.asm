@@ -15,7 +15,27 @@ TRACE_HEX_PORT  equ 0x6002
 	mov r3, 0x8000
 	bl  perform_load
 
-	
+	mov r3, 0xc200
+	mov r4, 0x55aa
+	bl  perform_store
+
+	mov r3, 0xc200
+	bl  perform_load
+
+	mov r3, 0x2000
+	mov r4, 0xff00
+	bl  perform_store
+
+	mov r3, 0x2000
+	bl  perform_load
+
+	mov r3, 0x5000
+	mov r4, 0x1234
+	bl  perform_store
+
+	mov r3, 0x5000
+	bl  perform_load
+
 die:
 		ba die
 
@@ -107,6 +127,9 @@ perform_load:
 
 	mov	r2, r3
 	bl tr_hex
+
+	mov r2, ' '
+	bl tr_char
 
 	ld r4, [r3]	
 	

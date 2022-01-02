@@ -73,6 +73,8 @@ wire [15:0] au_memory_data;
 wire au_rvalid;
 wire au_rready;
 
+wire aluExecute;
+
 register_file
 #(.REG_BITS(5), .BITS(16)) reg0
 (
@@ -97,6 +99,7 @@ pipeline16 pip0
 	.aluA(aluA),
 	.aluB(aluB),
 	.aluOut(aluOut),
+	.aluExecute(aluExecute),
 	.regFileIn(regIn_data),
 	.regWrAddr(regIn),
 	.regARdAddr(regOutA),
@@ -128,6 +131,7 @@ alu0
 	.B(aluB),
 	.aluOp(aluOp),
 	.aluOut(aluOut),
+	.execute(aluExecute),
 	.C(C), 
 	.Z(Z), 	
 	.S(S) 

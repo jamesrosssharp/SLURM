@@ -11,6 +11,8 @@ module alu
 	input [4:0]       aluOp,
 	output [BITS-1:0] aluOut,
 
+	input execute,
+
 	output C, /* carry flag */
 	output Z, /* zero flag */
 	output S /* sign flag */
@@ -57,7 +59,7 @@ begin
 		S_flag_reg <= 1'b0;
 		out_r <= {BITS{1'b0}};
 	end
-	else begin
+	else if(execute) begin
 		C_flag_reg <= C_flag_reg_next;
 		Z_flag_reg <= Z_flag_reg_next;
 		S_flag_reg <= S_flag_reg_next;
