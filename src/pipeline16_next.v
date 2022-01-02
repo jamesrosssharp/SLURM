@@ -796,7 +796,7 @@ begin
 		cpust_execute_load,
 		cpust_execute_store
 		: begin 	
-			if (cpu_state_r == cpust_execute) 
+			if (prev_cpu_state_r == cpust_execute || prev_cpu_state_r == cpust_wait_mem_ready2) 
 				pipelineStage0_r_next = memoryIn;
 			else
 				pipelineStage0_r_next = NOP_INSTRUCTION;

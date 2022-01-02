@@ -3,6 +3,6 @@ SRCDIR=../../../src
 
 include ../../common/slurmsrc.mk
 
-PROJECT=alu
+PROJECT=gfx
 
 include ../../common/test.mk
