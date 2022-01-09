@@ -1,0 +1,17 @@
+Current implementation sucks.
+
+Ideas to fix:-
+
+- remove unnecessary instructions
+	- don't need relative branches
+	- don't need inc or dec
+	- don't need three reg. alu operations
+
+- remove hazard prediction code
+	- this code is ugly and doesn't work well
+
+- remove pipelining??
+	- would drastically reduce performance
+
+- simplify overall design
+

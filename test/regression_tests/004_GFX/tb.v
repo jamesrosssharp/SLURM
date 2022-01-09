@@ -20,7 +20,7 @@ slurm16 #(
 );
 
 wire UART_TX = PINS[15];
-wire [3:0] R = PINS[23:0];
+wire [3:0] R = PINS[23:20];
 wire [3:0] G = PINS[27:24];
 wire [3:0] B = PINS[19:16];
 wire HS = PINS[28];
@@ -38,6 +38,7 @@ end
 initial begin
     $dumpvars(0, tb);
 	# 20000000 $finish;
+//	# 1000000 $finish;
 end
 
 genvar j;

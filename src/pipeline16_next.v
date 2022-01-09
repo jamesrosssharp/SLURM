@@ -177,9 +177,9 @@ reg flagsModifiedStage2_r;
 reg flagsModifiedStage3_r;
 
 reg [2:0] stall_count_r;
-reg [2:0] stall_count_r_next;
+reg [2:0] stall_count_r_next = 3'b000;
 
-wire partial_pipeline_stall_r = (stall_count_r > 1);
+wire partial_pipeline_stall_r = (stall_count_r > 3'b001);
 
 /* branch logic */
 
@@ -400,7 +400,7 @@ begin
 		flagsModifiedStage1_r	<= flagsModifiedStage1_r_next;
 		flagsModifiedStage2_r	<= flagsModifiedStage2_r_next;
 		flagsModifiedStage3_r	<= flagsModifiedStage2_r;
-		stall_count_r			<= stall_count_r_next;
+		//stall_count_r			<= stall_count_r_next;
 		branch_taken2_r		<= branch_taken2_r_next;
 		branch_taken3_r		<= branch_taken2_r;
 		branch_taken4_r		<= branch_taken3_r;
@@ -415,150 +415,6 @@ begin
 end
 
 /* combinational logic */
-
-/* interlock logic - determine hazard */
-
-/* 1 - registers that will be written */
-
-always @(*)
-begin
-	hazard1_r_next = hazard1_r;
-	hazard2_r_next = 5'd16;
-
-	if (stall_count_r == 3'b001) begin
-		hazard1_r_next = 5'd16;
-		hazard2_r_next = hazard1_r;
-	end else
-	if (stall_count_r == 3'b000) begin
-		hazard2_r_next = hazard1_r;
-		hazard1_r_next = 5'd16;
-
-		casex (pipelineStage0_r)
-			16'h01xx:	begin	/* ret / iret */
-				hazard1_r_next = LINK_REGISTER;
-			end
-			16'h02xx, 16'h03xx: begin
-				hazard1_r_next = reg_src_from_ins(pipelineStage0_r);	
-			end
-			16'h04xx: begin /* alu op reg */
-				hazard1_r_next = reg_src_from_ins(pipelineStage0_r);
-			end
-			16'h2xxx:	begin	/* alu op, reg reg */
-				hazard1_r_next = reg_dest_from_ins(pipelineStage0_r);
-			end
-			16'h3xxx:	begin	/* alu op, reg imm */
-				hazard1_r_next = reg_dest_from_ins(pipelineStage0_r);
-			end
-			16'h5xxx:	begin	/* load / store reg, reg ind */	
-				if (is_load_store_from_ins(pipelineStage0_r) == 1'b0) begin /* load */
-					hazard1_r_next = reg_dest_from_ins(pipelineStage0_r);	// we will write to this register
-				end
-			end
-			16'h6xxx: 	begin /* load / store, reg, imm address */
-				if (is_load_store_from_ins(pipelineStage0_r) == 1'b0) begin /* load */
-					hazard1_r_next = reg_dest_from_ins(pipelineStage0_r);	// we will write to this register
-				end 
-			end
-			16'b110xxxxxxxxxxxxx: begin /* memory, reg, reg + immediate index */ 
-				if (is_load_store_from_ins(pipelineStage0_r) == 1'b0) begin /* load */
-					hazard1_r_next = reg_dest_from_ins(pipelineStage0_r);	// we will write to this register
-				end 
-			end
-			16'b111xxxxxxxxxxxxx: begin /* io peek? */
-				if (is_io_poke_from_ins(pipelineStage0_r) == 1'b0) begin
-					hazard1_r_next = reg_dest_from_ins(pipelineStage0_r);
-				end
-			end
-			default: ;
-		endcase
-
-	end
-
-end
-
-/* 2 - flags that will be written */
-
-always @(*)
-begin
-	flagsModifiedStage1_r_next = flagsModifiedStage1_r;
-	flagsModifiedStage2_r_next = 1'b0;
-	
-	if (stall_count_r == 3'b000) begin
-		flagsModifiedStage1_r_next = 1'b0;
-		flagsModifiedStage2_r_next = flagsModifiedStage1_r;
-	
-		casex (pipelineStage0_r)
-			16'h04xx: begin 
-				flagsModifiedStage1_r_next = 1'b1;
-			end
-			16'h2xxx:	begin	
-				flagsModifiedStage1_r_next = 1'b1;
-			end
-			16'h3xxx:	begin	
-				flagsModifiedStage1_r_next = 1'b1;
-			end
-			default: ;
-		endcase
-	end
-
-end
-
-/* Determine any hazard and set stall_count_r */
-
-always @(*)
-begin
-
-	stall_count_r_next = stall_count_r;
-
-	case (cpu_state_r)
-		cpust_execute,
-		cpust_execute_load,
-		cpust_execute_store:
-			stall_count_r_next = (stall_count_r == 3'b000) ? stall_count_r : stall_count_r - 1;
-	endcase	
-
-
-	if (partial_pipeline_stall_r == 1'b0) begin
-		
-		if ((regARdAddr_stage0_r != 5'd16) && 
-			(hazard3_r == regARdAddr_stage0_r))
-				stall_count_r_next = 3;
-		else
-		if ((regBRdAddr_stage0_r != 5'd16) && 
-			(hazard3_r == regBRdAddr_stage0_r))
-				stall_count_r_next = 3;
-		else
-		if ((regARdAddr_stage0_r != 5'd16) && 
-			(hazard2_r == regARdAddr_stage0_r))
-				stall_count_r_next = 4;
-		else
-		if ((regBRdAddr_stage0_r != 5'd16) && 
-			(hazard2_r == regBRdAddr_stage0_r))
-				stall_count_r_next = 4;
-		else
-		if ((regARdAddr_stage0_r != 5'd16) && 
-			(hazard1_r == regARdAddr_stage0_r))
-				stall_count_r_next = 5;
-		else
-		if ((regBRdAddr_stage0_r != 5'd16) && 
-			(hazard1_r == regBRdAddr_stage0_r))
-				stall_count_r_next = 5;
-		else begin
-		/* flags hazard */
-		
-		casex (pipelineStage0_r)
-			16'h4xxx:	begin 
-				if (uses_flags_for_branch(pipelineStage0_r) == 1'b1 && flagsModifiedStage2_r == 1'b1)
-					stall_count_r_next = 3;
-		
-				if (uses_flags_for_branch(pipelineStage0_r) == 1'b1 && flagsModifiedStage1_r == 1'b1)
-					stall_count_r_next = 3;
-			end
-		endcase
-		end
-	end 
-
-end
 
 // CPU state machine
 
@@ -595,8 +451,8 @@ begin
 				else
 					cpu_state_r_next = cpust_wait_mem_store1;
 			end else begin
-				if (pc_r[15:14] != pc_r_next[15:14])
-					cpu_state_r_next = cpust_wait_mem_ready1;
+			//	if (pc_r[15:14] != pc_r_next[15:14])
+			//		cpu_state_r_next = cpust_wait_mem_ready1;
 			end
 		end 
 		cpust_wait_mem_ready1:
@@ -654,14 +510,14 @@ begin
 			pc_r_prev_next = pc_r;
 			pc_r_next = pc_r + 1;
 
-			if (partial_pipeline_stall_r == 1'b1) begin
-				pc_r_next = pc_r_prev;
-				pc_r_prev_next = pc_r_prev;
-			end 
+		//	if (partial_pipeline_stall_r == 1'b1) begin
+		//		pc_r_next = pc_r_prev;
+		//		pc_r_prev_next = pc_r_prev;
+		//	end 
 
 			/* Branch in pipeline stage 1 ? */
 
-			if (stall_count_r <= 3'b001) begin
+		//	if (stall_count_r <= 3'b001) begin
 				casex (pipelineStage1_r)
 					16'h4xxx:	begin /* branch */
 						if (branch_taken_from_ins(pipelineStage1_r, Z, S, C) == 1'b1) begin
@@ -680,7 +536,7 @@ begin
 					end
 					default: ;
 				endcase
-			end
+		//	end
 
 			/* Branch in pipeline stage 2 ? */
 
@@ -699,13 +555,13 @@ begin
 			endcase
 		end
 		cpust_wait_mem_ready2:
-			if (ready == 1'b1 && stall_count_r == 3'b000  ) begin
+			if (ready == 1'b1 /*&& stall_count_r == 3'b000*/  ) begin
 				pc_r_prev_next = pc_r;
 				pc_r_next = pc_r + 1;
 			end
 		default: begin
-			pc_r_next = pc_r_prev;
-			pc_r_prev_next = pc_r_prev;
+	//		pc_r_next = pc_r_prev;
+	//		pc_r_prev_next = pc_r_prev;
 		end
 	endcase
 end
@@ -805,7 +661,7 @@ begin
 			pipelineStage3_r_next = pipelineStage2_r;
 			pipelineStage4_r_next = pipelineStage3_r;
 
-			if (stall_count_r == 3'b001) begin
+		/*	if (stall_count_r == 3'b001) begin
 				pipelineStage0_r_next = pipelineStage0_r;
 				pipelineStage2_r_next = pipelineStage1_r;
 				pipelineStage1_r_next = NOP_INSTRUCTION;	
@@ -815,7 +671,7 @@ begin
 				pipelineStage1_r_next = pipelineStage1_r;
 				pipelineStage2_r_next = NOP_INSTRUCTION;	
 			end
-			else begin
+			else begin*/
 
 				/* If branch taken in stage 1, insert nop as new instruction in stage 1 */
 
@@ -858,7 +714,7 @@ begin
 							pipelineStage0_r_next = NOP_INSTRUCTION;
 					end
 				endcase
-			end
+			//end
 		end
 		cpust_wait_mem_ready1,
 		cpust_wait_mem_ready2,
@@ -1017,8 +873,8 @@ begin
 	if (pipelineStage1_r == 16'h0000) 
 		imm_r_next = imm_r;
 
-	if (stall_count_r > 3'b001)
-		imm_r_next = imm_r;
+	//if (stall_count_r > 3'b001)
+	//	imm_r_next = imm_r;
 
 	case (cpu_state_r)
 		cpust_execute,

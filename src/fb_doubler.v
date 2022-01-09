@@ -53,7 +53,7 @@ reg [15:0] fb_address, fb_address_next;
 reg [7:0] color_index;
 wire [15:0] color_out;
 
-assign color = color_out;
+assign color = 16'h0000; /*= color_out;*/
 
 bram #(.BITS(16), .ADDRESS_BITS(8)) pal0
 (

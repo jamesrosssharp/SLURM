@@ -40,8 +40,8 @@ mult m0 (m1a, m1b, out1);
 mult m1 (m2a, m2b, out2);
 mult m2 (m3a, m3b, out3);
 
-assign rout = out1[31:28] + out2[7:4] ;
-assign gout = out1[7:4]   + out3[31:28] ;
-assign bout = out2[31:28] + out3[7:4] ;
+assign rout = out1[31:28] + out2[7:4];
+assign gout = out1[7:4]   + out3[31:28];
+assign bout = out2[31:28] + out3[7:4];
 
 endmodule

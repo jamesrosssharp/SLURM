@@ -194,44 +194,9 @@ Class 7:
 Reserved
 
 
-Class 8: ALU operations 0-15 with separate destination register
-----------------------------------------------------------------
+Class 8: Reserved
 
-|15 | 14 | 13 | 12  - 9  | 8  - 6 | 5 - 3 | 2 - 0 |
-|---|----|----|----------|--------|-------|-------|
-|1  | 0  | 0  |  ALU OP  |  DEST  | SRC2  | SRC1  |
-
-	DEST, SRC2, SRC1: only lowest 8 registers can be used
-
-     ALU OP : 4 bits ALU operation
-        0 - mov : DEST <- SRC1
-        1 - add : DEST <- SRC2 + SRC1
-        2 - adc : DEST <- SRC2 + SRC1 + Carry
-        3 - sub : DEST <- SRC2 - SRC1
-        4 - sbb : DEST <- SRC2 - SRC1 - Carry
-        5 - and : DEST <- SRC2 & SRC1
-        6 - or  : DEST <- SRC2 | SRC1
-        7 - xor : DEST <- SRC2 ^ SRC1
-        8 - 15: reserved
-        
-Class 10: Relative branch
--------------------------
-
-|15 | 14 | 13 | 12 | 11  - 19  |   8  - 0     |
-|---|----|----|----|-----------|--------------|
-|1  | 0  | 1  |  x |  BRANCH   | BRNCH_IMM    |
-
-    BRNCH:
-        0 - BZ, branch if zero
-        1 - BNZ, branch if not zero
-        2 - BS, branch if sign
-        3 - BNS, branch if not sign
-        4 - BC, branch if carry
-        5 - BNC, branch if not carry
-        6 - BA, branch always
-        7 - BL, branch and link
-    BRNCH_IMM: signed immediate, -256 -> 256
-        PC <- PC + BRNCH_IMM
+Class 10: Reserved
 
 Class 12: immediate + register memory operation
 -----------------------------------------------
