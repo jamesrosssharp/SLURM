@@ -1,0 +1,28 @@
+[*]
+[*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
+[*] Sun Jan  9 05:12:56 2022
+[*]
+[dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/module_testbenches/cpu_program_counter/dump.vcd"
+[dumpfile_mtime] "Sun Jan  9 05:12:49 2022"
+[dumpfile_size] 10568
+[savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/module_testbenches/cpu_program_counter/config.gtkw"
+[timestart] 0
+[size] 1468 686
+[pos] -1 -1
+*-12.000000 3050 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] tb.
+[sst_width] 234
+[signals_width] 166
+[sst_expanded] 1
+[sst_vpaned_height] 179
+@28
+tb.CLK
+tb.RSTb
+@22
+tb.pc[15:0]
+@28
+tb.is_fetching
+@29
+tb.load_pc
+[pattern_trace] 1
+[pattern_trace] 0

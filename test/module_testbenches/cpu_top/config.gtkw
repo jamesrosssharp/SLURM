@@ -1,0 +1,48 @@
+[*]
+[*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
+[*] Sun Jan  9 10:23:58 2022
+[*]
+[dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/module_testbenches/cpu_top/dump.vcd"
+[dumpfile_mtime] "Sun Jan  9 10:22:58 2022"
+[dumpfile_size] 33950
+[savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/module_testbenches/cpu_top/config.gtkw"
+[timestart] 0
+[size] 1468 686
+[pos] -1 -1
+*-9.000000 650 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] tb.
+[treeopen] tb.top0.
+[sst_width] 234
+[signals_width] 198
+[sst_expanded] 1
+[sst_vpaned_height] 179
+@28
+tb.CLK
+tb.RSTb
+@22
+tb.memory_address[15:0]
+tb.memory_in[15:0]
+tb.memory_out[15:0]
+@28
+tb.memory_ready
+tb.memory_valid
+@29
+tb.memory_wr
+@200
+-
+@22
+tb.top0.cpu_pip0.pipeline_stage0[15:0]
+tb.top0.cpu_pip0.pipeline_stage1[15:0]
+tb.top0.cpu_pip0.pipeline_stage2[15:0]
+tb.top0.cpu_pip0.pipeline_stage3[15:0]
+tb.top0.cpu_pip0.pipeline_stage4[15:0]
+@28
+tb.top0.cpu_pip0.is_executing
+@22
+tb.top0.cpu_mem0.cpu_state_r[3:0]
+tb.top0.cpu_mem0.addr_r[15:0]
+tb.top0.cpu_mem0.next_addr_r[15:0]
+@28
+tb.top0.cpu_pip0.mask_count_r[1:0]
+[pattern_trace] 1
+[pattern_trace] 0

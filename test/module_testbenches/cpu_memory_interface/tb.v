@@ -66,6 +66,11 @@ assign   memory_ready = (state == state_grant) ? 1'b1 : 1'b0;
 initial begin
 	#300 load_memory = 1'b1;
 	#400 load_memory = 1'b0;
+
+	#2000 
+		load_store_address = 16'h2000;
+		load_memory = 1'b1;
+	#100 load_memory = 1'b0;
 end
 
 
