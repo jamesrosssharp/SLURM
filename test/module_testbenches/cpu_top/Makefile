@@ -9,7 +9,8 @@ SOURCE= $(SRCDIR)/cpu_program_counter.v \
 		$(SRCDIR)/cpu_register_file.v	\
 		$(SRCDIR)/cpu_execute.v			\
 		$(SRCDIR)/alu.v					\
-		$(SRCDIR)/cpu_writeback.v	
+		$(SRCDIR)/cpu_writeback.v		\
+		$(SRCDIR)/cpu_port_interface.v	
 
  
 PROJECT=cpu_top

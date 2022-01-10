@@ -14,8 +14,11 @@ module slurm16_cpu_memory_interface #(parameter BITS = 16, ADDRESS_BITS = 16)  (
 
 	input  [ADDRESS_BITS - 1:0] pc, /* pc input from pc module */
 	input  [ADDRESS_BITS - 1:0] load_store_address, /* load store address */
+	input  [ADDRESS_BITS - 1:0] store_memory_data,  /* data to store to memory */
 
 	output [ADDRESS_BITS - 1:0] memory_address, /* memory address - to memory arbiter */
+	output [BITS - 1:0]			memory_out,		/* memory output */
+	
 	output memory_valid,						/* memory valid signal - request to mem. arbiter */
 	input  memory_ready,						/* grant - from memory arbiter */
 	output memory_wr,							/* write to memory */
@@ -61,6 +64,9 @@ reg wr_r;
 assign memory_valid = valid_r;
 assign memory_wr = wr_r;
 
+reg [BITS - 1:0] memory_out_r;
+assign memory_out = memory_out_r;
+
 /* sequential logic */
 
 always @(posedge CLK)
@@ -68,9 +74,11 @@ begin
 	if (RSTb == 1'b0) begin
 		addr_r <= {ADDRESS_BITS{1'b0}};
 		cpu_state_r <= cpust_wait_mem_ready1; 	
+		memory_out_r <= {BITS{1'b0}};
 	end else begin
 		addr_r <= next_addr_r;
 		cpu_state_r <= cpu_state_r_next;
+		memory_out_r <= store_memory_data;
 	end
 end
 

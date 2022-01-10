@@ -30,13 +30,15 @@ localparam BITS = 16;
 localparam ADDRESS_BITS = 16;
 localparam REGISTER_BITS = 4;
 
-wire load_memory = 1'b0;
-wire store_memory = 1'b0;
+wire load_memory;
+wire store_memory;
 wire halt = 1'b0;
 wire wake = 1'b0;
 
 wire [ADDRESS_BITS - 1:0] pc;
-wire [ADDRESS_BITS - 1:0] load_store_address = 16'h0000;
+wire [ADDRESS_BITS - 1:0] load_store_address;
+
+wire [BITS - 1:0] store_memory_data;
 
 wire is_executing;
 wire is_fetching;
@@ -52,8 +54,11 @@ slurm16_cpu_memory_interface #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_mem
 
 	pc, /* pc input from pc module */
 	load_store_address, /* load store address */
-
+	store_memory_data, /* data to store to memory */
+ 
 	memory_address, /* memory address - to memory arbiter */
+	memory_out,		/* memory output */
+
 	memory_valid,						/* memory valid signal - request to mem. arbiter */
 	memory_ready,						/* grant - from memory arbiter */
 	memory_wr,							/* write to memory */
@@ -73,6 +78,8 @@ wire [BITS - 1:0] pipeline_stage2;
 wire [BITS - 1:0] pipeline_stage3;
 wire [BITS - 1:0] pipeline_stage4;
 
+wire [ADDRESS_BITS - 1:0] pc_stage4;
+
 wire [BITS - 1:0] imm_reg;
 wire load_pc;
 
@@ -82,6 +89,7 @@ slurm16_cpu_pipeline #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_pip0
 	RSTb,
 
 	memory_in,
+	memory_address,
 
 	is_executing, /* CPU is executing */
 
@@ -95,10 +103,9 @@ slurm16_cpu_pipeline #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_pip0
 	pipeline_stage3,
 	pipeline_stage4,
 
+	pc_stage4,
 	imm_reg,
-
 	load_pc
-
 );
 
 wire [ADDRESS_BITS-1:0] pc_in;
@@ -134,6 +141,21 @@ slurm16_cpu_decode #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS), .REGISTER_BITS(RE
 	regB_sel  /* register B select */
 );
 
+wire [REGISTER_BITS - 1:0] regA_sel0;
+wire [REGISTER_BITS - 1:0] regB_sel0;
+
+// Hazard register decoder 
+slurm16_cpu_decode #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS), .REGISTER_BITS(REGISTER_BITS)) cpu_dec1
+(
+	CLK,
+	RSTb,
+
+	pipeline_stage0,		/* instruction in pipeline slot 1 (or 0 for hazard decoder) */
+
+	regA_sel0, /* register A select */
+	regB_sel0  /* register B select */
+);
+
 wire [REGISTER_BITS - 1:0]  regIn_sel;
 wire [BITS - 1:0] 			regOutA_data;
 wire [BITS - 1:0] 			regOutB_data;
@@ -161,6 +183,11 @@ wire [4:0] aluOp;
 wire [BITS - 1:0] aluA;
 wire [BITS - 1:0] aluB;
 
+wire [ADDRESS_BITS - 1:0] ex_port_address;
+wire [BITS - 1:0] ex_port_out;
+wire ex_port_rd;
+wire ex_port_wr;
+
 slurm16_cpu_execute #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) exec0
 (
 	CLK,
@@ -176,6 +203,11 @@ slurm16_cpu_execute #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) exec0
 	load_memory,
 	store_memory,
 	load_store_address,
+	store_memory_data,
+	ex_port_address,
+	ex_port_out, 
+	ex_port_rd,
+	ex_port_wr,
 	aluOp,
 	aluA,
 	aluB,
@@ -215,11 +247,27 @@ slurm16_cpu_writeback #(.REGISTER_BITS(REGISTER_BITS), .BITS(BITS), .ADDRESS_BIT
 
 	/* write back register select and data */
 	regIn_sel,
-	regIn_data 
+	regIn_data,
+
+	pc_stage4 
 
 );
 
+slurm16_cpu_port_interface #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) prt0 (
+	CLK,
+	RSTb,
 
+	is_executing,
 
+	ex_port_address,
+	ex_port_out,
+	ex_port_rd,
+	ex_port_wr,
+
+	port_address,
+	port_out,
+	port_rd,
+	port_wr
+);
 
 endmodule

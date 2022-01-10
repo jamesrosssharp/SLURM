@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Mon Jan 10 06:03:17 2022
+[*] Mon Jan 10 07:39:08 2022
 [*]
 [dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/module_testbenches/cpu_top/dump.vcd"
-[dumpfile_mtime] "Mon Jan 10 06:02:34 2022"
-[dumpfile_size] 51587
+[dumpfile_mtime] "Mon Jan 10 07:38:48 2022"
+[dumpfile_size] 105340
 [savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/module_testbenches/cpu_top/config.gtkw"
-[timestart] 586
+[timestart] 0
 [size] 1468 686
 [pos] -1 -1
-*-9.000000 1850 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-9.000000 2050 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tb.
 [treeopen] tb.top0.
 [sst_width] 234
@@ -27,6 +27,15 @@ tb.memory_out[15:0]
 tb.memory_ready
 tb.memory_valid
 tb.memory_wr
+@200
+-
+@22
+tb.top0.port_address[15:0]
+@28
+tb.top0.port_rd
+tb.top0.port_wr
+@22
+tb.top0.port_out[15:0]
 @200
 -
 @22
@@ -48,6 +57,8 @@ tb.top0.cpu_pip0.mask_count_r[1:0]
 @22
 tb.top0.cpu_dec0.regA_sel[3:0]
 tb.top0.cpu_dec0.regB_sel[3:0]
+tb.top0.exec0.regA[15:0]
+tb.top0.exec0.regB[15:0]
 @200
 -
 @22
@@ -78,7 +89,7 @@ tb.top0.reg0.\regFileA[15][15:0]
 -
 @22
 tb.top0.exec0.new_pc[15:0]
-@29
+@28
 tb.top0.exec0.load_pc
 [pattern_trace] 1
 [pattern_trace] 0

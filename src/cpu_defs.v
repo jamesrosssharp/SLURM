@@ -16,6 +16,6 @@ localparam INSTRUCTION_CASEX_ALUOP_REG_REG    = 16'h2xxx;
 localparam INSTRUCTION_CASEX_ALUOP_REG_IMM    = 16'h3xxx;
 localparam INSTRUCTION_CASEX_BRANCH    		  = 16'h4xxx;
 localparam INSTRUCTION_CASEX_LOAD_STORE		  = 16'b110xxxxxxxxxxxxx;
-localparam INSTRUCTION_CASEX_PEEK_POKE		  = 16'b110xxxxxxxxxxxxx;
+localparam INSTRUCTION_CASEX_PEEK_POKE		  = 16'b111xxxxxxxxxxxxx;
 
 

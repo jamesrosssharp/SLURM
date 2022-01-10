@@ -13,6 +13,8 @@ module slurm16_cpu_pipeline #(parameter BITS = 16, ADDRESS_BITS = 16)
 	input RSTb,
 
 	input [BITS - 1:0] memory_in,
+	input [ADDRESS_BITS - 1:0] memory_address, /* this will point to PC + 1, which we will progress 
+												  through the pipeline so we can store it for bl (branch and link) instructions */
 
 	input is_executing, /* CPU is executing */
 
@@ -25,6 +27,8 @@ module slurm16_cpu_pipeline #(parameter BITS = 16, ADDRESS_BITS = 16)
 	output [BITS - 1:0] pipeline_stage2,
 	output [BITS - 1:0] pipeline_stage3,
 	output [BITS - 1:0] pipeline_stage4,
+
+	output [ADDRESS_BITS - 1:0] pc_stage4,
 
 	output [BITS - 1:0] imm_reg,
 
@@ -40,6 +44,14 @@ reg [BITS - 1:0] pipeline_stage1_r, pipeline_stage1_r_next;
 reg [BITS - 1:0] pipeline_stage2_r, pipeline_stage2_r_next;
 reg [BITS - 1:0] pipeline_stage3_r, pipeline_stage3_r_next;
 reg [BITS - 1:0] pipeline_stage4_r, pipeline_stage4_r_next;
+
+reg [ADDRESS_BITS - 1:0] pc_stage0_r, pc_stage0_r_next;
+reg [ADDRESS_BITS - 1:0] pc_stage1_r, pc_stage1_r_next;
+reg [ADDRESS_BITS - 1:0] pc_stage2_r, pc_stage2_r_next;
+reg [ADDRESS_BITS - 1:0] pc_stage3_r, pc_stage3_r_next;
+reg [ADDRESS_BITS - 1:0] pc_stage4_r, pc_stage4_r_next;
+
+assign pc_stage4 = pc_stage4_r;
 
 assign pipeline_stage0 = pipeline_stage0_r;
 assign pipeline_stage1 = pipeline_stage1_r;
@@ -67,16 +79,26 @@ begin
 		pipeline_stage2_r <= NOP_INSTRUCTION;
 		pipeline_stage3_r <= NOP_INSTRUCTION;
 		pipeline_stage4_r <= NOP_INSTRUCTION;
-		prev_executing <= 1'b0;
-		mask_count_r <= 2'd0;
-		imm_r <= 12'h000;
-		imm_stage2_r <= {BITS{1'b0}};
+		pc_stage0_r <= {ADDRESS_BITS{1'b0}};
+		pc_stage1_r <= {ADDRESS_BITS{1'b0}};
+		pc_stage2_r <= {ADDRESS_BITS{1'b0}};
+		pc_stage3_r <= {ADDRESS_BITS{1'b0}};
+		pc_stage4_r <= {ADDRESS_BITS{1'b0}};
+		prev_executing 	<= 1'b0;
+		mask_count_r 	<= 2'd0;
+		imm_r 			<= 12'h000;
+		imm_stage2_r 	<= {BITS{1'b0}};
 	end else begin
 		pipeline_stage0_r <= pipeline_stage0_r_next;
 		pipeline_stage1_r <= pipeline_stage1_r_next;
 		pipeline_stage2_r <= pipeline_stage2_r_next;
 		pipeline_stage3_r <= pipeline_stage3_r_next;
 		pipeline_stage4_r <= pipeline_stage4_r_next;
+		pc_stage0_r <= pc_stage0_r_next;
+		pc_stage1_r <= pc_stage1_r_next;
+		pc_stage2_r <= pc_stage2_r_next;
+		pc_stage3_r <= pc_stage3_r_next;
+		pc_stage4_r <= pc_stage4_r_next;
 		prev_executing <= is_executing;
 		mask_count_r 	<= mask_count_r_next;
 		imm_r 			<= imm_r_next;
@@ -115,19 +137,32 @@ begin
 	pipeline_stage2_r_next = pipeline_stage2_r;
 	pipeline_stage3_r_next = pipeline_stage3_r;
 	pipeline_stage4_r_next = pipeline_stage4_r;
- 
+
+	pc_stage0_r_next = pc_stage0_r;
+	pc_stage1_r_next = pc_stage1_r;
+	pc_stage2_r_next = pc_stage2_r;
+	pc_stage3_r_next = pc_stage3_r;
+	pc_stage4_r_next = pc_stage4_r;
+  
 	// Else if executing, advance pipeline
 
 	if (is_executing && prev_executing) begin
-		if (mask_count_r == 2'd0)
+		if (mask_count_r == 2'd0) begin
 			pipeline_stage0_r_next = memory_in;
-		else
+			pc_stage0_r_next = memory_address;
+		end else begin
 			pipeline_stage0_r_next = NOP_INSTRUCTION;
+		end
 
 		pipeline_stage1_r_next = pipeline_stage0_r;
 		pipeline_stage2_r_next = pipeline_stage1_r;
 		pipeline_stage3_r_next = pipeline_stage2_r;
 		pipeline_stage4_r_next = pipeline_stage3_r;
+
+		pc_stage1_r_next = pc_stage0_r;
+		pc_stage2_r_next = pc_stage1_r;
+		pc_stage3_r_next = pc_stage2_r;
+		pc_stage4_r_next = pc_stage3_r;
 	end
  
 	// Else if pipeline stall, keep instructions in fetch and decode stages,
@@ -139,6 +174,11 @@ begin
 		pipeline_stage2_r_next = NOP_INSTRUCTION;
 		pipeline_stage3_r_next = pipeline_stage2_r;
 		pipeline_stage4_r_next = pipeline_stage3_r;
+
+		pc_stage0_r_next = pc_stage0_r;
+		pc_stage1_r_next = pc_stage1_r;
+		pc_stage3_r_next = pc_stage2_r;
+		pc_stage4_r_next = pc_stage3_r;
 	end
 
 	if (load_pc == 1'b1) begin

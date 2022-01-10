@@ -29,6 +29,13 @@ module slurm16_cpu_execute #(parameter BITS = 16, ADDRESS_BITS = 16)
 	output load_memory,
 	output store_memory,
 	output [ADDRESS_BITS - 1:0] load_store_address,
+	output [BITS - 1:0] memory_out,
+
+	/* port op */
+	output [ADDRESS_BITS - 1:0] port_address,
+	output [BITS - 1:0] port_out, 
+	output port_rd,
+	output port_wr,
 
 	/* alu op */
 	output [4:0] aluOp,
@@ -117,12 +124,84 @@ begin
 		casex(instruction)
 			INSTRUCTION_CASEX_BRANCH: begin
 				if (branch_taken_from_ins(instruction, Z, S, C) == 1'b1) begin
-						new_pc_r = imm_reg;
+						new_pc_r = regA + imm_reg;
 						load_pc_r = 1'b1;
 				end
+			end
+			INSTRUCTION_CASEX_RET_IRET: begin
+				new_pc_r = regA;
+				load_pc_r = 1'b1;
 			end
 		endcase
 	end
 end
+
+/* determine IO peek / poke */
+
+reg [ADDRESS_BITS - 1:0] port_address_r;
+reg [BITS - 1:0] port_out_r; 
+reg port_rd_r;
+reg port_wr_r;
+
+assign port_address = port_address_r;
+assign port_out 	= port_out_r;
+assign port_rd 		= port_rd_r;
+assign port_wr 		= port_wr_r;
+
+always @(*)
+begin
+	port_address_r = {ADDRESS_BITS{1'b0}};
+	port_out_r = {BITS{1'b0}};
+	port_rd_r = 1'b0;
+	port_wr_r = 1'b0;
+
+	if (is_executing) begin
+		casex(instruction)
+			INSTRUCTION_CASEX_PEEK_POKE: begin
+				port_address_r = regB + imm_reg;
+				if (is_io_poke_from_ins(instruction) == 1'b1) begin
+					port_wr_r = 1'b1;
+					port_out_r = regA;
+				end else
+					port_rd_r = 1'b1;
+			end
+		endcase
+	end
+end
+
+/* determine load / store */
+
+reg load_memory_r;
+reg store_memory_r;
+reg [ADDRESS_BITS - 1:0] load_store_address_r;
+reg [BITS - 1:0] memory_out_r;
+
+assign load_memory = load_memory_r;
+assign store_memory = store_memory_r;
+assign load_store_address = load_store_address_r;
+assign memory_out = memory_out_r;
+
+always @(*)
+begin
+	load_store_address_r = {ADDRESS_BITS{1'b0}};
+	memory_out_r 		 = {BITS{1'b0}};
+	load_memory_r 		 = 1'b0;
+	store_memory_r 		 = 1'b0;
+
+	if (is_executing) begin
+		casex(instruction)
+			INSTRUCTION_CASEX_LOAD_STORE: begin
+				load_store_address_r = regB + imm_reg;
+				if (is_load_store_from_ins(instruction) == 1'b1) begin
+					store_memory_r = 1'b1;
+					memory_out_r = regA;
+				end else
+					load_memory_r = 1'b1;
+			end
+		endcase
+	end
+end
+
+
 
 endmodule

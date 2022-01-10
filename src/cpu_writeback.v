@@ -18,7 +18,9 @@ module slurm16_cpu_writeback #(parameter REGISTER_BITS = 4, BITS = 16, ADDRESS_B
 
 	/* write back register select and data */
 	output [REGISTER_BITS - 1:0] reg_wr_sel,
-	output [BITS - 1:0] reg_out 
+	output [BITS - 1:0] reg_out,
+
+	input [ADDRESS_BITS - 1: 0] pc_stage4 
 
 );
 
@@ -46,25 +48,25 @@ begin
 			reg_wr_addr_r 	= reg_dest_from_ins(instruction);
 			reg_out_r 		= aluOut; 	
 		end
-		//16'h4xxx: begin /* branch */
-		//	if (is_branch_link_from_ins(instruction) == 1'b1) begin
-		//		reg_wr_addr_r   = LINK_REGISTER; /* link register */
-		//		reg_out_r		= result_stage4_r;
-		//	end
-		//end
-		//16'b110xxxxxxxxxxxxx:	begin /* load store */
-		//	if (is_load_store_from_ins(instruction) == 1'b0) begin /* load */
-		//		// write back value 
-		//		reg_wr_addr_r = reg_dest_from_ins(instruction);
-		//		reg_out_r = memoryIn;
-		//	end	
-		//end
-		//16'b111xxxxxxxxxxxxx: begin /* io peek? */
-		//	if (is_io_poke_from_ins(instruction) == 1'b0) begin
-		//		reg_wr_addr_r = reg_dest_from_ins(instruction);
-		//		reg_out_r = portIn;
-		//	end
-		//end
+		INSTRUCTION_CASEX_BRANCH: begin /* branch */
+			if (is_branch_link_from_ins(instruction) == 1'b1) begin
+				reg_wr_addr_r   = LINK_REGISTER; /* link register */
+				reg_out_r		= pc_stage4;
+			end
+		end
+		INSTRUCTION_CASEX_LOAD_STORE:	begin /* load store */
+			if (is_load_store_from_ins(instruction) == 1'b0) begin /* load */
+				// write back value 
+				reg_wr_addr_r = reg_dest_from_ins(instruction);
+				reg_out_r = memory_in;
+			end	
+		end
+		INSTRUCTION_CASEX_PEEK_POKE: begin /* io peek? */
+			if (is_io_poke_from_ins(instruction) == 1'b0) begin
+				reg_wr_addr_r = reg_dest_from_ins(instruction);
+				reg_out_r = port_in;
+			end
+		end
 		default: ;
 	endcase
 end
