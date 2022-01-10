@@ -4,7 +4,7 @@
  *
  */
 
-module slurm16_cpu_top #(parameter BITS = 16, ADDRESS_BITS = 16) 
+module slurm16_cpu_top
 (
 	input CLK,
 	input RSTb,
@@ -24,6 +24,11 @@ module slurm16_cpu_top #(parameter BITS = 16, ADDRESS_BITS = 16)
 
 	input  [3:0]				irq			/* interrupt lines */
 );
+
+/* Machine is 16 bit with 16 bit address bus, and 16 registers */
+localparam BITS = 16;
+localparam ADDRESS_BITS = 16;
+localparam REGISTER_BITS = 4;
 
 wire load_memory = 1'b0;
 wire store_memory = 1'b0;
@@ -68,6 +73,9 @@ wire [BITS - 1:0] pipeline_stage2;
 wire [BITS - 1:0] pipeline_stage3;
 wire [BITS - 1:0] pipeline_stage4;
 
+wire [BITS - 1:0] imm_reg;
+wire load_pc;
+
 slurm16_cpu_pipeline #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_pip0
 (
 	CLK,
@@ -85,12 +93,15 @@ slurm16_cpu_pipeline #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_pip0
 	pipeline_stage1,
 	pipeline_stage2,
 	pipeline_stage3,
-	pipeline_stage4
+	pipeline_stage4,
+
+	imm_reg,
+
+	load_pc
 
 );
 
-wire [ADDRESS_BITS-1:0] pc_in = {ADDRESS_BITS{1'b0}};
-wire load_pc = 1'b0;
+wire [ADDRESS_BITS-1:0] pc_in;
 
 slurm16_cpu_program_counter #(.ADDRESS_BITS(ADDRESS_BITS)) cpu_pc0
 (
@@ -99,15 +110,115 @@ slurm16_cpu_program_counter #(.ADDRESS_BITS(ADDRESS_BITS)) cpu_pc0
 
 	pc,
 
-	pc_in,	/* PC in for load (branch, ret etc) */
-	load_pc,							/* load the PC */
+	pc_in,		/* PC in for load (branch, ret etc) */
+	load_pc,						 /* load the PC */
 
-	is_fetching,	/* CPU is fetching instructions - increment PC */
+	is_fetching,   /* CPU is fetching instructions - increment PC */
 
-	stall,		/* pipeline is stalled */
+	stall,		  /* pipeline is stalled */
 	stall_start,  /* pipeline has started to stall */
-	stall_end	/* pipeline is about to end stall */
+	stall_end	  /* pipeline is about to end stall */
 );
+
+wire [REGISTER_BITS - 1:0] regA_sel;
+wire [REGISTER_BITS - 1:0] regB_sel;
+ 
+slurm16_cpu_decode #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS), .REGISTER_BITS(REGISTER_BITS)) cpu_dec0
+(
+	CLK,
+	RSTb,
+
+	pipeline_stage1,		/* instruction in pipeline slot 1 (or 0 for hazard decoder) */
+
+	regA_sel, /* register A select */
+	regB_sel  /* register B select */
+);
+
+wire [REGISTER_BITS - 1:0]  regIn_sel;
+wire [BITS - 1:0] 			regOutA_data;
+wire [BITS - 1:0] 			regOutB_data;
+wire [BITS - 1:0] 			regIn_data;
+
+slurm16_cpu_register_file
+#(.REG_BITS(REGISTER_BITS), .BITS(BITS)) reg0
+(
+	CLK,
+	RSTb,
+	regIn_sel,
+	regA_sel,
+	regB_sel,	
+	regOutA_data,
+	regOutB_data,
+	regIn_data
+);
+
+wire Z;
+wire C;
+wire S;
+
+
+wire [4:0] aluOp;
+wire [BITS - 1:0] aluA;
+wire [BITS - 1:0] aluB;
+
+slurm16_cpu_execute #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) exec0
+(
+	CLK,
+	RSTb,
+	pipeline_stage2,		
+	is_executing,
+	Z,
+	C,
+	S,
+	regOutA_data,
+	regOutB_data,
+	imm_reg,
+	load_memory,
+	store_memory,
+	load_store_address,
+	aluOp,
+	aluA,
+	aluB,
+	load_pc,
+	pc_in
+);
+
+wire [BITS - 1:0] aluOut;
+
+alu
+#(.BITS(BITS)) alu0
+(
+	CLK,
+	RSTb,
+
+	aluA,
+	aluB,
+	aluOp,
+	aluOut,
+
+	is_executing,
+
+	C, /* carry flag */
+	Z, /* zero flag */
+	S /* sign flag */
+);
+
+slurm16_cpu_writeback #(.REGISTER_BITS(REGISTER_BITS), .BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) wr0
+(
+	CLK,
+	RSTb,
+
+	pipeline_stage4,		/* instruction in pipeline slot 4 */
+	aluOut,
+	memory_in, 
+	port_in, 
+
+	/* write back register select and data */
+	regIn_sel,
+	regIn_data 
+
+);
+
 
 
 

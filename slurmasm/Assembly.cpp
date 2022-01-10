@@ -275,13 +275,12 @@ void Assembly::makeFlowControlInstruction(OpCode opcode, uint32_t address, uint3
                                        std::vector<uint16_t>& assembledWords, bool regIndirect)
 {
 	uint16_t branch = 0;
-	uint16_t isreg  = regIndirect ? 1 : 0;
 	
 	branch = get_branch(opcode, lineNum);
 
 	uint16_t op;
 
-	op = SLRM_BRANCH_INSTRUCTION | (branch << 8) | ((uint16_t)target & 0xf) | ((uint16_t)reg << 4) | (isreg << 11);
+	op = SLRM_BRANCH_INSTRUCTION | (branch << 8) | ((uint16_t)target & 0xf) | ((uint16_t)reg << 4);
 	
 	if (target >= 0 && target < 16)
     {

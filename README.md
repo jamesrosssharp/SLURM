@@ -49,21 +49,7 @@ Class 0 has 4 sub-classes, bits 9 - 8 of the opcode.
         RT : 0 = RET (return) (restore PC from link register and branch)
              1 = IRET (interrupt return) (restore PC from interrupt link register and branch)
 
-2. Increment
-
-
-    |15 | 14 | 13 | 12 | 11 | 10 | 9 | 8 | 7 - 4 | 3 - 0 |
-    |---|----|----|----|----|----|---|---|-------|-------|
-    |0  | 0  | 0  | 0  | 0  | 0  | 1 | 0 |   x   | REG   |
-
-
-3.  Decrement 
-
-    |15 | 14 | 13 | 12 | 11 | 10 | 9 | 8 | 7 - 4 | 3 - 0 |
-    |---|----|----|----|----|----|---|---|-------|-------|
-    |0  | 0  | 0  | 0  | 0  | 0  | 1 | 1 |   x   | REG   |
-
-        REGS: if any bits are zero, the register will be decremented
+2. / 3. Reserved
 
 4. Single register ALU operation
 
@@ -148,57 +134,48 @@ Class 3: immediate to register ALU operation
 Class 4: branch operation
 -------------------------------------------
 
-|15 | 14 | 13 | 12 | 11 | 10 - 8 | 7   - 4 |   3 - 0     |
-|---|----|----|----|----|--------|---------|-------------|
-|0  | 1  | 0  | 0  |  R | BRNCH  |   REG   | IMM LO      |
+|15 | 14 | 13 | 12 | 11 - 8 | 7   - 4 |   3 - 0     |
+|---|----|----|----|--------|---------|-------------|
+|0  | 1  | 0  | 0  | BRNCH  |   REG   | IMM LO      |
 
-    R: if 0, branch to immediate address
-       if 1, branch to address pointed to by REG + immediate
     BRNCH:
-        0 - BZ, branch if zero
-        1 - BNZ, branch if not zero
-        2 - BS, branch if sign
-        3 - BNS, branch if not sign
-        4 - BC, branch if carry
-        5 - BNC, branch if not carry
-        6 - BA, branch always
-        7 - BL, branch and link
+        0  - BZ, branch if zero
+        1  - BNZ, branch if not zero
+        2  - BS, branch if sign
+        3  - BNS, branch if not sign
+        4  - BC, branch if carry
+        5  - BNC, branch if not carry
+        6  - BA, branch always
+        7  - BL, branch and link
+		8  - BEQ, branch if equal
+		9  - BNE, branch if not equal
+		10 - BGT, branch if greater than
+		11 - BGE, branch if greater than or equal
+		12 - BLT, branch if less than
+		13 - BLE, branch if less than or equal
+		14 - Reserved  
+		15 - Reserved
     REG: index register for register branch
     IMM LO: 4 bit immediate for immediate branch
+	PC <- [REG] + IMM
 
-Class 5: index register memory operation
--------------------------------------------
+Class 5:
+-------- 
 
-|15 | 14 | 13 | 12 | 11 | 10 | 9  | 8  | 7  - 4 | 3 - 0 |
-|---|----|----|----|----|----|----|--- |--------|-------|
-|0  | 1  | 0  | 1  |  x | x  | x  | LS |  REG   |  IDX  |
-
-    LS: 0 = load, 1 = store
-    REG: source for store, destination for load
-    IDX: index register, holds address of memory location
-
-Class 6: immediate memory operation
--------------------------------------------
-
-|15 | 14 | 13 | 12 | 11 | 10 | 9  | 8  | 7 - 4 | 3 - 0 |
-|---|----|----|----|----|----|----|--- |-------|-------|
-|0  | 1  | 1  | 0  |  x | x  | x  | LS |  REG  | IMM   |
-
-    LS: 0 = load, 1 = store
-    REG: source for store, destination for load
-    IMM: immediate address of memory location
-    
+Class 6:
+--------
+  
 Class 7:
 --------
 
 Reserved
 
 
-Class 8: Reserved
+Class 8/9: Reserved
 
-Class 10: Reserved
+Class 10/11: Reserved
 
-Class 12: immediate + register memory operation
+Class 12/13: immediate + register memory operation
 -----------------------------------------------
 
 |15 | 14 | 13 | 12 - 9  | 8  | 7  - 4 | 3 - 0 |
@@ -210,7 +187,7 @@ Class 12: immediate + register memory operation
     REG: source for store, destination for load
     IMM: immediate address of memory location, effective address = [IDX] + IMM
 
-Classes 14: Port IO
+Classes 14/15: Port IO
 -------------------
 
 

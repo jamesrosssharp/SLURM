@@ -22,6 +22,8 @@ wire [15:0] port_out;
 wire port_wr;
 wire port_rd;
 
+wire [3:0] irq = 4'd0;
+
 // Memory interface logic
 
 reg [15:0] memory [65535:0];
@@ -75,7 +77,7 @@ begin
 		memory_in <= 16'hdead;
 end
 
-slurm16_cpu_top #(.BITS(16), .ADDRESS_BITS(16)) top0
+slurm16_cpu_top top0
 (
     CLK,
     RSTb,
@@ -101,5 +103,12 @@ initial begin
     $dumpvars(0, tb);
 	# 20000 $finish;
 end
+
+genvar j;
+for (j = 0; j < 16; j = j + 1) begin
+    initial $dumpvars(0, top0.reg0.regFileA[j]);
+end
+
+
 
 endmodule
