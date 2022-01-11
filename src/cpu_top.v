@@ -68,9 +68,9 @@ slurm16_cpu_memory_interface #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_mem
 
 );
 
-wire stall = 1'b0;
-wire stall_start = 1'b0;
-wire stall_end = 1'b0;
+wire stall;
+wire stall_start ;
+wire stall_end;
 
 wire [BITS - 1:0] pipeline_stage0;
 wire [BITS - 1:0] pipeline_stage1;
@@ -82,6 +82,18 @@ wire [ADDRESS_BITS - 1:0] pc_stage4;
 
 wire [BITS - 1:0] imm_reg;
 wire load_pc;
+
+wire [REGISTER_BITS - 1:0] hazard_reg0; 
+wire modifies_flags0;
+
+wire [REGISTER_BITS - 1:0] hazard_reg1;
+wire [REGISTER_BITS - 1:0] hazard_reg2;
+wire [REGISTER_BITS - 1:0] hazard_reg3;
+wire modifies_flags1;
+wire modifies_flags2;
+wire modifies_flags3;
+
+wire hazard1;
 
 slurm16_cpu_pipeline #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_pip0
 (
@@ -105,7 +117,20 @@ slurm16_cpu_pipeline #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_pip0
 
 	pc_stage4,
 	imm_reg,
-	load_pc
+	load_pc,
+
+	hazard_reg0,		/*  import hazard computation, it will move with pipeline in pipeline module */
+	modifies_flags0,	/*  import flag hazard conditions */ 
+
+	hazard_reg1,		/* export pipelined hazards */
+	hazard_reg2,
+	hazard_reg3,
+	modifies_flags1,
+	modifies_flags2,
+	modifies_flags3,
+
+	hazard1
+
 );
 
 wire [ADDRESS_BITS-1:0] pc_in;
@@ -188,7 +213,7 @@ wire [BITS - 1:0] ex_port_out;
 wire ex_port_rd;
 wire ex_port_wr;
 
-slurm16_cpu_execute #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) exec0
+slurm16_cpu_execute #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_exec0
 (
 	CLK,
 	RSTb,
@@ -235,7 +260,7 @@ alu
 	S /* sign flag */
 );
 
-slurm16_cpu_writeback #(.REGISTER_BITS(REGISTER_BITS), .BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) wr0
+slurm16_cpu_writeback #(.REGISTER_BITS(REGISTER_BITS), .BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_wr0
 (
 	CLK,
 	RSTb,
@@ -253,7 +278,7 @@ slurm16_cpu_writeback #(.REGISTER_BITS(REGISTER_BITS), .BITS(BITS), .ADDRESS_BIT
 
 );
 
-slurm16_cpu_port_interface #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) prt0 (
+slurm16_cpu_port_interface #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_prt0 (
 	CLK,
 	RSTb,
 
@@ -269,5 +294,37 @@ slurm16_cpu_port_interface #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) prt0 (
 	port_rd,
 	port_wr
 );
+
+slurm_cpu_hazard #(.BITS(BITS), .REGISTER_BITS(REGISTER_BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_haz0 
+(
+	CLK,
+	RSTb,
+
+	is_executing,
+
+	pipeline_stage0,	
+
+	regA_sel0,		/* registers that pipeline0 instruction will read from */
+	regB_sel0,
+
+	hazard_reg0,	/*  export hazard computation, it will move with pipeline in pipeline module */
+	modifies_flags0,/*  export flag hazard conditions */ 
+
+	hazard_reg1,	/* import pipelined hazards */
+	hazard_reg2,
+	hazard_reg3,
+	modifies_flags1,
+	modifies_flags2,
+	modifies_flags3,
+
+	stall,
+	stall_start,
+	stall_end,
+
+	hazard1
+);
+
+
+
 
 endmodule

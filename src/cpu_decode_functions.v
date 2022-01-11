@@ -22,10 +22,10 @@ begin
 end
 endfunction
 
-function [3:0] single_reg_alu_op_from_ins;
+function [4:0] single_reg_alu_op_from_ins;
 input [15:0] ins;
 begin
-	single_reg_alu_op_from_ins = ins[7:4]; 
+	single_reg_alu_op_from_ins = {1'b1, ins[7:4]}; 
 end
 endfunction
 

@@ -19,13 +19,20 @@ $(SRCDIR)/mult.v					\
 $(SRCDIR)/pipeline16_next.v			\
 $(SRCDIR)/port_controller.v			\
 $(SRCDIR)/pwm_led.v					\
-$(SRCDIR)/register_file.v			\
 $(SRCDIR)/rom.v						\
-$(SRCDIR)/slurm16_next.v			\
 $(SRCDIR)/spi_flash.v				\
 $(SRCDIR)/sprite_controller.v		\
 $(SRCDIR)/trace.v					\
 $(SRCDIR)/uart_tx.v					\
-$(SRCDIR)/uart.v
-
-
+$(SRCDIR)/uart.v					\
+$(SRCDIR)/cpu_hazard.v				\
+$(SRCDIR)/cpu_pipeline.v			\
+$(SRCDIR)/cpu_program_counter.v		\
+$(SRCDIR)/cpu_top.v					\
+$(SRCDIR)/cpu_decode.v				\
+$(SRCDIR)/cpu_execute.v				\
+$(SRCDIR)/cpu_memory_interface.v	\
+$(SRCDIR)/cpu_port_interface.v		\
+$(SRCDIR)/cpu_register_file.v		\
+$(SRCDIR)/cpu_writeback.v			\
+$(SRCDIR)/slurm16_soc.v

@@ -4,7 +4,7 @@
  *
  */
 
-module slurm16_cpu_execute #(parameter BITS = 16, ADDRESS_BITS = 16)
+module slurm16_cpu_execute #(parameter REGISTER_BITS = 4, BITS = 16, ADDRESS_BITS = 16)
 (
 	input CLK,
 	input RSTb,

@@ -33,7 +33,7 @@ begin
 	end else begin
 		if (load_pc == 1'b1) 
 			pc_r <= pc_in;
-		else if (is_fetching && !(stall && !stall_end))
+		else if ((is_fetching && !stall)) // If fetching and not stalled, increment PC
 			pc_r <= pc_r + 1;
 	end
 end
