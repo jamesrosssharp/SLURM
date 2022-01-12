@@ -198,7 +198,7 @@ end
 always @(*) begin
 	is_fetching_r = 1'b0;
 
-	if (cpu_state_r == cpust_execute && cpu_state_r_next == cpust_execute)
+	if (/*cpu_state_r == cpust_execute &&*/ cpu_state_r_next == cpust_execute)
 			is_fetching_r = 1'b1;
 	
 end

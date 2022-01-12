@@ -30,20 +30,37 @@ initial begin
 	#150 RSTb = 1'b1;
 end
 
-// Write 12 bits color and HS, VS signals to a file, which we will display and animate later to
-// verify gfx core
+// Write rgb values to text file
 
+integer f;
+initial begin
+    f = $fopen("simout.txt", "w");
+end
+
+integer k;
+initial begin
+	#2644800; 
+	for (k = 0; k < 10; k += 1) begin
+			$fwrite(f, "%0x", R);
+			$fwrite(f, "%0x", G);
+			$fwrite(f, "%0x", B);
+			$fwrite(f, "\n");
+			#80000;
+	end
+
+end
 
 
 initial begin
     $dumpvars(0, tb);
-	# 20000000 $finish;
-//	# 1000000 $finish;
+	# 4550000 $finish;
+//	# 160375 $finish;
+//	# 200000 $finish;
 end
 
 genvar j;
 for (j = 0; j < 16; j = j + 1) begin
-    initial $dumpvars(0, cpu0.reg0.regFileA[j]);
+    initial $dumpvars(0, cpu0.cpu0.reg0.regFileA[j]);
 end
 
 endmodule

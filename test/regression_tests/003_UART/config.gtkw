@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Wed Jan 12 06:24:20 2022
+[*] Wed Jan 12 07:58:51 2022
 [*]
 [dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/003_UART/dump.vcd"
-[dumpfile_mtime] "Wed Jan 12 06:23:09 2022"
-[dumpfile_size] 34376427
+[dumpfile_mtime] "Wed Jan 12 07:58:01 2022"
+[dumpfile_size] 31249501
 [savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/003_UART/config.gtkw"
-[timestart] 474100000
+[timestart] 4803000
 [size] 1920 996
 [pos] -1 -1
-*-26.194408 498900000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-20.194408 10800000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tb.
 [treeopen] tb.cpu0.
 [treeopen] tb.cpu0.cpu0.
@@ -42,7 +42,7 @@ tb.cpu0.cpu0.cpu_mem0.memory_is_instruction
 tb.cpu0.pc0.u0.TX
 @200
 -
-@23
+@22
 tb.cpu0.cpu0.cpu_mem0.cpu_state_r[3:0]
 @28
 tb.cpu0.cpu0.cpu_mem0.is_executing
@@ -86,6 +86,7 @@ tb.cpu0.cpu0.cpu_pip0.pipeline_stage4[15:0]
 @22
 tb.cpu0.cpu0.port_address[15:0]
 tb.cpu0.cpu0.port_in[15:0]
+@821
 tb.cpu0.cpu0.port_out[15:0]
 @28
 tb.cpu0.cpu0.port_rd

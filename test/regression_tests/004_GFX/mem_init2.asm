@@ -60,36 +60,54 @@ GFX_COLLISION_LIST equ GFX_BASE + 0x0700
 
 		// Code
 
-		mov r0, 0
 		mov r1, cpr_list_1
 		mov r2, cpr_list_1_end - cpr_list_1
+		mov r6, r0
 cpr_loop:
-		ld r3, [r1]
-		inc r1
-		out [r0, GFX_CPR_LIST], r3
-		inc r0
+		ld r3, [r1, 0]
+		add r1, 1
+		out [r6, GFX_CPR_LIST], r3
+		add r6, 1
 		sub r2, 1
 		bnz cpr_loop
 
-		mov r0, 0x1
+		mov r4, 0x1
 		mov r1, 0x0
-		out [r1, GFX_CPR_ENABLE], r0
+		out [r1, GFX_CPR_ENABLE], r4
 
 die:
 		ba die
 
 
 cpr_list_1:
-		dw 0x6ff0
-		dw 0x9d00
-		dw 1 | (2<<1) |  (1 << 3) | (1 << 4)
+		dw 0x7021
+		dw 0x6123
+		dw 0x6234
+		dw 0x6456
+		dw 0x6567
+		dw 0x6678
+		dw 0x6789
+		dw 0x689a
+		dw 0x69ab
+		dw 0x6abc
+		dw 0x6bcd
+		dw 0x6cde
+		dw 0x6def
+		dw 0x1001	
+		
+	
+
+// This copper list crashes the simulator (iverilog):
+/*		dw 0x6ff0
+//		dw 0x9d00
+//		dw 1 | (2<<1) |  (1 << 3) | (1 << 4)
 		dw 0x7040
 		dw 0x60ff
-		dw 0x9d00
-		dw 0
+	//	dw 0x9d00
+	//	dw 0
 		dw 0x7040
 		dw 0x1000
-		 
+*/		 
 
 cpr_list_1_end:
 

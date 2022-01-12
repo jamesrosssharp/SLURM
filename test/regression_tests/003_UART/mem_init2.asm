@@ -3,17 +3,16 @@
 UART_TX_REG 	equ 	0x0000
 UART_TX_STATUS 	equ 	0x0001
 
-		mov r6, 0
-		mov r0, banner
+		mov r2, banner
 loop:
-		ld r1, [r0]
-		inc r0
+		ld r1, [r2, 0]
+		add r2, 1
 		or r1, r1
 		bz die 
-		out [r6, UART_TX_REG], r1
+		out [r0, UART_TX_REG], r1
 test_loop:
-		in r2, [r6, UART_TX_STATUS]
-		test r2, 1
+		in r3, [r0, UART_TX_STATUS]
+		test r3, 1
 		bz test_loop
 
 		ba loop

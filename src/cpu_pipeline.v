@@ -198,7 +198,7 @@ end
 always @(*)
 begin
 	if (stall_start == 1'b1 && !load_pc)
-		alt_pip_ld_count_r_next = 2'd2;
+		alt_pip_ld_count_r_next = 2'd1;
 	else if (alt_pip_ld_count_r > 2'd0)
 		alt_pip_ld_count_r_next = alt_pip_ld_count_r - 1;
 	else
@@ -219,11 +219,11 @@ end
 // Stall read count - fifo read pointer
 always @(*)
 begin
-	if (reading_alt_pipeline)
-			stall_read_count_r_next = stall_read_count_r + 1;
-	else if (load_pc)
+	if (load_pc)
 		stall_read_count_r_next = 3'd0;
-	else
+	else if (reading_alt_pipeline)
+		stall_read_count_r_next = stall_read_count_r + 1;
+    else
 		stall_read_count_r_next = stall_read_count_r;
 end
 
