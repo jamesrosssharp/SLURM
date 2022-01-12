@@ -12,7 +12,7 @@ $(SRCDIR)/audio.v			\
 $(SRCDIR)/background_controller2.v	\
 $(SRCDIR)/background_controller.v	\
 $(SRCDIR)/baudgen.v					\
-$(SRCDIR)/bram_mask.v				\
+bram_mask.v				\
 $(SRCDIR)/bram.v					\
 $(SRCDIR)/copper.v					\
 $(SRCDIR)/fb_doubler.v				\
@@ -22,10 +22,10 @@ $(SRCDIR)/gpio.v					\
 $(SRCDIR)/memory_arbiter.v			\
 $(SRCDIR)/memory_controller.v	\
 memory.v				\
-$(SRCDIR)/mult.v					\
+mult.v					\
 $(SRCDIR)/port_controller.v			\
 pwm_led.v					\
-$(SRCDIR)/rom.v						\
+rom.v						\
 $(SRCDIR)/spi_flash.v				\
 $(SRCDIR)/sprite_controller.v		\
 trace.v					\
