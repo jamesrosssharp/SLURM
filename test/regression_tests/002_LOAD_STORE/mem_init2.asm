@@ -64,12 +64,11 @@ die:
  */
 
 tr_string:
-		mov r0, 0
 tr_string_loop:
-		ld r1, [r2]
+		ld r1, [r2, 0]
 		or r1, r1
 		bz tr_string_die
-		inc r2
+		add r2, 1
 		out [r0, TRACE_CHAR_PORT], r1
 		ba tr_string_loop
 tr_string_die:
@@ -81,7 +80,6 @@ tr_string_die:
  *
  */
 tr_char:
-	mov r0, 0
 	out [r0, TRACE_CHAR_PORT], r2
 	ret
 
@@ -91,7 +89,6 @@ tr_char:
  *
  */
 tr_hex:
-	mov r0, 0
 	out [r0, TRACE_HEX_PORT], r2
 	ret
 
@@ -121,7 +118,7 @@ perform_store:
 	mov r2, 0xa
 	bl tr_char
 
-	st [r3], r4	
+	st [r3, 0], r4	
 
 	mov r15, r5
 	ret
@@ -147,7 +144,8 @@ perform_load:
 	mov r2, ' '
 	bl tr_char
 
-	ld r4, [r3]	
+	mov r4, 0xdead
+	ld r4, [r3, 0]	
 	
 	mov r2, r4
 	bl tr_hex
@@ -198,8 +196,8 @@ perform_double_store:
 	mov r2, 0xa
 	bl tr_char
 
-	st [r3], r4
-	st [r6], r7	
+	st [r3, 0], r4
+	st [r6, 0], r7	
 
 	mov r15, r5
 	ret
@@ -231,8 +229,10 @@ perform_double_load:
 	mov r2, ' '
 	bl tr_char
 
-	ld r4, [r3]
-	ld r7, [r6]	
+	mov r4, r0
+	mov r7, r0
+	ld r4, [r3, 0]
+	ld r7, [r6, 0]	
 	
 	mov r2, r4
 	bl tr_hex

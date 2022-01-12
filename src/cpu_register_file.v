@@ -17,7 +17,8 @@ module slurm16_cpu_register_file
 	input [REG_BITS - 1 : 0] regOutB,	
 	output [BITS - 1 : 0] regOutA_data,
 	output [BITS - 1 : 0] regOutB_data,
-	input  [BITS - 1 : 0] regIn_data
+	input  [BITS - 1 : 0] regIn_data,
+	input is_executing
 );
 
 reg [BITS - 1: 0] outA;
@@ -34,19 +35,21 @@ begin
 	regFileA[regIn] <= regIn_data;
 	regFileB[regIn] <= regIn_data;
 
-	if (regOutA == 4'd0)
-		outA <= 16'h0;
-	else if (regOutA == regIn)
-		outA <= regIn_data;
-	else
-		outA <= regFileA[regOutA];
+	if (is_executing) begin
+		if (regOutA == 4'd0)
+			outA <= 16'h0;
+		else if (regOutA == regIn)
+			outA <= regIn_data;
+		else
+			outA <= regFileA[regOutA];
 
-	if (regOutB == 4'd0)
-		outB <= 16'h0;	
-	else if (regOutB == regIn)
-		outB <= regIn_data;
-	else
-		outB <= regFileB[regOutB];
+		if (regOutB == 4'd0)
+			outB <= 16'h0;	
+		else if (regOutB == regIn)
+			outB <= regIn_data;
+		else
+			outB <= regFileB[regOutB];
+	end
 end
 
 

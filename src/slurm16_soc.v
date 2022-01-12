@@ -1,9 +1,8 @@
 /*
- *	slurm16.v: slurm16 processor (next next)
  *
- * 	- 16 x 16 bit registers
- *  - 128kB Memory space
- *  - 16 bit RISC instructions
+ *	slurm16 SOC
+ *
+ *
  */
 
 module slurm16 #(

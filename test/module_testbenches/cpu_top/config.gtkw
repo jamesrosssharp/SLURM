@@ -1,25 +1,26 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Tue Jan 11 10:30:43 2022
+[*] Wed Jan 12 03:41:42 2022
 [*]
 [dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/module_testbenches/cpu_top/dump.vcd"
-[dumpfile_mtime] "Tue Jan 11 10:27:57 2022"
-[dumpfile_size] 175995
+[dumpfile_mtime] "Wed Jan 12 03:36:19 2022"
+[dumpfile_size] 159429
 [savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/module_testbenches/cpu_top/config.gtkw"
-[timestart] 2076
+[timestart] 335
 [size] 1775 954
 [pos] -1 -1
-*-9.000000 3050 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-9.000000 1350 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tb.
 [treeopen] tb.top0.
-[sst_width] 234
-[signals_width] 254
+[sst_width] 319
+[signals_width] 309
 [sst_expanded] 1
 [sst_vpaned_height] 269
 @28
 tb.CLK
 tb.RSTb
 @22
+tb.top0.cpu_pc0.pc[15:0]
 tb.memory_address[15:0]
 tb.memory_in[15:0]
 tb.memory_out[15:0]
@@ -27,6 +28,8 @@ tb.memory_out[15:0]
 tb.memory_ready
 tb.memory_valid
 tb.memory_wr
+@29
+tb.top0.cpu_mem0.memory_is_instruction
 @200
 -
 @22
@@ -36,17 +39,37 @@ tb.top0.port_rd
 tb.top0.port_wr
 @22
 tb.top0.port_out[15:0]
+@28
+tb.top0.cpu_pip0.is_executing
+@200
+-
+@28
+tb.top0.cpu_pip0.mask_count_r[2:0]
 @200
 -
 @28
 tb.top0.stall
 tb.top0.stall_end
 tb.top0.stall_start
-tb.top0.cpu_haz0.stall_count_r[2:0]
 tb.top0.cpu_pip0.stall_mask_count_r[1:0]
+tb.top0.cpu_pip0.alt_pip_ld_count_r[1:0]
 tb.top0.cpu_pip0.stall_mask_count_r_next[1:0]
-tb.top0.hazard1
+tb.top0.cpu_haz0.hazard1_but_23_clear
+tb.top0.cpu_haz0.hazard_23
+tb.top0.cpu_haz0.hazard1
 tb.top0.cpu_haz0.hazard
+@200
+-
+@22
+tb.top0.cpu_pip0.alt_pipeline_stage0_r[15:0]
+tb.top0.cpu_pip0.alt_pipeline_stage1_r[15:0]
+tb.top0.cpu_pip0.alt_pipeline_stage2_r[15:0]
+@200
+-
+@22
+tb.top0.cpu_pip0.hazard_reg1[3:0]
+tb.top0.cpu_pip0.hazard_reg2[3:0]
+tb.top0.cpu_pip0.hazard_reg3[3:0]
 @200
 -
 @22
@@ -61,8 +84,6 @@ tb.top0.cpu_pip0.is_executing
 tb.top0.cpu_mem0.cpu_state_r[3:0]
 tb.top0.cpu_mem0.addr_r[15:0]
 tb.top0.cpu_mem0.next_addr_r[15:0]
-@28
-tb.top0.cpu_pip0.mask_count_r[1:0]
 @200
 -
 @22
@@ -75,7 +96,6 @@ tb.top0.alu0.aluOut[15:0]
 tb.top0.alu0.A[15:0]
 tb.top0.alu0.B[15:0]
 tb.top0.alu0.lslOp[15:0]
-@23
 tb.top0.alu0.aluOp[4:0]
 @200
 -

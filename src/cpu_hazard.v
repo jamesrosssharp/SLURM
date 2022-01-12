@@ -11,7 +11,8 @@ module slurm_cpu_hazard #(parameter BITS = 16, REGISTER_BITS = 4, ADDRESS_BITS =
 	input RSTb,
 
 	input is_executing,
-
+	input load_pc,
+	
 	input [BITS - 1:0] instruction, /* p0 pipeline slot instruction*/
 
 	input [REGISTER_BITS - 1:0] regA_sel0,		/* registers that pipeline0 instruction will read from */
@@ -31,7 +32,7 @@ module slurm_cpu_hazard #(parameter BITS = 16, REGISTER_BITS = 4, ADDRESS_BITS =
 	output stall_start,
 	output stall_end,
 
-	output hazard1
+	output hazard1_but_23_clear
 );
 
 `include "cpu_decode_functions.v"
@@ -95,63 +96,92 @@ end
 
 // Compute if a hazard occurs
 
-reg hazard;
+reg hazard_23;
 
 always @(*)
 begin
 
-	hazard = 1'b0;
+	hazard_23 = 1'b0;
+
+	if (regA_sel0 != R0) begin
+		if (regA_sel0 == hazard_reg2)
+			hazard_23 = 1'b1;
+		if (regA_sel0 == hazard_reg3)
+			hazard_23 = 1'b1;
+	end
+
+	if (regB_sel0 != R0) begin
+
+		if (regB_sel0 == hazard_reg2)
+			hazard_23 = 1'b1;
+		if (regB_sel0 == hazard_reg3)
+			hazard_23 = 1'b1;
+	end
+
+	casex(instruction)
+		INSTRUCTION_CASEX_BRANCH: begin /* branch */
+			if (uses_flags_for_branch(instruction)) begin
+				if (modifies_flags2) hazard_23 = 1'b1;
+				if (modifies_flags3) hazard_23 = 1'b1;
+			end
+		end
+	endcase
+end
+
+reg hazard1; 
+
+always @(*)
+begin
+
+	hazard1 = 1'b0;
 
 	if (regA_sel0 != R0) begin
 
 		if (regA_sel0 == hazard_reg1)
-			hazard = 1'b1;
-		if (regA_sel0 == hazard_reg2)
-			hazard = 1'b1;
-		if (regA_sel0 == hazard_reg3)
-			hazard = 1'b1;
+			hazard1 = 1'b1;
 	end
 
 	if (regB_sel0 != R0) begin
 
 		if (regB_sel0 == hazard_reg1)
-			hazard = 1'b1;
-		if (regB_sel0 == hazard_reg2)
-			hazard = 1'b1;
-		if (regB_sel0 == hazard_reg3)
-			hazard = 1'b1;
+			hazard1 = 1'b1;
 	end
 
 	casex(instruction)
 		INSTRUCTION_CASEX_BRANCH: begin /* branch */
-			if (modifies_flags1) hazard = 1'b1;
-			if (modifies_flags2) hazard = 1'b1;
-			if (modifies_flags3) hazard = 1'b1;
+			if (uses_flags_for_branch(instruction)) begin
+				if (modifies_flags1) hazard1 = 1'b1;
+			end
 		end
 	endcase
 end
 
-assign hazard1 = 1'b0; // TODO: remove
+wire hazard = hazard1 || hazard_23;
 
-// Stall count
+assign hazard1_but_23_clear = hazard1 && !hazard_23;
 
-reg [2:0] stall_count_r;
+// Stall flag
 
-localparam STALL_START_COUNT = 3'b11;
+reg stall_r, prev_stall_r;
 
-assign stall 		= stall_count_r != 3'b000;
-assign stall_start 	= (stall_count_r == STALL_START_COUNT);
-assign stall_end 	= (stall_count_r == 3'b001);
+assign stall 		= stall_r || prev_stall_r;
+assign stall_start 	= stall_r == 1'b1 && prev_stall_r == 1'b0;
+assign stall_end 	= stall_r == 1'b0 && prev_stall_r == 1'b1;
 
 always @(posedge CLK)
 begin
+	prev_stall_r <= stall_r;
 	if (RSTb == 1'b0) begin
-		stall_count_r <= 3'b000;	
+		stall_r <= 1'b0;	
 	end
-	else if (stall_count_r == 3'b000 && hazard)
-		stall_count_r <= STALL_START_COUNT;
-	else if (stall_count_r > 3'b000 && is_executing)
-		stall_count_r <= stall_count_r - 1;
+	if (load_pc) begin
+		stall_r <= 1'b0;
+		prev_stall_r <= 1'b0;
+	end
+	else if (hazard && is_executing)
+		stall_r <= 1'b1;
+	else if (stall_r == 1'b1 && !hazard && is_executing)
+		stall_r <= 1'b0;
 end
 
 endmodule

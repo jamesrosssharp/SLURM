@@ -24,8 +24,11 @@ module slurm16_cpu_memory_interface #(parameter BITS = 16, ADDRESS_BITS = 16)  (
 	output memory_wr,							/* write to memory */
 
 	output is_executing,						/* CPU is currently executing */
-	output is_fetching							/* CPU is currently fetching */
+	output is_fetching,							/* CPU is currently fetching */
 
+	output memory_is_instruction,				/* current value of memory in is an instruction (i.e. previous memory operation was instruction read) */
+
+	output [ADDRESS_BITS - 1:0] memory_address_prev_plus_one
 );
 
 /* CPU state */
@@ -67,6 +70,9 @@ assign memory_wr = wr_r;
 reg [BITS - 1:0] memory_out_r;
 assign memory_out = memory_out_r;
 
+reg 	memory_is_instruction_r, memory_is_instruction_r_next;
+assign  memory_is_instruction = memory_is_instruction_r;
+
 /* sequential logic */
 
 always @(posedge CLK)
@@ -75,10 +81,14 @@ begin
 		addr_r <= {ADDRESS_BITS{1'b0}};
 		cpu_state_r <= cpust_wait_mem_ready1; 	
 		memory_out_r <= {BITS{1'b0}};
+		memory_is_instruction_r = 1'b0;
 	end else begin
 		addr_r <= next_addr_r;
 		cpu_state_r <= cpu_state_r_next;
-		memory_out_r <= store_memory_data;
+		
+		if (is_executing_r)
+			memory_out_r <= store_memory_data;
+		memory_is_instruction_r <= memory_is_instruction_r_next;
 	end
 end
 
@@ -90,9 +100,13 @@ input [ADDRESS_BITS - 1:0] addr2;
 	has_bank_switch = (addr[ADDRESS_BITS - 1:ADDRESS_BITS - 2] != addr2[ADDRESS_BITS - 1:ADDRESS_BITS - 2]);
 endfunction
 
+
+
+
 always @(*)
 begin
 	cpu_state_r_next = cpu_state_r;
+	memory_is_instruction_r_next = memory_is_instruction_r;
 
 	case (cpu_state_r)
 		cpust_halt: 
@@ -100,6 +114,7 @@ begin
 				cpu_state_r_next = cpust_wait_mem_ready1;	
 		/* non-memory instructions (access program memory) */
 		cpust_execute: begin
+			memory_is_instruction_r_next = 1'b1;
 			// TODO: If we are not changing bank, we don't need the penalty
 			// and can jump straight to the corresponding execute state
 			if (halt == 1'b1) 
@@ -136,6 +151,7 @@ begin
 			end
 			else if (has_bank_switch(addr_r, next_addr_r))
 				cpu_state_r_next = cpust_wait_mem_load1;
+			memory_is_instruction_r_next = 1'b0;
 		end 
 		cpust_wait_mem_load1:
 			cpu_state_r_next = cpust_wait_mem_load2;
@@ -152,6 +168,7 @@ begin
 			end
 			else if (has_bank_switch(addr_r, next_addr_r))
 				cpu_state_r_next = cpust_wait_mem_store1;
+			memory_is_instruction_r_next = 1'b0;
 		end
 		cpust_wait_mem_store1:
 			cpu_state_r_next = cpust_wait_mem_store2;
@@ -181,10 +198,9 @@ end
 always @(*) begin
 	is_fetching_r = 1'b0;
 
-	case (cpu_state_r)
-		cpust_execute:
+	if (cpu_state_r == cpust_execute && cpu_state_r_next == cpust_execute)
 			is_fetching_r = 1'b1;
-	endcase
+	
 end
 
 
@@ -227,6 +243,15 @@ begin
 	endcase
 end
 
+/* previous memory address plus 1 - points to return address for instructions */
+
+reg [ADDRESS_BITS - 1:0] prev_address_plus_one;
+assign memory_address_prev_plus_one = prev_address_plus_one;
+
+always @(posedge CLK)
+begin
+	prev_address_plus_one <= addr_r + 1;
+end
 
 
 endmodule

@@ -42,6 +42,8 @@ wire [BITS - 1:0] store_memory_data;
 
 wire is_executing;
 wire is_fetching;
+wire memory_is_instruction;
+wire [ADDRESS_BITS - 1:0] memory_address_prev_plus_one;
 
 slurm16_cpu_memory_interface #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_mem0  (
 	CLK,
@@ -64,8 +66,10 @@ slurm16_cpu_memory_interface #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_mem
 	memory_wr,							/* write to memory */
 
 	is_executing,						/* CPU is currently executing */
-	is_fetching							/* CPU is currently fetching */
+	is_fetching,							/* CPU is currently fetching */
 
+	memory_is_instruction,				/* current value of memory in is an instruction */
+	memory_address_prev_plus_one		/* points to return address */
 );
 
 wire stall;
@@ -101,7 +105,7 @@ slurm16_cpu_pipeline #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_pip0
 	RSTb,
 
 	memory_in,
-	memory_address,
+	memory_address_prev_plus_one,
 
 	is_executing, /* CPU is executing */
 
@@ -129,7 +133,9 @@ slurm16_cpu_pipeline #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_pip0
 	modifies_flags2,
 	modifies_flags3,
 
-	hazard1
+	hazard1,
+
+	memory_is_instruction
 
 );
 
@@ -196,7 +202,8 @@ slurm16_cpu_register_file
 	regB_sel,	
 	regOutA_data,
 	regOutB_data,
-	regIn_data
+	regIn_data,
+	is_executing
 );
 
 wire Z;
@@ -301,6 +308,7 @@ slurm_cpu_hazard #(.BITS(BITS), .REGISTER_BITS(REGISTER_BITS), .ADDRESS_BITS(ADD
 	RSTb,
 
 	is_executing,
+	load_pc,
 
 	pipeline_stage0,	
 
