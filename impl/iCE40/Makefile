@@ -6,13 +6,43 @@ SRCDIR=../../src
 
 AS=../../slurmasm/slurmasm
 
-SOURCE = $(SRCDIR)/pipeline16.v $(SRCDIR)/slurm16.v $(SRCDIR)/alu.v $(SRCDIR)/register_file.v $(SRCDIR)/memory_controller.v \
-		 $(SRCDIR)/uart.v $(SRCDIR)/uart_tx.v $(SRCDIR)/baudgen.v $(SRCDIR)/gpio.v pwm_led.v $(SRCDIR)/gfx.v  memory.v rom.v slurm16_ice40.v	\
-		 $(SRCDIR)/pacman_sprite.v $(SRCDIR)/pacman_sprite_rom.v $(SRCDIR)/audio.v $(SRCDIR)/spi_flash.v \
-		 $(SRCDIR)/sprite_controller.v $(SRCDIR)/bram.v $(SRCDIR)/gfx_memory_arbiter.v $(SRCDIR)/background_controller.v $(SRCDIR)/background_controller2.v	\
-		 $(SRCDIR)/copper.v $(SRCDIR)/fb_doubler.v $(SRCDIR)/alpha.v mult.v bram_mask.v 
- 
- 
+SOURCE=$(SRCDIR)/alpha.v	\
+$(SRCDIR)/alu.v				\
+$(SRCDIR)/audio.v			\
+$(SRCDIR)/background_controller2.v	\
+$(SRCDIR)/background_controller.v	\
+$(SRCDIR)/baudgen.v					\
+$(SRCDIR)/bram_mask.v				\
+$(SRCDIR)/bram.v					\
+$(SRCDIR)/copper.v					\
+$(SRCDIR)/fb_doubler.v				\
+$(SRCDIR)/fb_scale.v				\
+$(SRCDIR)/gfx.v				\
+$(SRCDIR)/gpio.v					\
+$(SRCDIR)/memory_arbiter.v			\
+$(SRCDIR)/memory_controller.v	\
+memory.v				\
+$(SRCDIR)/mult.v					\
+$(SRCDIR)/port_controller.v			\
+pwm_led.v					\
+$(SRCDIR)/rom.v						\
+$(SRCDIR)/spi_flash.v				\
+$(SRCDIR)/sprite_controller.v		\
+trace.v					\
+$(SRCDIR)/uart_tx.v					\
+$(SRCDIR)/uart.v					\
+$(SRCDIR)/cpu_hazard.v				\
+$(SRCDIR)/cpu_pipeline.v			\
+$(SRCDIR)/cpu_program_counter.v		\
+$(SRCDIR)/cpu_top.v					\
+$(SRCDIR)/cpu_decode.v				\
+$(SRCDIR)/cpu_execute.v				\
+$(SRCDIR)/cpu_memory_interface.v	\
+$(SRCDIR)/cpu_port_interface.v		\
+$(SRCDIR)/cpu_register_file.v		\
+$(SRCDIR)/cpu_writeback.v			\
+$(SRCDIR)/slurm16_soc.v				\
+slurm16_ice40.v 
 
 ICEPACK = icepack
 ICETIME = icetime

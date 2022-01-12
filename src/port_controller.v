@@ -202,6 +202,7 @@ uart
 	PINS[15]   // UART output   
 );
 
+/*
 gpio
 #(.CLK_FREQ(CLOCK_FREQ), .BITS(BITS)) g0
 (
@@ -214,6 +215,7 @@ gpio
 	PINS[3:0], // output pins  
 	INPUT_PINS[5:0] // input pins
 );
+*/
 
 
 pwm_led
@@ -228,7 +230,7 @@ pwm_led
 	PINS[10:8] // output pins 
 );
 
-
+/*
 assign PINS[31:30] = 2'b00;
 
 gfx #(.BITS(BITS), .BANK_ADDRESS_BITS(14), .ADDRESS_BITS(12)) gfx0
@@ -261,6 +263,7 @@ gfx #(.BITS(BITS), .BANK_ADDRESS_BITS(14), .ADDRESS_BITS(12)) gfx0
 	.ov_rvalid(ov_rvalid),
 	.ov_rready(ov_rready)
 );
+*/
 
 /*audio
 #(.BITS(BITS), .ADDRESS_BITS(8), .CLK_FREQ(CLOCK_FREQ)) aud0
@@ -274,6 +277,7 @@ gfx #(.BITS(BITS), .BANK_ADDRESS_BITS(14), .ADDRESS_BITS(12)) gfx0
 	PINS[14:11]
 );*/
 
+/*
 spi_flash
 #(.BITS(BITS), .ADDRESS_BITS(8), .CLK_FREQ(CLOCK_FREQ)) spi_flash0
 (
@@ -292,6 +296,6 @@ spi_flash
 	fl_memory_address,
 	fl_memory_data
 );
-
+*/
 
 endmodule
