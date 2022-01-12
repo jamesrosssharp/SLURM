@@ -65,52 +65,93 @@ begin
 		COUNT <= COUNT + 1;	
 end
 
-wire [31:0] PINS;
+wire [3:0] gpio_out;
+wire [5:0] gpio_in;
 
-wire [7:0] INPUT_PINS;
+wire [3:0] vid_r;
+wire [3:0] vid_g;
+wire [3:0] vid_b;
+wire vid_hsync;
+wire vid_vsync;
 
-assign INPUT_PINS[0] = UP_BUTTON;
-assign INPUT_PINS[1] = DOWN_BUTTON;
-assign INPUT_PINS[2] = LEFT_BUTTON;
-assign INPUT_PINS[3] = RIGHT_BUTTON;
-assign INPUT_PINS[4] = A_BUTTON;
-assign INPUT_PINS[5] = B_BUTTON;
-assign INPUT_PINS[6] = 1'b0;
-assign INPUT_PINS[7] = SPI_FLASH_MISO;
+wire uart_tx;
 
-assign UART_TX = PINS[15];
+wire led_r;
+wire led_g;
+wire led_b;
 
-assign RED_LED = PINS[8];
-assign GREEN_LED = PINS[9];
-assign BLUE_LED = PINS[10];
+wire i2s_sclk;
+wire i2s_lrclk;
+wire i2s_data;
+wire i2s_mclk;
 
-//assign UART_TX = 1'b0;
-//assign RED_LED   = 1'b1;
-//assign GREEN_LED = 1'b1;
-//assign BLUE_LED  = 1'b1;
-
-assign BB = PINS[19:16];
-assign RR = PINS[23:20];
-assign GG = PINS[27:24];
-assign HS = PINS[28];
-assign VS = PINS[29];
-
-assign DAC_MCLK = PINS[11]; 
-assign DAC_LRCLK = PINS[12];
-assign DAC_SCLK = PINS[13];
-assign DAC_SDIN = PINS[14];
-
-assign SPI_FLASH_MOSI = PINS[4];
-assign SPI_FLASH_SCK = PINS[5];
-assign SPI_FLASH_CSb = PINS[6];
+wire flash_mosi;
+wire  flash_miso;
+wire flash_sclk;
+wire flash_csb;
 
 slurm16 #(
-	.CLOCK_FREQ(CLOCKFREQ)
-) slm0 (
+.CLOCK_FREQ(CLOCKFREQ)
+) cpu0 (
 	clk,
 	RSTb,
-	PINS,
-	INPUT_PINS
+    gpio_out,
+    gpio_in,
+
+    vid_r,
+    vid_g,
+    vid_b,
+    vid_hsync,
+    vid_vsync,
+
+    uart_tx,
+    
+    led_r,
+    led_g,
+    led_b,
+    
+    i2s_sclk,
+    i2s_lrclk,
+    i2s_data,
+    i2s_mclk,
+    
+    flash_mosi,
+    flash_miso,
+    flash_sclk,
+    flash_csb
 );
+
+assign GPIO1 = gpio_out[0];
+assign GPIO2 = gpio_out[1]; 
+
+assign gpio_in[0] = UP_BUTTON;
+assign gpio_in[1] = DOWN_BUTTON;
+assign gpio_in[2] = LEFT_BUTTON;
+assign gpio_in[3] = RIGHT_BUTTON;
+assign gpio_in[4] = A_BUTTON;
+assign gpio_in[5] = B_BUTTON;
+assign flash_miso = SPI_FLASH_MISO;
+
+assign UART_TX = uart_tx;
+
+assign RED_LED = led_r;
+assign GREEN_LED = led_g;
+assign BLUE_LED = led_b;
+
+assign BB = vid_b;
+assign RR = vid_r;
+assign GG = vid_g;
+assign HS = vid_hsync;
+assign VS = vid_vsync;
+
+assign DAC_MCLK = i2s_mclk; 
+assign DAC_LRCLK = i2s_lrclk;
+assign DAC_SCLK = i2s_sclk;
+assign DAC_SDIN = i2s_data;
+
+assign SPI_FLASH_MOSI = flash_mosi;
+assign SPI_FLASH_SCK = flash_sclk;
+assign SPI_FLASH_CSb = flash_csb;
+
 
 endmodule

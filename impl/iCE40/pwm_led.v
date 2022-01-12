@@ -7,7 +7,9 @@ module pwm_led
 	input [BITS - 1 : 0] DATA_IN,
 	output [BITS - 1 : 0] DATA_OUT,
 	input WR,  /* write memory */
-	output [2:0] PINS /* output pins */ 
+	output r, /* output pins */ 
+	output g,
+	output b
 );
 
 reg pwm_g;
@@ -35,9 +37,9 @@ SB_RGBA_DRV RGBA_DRIVER (
   .RGB0PWM(pwm_b),
   .RGB1PWM(pwm_g),
   .RGB2PWM(pwm_r),
-  .RGB0(PINS[2]),
-  .RGB1(PINS[1]),
-  .RGB2(PINS[0])
+  .RGB0(r),
+  .RGB1(g),
+  .RGB2(b)
 );
 
 defparam RGBA_DRIVER.CURRENT_MODE = "0b1";

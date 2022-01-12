@@ -21,8 +21,35 @@ module port_controller
 	output [BITS - 1 : 0] DATA_OUT,
 	input memWR,  /* write memory */
 	input memRD,  /* read request */
-	output [31:0] 	PINS, /* output pins */ 
-	input [7:0] 	INPUT_PINS, /* input pins */
+
+	// Pins
+
+	input  cpu_debug_pin,	/* debug pin from CPU; to trace signals on oscilloscope */
+
+	output [3:0] gpio_out,
+	input  [5:0] gpio_in,
+
+	output [3:0] vid_r,
+	output [3:0] vid_g,
+	output [3:0] vid_b,
+	output vid_hsync,
+	output vid_vsync,
+
+	output uart_tx,
+
+	output led_r,
+	output led_g,
+	output led_b,
+
+	output i2s_sclk,
+	output i2s_lrclk,
+	output i2s_data,
+	output i2s_mclk,
+
+	output flash_mosi,
+	input  flash_miso,
+	output flash_sclk,
+	output flash_csb, 
 
 	// Memory ports
 
@@ -66,6 +93,8 @@ module port_controller
 	output [3:0]	irq
 
 );
+
+assign gpio_out[0] = cpu_debug_pin;
 
 // TODO: remove this when we add in the audio core
 assign au_rvalid = 1'b0;
@@ -199,7 +228,7 @@ uart
 	DATA_IN,
 	DATA_OUT_UART,
 	WR_UART,  // write memory  
-	PINS[15]   // UART output   
+	uart_tx   // UART output   
 );
 
 /*
@@ -212,8 +241,8 @@ gpio
 	DATA_IN,
 	DATA_OUT_GPIO,
 	WR_GPIO,  // write memory 
-	PINS[3:0], // output pins  
-	INPUT_PINS[5:0] // input pins
+	gpio_out, // output pins  
+	gpio_in // input pins
 );
 */
 
@@ -227,7 +256,9 @@ pwm_led
 	DATA_IN,
 	DATA_OUT_PWM,
 	WR_PWM,  // write memory 
-	PINS[10:8] // output pins 
+	led_r, // output pins 
+	led_g,
+	led_b
 );
 
 /*
@@ -241,11 +272,11 @@ gfx #(.BITS(BITS), .BANK_ADDRESS_BITS(14), .ADDRESS_BITS(12)) gfx0
 	.DATA_IN(DATA_IN),
 	.DATA_OUT(DATA_OUT_GFX),
 	.WR(WR_GFX), 
-	.HS(PINS[28]),
-	.VS(PINS[29]),
-	.BB(PINS[19:16]),
-	.RR(PINS[23:20]),
-	.GG(PINS[27:24]),
+	.HS(vid_hsync),
+	.VS(vid_vsync),
+	.BB(vid_b),
+	.RR(vid_r),
+	.GG(vid_g),
 	.spcon_memory_address(spcon_memory_address),
 	.spcon_memory_data(spcon_memory_data),
 	.spcon_rvalid(spcon_rvalid),
@@ -274,7 +305,10 @@ gfx #(.BITS(BITS), .BANK_ADDRESS_BITS(14), .ADDRESS_BITS(12)) gfx0
 	DATA_IN,
 	DATA_OUT_AUDIO,
 	WR_AUDIO, 
-	PINS[14:11]
+	i2s_sclk,
+	i2s_lrclk,
+	i2s_data,
+	i2s_mclk
 );*/
 
 /*
@@ -287,10 +321,10 @@ spi_flash
 	DATA_IN,
 	DATA_OUT_SPI,
 	WR_SPI,
-	PINS[4],
-	INPUT_PINS[7],
-	PINS[5],
-	PINS[6],
+	flash_mosi,
+	flash_miso,
+	flash_sclk,
+	flash_csb, 
 	fl_wvalid,
 	fl_wready,
 	fl_memory_address,

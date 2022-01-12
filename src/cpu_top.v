@@ -22,7 +22,8 @@ module slurm16_cpu_top
 	output						port_rd,
 	output						port_wr,
 
-	input  [3:0]				irq			/* interrupt lines */
+	input  [3:0]				irq,			/* interrupt lines */
+	output						cpu_debug_pin
 );
 
 /* Machine is 16 bit with 16 bit address bus, and 16 registers */
@@ -37,6 +38,8 @@ wire wake = 1'b0;
 
 wire [ADDRESS_BITS - 1:0] pc;
 wire [ADDRESS_BITS - 1:0] load_store_address;
+
+assign cpu_debug_pin = memory_ready;
 
 wire [BITS - 1:0] store_memory_data;
 

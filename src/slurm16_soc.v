@@ -10,8 +10,31 @@ module slurm16 #(
 ) (
 	input CLK,
 	input RSTb,
-	output [31:0] PINS,
-	input  [7:0]  INPUT_PINS
+
+	output [3:0] gpio_out,
+	input  [5:0] gpio_in,
+
+	output [3:0] vid_r,
+	output [3:0] vid_g,
+	output [3:0] vid_b,
+	output vid_hsync,
+	output vid_vsync,
+
+	output uart_tx,
+
+	output led_r,
+	output led_g,
+	output led_b,
+
+	output i2s_sclk,
+	output i2s_lrclk,
+	output i2s_data,
+	output i2s_mclk,
+
+	output flash_mosi,
+	input  flash_miso,
+	output flash_sclk,
+	output flash_csb 
 );
 
 wire [15:0] cpuMemoryIn;
@@ -54,6 +77,8 @@ wire [15:0] au_memory_data;
 wire au_rvalid;
 wire au_rready;
 
+wire cpu_debug_pin;
+
 // CPU Top level
 
 slurm16_cpu_top cpu0
@@ -74,7 +99,9 @@ slurm16_cpu_top cpu0
 	cpuPort_rd,
 	cpuPort_wr,
 
-	cpuIRQ	
+	cpuIRQ,
+
+	cpu_debug_pin	
 );
 
 
@@ -92,8 +119,26 @@ pc0
 	.DATA_OUT(cpuPort_in),
 	.memWR(cpuPort_wr), 
 	.memRD(cpuPort_rd), 
-	.PINS(PINS),
-	.INPUT_PINS(INPUT_PINS),
+	.cpu_debug_pin(cpu_debug_pin),
+	.gpio_out(gpio_out),
+	.gpio_in(gpio_in),
+	.vid_r(vid_r),
+	.vid_g(vid_g),
+	.vid_b(vid_b),
+	.vid_hsync(vid_hsync),
+	.vid_vsync(vid_vsync),
+	.uart_tx(uart_tx),
+	.led_r(led_r),
+	.led_g(led_g),
+	.led_b(led_b),
+	.i2s_sclk(i2s_sclk),
+	.i2s_lrclk(i2s_lrclk),
+	.i2s_data(i2s_data),
+	.i2s_mclk(i2s_mclk),
+	.flash_mosi(flash_mosi),
+	.flash_miso(flash_miso),
+	.flash_sclk(flash_sclk),
+	.flash_csb(flash_csb), 
 	.spcon_memory_address(spcon_memory_address),
 	.spcon_memory_data(spcon_memory_data),
 	.spcon_rvalid(spcon_rvalid),

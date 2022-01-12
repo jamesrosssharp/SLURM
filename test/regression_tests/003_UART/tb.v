@@ -7,19 +7,65 @@ always #50 CLK <= !CLK; // ~ 10MHz
 
 reg RSTb = 1'b0;
 
-wire [31:0] PINS;
-wire [7:0] INPUT_PINS; 
+wire [3:0] gpio_out;
+wire [5:0] gpio_in;
+
+wire [3:0] vid_r;
+wire [3:0] vid_g;
+wire [3:0] vid_b;
+wire vid_hsync;
+wire vid_vsync;
+
+wire uart_tx;
+
+wire led_r;
+wire led_g;
+wire led_b;
+
+wire i2s_sclk;
+wire i2s_lrclk;
+wire i2s_data;
+wire i2s_mclk;
+
+wire flash_mosi;
+wire  flash_miso;
+wire flash_sclk;
+wire flash_csb;
 
 slurm16 #(
 .CLOCK_FREQ(10000000)
 ) cpu0 (
 	CLK,
 	RSTb,
-	PINS,
-	INPUT_PINS
+    gpio_out,
+    gpio_in,
+
+    vid_r,
+    vid_g,
+    vid_b,
+    vid_hsync,
+    vid_vsync,
+
+    uart_tx,
+    
+    led_r,
+    led_g,
+    led_b,
+    
+    i2s_sclk,
+    i2s_lrclk,
+    i2s_data,
+    i2s_mclk,
+    
+    flash_mosi,
+    flash_miso,
+    flash_sclk,
+    flash_csb
 );
 
-wire UART_TX = PINS[15];
+
+
+
 
 initial begin 
 	#150 RSTb = 1'b1;
@@ -38,12 +84,12 @@ end
 localparam BAUD_TICK = 1e9/115200;
 
 always begin
-	@(negedge UART_TX);
+	@(negedge uart_tx);
 	#(BAUD_TICK/2); // start bit
 	UART_BYTE <= 8'h00;
 	for (i = 0; i < 8; i += 1) begin
 		#BAUD_TICK; // bits
-		UART_BYTE <= {UART_TX, UART_BYTE[7:1]};	
+		UART_BYTE <= {uart_tx, UART_BYTE[7:1]};	
 	end
 	#BAUD_TICK; // stop bit
 	$fwrite(f, "%c", UART_BYTE);

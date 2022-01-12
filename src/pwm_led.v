@@ -7,7 +7,9 @@ module pwm_led
 	input [BITS - 1 : 0] DATA_IN,
 	output [BITS - 1 : 0] DATA_OUT,
 	input WR,  /* write memory */
-	output [2:0] PINS /* output pins */ 
+	output r_pin, /* output pins */ 
+	output g_pin,
+	output b_pin
 );
 
 wire pwm_g;
@@ -31,9 +33,9 @@ assign pwm_r = (pwm_ctr < red_reg)   ? 1'b1 : 1'b0;
 assign pwm_g = (pwm_ctr < green_reg) ? 1'b1 : 1'b0;
 assign pwm_b = (pwm_ctr < blue_reg)  ? 1'b1 : 1'b0;
 
-assign PINS[0] = pwm_r;
-assign PINS[1] = pwm_g;
-assign PINS[2] = pwm_b;
+assign r_pin = pwm_r;
+assign g_pin = pwm_g;
+assign b_pin = pwm_b;
 
 
 
