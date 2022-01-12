@@ -10,13 +10,12 @@ $(SRCDIR)/bram.v					\
 $(SRCDIR)/copper.v					\
 $(SRCDIR)/fb_doubler.v				\
 $(SRCDIR)/fb_scale.v				\
-$(SRCDIR)/gfx_next.v				\
+$(SRCDIR)/gfx.v				\
 $(SRCDIR)/gpio.v					\
 $(SRCDIR)/memory_arbiter.v			\
-$(SRCDIR)/memory_controller_next.v	\
-$(SRCDIR)/memory_next.v				\
+$(SRCDIR)/memory_controller.v	\
+$(SRCDIR)/memory.v				\
 $(SRCDIR)/mult.v					\
-$(SRCDIR)/pipeline16_next.v			\
 $(SRCDIR)/port_controller.v			\
 $(SRCDIR)/pwm_led.v					\
 $(SRCDIR)/rom.v						\

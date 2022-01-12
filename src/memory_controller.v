@@ -1,8 +1,6 @@
-/* memory_controller.v : memory controller */
-
-/* Memory map:
- *
- *	0x0000 - 0x0fff:  4k x 16 bit boot ROM
+/* 	memory_controller.v : memory controller 
+ *	
+ *	instantiate memory arbiter, rom and memory banks
  *
  */
 
@@ -11,373 +9,179 @@ module memory_controller
 (
 	input CLK,	
 	input RSTb,
-	input [ADDRESS_BITS - 1 : 0]  ADDRESS,
-	input [BITS - 1 : 0] DATA_IN,
-	output [BITS - 1 : 0] DATA_OUT,
-	input memWR,  /* write memory */
-	input memRD,  /* read request */
-	output memBUSY, /* memory is busy (GFX / SND mem) */
-	output [31:0] PINS, /* output pins */ 
-	input [7:0] INPUT_PINS /* input pins */
+
+	/* memory ports */
+	/* sprite controller */
+	input  [15:0] 	sprite_memory_address,
+	output [15:0] 	sprite_memory_data,
+	input 			sprite_rvalid, // memory address valid
+	output  		sprite_rready,  // memory data valid
+
+	/* background controller 0 */
+	input  [15:0] 	bg0_memory_address,
+	output [15:0] 	bg0_memory_data,
+	input 			bg0_rvalid, // memory address valid
+	output  		bg0_rready,  // memory data valid
+
+	/* background controller 1 */
+	input  [15:0] 	bg1_memory_address,
+	output [15:0] 	bg1_memory_data,
+	input 			bg1_rvalid, // memory address valid
+	output  		bg1_rready,  // memory data valid
+
+	/* overlay controller */
+	input  [15:0] 	ov_memory_address,
+	output [15:0] 	ov_memory_data,
+	input 			ov_rvalid, // memory address valid
+	output  		ov_rready,  // memory data valid
+
+	/* flash controller */
+	input  [15:0] 	fl_memory_address,
+	input [15:0] 	fl_memory_data,
+	input 			fl_wvalid, // memory address valid
+	output  		fl_wready,  // memory data valid
+	
+	/* audio controller */
+	input  [15:0] 	au_memory_address,
+	output [15:0] 	au_memory_data,
+	input 			au_rvalid, // memory address valid
+	output  		au_rready,  // memory data valid
+
+	/* CPU */
+	input  [15:0] 	cpu_memory_address,
+	input  [15:0]   cpu_memory_data_in,
+	output [15:0] 	cpu_memory_data,
+	input 			cpu_valid, // memory address valid
+	input			cpu_wr, // CPU is writing to memory
+	output  		cpu_ready  // memory access granted
 );
 
+wire [13:0]	B1_ADDR;
+wire [15:0]	B1_DOUT;
+wire [15:0] B1_DIN;
+wire B1_WR;
 
-reg WR_HIRAM;
-reg WR_HIRAM2;
-reg WR_HIRAM3;
-reg WR_HIRAM4;
-reg WR_UART;
-reg WR_GPIO;
-reg WR_PWM;
-reg WR_GFX;
-reg WR_AUDIO;
-reg WR_SPI;
+wire [13:0] B2_ADDR;
+wire [15:0] B2_DOUT;
+wire [15:0] B2_DIN;
+wire B2_WR;
 
-wire [BITS - 1 : 0] DATA_OUT_HIRAM;
-wire [BITS - 1 : 0] DATA_OUT_HIRAM2;
-wire [BITS - 1 : 0] DATA_OUT_HIRAM3;
-wire [BITS - 1 : 0] DATA_OUT_HIRAM4;
-wire [BITS - 1 : 0] DATA_OUT_ROM;
-wire [BITS - 1 : 0] DATA_OUT_UART;
-wire [BITS - 1 : 0] DATA_OUT_GPIO;
-wire [BITS - 1 : 0] DATA_OUT_PWM;
-wire [BITS - 1 : 0] DATA_OUT_GFX;
-wire [BITS - 1 : 0] DATA_OUT_AUDIO;
-wire [BITS - 1 : 0] DATA_OUT_SPI;
+wire [13:0] B3_ADDR;
+wire [15:0] B3_DOUT;
+wire [15:0] B3_DIN;
+wire B3_WR;
+	
+wire [13:0] B4_ADDR;
+wire [15:0] B4_DOUT;
+wire [15:0] B4_DIN;
+wire B4_WR;
 
-reg [BITS - 1 : 0] dout_next;
-reg [BITS - 1 : 0] dout;
+memory #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 2), .MEM_INIT_FILE("mem_init1.mem")) mb1
+(
+	CLK,
+	B1_ADDR,
+	B1_DIN,
+	B1_DOUT,
+	B1_WR
+);
 
-reg [BITS - 1 : 0] DATA_OUT_REG;
+memory #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 2), .MEM_INIT_FILE("mem_init2.mem")) mb2
+(
+	CLK,
+	B2_ADDR,
+	B2_DIN,
+	B2_DOUT,
+	B2_WR
+);
 
-reg [ADDRESS_BITS - 1 : 0] addr_reg;
+memory #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 2), .MEM_INIT_FILE("mem_init3.mem")) mb3
+(
+	CLK,
+	B3_ADDR,
+	B3_DIN,
+	B3_DOUT,
+	B3_WR
+);
 
-wire [ADDRESS_BITS - 3 : 0] GFX_B1_ADDR;
-wire [BITS - 1 : 0] 		GFX_B1_DIN;
-wire						GFX_B1_REQ;
-wire [BITS - 1 : 0] 		GFX_B1_DOUT;
-wire						GFX_B1_WR;
+memory #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 2), .MEM_INIT_FILE("mem_init4.mem")) mb4
+(
+	CLK,
+	B4_ADDR,
+	B4_DIN,
+	B4_DOUT,
+	B4_WR
+);
 
-wire [ADDRESS_BITS - 3 : 0] GFX_B2_ADDR;
-wire [BITS - 1 : 0] 		GFX_B2_DIN;
-wire						GFX_B2_REQ;
-wire [BITS - 1 : 0] 		GFX_B2_DOUT;
-wire						GFX_B2_WR;
+wire [15:0] cpu_memory_data_w;
+wire [15:0] rom_data;
 
-wire [ADDRESS_BITS - 3 : 0] GFX_B3_ADDR;
-wire [BITS - 1 : 0]			GFX_B3_DIN;
-wire						GFX_B3_REQ;
-wire [BITS - 1 : 0] 		GFX_B3_DOUT;
-wire						GFX_B3_WR;
-
-wire [ADDRESS_BITS - 3 : 0] GFX_B4_ADDR;
-wire [BITS - 1 : 0]			GFX_B4_DIN;
-wire						GFX_B4_REQ;
-wire [BITS - 1 : 0] 		GFX_B4_DOUT;
-wire						GFX_B4_WR;
-
-assign GFX_B1_DIN = DATA_OUT_HIRAM;
-assign GFX_B2_DIN = DATA_OUT_HIRAM2;
-assign GFX_B3_DIN = DATA_OUT_HIRAM3;
-assign GFX_B4_DIN = DATA_OUT_HIRAM4;
-
-/* busy signal from memory */
-wire B1_BUSY;
-wire B2_BUSY;
-wire B3_BUSY;
-wire B4_BUSY;
-
-wire spi_flash_wvalid;
-wire spi_flash_wready;
-wire [15:0] spi_flash_memory_address;
-wire [15:0] spi_flash_memory_data;
-
-reg busy_r, busy_r_next;
-assign 	memBUSY = busy_r;
+reg [16:0] cpu_memory_address_r;
 
 always @(posedge CLK)
 begin
-	if (RSTb == 1'b0) begin
-		dout 	 <= {BITS{1'b0}};
-		addr_reg <= {ADDRESS_BITS{1'b0}};
-		busy_r 	 <= 1'b0;
-	end else begin
-		dout 	 <= dout_next;
-		addr_reg <= ADDRESS;
-		busy_r 	 <= busy_r_next;
-	end
+	cpu_memory_address_r <= cpu_memory_address;
 end
 
-// ROM and HIRAM are synchronous so we mux them with the registered outputs from
-// the other peripherals
-assign DATA_OUT = DATA_OUT_REG; 
-
-always @(*)
-begin
-	WR_HIRAM = 1'b0;
-	WR_HIRAM2 = 1'b0;
-	WR_HIRAM3 = 1'b0;
-	WR_HIRAM4 = 1'b0;
-	WR_UART  = 1'b0;
-	WR_GPIO  = 1'b0;
-	WR_PWM   = 1'b0;
-	WR_GFX   = 1'b0;
-	WR_AUDIO = 1'b0;
-	WR_SPI   = 1'b0;
-
-	dout_next = dout;
-	busy_r_next = 1'b0;
-
-	casex (ADDRESS)
-		16'h010x: begin
-			dout_next = DATA_OUT_UART;
-			WR_UART = memWR;
-		end
-		16'h011x: begin
-			dout_next = DATA_OUT_GPIO;
-			WR_GPIO = memWR;
-		end
-		16'h012x: begin
-			dout_next = DATA_OUT_PWM;
-			WR_PWM = memWR;
-		end
-		16'h013x: begin
-			dout_next = DATA_OUT_AUDIO;
-			WR_AUDIO = memWR;
-		end
-		16'h014x: begin
-			dout_next = DATA_OUT_SPI;
-			WR_SPI = memWR;
-		end
-		16'h1xxx: begin
-			dout_next = DATA_OUT_GFX;
-			WR_GFX = memWR;	
-		end
-		16'b00xxxxxxxxxxxxxx: begin
-			WR_HIRAM = memWR;
-			busy_r_next = B1_BUSY;
-		end
-		16'b01xxxxxxxxxxxxxx: begin
-			WR_HIRAM2 = memWR;
-			busy_r_next = B2_BUSY;
-		end
-		16'b10xxxxxxxxxxxxxx: begin
-			WR_HIRAM3 = memWR;
-			busy_r_next = B3_BUSY;
-		end
-		16'b11xxxxxxxxxxxxxx: begin
-			WR_HIRAM4 = memWR;
-			busy_r_next = B4_BUSY;
-		end
-		default: ;
-	endcase
-end
-
-always @(*)
-begin
-
-	DATA_OUT_REG = {BITS{1'b0}};
-
-	casex (addr_reg)
-		16'h00xx: begin
-			DATA_OUT_REG = DATA_OUT_ROM;
-		end
-		16'h01xx, 16'h02xx, 16'h03xx, 16'h04xx, 16'h05xx: begin
-			DATA_OUT_REG = dout;
-		end
-		16'h1xxx: begin /* gfx reads are already delayed by one cycle */ 
-			DATA_OUT_REG = DATA_OUT_GFX;
-		end
-		16'b00xxxxxxxxxxxxxx: begin
-			DATA_OUT_REG = DATA_OUT_HIRAM;
-		end
-		16'b01xxxxxxxxxxxxxx: begin
-			DATA_OUT_REG = DATA_OUT_HIRAM2;
-		end
-		16'b10xxxxxxxxxxxxxx: begin
-			DATA_OUT_REG = DATA_OUT_HIRAM3;
-		end
-		16'b11xxxxxxxxxxxxxx: begin
-			DATA_OUT_REG = DATA_OUT_HIRAM4;
-		end
-		default: ;
-	endcase
-
-end
+// ROM Overlay
+assign cpu_memory_data = (cpu_memory_address_r[15:8] == 8'h00) ? rom_data : cpu_memory_data_w; 
 
 rom #(.BITS(BITS), .ADDRESS_BITS(8)) theRom
 (
 	CLK,
- 	ADDRESS[7 : 0],
-	DATA_OUT_ROM
+ 	cpu_memory_address[7:0],
+	rom_data
 );
 
-
-memory #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 2)) theRam
+memory_arbiter ma0
 (
 	CLK,
-	ADDRESS[ADDRESS_BITS - 3 : 0],
-	DATA_IN,
-	DATA_OUT_HIRAM,
-	WR_HIRAM,
-	B1_BUSY,	/* Busy handshake to CPU */
-	GFX_B1_ADDR,
-	GFX_B1_REQ,
-	GFX_B1_DOUT,
-	GFX_B1_WR
-);
-
-memory #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 2)) theRam2
-(
-	CLK,
-	ADDRESS[ADDRESS_BITS - 3 : 0],
-	DATA_IN,
-	DATA_OUT_HIRAM2,
-	WR_HIRAM2,
-	B2_BUSY,
-	GFX_B2_ADDR,
-	GFX_B2_REQ,
-	GFX_B2_DOUT,
-	GFX_B2_WR
-);
-
-memory #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 2)) theRam3
-(
-	CLK,
-	ADDRESS[ADDRESS_BITS - 3 : 0],
-	DATA_IN,
-	DATA_OUT_HIRAM3,
-	WR_HIRAM3,
-	B3_BUSY,
-	GFX_B3_ADDR,
-	GFX_B3_REQ,
-	GFX_B3_DOUT,
-	GFX_B3_WR
-);
-
-memory #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 2)) theRam4
-(
-	CLK,
-	ADDRESS[ADDRESS_BITS - 3 : 0],
-	DATA_IN,
-	DATA_OUT_HIRAM4,
-	WR_HIRAM4,
-	B4_BUSY,
-	GFX_B4_ADDR,
-	GFX_B4_REQ,
-	GFX_B4_DOUT,
-	GFX_B4_WR
-);
-
-uart 
-#(.CLK_FREQ(CLOCK_FREQ), .BAUD_RATE(115200), .BITS(BITS)) u0
-(
-	CLK,	
 	RSTb,
-	ADDRESS[3:0],
-	DATA_IN,
-	DATA_OUT_UART,
-	WR_UART,  // write memory  
-	PINS[15]   // UART output   
-);
-
-gpio
-#(.CLK_FREQ(CLOCK_FREQ), .BITS(BITS)) g0
-(
-	CLK,	
-	RSTb,
-	ADDRESS[3:0],
-	DATA_IN,
-	DATA_OUT_GPIO,
-	WR_GPIO,  // write memory 
-	PINS[3:0], // output pins  
-	INPUT_PINS[5:0] // input pins
-);
-
-
-pwm_led
-#(.CLK_FREQ(CLOCK_FREQ), .BITS(BITS)) led0
-(
-	CLK,	
-	RSTb,
-	ADDRESS[3:0],
-	DATA_IN,
-	DATA_OUT_PWM,
-	WR_PWM,  // write memory 
-	PINS[10:8] // output pins 
-);
-
-
-assign PINS[31:30] = 2'b00;
-
-gfx #(.BITS(BITS), .BANK_ADDRESS_BITS(14), .ADDRESS_BITS(12)) gfx0
-(
-	.CLK(CLK),
-	.RSTb(RSTb),
-	.ADDRESS(ADDRESS[11:0]),
-	.DATA_IN(DATA_IN),
-	.DATA_OUT(DATA_OUT_GFX),
-	.WR(WR_GFX), 
-	.HS(PINS[28]),
-	.VS(PINS[29]),
-	.BB(PINS[19:16]),
-	.RR(PINS[23:20]),
-	.GG(PINS[27:24]),
-	.B1_ADDR(GFX_B1_ADDR),
-	.B1_DIN(GFX_B1_DIN),
-	.B1_REQ(GFX_B1_REQ),
-	.B1_DOUT(GFX_B1_DOUT),
-	.B1_WR(GFX_B1_WR),
-	.B2_ADDR(GFX_B2_ADDR),
-	.B2_DIN(GFX_B2_DIN),
-	.B2_REQ(GFX_B2_REQ),
-	.B2_DOUT(GFX_B2_DOUT),
-	.B2_WR(GFX_B2_WR),
-	.B3_ADDR(GFX_B3_ADDR),
-	.B3_DIN(GFX_B3_DIN),
-	.B3_REQ(GFX_B3_REQ),
-	.B3_DOUT(GFX_B3_DOUT),
-	.B3_WR(GFX_B3_WR),
-	.B4_ADDR(GFX_B4_ADDR),
-	.B4_DIN(GFX_B4_DIN),
-	.B4_REQ(GFX_B4_REQ),
-	.B4_DOUT(GFX_B4_DOUT),
-	.B4_WR(GFX_B4_WR),
-	.flash_dma_wvalid(spi_flash_wvalid),
-	.flash_dma_wready(spi_flash_wready),
-	.flash_dma_address(spi_flash_memory_address),
-	.flash_dma_data(spi_flash_memory_data)
-);
-
-/*audio
-#(.BITS(BITS), .ADDRESS_BITS(8), .CLK_FREQ(CLOCK_FREQ)) aud0
-(
-	CLK,	
-	RSTb,
-	ADDRESS[3:0],
-	DATA_IN,
-	DATA_OUT_AUDIO,
-	WR_AUDIO, 
-	PINS[14:11]
-);*/
-
-spi_flash
-#(.BITS(BITS), .ADDRESS_BITS(8), .CLK_FREQ(CLOCK_FREQ)) spi_flash0
-(
-	CLK,	
-	RSTb,
-	ADDRESS[3:0],
-	DATA_IN,
-	DATA_OUT_SPI,
-	WR_SPI,
-	PINS[4],
-	INPUT_PINS[7],
-	PINS[5],
-	PINS[6],
-	spi_flash_wvalid,
-	spi_flash_wready,
-	spi_flash_memory_address,
-	spi_flash_memory_data
+	sprite_memory_address,
+	sprite_memory_data,
+	sprite_rvalid, // memory address valid
+	sprite_rready,  // memory data valid
+	bg0_memory_address,
+	bg0_memory_data,
+	bg0_rvalid, // memory address valid
+	bg0_rready,  // memory data valid
+	bg1_memory_address,
+	bg1_memory_data,
+	bg1_rvalid, // memory address valid
+	bg1_rready,  // memory data valid
+	ov_memory_address,
+	ov_memory_data,
+	ov_rvalid, // memory address valid
+	ov_rready,  // memory data valid	
+	fl_memory_address,
+	fl_memory_data,
+	fl_wvalid, // memory address valid
+	fl_wready,  // memory data valid
+	au_memory_address,
+	au_memory_data,
+	au_rvalid, // memory address valid
+	au_rready,  // memory data valid
+	cpu_memory_address,
+	cpu_memory_data_in,
+	cpu_memory_data_w,
+	cpu_valid, // memory address valid
+	cpu_wr, // CPU is writing to memory
+	cpu_ready,  // memory access granted
+	B1_ADDR,
+	B1_DOUT,
+	B1_DIN,
+	B1_WR,
+	B2_ADDR,
+	B2_DOUT,
+	B2_DIN,
+	B2_WR,
+	B3_ADDR,
+	B3_DOUT,
+	B3_DIN,
+	B3_WR,
+	B4_ADDR,
+	B4_DOUT,
+	B4_DIN,
+	B4_WR
 );
 
 

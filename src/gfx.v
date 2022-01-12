@@ -2,6 +2,8 @@ module gfx #(parameter BITS = 16, parameter BANK_ADDRESS_BITS = 14, parameter AD
 (
 	input  CLK,
 	input  RSTb,
+
+	// IO Interface
 	input  [ADDRESS_BITS - 1 : 0]  ADDRESS,
 	input  [BITS - 1 : 0] DATA_IN,
 	output [BITS - 1 : 0] DATA_OUT,
@@ -13,40 +15,39 @@ module gfx #(parameter BITS = 16, parameter BANK_ADDRESS_BITS = 14, parameter AD
 	output [3:0] RR,
 	output [3:0] GG,
 
-	// Memory Bank DMA ports
+	// Memory ports (read only):
 
-	output [BANK_ADDRESS_BITS - 1 : 0] B1_ADDR,
-	input  [BITS - 1 : 0] B1_DIN,
-	output B1_REQ,
-	output [BITS - 1 : 0] B1_DOUT,
-	output B1_WR,
+	//  sprite controller
 
-	output [BANK_ADDRESS_BITS - 1 : 0] B2_ADDR,
-	input  [BITS - 1 : 0] B2_DIN,
-	output B2_REQ,
-	output [BITS - 1 : 0] B2_DOUT,
-	output B2_WR,
+	output [15:0] spcon_memory_address,
+	input  [15:0] spcon_memory_data,
+	output spcon_rvalid,
+	input  spcon_rready,
 
-	output [BANK_ADDRESS_BITS - 1 : 0] B3_ADDR,
-	input  [BITS - 1 : 0] B3_DIN,
-	output B3_REQ,
-	output [BITS - 1 : 0] B3_DOUT,
-	output B3_WR,
+	// BG0
 
-	output [BANK_ADDRESS_BITS - 1 : 0] B4_ADDR,
-	input  [BITS - 1 : 0] B4_DIN,
-	output B4_REQ,
-	output [BITS - 1 : 0] B4_DOUT,
-	output B4_WR,
+	output [15:0] bg0_memory_address,
+	input  [15:0] bg0_memory_data,
+	output bg0_rvalid,
+	input bg0_rready,
 
-	// DMA port from spi flash controller
+	// BG1
 
-	input flash_dma_wvalid,
-	output flash_dma_wready,
-	input [15:0] flash_dma_address,
-	input [15:0] flash_dma_data
+	output [15:0] bg1_memory_address,
+	input [15:0] bg1_memory_data,
+	output bg1_rvalid,
+	input bg1_rready,
+
+	// Overlay
+
+	output [15:0] ov_memory_address,
+	input [15:0] ov_memory_data,
+	output ov_rvalid,
+	input  ov_rready
+
 );
 
+assign bg1_rvalid = 1'b0;
 
 reg [9:0] hcount = 10'd0;
 reg [9:0] vcount = 10'd0;
@@ -106,30 +107,38 @@ end
 
 wire [7:0] spcon_color_index;
 
-wire [15:0] spcon_memory_address;
+/*wire [15:0] spcon_memory_address;
 wire [15:0] spcon_memory_data;
 wire spcon_rvalid;
 wire  spcon_rready;
+*/
 wire [15:0] spcon_collision_data;
 
 
-wire [15:0] ov_memory_address;
+/*wire [15:0] ov_memory_address;
 wire [15:0] ov_memory_data;
 wire ov_rvalid;
 wire  ov_rready;
+*/
+
 
 wire [7:0] bg0_color_index;
+
+/*
 wire [15:0] bg0_memory_address;
 wire [15:0] bg0_memory_data;
 wire bg0_rvalid;
 wire bg0_rready;
+*/
 reg WR_bg0;
 
 wire [7:0] bg1_color_index = 8'd0;
+/*
 wire [15:0] bg1_memory_address = 16'd0;
 wire [15:0] bg1_memory_data;
 wire bg1_rvalid = 1'b0;
 wire bg1_rready;
+*/
 reg WR_bg1 = 1'b0;
 
 reg WR_cpr;
@@ -156,67 +165,6 @@ wire fb_rready;
 
 wire alpha_override_out;
 wire [3:0] alpha_out;
-
-
-gfx_memory_arbiter arb0
-(
-	CLK,
-	RSTb,
-
-	/* sprite controller */
-	spcon_memory_address,
-	spcon_memory_data,
-	spcon_rvalid, 
-	spcon_rready, 
-
-	/* background controllers */
-	bg0_memory_address,
-	bg0_memory_data,
-	bg0_rvalid,
-	bg0_rready, 
-
-	bg1_memory_address,
-	bg1_memory_data,
-	bg1_rvalid,
-	bg1_rready, 
-
-	/* overlay controller */
-	fb_memory_address,
-	fb_memory_data,
-	fb_rvalid, 
-	fb_rready,  
-
-	/* spi flash controller */
-	flash_dma_address,
-	flash_dma_data,
-	flash_dma_wvalid,
-	flash_dma_wready,
-
-	B1_ADDR,
-	B1_DIN,
-	B1_REQ,
-	B1_DOUT,
-	B1_WR,
-
-	B2_ADDR,
-	B2_DIN,
-	B2_REQ,
-	B2_DOUT,
-	B2_WR,
-
-	B3_ADDR,
-	B3_DIN,
-	B3_REQ,
-	B3_DOUT,
-	B3_WR,
-
-	B4_ADDR,
-	B4_DIN,
-	B4_REQ,
-	B4_DOUT,
-	B4_WR
-
-);
 
 sprite_controller spcon0
 (
@@ -249,7 +197,7 @@ background_controller2 #(48, 369, 33, 513) bgcon0
 	CLK,
 	RSTb,
 
-	addr,
+	addr[3:0],
 	data_out_cpr,
 	WR_bg0,
 
