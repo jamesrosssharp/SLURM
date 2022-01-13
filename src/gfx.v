@@ -158,7 +158,7 @@ wire [15:0] data_out_cpr = (COPPER_WR == 1'b1) ? COPPER_DATA_OUT : DATA_IN;
 reg WR_fb_reg;
 reg WR_fb_pal;
 
-wire [15:0] fb_color;
+wire [15:0] fb_color = 16'd0;
 
 //wire [15:0] fb_memory_address;
 //wire [15:0] fb_memory_data;

@@ -105,10 +105,6 @@ reg [1:0] alt_pip_ld_count_r, alt_pip_ld_count_r_next;
 reg [2:0] stall_count_r, stall_count_r_next; // pipeline fifo wr ptr
 reg [2:0] stall_read_count_r, stall_read_count_r_next; // pipeline fifo rd ptr
 
-reg prev_executing;
-reg prev_stall;
-
-
 // Sequential logic
 always @(posedge CLK)
 begin
@@ -123,8 +119,6 @@ begin
 		pc_stage2_r <= {ADDRESS_BITS{1'b0}};
 		pc_stage3_r <= {ADDRESS_BITS{1'b0}};
 		pc_stage4_r <= {ADDRESS_BITS{1'b0}};
-		prev_executing 	<= 1'b0;
-		prev_stall 	<= 1'b0;
 		mask_count_r 	<= 3'd2; // mask out of reset
 		stall_mask_count_r 	<= 2'd0;
 		alt_pip_ld_count_r 	<= 2'd0;
@@ -149,8 +143,6 @@ begin
 		pc_stage2_r <= pc_stage2_r_next;
 		pc_stage3_r <= pc_stage3_r_next;
 		pc_stage4_r <= pc_stage4_r_next;
-		prev_executing <= is_executing;
-		prev_stall <= stall;
 		mask_count_r 	<= mask_count_r_next;
 		stall_mask_count_r 	<= stall_mask_count_r_next;
 		alt_pip_ld_count_r 	<= alt_pip_ld_count_r_next;
@@ -173,7 +165,6 @@ end
 
 always @(*)
 begin
-	//if (prev_executing == 1'b0 && is_executing == 1'b1) 
 	if (load_pc)
 		mask_count_r_next = 3'd2;
 	else if (mask_count_r > 3'd0 && is_executing)
@@ -263,7 +254,7 @@ begin
 
 	reading_alt_pipeline = 1'b0; // by default, we aren't reading from alternative pipeline
 
-	if (is_executing /*&& prev_executing*/) begin //?? if we have been executing for 1 cycle, the memory will have been fetched.
+	if (is_executing) begin
 		if (mask_count_r == 3'd0 && stall_mask_count_r == 2'd0 && memory_is_instruction) begin	// If we are not masking, take next instruction
 			pipeline_stage0_r_next = memory_in; // TODO: load nop if memory operation
 			pc_stage0_r_next = memory_address;

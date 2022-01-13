@@ -71,7 +71,7 @@ die:
 		ba die
 
 banner:
-		dw "Hello world!\n"
+		dw "Hello world!\r\n"
 		dw 0
 
 		.end
