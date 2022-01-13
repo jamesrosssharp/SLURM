@@ -3,7 +3,52 @@
 UART_TX_REG 	equ 	0x0000
 UART_TX_STATUS 	equ 	0x0001
 
+GFX_BASE equ 0x5000
+	
+GFX_CPR_LIST  		 equ GFX_BASE + 0x0400
+GFX_FB_PAL 			 equ GFX_BASE + 0x0600
+
+GFX_CPR_ENABLE 		 equ GFX_BASE + 0x0d20
+GFX_CPR_Y_FLIP  	 equ GFX_BASE + 0x0d21
+GFX_CPR_BGCOL 		 equ GFX_BASE + 0x0d22
+GFX_CPR_ALPHA  		 equ GFX_BASE + 0x0d24
+
+
+GFX_COLLISION_LIST equ GFX_BASE + 0x0700
+
 		nop
+		mov r1, cpr_list_1
+		mov r2, cpr_list_1_end - cpr_list_1
+		mov r6, r0
+cpr_loop:
+		ld r3, [r1, 0]
+		add r1, 1
+		out [r6, GFX_CPR_LIST], r3
+		add r6, 1
+		sub r2, 1
+		bnz cpr_loop
+
+		mov r4, 0x1
+		out [r0, GFX_CPR_ENABLE], r4
+
+
+//		mov r4, 0x00f
+//		out [r0, GFX_CPR_BGCOL], r4
+
+
+		ba cpr_list_1_end
+
+cpr_list_1:
+		dw 0x7021
+		dw 0x6f00
+		dw 0x7064
+		dw 0x60f0
+		dw 0x7064
+		dw 0x600f
+		dw 0x7064
+		dw 0x1001
+cpr_list_1_end:
+
 		mov r2, banner
 loop:
 		ld r1, [r2, 0]
@@ -17,6 +62,10 @@ test_loop:
 		bz test_loop
 
 		ba loop
+
+		// Write copper list
+
+
 
 die:
 		ba die
