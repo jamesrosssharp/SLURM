@@ -94,7 +94,7 @@ module port_controller
 
 );
 
-assign gpio_out[0] = cpu_debug_pin;
+//assign gpio_out[0] = cpu_debug_pin;
 
 // TODO: remove this when we add in the audio core
 assign au_rvalid = 1'b0;
@@ -231,7 +231,7 @@ uart
 	uart_tx   // UART output   
 );
 
-/*
+
 gpio
 #(.CLK_FREQ(CLOCK_FREQ), .BITS(BITS)) g0
 (
@@ -244,7 +244,7 @@ gpio
 	gpio_out, // output pins  
 	gpio_in // input pins
 );
-*/
+
 
 
 pwm_led
@@ -261,8 +261,6 @@ pwm_led
 	led_b
 );
 
-/*
-assign PINS[31:30] = 2'b00;
 
 gfx #(.BITS(BITS), .BANK_ADDRESS_BITS(14), .ADDRESS_BITS(12)) gfx0
 (
@@ -294,7 +292,7 @@ gfx #(.BITS(BITS), .BANK_ADDRESS_BITS(14), .ADDRESS_BITS(12)) gfx0
 	.ov_rvalid(ov_rvalid),
 	.ov_rready(ov_rready)
 );
-*/
+
 
 /*audio
 #(.BITS(BITS), .ADDRESS_BITS(8), .CLK_FREQ(CLOCK_FREQ)) aud0
@@ -311,7 +309,7 @@ gfx #(.BITS(BITS), .BANK_ADDRESS_BITS(14), .ADDRESS_BITS(12)) gfx0
 	i2s_mclk
 );*/
 
-/*
+
 spi_flash
 #(.BITS(BITS), .ADDRESS_BITS(8), .CLK_FREQ(CLOCK_FREQ)) spi_flash0
 (
@@ -330,6 +328,6 @@ spi_flash
 	fl_memory_address,
 	fl_memory_data
 );
-*/
+
 
 endmodule

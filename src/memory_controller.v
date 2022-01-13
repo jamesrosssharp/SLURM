@@ -138,23 +138,23 @@ memory_arbiter ma0
 	RSTb,
 	sprite_memory_address,
 	sprite_memory_data,
-	1'b0, //sprite_rvalid, // memory address valid
+	sprite_rvalid, // memory address valid
 	sprite_rready,  // memory data valid
 	bg0_memory_address,
 	bg0_memory_data,
-	1'b0, //bg0_rvalid, // memory address valid
+	bg0_rvalid, // memory address valid
 	bg0_rready,  // memory data valid
 	bg1_memory_address,
 	bg1_memory_data,
-	1'b0, //bg1_rvalid, // memory address valid
+	bg1_rvalid, // memory address valid
 	bg1_rready,  // memory data valid
 	ov_memory_address,
 	ov_memory_data,
-	1'b0, //ov_rvalid, // memory address valid
+	ov_rvalid, // memory address valid
 	ov_rready,  // memory data valid	
 	fl_memory_address,
 	fl_memory_data,
-	1'b0, //fl_wvalid, // memory address valid
+	fl_wvalid, // memory address valid
 	fl_wready,  // memory data valid
 	au_memory_address,
 	au_memory_data,

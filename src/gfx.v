@@ -139,6 +139,8 @@ wire [15:0] bg1_memory_data;
 wire bg1_rvalid = 1'b0;
 wire bg1_rready;
 */
+assign bg1_rvalid = 1'b0;
+
 reg WR_bg1 = 1'b0;
 
 reg WR_cpr;
@@ -158,10 +160,10 @@ reg WR_fb_pal;
 
 wire [15:0] fb_color;
 
-wire [15:0] fb_memory_address;
-wire [15:0] fb_memory_data;
-wire fb_rvalid;
-wire fb_rready;
+//wire [15:0] fb_memory_address;
+//wire [15:0] fb_memory_data;
+//wire fb_rvalid;
+//wire fb_rready;
 
 wire alpha_override_out;
 wire [3:0] alpha_out;
@@ -214,7 +216,7 @@ background_controller2 #(48, 369, 33, 513) bgcon0
 	bg0_rready 
 );
 
-
+/*
 fb_doubler fb0
 (
 	CLK,
@@ -233,12 +235,13 @@ fb_doubler fb0
 	1'b1,
 	fb_color,
 
-	fb_memory_address,
-	fb_memory_data,
-	fb_rvalid,
-	fb_rready 
+	ov_memory_address,
+	ov_memory_data,
+	ov_rvalid,
+	ov_rready 
 );
-
+*/
+assign ov_rvalid = 1'b0;
 
 /*background_controller #(48, 369, 33, 513) bgcon1
 (
