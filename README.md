@@ -29,6 +29,23 @@ Instruction Set
 
 All instructions are 16 bits wide. With bit 15 low, The highest 4 bits are the instruction class. With bit 15, high, the top three bits are the instruction class / 2.
 
+Interrupt Vectors
+=================
+
+Vector table is located at address 0x0000, which is in boot memory, but can be reprogrammed using an IO port.
+
+	| Vector | Vector offset | Purpose 	       |
+	|--------|---------------|-----------------|
+	|	0	 |		0x0		 |	Reset	       |
+	|   1	 |		0x4      |   Hsync         |
+	|   2	 |		0x8      |   Vsync	       |
+	|   3	 |		0xC		 |	Audio          |
+	|  	4	 | 		0x10	 |   Timer1?       |
+	|	5	 |		0x14	 |   Timer2?       |
+	|  	6	 |		0x18	 |	 SPI flash DMA |
+    |   7-15 |               |   Reserved      |	
+
+
 Class 0: General purpose
 ------------------------
 
@@ -49,7 +66,9 @@ Class 0 has 4 sub-classes, bits 9 - 8 of the opcode.
         RT : 0 = RET (return) (restore PC from link register and branch)
              1 = IRET (interrupt return) (restore PC from interrupt link register and branch)
 
-2. / 3. Reserved
+2. Reserved 
+
+3. Reserved
 
 4. Single register ALU operation
 
@@ -75,6 +94,29 @@ Class 0 has 4 sub-classes, bits 9 - 8 of the opcode.
         28 - ss : set sign
         29 - bswap : byte swap
         30 - 31 : reserved
+
+5. Interrupt
+
+    |15 | 14 | 13 | 12 | 11 | 10 | 9 | 8 | 7 - 4 | 3 - 0 |
+    |---|----|----|----|----|----|---|---|-------|-------|
+    |0  | 0  | 0  | 0  | 0  | 1  | 0 | 1 | xxxxx | INT   |
+
+	INT: interrupt vector (0-15)
+
+	Branches to interrupt vector specified by INT, linking to
+	interrupt link register, r14.
+
+	Vector table is located at address 0x0000.
+
+
+6. Set / clear interrupts
+
+    |15 | 14 | 13 | 12 | 11 | 10 | 9 | 8 | 7 - 1 |   0   |
+    |---|----|----|----|----|----|---|---|-------|-------|
+    |0  | 0  | 0  | 0  | 0  | 1  | 1 | 0 |   x   | Flag  |
+
+	Flag: 1 = interrupts enabled, 0 = interrupts disabled
+
 
 Class 1:  Immediate load
 ------------------------

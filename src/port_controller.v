@@ -9,6 +9,10 @@
  * 0x4000 - 0x4fff: SPI
  * 0x5000 - 0x5fff: GFX
  * 0x6000 - 0x6fff: Trace port 
+ * 0x7000 - 0x7fff: Timers ??
+ * 0x8000 - 0x80ff: Boot memory write port (reprogram interrupt vectors etc)
+ * 0x9000 - 0x93ff: scratch pad RAM
+ * 0xa000 - 0xafff: Interrupt controller
  */
 
 module port_controller
