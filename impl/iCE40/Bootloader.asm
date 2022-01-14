@@ -16,6 +16,12 @@ GFX_CPR_ALPHA  		 equ GFX_BASE + 0x0d24
 
 GFX_COLLISION_LIST equ GFX_BASE + 0x0700
 
+PWM_RED   equ 0x2000
+PWM_GREEN equ 0x2001
+PWM_BLUE  equ 0x2002
+
+
+
 		nop
 		mov r1, cpr_list_1
 		mov r2, cpr_list_1_end - cpr_list_1
@@ -31,6 +37,12 @@ cpr_loop:
 		mov r4, 0x1
 		out [r0, GFX_CPR_ENABLE], r4
 
+		mov r4, 1
+		out [r0, PWM_RED], r4
+		mov r4, 1
+		out [r0, PWM_GREEN], r4
+		mov r4, 3
+		out [r0, PWM_BLUE], r4
 
 //		mov r4, 0x00f
 //		out [r0, GFX_CPR_BGCOL], r4
