@@ -34,16 +34,16 @@ Interrupt Vectors
 
 Vector table is located at address 0x0000, which is in boot memory, but can be reprogrammed using an IO port.
 
-	| Vector | Vector offset | Purpose 	       |
-	|--------|---------------|-----------------|
-	|	0	 |		0x0		 |	Reset	       |
-	|   1	 |		0x4      |   Hsync         |
-	|   2	 |		0x8      |   Vsync	       |
-	|   3	 |		0xC		 |	Audio          |
-	|  	4	 | 		0x10	 |   Timer1?       |
-	|	5	 |		0x14	 |   Timer2?       |
-	|  	6	 |		0x18	 |	 SPI flash DMA |
-    |   7-15 |               |   Reserved      |	
+| Vector| Vector offset| Purpose|
+|--------|---------------|----------------|
+|   0    |      0x0      |   Reset        |
+|   1    |      0x4      |   Hsync        |
+|   2    |      0x8      |   Vsync        |
+|   3    |      0xC      |   Audio        |
+|   4    |      0x10     |   Timer1?      |
+|   5    |      0x14     |   Timer2?      |
+|   6    |      0x18     |   SPI flash DMA|
+|   7-15 |               |   Reserved     |	
 
 
 Class 0: General purpose
