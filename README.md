@@ -108,6 +108,9 @@ Class 0 has 4 sub-classes, bits 9 - 8 of the opcode.
 
 	Vector table is located at address 0x0000.
 
+	Can be used for software interrupts, but mostly exists so
+	it can be inserted into the pipeline on interrupt condition.
+
 
 6. Set / clear interrupts
 
@@ -117,6 +120,13 @@ Class 0 has 4 sub-classes, bits 9 - 8 of the opcode.
 
 	Flag: 1 = interrupts enabled, 0 = interrupts disabled
 
+7. Sleep
+
+    |15 | 14 | 13 | 12 | 11 | 10 | 9 | 8 | 7 - 0 |
+    |---|----|----|----|----|----|---|---|-------|
+    |0  | 0  | 0  | 0  | 0  | 1  | 1 | 1 |   x   |
+
+	Halts the pipeline and relinquishes control of memory bus. Will wake on interrupt.
 
 Class 1:  Immediate load
 ------------------------
