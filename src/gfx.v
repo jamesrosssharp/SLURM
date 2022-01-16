@@ -43,8 +43,12 @@ module gfx #(parameter BITS = 16, parameter BANK_ADDRESS_BITS = 14, parameter AD
 	output [15:0] ov_memory_address,
 	input [15:0] ov_memory_data,
 	output ov_rvalid,
-	input  ov_rready
+	input  ov_rready,
 
+	// IRQs
+
+	output irq_hsync,
+	output irq_vsync
 );
 
 assign bg1_rvalid = 1'b0;
@@ -69,6 +73,9 @@ localparam V_LINES = V_DISPLAY_LINES + V_TOTAL_PORCH;
 
 assign HS = (hcount >= (H_PIXELS + H_BACK_PORCH + H_FRONT_PORCH)) ? 1'b0 : 1'b1;
 assign VS = (vcount >= (V_LINES - V_SYNC_PULSE)) ? 1'b0 : 1'b1;
+
+assign irq_hsync = (hcount == (H_PIXELS + H_BACK_PORCH + H_FRONT_PORCH)) ? 1'b1 : 1'b0; 
+assign irq_vsync = (vcount == (V_LINES - V_SYNC_PULSE)) ? 1'b1 : 1'b0; 
 
 wire frameTick = (hcount == 10'd0 && vcount == 10'd0) ? 1'b1 : 1'b0;
 

@@ -9,10 +9,9 @@
  * 0x4000 - 0x4fff: SPI
  * 0x5000 - 0x5fff: GFX
  * 0x6000 - 0x6fff: Trace port 
- * 0x7000 - 0x7fff: Timers ??
+ * 0x7000 - 0x7fff: Interrupt controller
  * 0x8000 - 0x80ff: Boot memory write port (reprogram interrupt vectors etc)
  * 0x9000 - 0x93ff: scratch pad RAM
- * 0xa000 - 0xafff: Interrupt controller
  */
 
 module port_controller
@@ -94,15 +93,20 @@ module port_controller
 	input  			au_rready,  // memory data valid
 
 	// Interrupt request quotients
-	output [3:0]	irq
+	output [3:0]	irq,
+	output			interrupt
 
 );
+
+wire irq_hsync;
+wire irq_vsync;
+wire irq_audio = 1'b0;
+wire irq_spi_flash = 1'b0;
 
 //assign gpio_out[0] = cpu_debug_pin;
 
 // TODO: remove this when we add in the audio core
 assign au_rvalid = 1'b0;
-
 
 reg WR_UART;
 reg WR_GPIO;
@@ -111,6 +115,7 @@ reg WR_GFX;
 reg WR_AUDIO;
 reg WR_SPI;
 reg WR_TRACE;
+reg WR_INTERRUPT;
 
 wire RD_TRACE = 1'b0;
 
@@ -122,6 +127,7 @@ wire [BITS - 1 : 0] DATA_OUT_GFX;
 wire [BITS - 1 : 0] DATA_OUT_AUDIO;
 wire [BITS - 1 : 0] DATA_OUT_SPI;
 wire [BITS - 1 : 0] DATA_OUT_TRACE;
+wire [BITS - 1 : 0] DATA_OUT_INTERRUPT;
 
 reg [BITS - 1 : 0] dout_next;
 reg [BITS - 1 : 0] dout;
@@ -159,6 +165,7 @@ begin
 	WR_AUDIO = 1'b0;
 	WR_SPI   = 1'b0;
 	WR_TRACE = 1'b0;
+	WR_INTERRUPT = 1'b0;
 
 	dout_next = dout;
 
@@ -189,6 +196,10 @@ begin
 		end
 		16'h6xxx: begin
 			WR_TRACE = memWR;
+		end
+		16'h7xxx: begin
+			dout_next = DATA_OUT_INTERRUPT;
+			WR_INTERRUPT = memWR;
 		end
 		default: ;
 	endcase
@@ -294,7 +305,9 @@ gfx #(.BITS(BITS), .BANK_ADDRESS_BITS(14), .ADDRESS_BITS(12)) gfx0
 	.ov_memory_address(ov_memory_address),
 	.ov_memory_data(ov_memory_data),
 	.ov_rvalid(ov_rvalid),
-	.ov_rready(ov_rready)
+	.ov_rready(ov_rready),
+	.irq_hsync(irq_hsync),
+	.irq_vsync(irq_vsync)
 );
 
 
@@ -333,5 +346,20 @@ spi_flash
 	fl_memory_data
 );
 
+interrupt_controller #(.BITS(BITS)) irq0
+(
+	CLK,	
+	RSTb,
+	ADDRESS,
+	DATA_IN,
+	DATA_OUT,
+	WR_INTERRUPT,
+	irq_hsync,
+	irq_vsync,
+	irq_audio,
+	irq_spi_flash,
+	interrupt,	
+	irq
+);
 
 endmodule

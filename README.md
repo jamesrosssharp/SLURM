@@ -33,17 +33,17 @@ Interrupt Vectors
 =================
 
 Vector table is located at address 0x0000, which is in boot memory, but can be reprogrammed using an IO port.
+Each vector is two 16 bit words, enough to hold an imm and a branch instruction, to jump to a handler. The CPU
+will simply transfer execution to the vector address on an interrupt.
 
 | Vector| Vector offset| Purpose|
 |--------|---------------|----------------|
 |   0    |      0x0      |   Reset        |
-|   1    |      0x4      |   Hsync        |
-|   2    |      0x8      |   Vsync        |
-|   3    |      0xC      |   Audio        |
-|   4    |      0x10     |   Timer1?      |
-|   5    |      0x14     |   Timer2?      |
-|   6    |      0x18     |   SPI flash DMA|
-|   7-15 |               |   Reserved     |	
+|   1    |      0x2      |   Hsync        |
+|   2    |      0x4      |   Vsync        |
+|   3    |      0x6      |   Audio        |
+|   4    |      0x8      |   SPI flash DMA|
+|   5-15 |      0xe      |   Reserved     |	
 
 
 Class 0: General purpose

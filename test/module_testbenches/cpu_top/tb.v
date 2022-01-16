@@ -77,6 +77,8 @@ begin
 		memory_in <= 16'hdead;
 end
 
+wire debug;
+
 slurm16_cpu_top top0
 (
     CLK,
@@ -95,7 +97,8 @@ slurm16_cpu_top top0
     port_rd,
     port_wr,
 
-    irq         /* interrupt lines */
+    irq,         /* interrupt lines */
+	debug
 );
 
 initial begin

@@ -34,4 +34,5 @@ $(SRCDIR)/cpu_memory_interface.v	\
 $(SRCDIR)/cpu_port_interface.v		\
 $(SRCDIR)/cpu_register_file.v		\
 $(SRCDIR)/cpu_writeback.v			\
+$(SRCDIR)/interrupt_controller.v	\
 $(SRCDIR)/slurm16_soc.v
