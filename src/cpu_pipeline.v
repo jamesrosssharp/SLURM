@@ -45,7 +45,13 @@ module slurm16_cpu_pipeline #(parameter REGISTER_BITS = 4, BITS = 16, ADDRESS_BI
 	output modifies_flags3,
 
 	input hazard1,
-	input memory_is_instruction
+	input memory_is_instruction,
+
+	input			interrupt_flag_set,	/* cpu interrupt flag set */
+	input			interrupt_flag_clear,	/* cpu interrupt flag clear */
+	
+	input  			interrupt,		/* interrupt line from interrupt controller */	
+	input  [3:0]	irq				/* irq from interrupt controller */
 );
 
 `include "cpu_decode_functions.v"
@@ -105,6 +111,8 @@ reg [1:0] alt_pip_ld_count_r, alt_pip_ld_count_r_next;
 reg [2:0] stall_count_r, stall_count_r_next; // pipeline fifo wr ptr
 reg [2:0] stall_read_count_r, stall_read_count_r_next; // pipeline fifo rd ptr
 
+reg interrupt_flag_r, interrupt_flag_r_next;
+
 // Sequential logic
 always @(posedge CLK)
 begin
@@ -132,6 +140,7 @@ begin
 		modifies_flags3_r <= 1'b0;
 		stall_count_r <= 3'd0;
 		stall_read_count_r <= 3'd0;
+		interrupt_flag_r <= 1'b0;
 	end else begin
 		pipeline_stage0_r <= pipeline_stage0_r_next;
 		pipeline_stage1_r <= pipeline_stage1_r_next;
@@ -156,6 +165,7 @@ begin
 		modifies_flags3_r <= modifies_flags3_r_next;
 		stall_count_r <= stall_count_r_next; 
 		stall_read_count_r <= stall_read_count_r_next; 
+		interrupt_flag_r <= interrupt_flag_r_next;
 	end
 end
 
@@ -218,6 +228,22 @@ begin
 		stall_read_count_r_next = stall_read_count_r;
 end
 
+// Interrupt flag
+
+reg pipeline_clear_interrupt;
+
+always @(*)
+begin
+	interrupt_flag_r_next = interrupt_flag_r; 
+
+	if (interrupt_flag_set)
+		interrupt_flag_r_next = 1'b1;
+
+	if (interrupt_flag_clear || pipeline_clear_interrupt)
+		interrupt_flag_r_next = 1'b0;
+
+end
+
 //
 //	Actual pipeline logic
 //
@@ -242,14 +268,16 @@ begin
 	pc_stage3_r_next = pc_stage3_r;
 	pc_stage4_r_next = pc_stage4_r;
  
-	hazard_reg1_r_next	<= hazard_reg1_r;
-	hazard_reg2_r_next	<= hazard_reg2_r;
-	hazard_reg3_r_next	<= hazard_reg3_r;
+	hazard_reg1_r_next	= hazard_reg1_r;
+	hazard_reg2_r_next	= hazard_reg2_r;
+	hazard_reg3_r_next	= hazard_reg3_r;
 	
-	modifies_flags1_r_next <= modifies_flags1_r;
-	modifies_flags2_r_next <= modifies_flags2_r;
-	modifies_flags3_r_next <= modifies_flags3_r;
+	modifies_flags1_r_next = modifies_flags1_r;
+	modifies_flags2_r_next = modifies_flags2_r;
+	modifies_flags3_r_next = modifies_flags3_r;
 	
+	pipeline_clear_interrupt = 1'b0;
+
 	// Else if executing, advance pipeline
 
 	reading_alt_pipeline = 1'b0; // by default, we aren't reading from alternative pipeline
@@ -258,6 +286,12 @@ begin
 		if (mask_count_r == 3'd0 && stall_mask_count_r == 2'd0 && memory_is_instruction) begin	// If we are not masking, take next instruction
 			pipeline_stage0_r_next = memory_in; // TODO: load nop if memory operation
 			pc_stage0_r_next = memory_address;
+
+			if (interrupt_flag_r && interrupt) begin	// Interrupt?
+				pipeline_stage0_r_next = {16'h050, irq}; // Inject INT Instruction
+				pipeline_clear_interrupt = 1'b1;
+			end
+
 		end else if (stall_mask_count_r > 2'd0) begin	// Else stall mask, take alt pipeline
 			reading_alt_pipeline = 1'b1;
 			pipeline_stage0_r_next = instruction_fifo[stall_read_count_r];
@@ -361,7 +395,7 @@ begin
 			imm_stage2_r_next 	= {imm_r, imm_lo_from_ins(pipeline_stage1_r)};
 
 	casex (pipeline_stage1_r)
-		16'h1xxx:   	/* imm */
+		INSTRUCTION_CASEX_IMM:   	/* imm */
 			/* there might be a spurious imm in p1 on a branch */
 			if (!load_pc)
 				imm_r_next 	= imm_r_from_ins(pipeline_stage1_r);

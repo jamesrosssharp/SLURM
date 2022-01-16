@@ -350,7 +350,7 @@ interrupt_controller #(.BITS(BITS)) irq0
 (
 	CLK,	
 	RSTb,
-	ADDRESS,
+	ADDRESS[3:0],
 	DATA_IN,
 	DATA_OUT,
 	WR_INTERRUPT,

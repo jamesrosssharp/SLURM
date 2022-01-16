@@ -18,6 +18,7 @@ entry:
 	out [r0, INTERRUPT_ENABLE_PORT], r1
 
 	/* enable interrupts */
+	dw 0x0601
 
 	/* sleep forever */
 

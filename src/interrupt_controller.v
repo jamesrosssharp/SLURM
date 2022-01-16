@@ -32,6 +32,9 @@ wire [3:0] irq_in = {irq_spi_flash, irq_audio, irq_vsync, irq_hsync};
 reg [3:0] irq_out, irq_out_next;
 reg interrupt_out, interrupt_out_next;
 
+assign interrupt = interrupt_out;
+assign irq = irq_out;
+
 // Sequential logic
 
 always @(posedge CLK)

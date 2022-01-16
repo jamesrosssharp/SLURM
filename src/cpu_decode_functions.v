@@ -145,4 +145,7 @@ input [15:0] ins;
 		reg_branch_ind_from_ins = {ins[7:4]};
 endfunction
 
-
+function is_interrupt_enable_disable;
+input [15:0] ins;
+		is_interrupt_enable_disable = ins[0];	// 1 = enabled, 0 = disabled
+endfunction

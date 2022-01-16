@@ -44,7 +44,11 @@ module slurm16_cpu_execute #(parameter REGISTER_BITS = 4, BITS = 16, ADDRESS_BIT
 
 	/* load PC for branch / (i)ret, etc */
 	output load_pc,
-	output [ADDRESS_BITS - 1:0] new_pc
+	output [ADDRESS_BITS - 1:0] new_pc,
+
+	output interrupt_flag_set,
+	output interrupt_flag_clear
+
 
 );
 
@@ -59,6 +63,12 @@ reg [BITS - 1:0] aluB_r, aluB_r_next;
 
 assign aluA = aluA_r;
 assign aluB = aluB_r;
+
+reg interrupt_flag_set_r;
+assign interrupt_flag_set = interrupt_flag_set_r;
+
+reg interrupt_flag_clear_r;
+assign interrupt_flag_clear = interrupt_flag_clear_r;
 
 /* sequential logic */
 
@@ -202,6 +212,21 @@ begin
 	end
 end
 
+/* determine interrupt flag set / clear */
 
+always @(*)
+begin
+	interrupt_flag_set_r = 1'b0;
+	interrupt_flag_clear_r = 1'b0;
+
+	casex (instruction) 
+		INSTRUCTION_CASEX_INTERRUPT_EN: begin
+			if (is_interrupt_enable_disable(instruction) == 1'b0)
+				interrupt_flag_clear_r = 1'b1;
+			else 
+				interrupt_flag_set_r = 1'b1;
+		end
+	endcase
+end
 
 endmodule

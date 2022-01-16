@@ -22,7 +22,8 @@ module slurm16_cpu_top
 	output						port_rd,
 	output						port_wr,
 
-	input  [3:0]				irq,			/* interrupt lines */
+	input  						interrupt,		/* interrupt line from interrupt controller */	
+	input  [3:0]				irq,			/* irq from interrupt controller */
 	output						cpu_debug_pin
 );
 
@@ -47,6 +48,10 @@ wire is_executing;
 wire is_fetching;
 wire memory_is_instruction;
 wire [ADDRESS_BITS - 1:0] memory_address_prev_plus_one;
+
+wire interrupt_flag_set;
+wire interrupt_flag_clear;
+
 
 slurm16_cpu_memory_interface #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_mem0  (
 	CLK,
@@ -138,7 +143,13 @@ slurm16_cpu_pipeline #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_pip0
 
 	hazard1,
 
-	memory_is_instruction
+	memory_is_instruction,
+
+	interrupt_flag_set,
+	interrupt_flag_clear,
+
+	interrupt,
+	irq
 
 );
 
@@ -247,7 +258,9 @@ slurm16_cpu_execute #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_exec0
 	aluA,
 	aluB,
 	load_pc,
-	pc_in
+	pc_in,
+	interrupt_flag_set,
+	interrupt_flag_clear
 );
 
 wire [BITS - 1:0] aluOut;

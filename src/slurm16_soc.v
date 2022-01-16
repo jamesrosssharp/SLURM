@@ -51,6 +51,7 @@ wire cpuPort_rd;
 wire cpuPort_wr;
 
 wire [3:0] cpuIRQ;
+wire cpuInterrupt;
 
 wire [15:0] spcon_memory_address;
 wire [15:0] spcon_memory_data;
@@ -99,6 +100,7 @@ slurm16_cpu_top cpu0
 	cpuPort_rd,
 	cpuPort_wr,
 
+	cpuInterrupt,
 	cpuIRQ,
 
 	cpu_debug_pin	
@@ -163,6 +165,7 @@ pc0
 	.au_memory_data(au_memory_data),
 	.au_rvalid(au_rvalid),
 	.au_rready(au_rready),
+	.interrupt(cpuInterrupt),
 	.irq(cpuIRQ)
 );
 
