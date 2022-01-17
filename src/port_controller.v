@@ -191,7 +191,6 @@ begin
 			WR_SPI = memWR;
 		end
 		16'h5xxx: begin
-			dout_next = DATA_OUT_GFX;
 			WR_GFX = memWR;	
 		end
 		16'h6xxx: begin
@@ -211,7 +210,7 @@ begin
 	DATA_OUT_REG = {BITS{1'b0}};
 
 	casex (addr_reg)
-		16'h0xxx, 16'h1xxx, 16'h2xxx, 16'h3xxx, 16'h4xxx, 16'h6xxx: begin
+		16'h0xxx, 16'h1xxx, 16'h2xxx, 16'h3xxx, 16'h4xxx, 16'h6xxx, 16'h7xxx: begin
 			DATA_OUT_REG = dout;
 		end
 		16'h5xxx: begin /* gfx reads are already delayed by one cycle */ 
@@ -352,7 +351,7 @@ interrupt_controller #(.BITS(BITS)) irq0
 	RSTb,
 	ADDRESS[3:0],
 	DATA_IN,
-	DATA_OUT,
+	DATA_OUT_INTERRUPT,
 	WR_INTERRUPT,
 	irq_hsync,
 	irq_vsync,

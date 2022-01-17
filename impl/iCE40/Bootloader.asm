@@ -13,6 +13,7 @@ GFX_CPR_Y_FLIP  	 equ GFX_BASE + 0x0d21
 GFX_CPR_BGCOL 		 equ GFX_BASE + 0x0d22
 GFX_CPR_ALPHA  		 equ GFX_BASE + 0x0d24
 
+INTERRUPT_ENABLE_PORT equ 0x7000
 
 GFX_COLLISION_LIST equ GFX_BASE + 0x0700
 
@@ -20,9 +21,20 @@ PWM_RED   equ 0x2000
 PWM_GREEN equ 0x2001
 PWM_BLUE  equ 0x2002
 
+RESET_VEC:
+	ba start
+HSYNC_VEC:
+	ba dummy_handler
+VSYNC_VEC:
+	ba dummy_handler
+AUDIO_VEC:
+	ba dummy_handler
+SPI_FLASH:
+	ba dummy_handler
+VECTORS:
+	.times 22 dw 0x0000
 
-
-		nop
+start:
 		mov r1, cpr_list_1
 		mov r2, cpr_list_1_end - cpr_list_1
 		mov r6, r0
@@ -46,7 +58,6 @@ cpr_loop:
 
 //		mov r4, 0x00f
 //		out [r0, GFX_CPR_BGCOL], r4
-
 
 		ba cpr_list_1_end
 
@@ -75,15 +86,48 @@ test_loop:
 
 		ba loop
 
-		// Write copper list
-
-
-
 die:
+	// Write copper list
+
+	/* enable hblank interrupt in interrupt controller */
+	mov r1, 1
+	out [r0, INTERRUPT_ENABLE_PORT], r1
+
+	/* enable interrupts */
+	dw 0x0601
+
+	/* sleep forever */
+
+sleep_loop:
+	//dw 0x0700	// sleep
+	mov r3, 0xffff
+inner_loop:
+	mov r4, 0x20
+inner_inner_loop:
+	sub r4, 1
+	bnz inner_inner_loop
+	sub r3, 1
+	bnz inner_loop
+	mov r1, '.'	
+	out [r0, UART_TX_REG], r1
+	
+	ba sleep_loop
+
+
+
 		ba die
 
 banner:
 		dw "Hello world!\r\n"
 		dw 0
+
+dummy_handler:
+//		mov r1, '!'	
+//		out [r0, UART_TX_REG], r1
+		add r7, 0x1
+		out [r0, GFX_CPR_ENABLE], r7
+		mov r1, 0x0f
+		out [r0, 0x7001], r1
+		dw 0x0101
 
 		.end

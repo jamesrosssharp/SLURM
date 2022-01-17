@@ -76,6 +76,8 @@ begin
 			if (WR == 1'b1) begin
 				irq_clear_pending_next = DATA_IN[3:0];
 			end
+		end
+		4'h2: begin /* read out pending - separate reg to prevent logic loop */
 			dout_r[3:0] = irq_pending;
 		end
 		default:;
@@ -97,7 +99,6 @@ always @(*)
 begin
 	irq_out_next 		= 4'd0;
 	interrupt_out_next  = 1'b0;
-
 
 	casex (irq_pending & irq_enabled)
 		4'bxxx1:

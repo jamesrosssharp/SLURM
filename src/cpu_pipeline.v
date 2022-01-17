@@ -291,7 +291,7 @@ begin
 				pipeline_stage0_r_next = {16'h050, irq}; // Inject INT Instruction
 				pipeline_clear_interrupt = 1'b1;
 		
-				if (pipeline_stage2_r[15:12] == 4'h1) begin
+				if (pipeline_stage1_r[15:12] == 4'h1) begin
 					pc_stage0_r_next = pc_stage2_r;
 				end
 				else begin

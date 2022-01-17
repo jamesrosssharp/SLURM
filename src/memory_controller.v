@@ -115,7 +115,7 @@ memory #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 2), .MEM_INIT_FILE("mem_init4
 wire [15:0] cpu_memory_data_w;
 wire [15:0] rom_data;
 
-reg [16:0] cpu_memory_address_r;
+reg [15:0] cpu_memory_address_r;
 
 always @(posedge CLK)
 begin
