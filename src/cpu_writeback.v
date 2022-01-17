@@ -67,6 +67,10 @@ begin
 				reg_out_r = port_in;
 			end
 		end
+		INSTRUCTION_CASEX_INTERRUPT: begin /* interrupt? */
+			reg_wr_addr_r   = INTERRUPT_LINK_REGISTER; 
+			reg_out_r		= pc_stage4;
+		end
 		default: ;
 	endcase
 end

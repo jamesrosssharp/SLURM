@@ -32,7 +32,10 @@ begin
 	casex (instruction)
 		INSTRUCTION_CASEX_NOP:	;	/* nop */
 		INSTRUCTION_CASEX_RET_IRET:	begin	/* ret / iret */
-			regARdAddr_r = LINK_REGISTER; // add iret later when needed
+			if (is_ret_or_iret(instruction) == 1'b0)
+				regARdAddr_r = LINK_REGISTER;
+			else 
+				regARdAddr_r = INTERRUPT_LINK_REGISTER;
 		end
 		INSTRUCTION_CASEX_ALUOP_SINGLE_REG: begin /* alu op reg */
 			regBRdAddr_r	= reg_src_from_ins(instruction);

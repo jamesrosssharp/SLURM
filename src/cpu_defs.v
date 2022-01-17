@@ -5,7 +5,8 @@
  */
 
 localparam NOP_INSTRUCTION = {BITS{1'b0}};
-localparam LINK_REGISTER   = 5'd15;
+localparam LINK_REGISTER   			 = 5'd15;
+localparam INTERRUPT_LINK_REGISTER   = 5'd14;
 localparam R0 = {REGISTER_BITS{1'b0}};
 
 // To do: put instruction casex masks in this file

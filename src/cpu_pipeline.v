@@ -290,6 +290,14 @@ begin
 			if (interrupt_flag_r && interrupt) begin	// Interrupt?
 				pipeline_stage0_r_next = {16'h050, irq}; // Inject INT Instruction
 				pipeline_clear_interrupt = 1'b1;
+		
+				if (pipeline_stage2_r[15:12] == 4'h1) begin
+					pc_stage0_r_next = pc_stage2_r;
+				end
+				else begin
+					pc_stage0_r_next = pc_stage1_r;
+				end
+
 			end
 
 		end else if (stall_mask_count_r > 2'd0) begin	// Else stall mask, take alt pipeline

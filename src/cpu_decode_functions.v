@@ -149,3 +149,9 @@ function is_interrupt_enable_disable;
 input [15:0] ins;
 		is_interrupt_enable_disable = ins[0];	// 1 = enabled, 0 = disabled
 endfunction
+
+function is_ret_or_iret;
+input [15:0] ins;
+		is_ret_or_iret = ins[0];	// 1 = iret, 0 = ret
+endfunction
+

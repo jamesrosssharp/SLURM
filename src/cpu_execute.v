@@ -142,6 +142,10 @@ begin
 				new_pc_r = regA;
 				load_pc_r = 1'b1;
 			end
+			INSTRUCTION_CASEX_INTERRUPT: begin
+				new_pc_r = {11'b0, instruction[3:0], 1'b0};
+				load_pc_r = 1'b1;
+			end
 		endcase
 	end
 end
@@ -225,6 +229,10 @@ begin
 				interrupt_flag_clear_r = 1'b1;
 			else 
 				interrupt_flag_set_r = 1'b1;
+		end
+		INSTRUCTION_CASEX_RET_IRET:	begin	/* iret? */
+			if (is_ret_or_iret(instruction) == 1'b1)
+				interrupt_flag_set_r = 1'b1; // set on iret
 		end
 	endcase
 end
