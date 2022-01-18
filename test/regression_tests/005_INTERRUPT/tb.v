@@ -98,7 +98,7 @@ end
 
 initial begin
     $dumpvars(0, tb);
-	# 2000000 $finish;
+	# 4000000 $finish;
 end
 
 genvar j;

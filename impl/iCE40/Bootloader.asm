@@ -112,20 +112,19 @@ inner_inner_loop:
 	out [r0, UART_TX_REG], r1
 	
 	ba sleep_loop
-
-
-
-		ba die
+	ba sleep_loop
 
 banner:
 		dw "Hello world!\r\n"
 		dw 0
 
 dummy_handler:
-//		mov r1, '!'	
-//		out [r0, UART_TX_REG], r1
-		add r7, 0x1
-		out [r0, GFX_CPR_ENABLE], r7
+		mov r7, '!'	
+		out [r0, UART_TX_REG], r7
+		//add r7, 0x1
+		//mov r8, r7
+		//and r8, 1
+		//out [r0, GFX_CPR_ENABLE], r8
 		mov r1, 0x0f
 		out [r0, 0x7001], r1
 		dw 0x0101

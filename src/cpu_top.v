@@ -149,7 +149,9 @@ slurm16_cpu_pipeline #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_pip0
 	interrupt_flag_clear,
 
 	interrupt,
-	irq
+	irq,
+
+	pc_in
 
 );
 

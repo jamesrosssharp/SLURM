@@ -23,6 +23,7 @@ entry:
 	/* sleep forever */
 
 sleep_loop:
+	nop
 	dw 0x0700	// sleep
 	ba sleep_loop
 

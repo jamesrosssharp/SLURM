@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Mon Jan 17 07:03:40 2022
+[*] Tue Jan 18 08:49:08 2022
 [*]
 [dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/005_INTERRUPT/dump.vcd"
-[dumpfile_mtime] "Mon Jan 17 07:02:55 2022"
-[dumpfile_size] 25450580
+[dumpfile_mtime] "Tue Jan 18 08:48:14 2022"
+[dumpfile_size] 39872571
 [savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/005_INTERRUPT/config.gtkw"
-[timestart] 699948000
+[timestart] 1462103000
 [size] 1920 996
 [pos] -1 -1
-*-19.194408 147000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-20.194408 1465700000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tb.
 [treeopen] tb.cpu0.
 [treeopen] tb.cpu0.cpu0.
@@ -65,6 +65,9 @@ tb.cpu0.cpu0.cpu_pip0.alt_pip_ld_count_r[1:0]
 tb.cpu0.cpu0.cpu_pip0.reading_alt_pipeline
 tb.cpu0.cpu0.cpu_pip0.stall_count_r[2:0]
 tb.cpu0.cpu0.cpu_pip0.stall_read_count_r[2:0]
+tb.cpu0.cpu0.cpu_pip0.mask_count_r[2:0]
+@29
+tb.cpu0.cpu0.cpu_pip0.pipeline_clear_interrupt
 @200
 -
 -
@@ -138,7 +141,6 @@ tb.cpu0.pc0.irq0.irq_vsync
 -
 @28
 tb.cpu0.cpu0.interrupt
-@29
 tb.cpu0.cpu0.cpu_pip0.interrupt_flag_r
 @200
 -

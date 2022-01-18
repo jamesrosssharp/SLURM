@@ -51,7 +51,9 @@ module slurm16_cpu_pipeline #(parameter REGISTER_BITS = 4, BITS = 16, ADDRESS_BI
 	input			interrupt_flag_clear,	/* cpu interrupt flag clear */
 	
 	input  			interrupt,		/* interrupt line from interrupt controller */	
-	input  [3:0]	irq				/* irq from interrupt controller */
+	input  [3:0]	irq,				/* irq from interrupt controller */
+
+	input [ADDRESS_BITS - 1:0] pc_in
 );
 
 `include "cpu_decode_functions.v"
@@ -112,6 +114,16 @@ reg [2:0] stall_count_r, stall_count_r_next; // pipeline fifo wr ptr
 reg [2:0] stall_read_count_r, stall_read_count_r_next; // pipeline fifo rd ptr
 
 reg interrupt_flag_r, interrupt_flag_r_next;
+
+reg [ADDRESS_BITS - 1:0] branch_target;
+
+always @(posedge CLK)
+begin
+	if (RSTb == 1'b0)
+		branch_target <= {ADDRESS_BITS{1'b0}};
+	else
+		branch_target <= pc_in;
+end
 
 // Sequential logic
 always @(posedge CLK)
@@ -287,7 +299,9 @@ begin
 			pipeline_stage0_r_next = memory_in; // TODO: load nop if memory operation
 			pc_stage0_r_next = memory_address;
 
-			if (interrupt_flag_r && interrupt) begin	// Interrupt?
+			if (interrupt_flag_r && interrupt && 
+				(pipeline_stage1_r[15:12] != 4'd4 && pipeline_stage2_r[15:12] != 4'd4 &&
+				 pipeline_stage0_r[15:12] != 4'd4) /* not branch */) begin	// Interrupt?
 				pipeline_stage0_r_next = {16'h050, irq}; // Inject INT Instruction
 				pipeline_clear_interrupt = 1'b1;
 		
@@ -306,6 +320,7 @@ begin
 			pc_stage0_r_next = pc_fifo[stall_read_count_r];
 		end else begin
 			pipeline_stage0_r_next = NOP_INSTRUCTION;
+			pc_stage0_r_next = branch_target; // We set this to branch target because if we are interrupted we need to come back to fetch this address
 		end
 
 		pipeline_stage1_r_next = pipeline_stage0_r;
