@@ -31,6 +31,8 @@ AUDIO_VEC:
 	ba dummy_handler
 SPI_FLASH:
 	ba dummy_handler
+GPIO_VEC:
+	ba dummy_handler
 VECTORS:
 	.times 22 dw 0x0000
 
@@ -46,8 +48,8 @@ cpr_loop:
 		sub r2, 1
 		bnz cpr_loop
 
-		mov r4, 0x1
-		out [r0, GFX_CPR_ENABLE], r4
+		//mov r4, 0x1
+		//out [r0, GFX_CPR_ENABLE], r4
 
 		mov r4, 1
 		out [r0, PWM_RED], r4
@@ -90,7 +92,7 @@ die:
 	// Write copper list
 
 	/* enable hblank interrupt in interrupt controller */
-	mov r1, 1
+	mov r1, 1<<4
 	out [r0, INTERRUPT_ENABLE_PORT], r1
 
 	/* enable interrupts */
@@ -112,21 +114,30 @@ inner_inner_loop:
 	out [r0, UART_TX_REG], r1
 	
 	ba sleep_loop
-	ba sleep_loop
 
 banner:
 		dw "Hello world!\r\n"
 		dw 0
 
 dummy_handler:
-		mov r7, '!'	
-		out [r0, UART_TX_REG], r7
-		//add r7, 0x1
+		mov r8, '!'	
+		out [r0, UART_TX_REG], r8
+		add r7, 0x1
+		mov r8, r7
+		lsr r8
+		lsr r8
+		lsr r8
+		lsr r8
+
+
+		out [r0, GFX_CPR_BGCOL], r8
+
+
 		//mov r8, r7
 		//and r8, 1
 		//out [r0, GFX_CPR_ENABLE], r8
-		mov r1, 0x0f
-		out [r0, 0x7001], r1
+		mov r9, 0xffff
+		out [r0, 0x7001], r9
 		dw 0x0101
 
 		.end

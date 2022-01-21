@@ -296,7 +296,7 @@ begin
 
 	if (is_executing) begin
 		if (mask_count_r == 3'd0 && stall_mask_count_r == 2'd0 && memory_is_instruction) begin	// If we are not masking, take next instruction
-			pipeline_stage0_r_next = memory_in; // TODO: load nop if memory operation
+			pipeline_stage0_r_next = memory_in; 
 			pc_stage0_r_next = memory_address;
 
 			if (interrupt_flag_r && interrupt && 
@@ -306,10 +306,10 @@ begin
 				pipeline_clear_interrupt = 1'b1;
 		
 				if (pipeline_stage1_r[15:12] == 4'h1) begin
-					pc_stage0_r_next = pc_stage2_r;
+					pc_stage0_r_next = memory_address - 2;
 				end
 				else begin
-					pc_stage0_r_next = pc_stage1_r;
+					pc_stage0_r_next = memory_address - 1;
 				end
 
 			end
@@ -333,13 +333,13 @@ begin
 		pc_stage3_r_next = pc_stage2_r;
 		pc_stage4_r_next = pc_stage3_r;
 
-		hazard_reg1_r_next	<= hazard_reg0;
-		hazard_reg2_r_next	<= hazard_reg1_r;
-		hazard_reg3_r_next	<= hazard_reg2_r;
+		hazard_reg1_r_next	= hazard_reg0;
+		hazard_reg2_r_next	= hazard_reg1_r;
+		hazard_reg3_r_next	= hazard_reg2_r;
 
-		modifies_flags1_r_next <= modifies_flags0;
-		modifies_flags2_r_next <= modifies_flags1_r;
-		modifies_flags3_r_next <= modifies_flags2_r;
+		modifies_flags1_r_next = modifies_flags0;
+		modifies_flags2_r_next = modifies_flags1_r;
+		modifies_flags3_r_next = modifies_flags2_r;
 
 	end
  
@@ -359,15 +359,15 @@ begin
 		pc_stage3_r_next = pc_stage2_r;
 		pc_stage4_r_next = pc_stage3_r;
 
-		hazard_reg2_r_next	<= R0; // Insert bubble
-		hazard_reg3_r_next	<= hazard_reg2_r;
+		hazard_reg2_r_next	= R0; // Insert bubble
+		hazard_reg3_r_next	= hazard_reg2_r;
 
-		modifies_flags2_r_next <= 1'b0; // Insert bubble
-		modifies_flags3_r_next <= modifies_flags2_r;
+		modifies_flags2_r_next = 1'b0; // Insert bubble
+		modifies_flags3_r_next = modifies_flags2_r;
 
 		// Preserve slot 1
-		hazard_reg1_r_next  <= hazard_reg1_r;
-		modifies_flags1_r_next <= modifies_flags1_r;
+		hazard_reg1_r_next  = hazard_reg1_r;
+		modifies_flags1_r_next = modifies_flags1_r;
 			
 		/* if there is a hazard between p0 and p1, but not between p2/p3 and p0, release p1 to clear hazard */
 		if (hazard1) begin
@@ -376,26 +376,28 @@ begin
 
 			pc_stage2_r_next = pc_stage1_r;
 
-			hazard_reg2_r_next	<= hazard_reg1_r; // Insert bubble
-			hazard_reg1_r_next  <= R0;
+			hazard_reg2_r_next	= hazard_reg1_r; // Insert bubble
+			hazard_reg1_r_next  = R0;
 
-			modifies_flags2_r_next <= modifies_flags1_r; // Insert bubble
-			modifies_flags1_r_next <= 1'b0;
+			modifies_flags2_r_next = modifies_flags1_r; // Insert bubble
+			modifies_flags1_r_next = 1'b0;
 		end
 	end
 
-	// If pc is being loaded due to branch or return, flush pipeline up to execute stage, since these instructions won't execute.
+	// If pc is being loaded due to branch or return, flush pipeline up to execute stage, 
+	// since these instructions won't execute.
+
 	if (load_pc == 1'b1) begin
 		pipeline_stage0_r_next = NOP_INSTRUCTION;
 		pipeline_stage1_r_next = NOP_INSTRUCTION;
 		pipeline_stage2_r_next = NOP_INSTRUCTION;
 
 		// NOTE: This probably isn't necessary due to masking. Consider removing
-		hazard_reg1_r_next	<= R0;
-		hazard_reg2_r_next	<= R0;
-		hazard_reg3_r_next	<= R0;
-		modifies_flags1_r_next <= 1'b0;
-		modifies_flags2_r_next <= 1'b0;	
+		hazard_reg1_r_next	= R0;
+		hazard_reg2_r_next	= R0;
+		hazard_reg3_r_next	= R0;
+		modifies_flags1_r_next = 1'b0;
+		modifies_flags2_r_next = 1'b0;	
 	end
 
 end

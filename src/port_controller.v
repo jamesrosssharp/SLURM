@@ -141,6 +141,8 @@ wire spi_flash_wready;
 wire [15:0] spi_flash_memory_address;
 wire [15:0] spi_flash_memory_data;
 
+wire gpio_int;
+
 always @(posedge CLK)
 begin
 	if (RSTb == 1'b0) begin
@@ -256,7 +258,8 @@ gpio
 	DATA_OUT_GPIO,
 	WR_GPIO,  // write memory 
 	gpio_out, // output pins  
-	gpio_in // input pins
+	gpio_in, // input pins
+	gpio_int
 );
 
 
@@ -357,6 +360,7 @@ interrupt_controller #(.BITS(BITS)) irq0
 	irq_vsync,
 	irq_audio,
 	irq_spi_flash,
+	gpio_int,
 	interrupt,	
 	irq
 );

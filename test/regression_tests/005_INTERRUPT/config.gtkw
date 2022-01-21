@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Tue Jan 18 08:49:08 2022
+[*] Wed Jan 19 08:39:25 2022
 [*]
 [dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/005_INTERRUPT/dump.vcd"
-[dumpfile_mtime] "Tue Jan 18 08:48:14 2022"
-[dumpfile_size] 39872571
+[dumpfile_mtime] "Wed Jan 19 08:37:41 2022"
+[dumpfile_size] 27310598
 [savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/005_INTERRUPT/config.gtkw"
-[timestart] 1462103000
+[timestart] 49570000
 [size] 1920 996
 [pos] -1 -1
-*-20.194408 1465700000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-24.194408 88440000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tb.
 [treeopen] tb.cpu0.
 [treeopen] tb.cpu0.cpu0.
@@ -66,7 +66,6 @@ tb.cpu0.cpu0.cpu_pip0.reading_alt_pipeline
 tb.cpu0.cpu0.cpu_pip0.stall_count_r[2:0]
 tb.cpu0.cpu0.cpu_pip0.stall_read_count_r[2:0]
 tb.cpu0.cpu0.cpu_pip0.mask_count_r[2:0]
-@29
 tb.cpu0.cpu0.cpu_pip0.pipeline_clear_interrupt
 @200
 -
@@ -103,6 +102,8 @@ tb.cpu0.pc0.DATA_OUT[15:0]
 @28
 tb.cpu0.pc0.memRD
 tb.cpu0.pc0.memWR
+@821
+tb.UART_BYTE[7:0]
 @200
 -
 @22
