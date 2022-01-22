@@ -53,7 +53,9 @@ module slurm16_cpu_pipeline #(parameter REGISTER_BITS = 4, BITS = 16, ADDRESS_BI
 	input  			interrupt,		/* interrupt line from interrupt controller */	
 	input  [3:0]	irq,				/* irq from interrupt controller */
 
-	input [ADDRESS_BITS - 1:0] pc_in
+	input [ADDRESS_BITS - 1:0] pc_in,
+
+	input int_flag_set2
 );
 
 `include "cpu_decode_functions.v"
@@ -244,15 +246,18 @@ end
 
 reg pipeline_clear_interrupt;
 
+
 always @(*)
 begin
 	interrupt_flag_r_next = interrupt_flag_r; 
 
-	if (interrupt_flag_set)
+	if (interrupt_flag_set || int_flag_set2) begin
 		interrupt_flag_r_next = 1'b1;
+	end
 
-	if (interrupt_flag_clear || pipeline_clear_interrupt)
+	if (interrupt_flag_clear || pipeline_clear_interrupt) begin
 		interrupt_flag_r_next = 1'b0;
+	end
 
 end
 
@@ -299,9 +304,11 @@ begin
 			pipeline_stage0_r_next = memory_in; 
 			pc_stage0_r_next = memory_address;
 
-			if (interrupt_flag_r && interrupt && 
-				(pipeline_stage1_r[15:12] != 4'd4 && pipeline_stage2_r[15:12] != 4'd4 &&
-				 pipeline_stage0_r[15:12] != 4'd4) /* not branch */) begin	// Interrupt?
+			if ((interrupt_flag_r == 1'b1) && (interrupt == 1'b1) && 
+				((pipeline_stage1_r[15:12] != 4'd4) && (pipeline_stage2_r[15:12] != 4'd4) &&
+				 (pipeline_stage0_r[15:12] != 4'd4) && (pipeline_stage3_r[15:12] != 4'd4) &&
+				 (pipeline_stage4_r[15:12] != 4'd4)) /* not branch */
+				) begin	// Interrupt?
 				pipeline_stage0_r_next = {16'h050, irq}; // Inject INT Instruction
 				pipeline_clear_interrupt = 1'b1;
 		

@@ -107,6 +107,8 @@ wire modifies_flags3;
 
 wire hazard1;
 
+wire int_flag_set2;
+
 slurm16_cpu_pipeline #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_pip0
 (
 	CLK,
@@ -151,7 +153,9 @@ slurm16_cpu_pipeline #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_pip0
 	interrupt,
 	irq,
 
-	pc_in
+	pc_in,
+
+	int_flag_set2
 
 );
 
@@ -299,7 +303,8 @@ slurm16_cpu_writeback #(.REGISTER_BITS(REGISTER_BITS), .BITS(BITS), .ADDRESS_BIT
 	regIn_sel,
 	regIn_data,
 
-	pc_stage4 
+	pc_stage4,
+	int_flag_set2 
 
 );
 

@@ -64,11 +64,12 @@ reg [BITS - 1:0] aluB_r, aluB_r_next;
 assign aluA = aluA_r;
 assign aluB = aluB_r;
 
-reg interrupt_flag_set_r;
+reg interrupt_flag_set_r, interrupt_flag_set_r_a, interrupt_flag_set_r_b;
 assign interrupt_flag_set = interrupt_flag_set_r;
 
-reg interrupt_flag_clear_r;
+reg interrupt_flag_clear_r, interrupt_flag_clear_r_a, interrupt_flag_clear_r_b;
 assign interrupt_flag_clear = interrupt_flag_clear_r;
+
 
 /* sequential logic */
 
@@ -231,9 +232,10 @@ begin
 				interrupt_flag_set_r = 1'b1;
 		end
 		INSTRUCTION_CASEX_RET_IRET:	begin	/* iret? */
-			if (is_ret_or_iret(instruction) == 1'b1)
-				interrupt_flag_set_r = 1'b1; // set on iret
+		//	if (is_ret_or_iret(instruction) == 1'b1)
+		//		interrupt_flag_set_r = 1'b1; // set on iret
 		end
+		default: ;
 	endcase
 end
 

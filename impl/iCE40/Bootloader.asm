@@ -34,7 +34,7 @@ SPI_FLASH:
 GPIO_VEC:
 	ba dummy_handler
 VECTORS:
-	.times 22 dw 0x0000
+	.times 20 dw 0x0000
 
 start:
 		mov r1, cpr_list_1
@@ -98,21 +98,35 @@ die:
 	/* enable interrupts */
 	dw 0x0601
 
+//	ld r1, [r0, done]
+//	st [r0, 0x100], r1
+//	ld r1, [r0, done + 1]
+//	st [r0, 0x101], r1
+
 	/* sleep forever */
 
 sleep_loop:
+	dw 0x0601
 	//dw 0x0700	// sleep
 	mov r3, 0xffff
 inner_loop:
 	mov r4, 0x20
 inner_inner_loop:
 	sub r4, 1
+	nop
+	nop
+	nop
 	bnz inner_inner_loop
 	sub r3, 1
+	nop
+	nop
+	nop
 	bnz inner_loop
 	mov r1, '.'	
 	out [r0, UART_TX_REG], r1
-	
+
+done:	
+	ba sleep_loop
 	ba sleep_loop
 
 banner:
@@ -122,22 +136,14 @@ banner:
 dummy_handler:
 		mov r8, '!'	
 		out [r0, UART_TX_REG], r8
-		add r7, 0x1
-		mov r8, r7
-		lsr r8
-		lsr r8
-		lsr r8
-		lsr r8
-
-
-		out [r0, GFX_CPR_BGCOL], r8
-
-
+		//add r7, 0x1
+		//mov r8, r7
+		//out [r0, GFX_CPR_BGCOL], r8
 		//mov r8, r7
 		//and r8, 1
 		//out [r0, GFX_CPR_ENABLE], r8
 		mov r9, 0xffff
 		out [r0, 0x7001], r9
-		dw 0x0101
+		dw 	0x0101
 
 		.end

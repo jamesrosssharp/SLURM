@@ -8,7 +8,67 @@ always #50 CLK <= !CLK; // ~ 10MHz
 reg RSTb = 1'b0;
 
 wire [3:0] gpio_out;
-wire [5:0] gpio_in;
+reg [5:0] gpio_in = 6'd0;
+
+initial begin
+	#20000 gpio_in[0] = 1'b0;
+	#100 gpio_in[0] = 1'b1;
+	#300 gpio_in[0] = 1'b0;
+	#500 gpio_in[0] = 1'b1;
+	#1300 gpio_in[0] = 1'b0;
+	#5000 gpio_in[0] = 1'b1;
+	#3000 gpio_in[0] = 1'b0;
+	#5000 gpio_in[0] = 1'b1;
+	#200 gpio_in[0] = 1'b1;
+	#700 gpio_in[0] = 1'b0;
+	#200 gpio_in[0] = 1'b1;
+	#600 gpio_in[0] = 1'b0;
+	#5500 gpio_in[0] = 1'b1;
+	#500 gpio_in[0] = 1'b0;
+	#200 gpio_in[0] = 1'b1;
+	#100 gpio_in[0] = 1'b1;
+	#300 gpio_in[0] = 1'b0;
+	#500 gpio_in[0] = 1'b1;
+	#1300 gpio_in[0] = 1'b0;
+	#5000 gpio_in[0] = 1'b1;
+	#3000 gpio_in[0] = 1'b0;
+	#100 gpio_in[0] = 1'b1;
+	#300 gpio_in[0] = 1'b0;
+	#500 gpio_in[0] = 1'b1;
+	#1300 gpio_in[0] = 1'b0;
+	#5000 gpio_in[0] = 1'b1;
+	#3000 gpio_in[0] = 1'b0;
+	#5000 gpio_in[0] = 1'b1;
+	#100 gpio_in[0] = 1'b1;
+	#300 gpio_in[0] = 1'b0;
+	#500 gpio_in[0] = 1'b1;
+	#1300 gpio_in[0] = 1'b0;
+	#5000 gpio_in[0] = 1'b1;
+	#3000 gpio_in[0] = 1'b0;
+	#5000 gpio_in[0] = 1'b1;
+	#200 gpio_in[0] = 1'b1;
+	#700 gpio_in[0] = 1'b0;
+	#200 gpio_in[0] = 1'b1;
+	#600 gpio_in[0] = 1'b0;
+	#5500 gpio_in[0] = 1'b1;
+	#500 gpio_in[0] = 1'b0;
+	#200 gpio_in[0] = 1'b1;
+	#100 gpio_in[0] = 1'b1;
+	#300 gpio_in[0] = 1'b0;
+	#500 gpio_in[0] = 1'b1;
+	#1300 gpio_in[0] = 1'b0;
+	#5000 gpio_in[0] = 1'b1;
+	#3000 gpio_in[0] = 1'b0;
+	#100 gpio_in[0] = 1'b1;
+	#300 gpio_in[0] = 1'b0;
+	#500 gpio_in[0] = 1'b1;
+	#1300 gpio_in[0] = 1'b0;
+	#5000 gpio_in[0] = 1'b1;
+	#3000 gpio_in[0] = 1'b0;
+	#5000 gpio_in[0] = 1'b1;
+#5000 gpio_in[0] = 1'b1;
+
+end
 
 wire [3:0] vid_r;
 wire [3:0] vid_g;
@@ -63,10 +123,6 @@ slurm16 #(
     flash_csb
 );
 
-
-
-
-
 initial begin 
 	#150 RSTb = 1'b1;
 end
@@ -98,7 +154,7 @@ end
 
 initial begin
     $dumpvars(0, tb);
-	# 10000000 $finish;
+	# 200000 $finish;
 end
 
 genvar j;

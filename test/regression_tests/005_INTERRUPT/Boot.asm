@@ -31,8 +31,10 @@ AUDIO_VEC:
 	ba dummy_handler
 SPI_FLASH:
 	ba dummy_handler
+GPIO_VEC:
+	ba dummy_handler
 VECTORS:
-	.times 22 dw 0x0000
+	.times 20 dw 0x0000
 
 start:
 		mov r1, cpr_list_1
@@ -72,7 +74,7 @@ cpr_list_1:
 		dw 0x1001
 cpr_list_1_end:
 
-		mov r2, banner
+		/*mov r2, banner
 loop:
 		ld r1, [r2, 0]
 		add r2, 1
@@ -85,12 +87,12 @@ test_loop:
 		bz test_loop
 
 		ba loop
-
+*/
 die:
 	// Write copper list
 
 	/* enable hblank interrupt in interrupt controller */
-	mov r1, 1
+	mov r1, 1<<4
 	out [r0, INTERRUPT_ENABLE_PORT], r1
 
 	/* enable interrupts */
@@ -124,7 +126,7 @@ dummy_handler:
 		//mov r8, r7
 		//and r8, 1
 		//out [r0, GFX_CPR_ENABLE], r8
-		mov r9, 0x0f
+		mov r9, 0x1f
 		out [r0, 0x7001], r9
 		dw 0x0101
 
