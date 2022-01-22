@@ -101,7 +101,7 @@ module port_controller
 wire irq_hsync;
 wire irq_vsync;
 wire irq_audio = 1'b0;
-wire irq_spi_flash = 1'b0;
+wire irq_spi_flash;
 
 //assign gpio_out[0] = cpu_debug_pin;
 
@@ -345,7 +345,8 @@ spi_flash
 	fl_wvalid,
 	fl_wready,
 	fl_memory_address,
-	fl_memory_data
+	fl_memory_data,
+	irq_spi_flash
 );
 
 interrupt_controller #(.BITS(BITS)) irq0

@@ -22,7 +22,9 @@ module spi_flash
 	output wvalid,
 	input  wready,
 	output [15:0] memory_address,
-	output [15:0] memory_data
+	output [15:0] memory_data,
+
+	output irq
 
 );
 
@@ -66,6 +68,9 @@ reg [15:0] dma_count2_r_next;
 
 assign memory_address = dma_memory_address2_r;
 assign memory_data = {data_out_r[7:0], data_out_r[15:8]};
+
+reg irq_r;
+assign irq = irq_r;
 
 reg wvalid_r;
 assign wvalid = wvalid_r; 
@@ -188,6 +193,7 @@ begin
 	CSb_r_next			= CSb_r;
 	MOSI_r 				= 1'b0;
 	data_out_r_next		= data_out_r;
+	irq_r = 1'b0;
 
 	dma_memory_address2_r_next = dma_memory_address2_r;
 	dma_count2_r_next 		  = dma_count2_r;
@@ -315,6 +321,7 @@ begin
 			done_r_next = 1'b1;
 			state_r_next = idle;
 			SCK_r_next = 1'b1;
+			irq_r = 1'b1;		// Assert interrupt
 		end
 		default:
 			state_r_next = idle;
