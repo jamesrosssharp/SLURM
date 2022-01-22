@@ -24,7 +24,7 @@ PWM_BLUE  equ 0x2002
 RESET_VEC:
 	ba start
 HSYNC_VEC:
-	ba dummy_handler
+	ba hs_handler
 VSYNC_VEC:
 	ba dummy_handler
 AUDIO_VEC:
@@ -92,7 +92,7 @@ die:
 	// Write copper list
 
 	/* enable hblank interrupt in interrupt controller */
-	mov r1, 1<<4
+	mov r1, 1<<4 | 1
 	out [r0, INTERRUPT_ENABLE_PORT], r1
 
 	/* enable interrupts */
@@ -125,6 +125,18 @@ dummy_handler:
 		out [r0, UART_TX_REG], r8
 		mov r9, 0xffff
 		out [r0, 0x7001], r9
+		dw 	0x0101
+
+hs_handler:
+		mov r10, 1
+		bnz done_flags
+		mov r10, 0
+done_flags:
+		add r7, 1	
+		out [r0, GFX_CPR_BGCOL], r7
+		mov r9, 0xffff
+		out [r0, 0x7001], r9
+		or  r10, r10
 		dw 	0x0101
 
 		.end

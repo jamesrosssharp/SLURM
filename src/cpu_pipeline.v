@@ -358,6 +358,9 @@ begin
 		pipeline_stage3_r_next = pipeline_stage2_r;
 		pipeline_stage4_r_next = pipeline_stage3_r;
 
+		pipeline_clear_interrupt = 1'b0; // If we previously set this flag, we need to clear it, otherwise interrupts will be permanently disabled
+										 // without executing the interrupt
+
 		pc_stage0_r_next = pc_stage0_r;
 		pc_stage1_r_next = pc_stage1_r;
 		// PC stage2 is don't care (with NOP)
