@@ -26,7 +26,7 @@ RESET_VEC:
 HSYNC_VEC:
 	ba hs_handler
 VSYNC_VEC:
-	ba dummy_handler
+	ba vs_handler
 AUDIO_VEC:
 	ba dummy_handler
 SPI_FLASH:
@@ -92,7 +92,7 @@ die:
 	// Write copper list
 
 	/* enable hblank interrupt in interrupt controller */
-	mov r1, 1<<4 | 1
+	mov r1, 1<<4 | 1 | 2
 	out [r0, INTERRUPT_ENABLE_PORT], r1
 
 	/* enable interrupts */
@@ -101,8 +101,8 @@ die:
 	/* sleep forever */
 
 sleep_loop:
-	//dw 0x0700	// sleep
-	mov r3, 0xffff
+	dw 0x0700	// sleep
+/*	mov r3, 0xffff
 inner_loop:
 	mov r4, 0x20
 inner_inner_loop:
@@ -112,7 +112,7 @@ inner_inner_loop:
 	bnz inner_loop
 	mov r1, '.'	
 	out [r0, UART_TX_REG], r1
-
+*/
 done:	
 	ba sleep_loop
 
@@ -138,5 +138,10 @@ done_flags:
 		out [r0, 0x7001], r9
 		or  r10, r10
 		dw 	0x0101
-
+vs_handler:
+		mov r7, 0
+		mov r9, 0xffff
+		out [r0, 0x7001], r9
+		dw 	0x0101
+		
 		.end

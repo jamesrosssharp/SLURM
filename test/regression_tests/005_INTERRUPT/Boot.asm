@@ -101,18 +101,7 @@ die:
 	/* sleep forever */
 
 sleep_loop:
-	//dw 0x0700	// sleep
-	mov r3, 0xffff
-inner_loop:
-	mov r4, 0x20
-inner_inner_loop:
-	sub r4, 1
-	bnz inner_inner_loop
-	sub r3, 1
-	bnz inner_loop
-	mov r1, '.'	
-	out [r0, UART_TX_REG], r1
-	
+	dw 0x0700	// sleep
 	ba sleep_loop
 
 banner:

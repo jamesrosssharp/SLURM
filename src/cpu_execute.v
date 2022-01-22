@@ -47,8 +47,9 @@ module slurm16_cpu_execute #(parameter REGISTER_BITS = 4, BITS = 16, ADDRESS_BIT
 	output [ADDRESS_BITS - 1:0] new_pc,
 
 	output interrupt_flag_set,
-	output interrupt_flag_clear
+	output interrupt_flag_clear,
 
+	output halt
 
 );
 
@@ -236,6 +237,22 @@ begin
 				interrupt_flag_set_r = 1'b1; // set on iret
 		end
 		default: ;
+	endcase
+end
+
+/* sleep ? */
+
+reg halt_r;
+assign halt = halt_r;
+
+always @(*)
+begin
+	halt_r = 1'b0;
+
+	casex(instruction)
+		INSTRUCTION_CASEX_SLEEP: begin
+			halt_r = 1'b1;	
+		end
 	endcase
 end
 

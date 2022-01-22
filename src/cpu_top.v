@@ -34,8 +34,8 @@ localparam REGISTER_BITS = 4;
 
 wire load_memory;
 wire store_memory;
-wire halt = 1'b0;
-wire wake = 1'b0;
+wire halt;
+wire wake;
 
 wire [ADDRESS_BITS - 1:0] pc;
 wire [ADDRESS_BITS - 1:0] load_store_address;
@@ -151,7 +151,10 @@ slurm16_cpu_pipeline #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_pip0
 	interrupt,
 	irq,
 
-	pc_in
+	pc_in,
+
+	wake
+
 );
 
 wire [ADDRESS_BITS-1:0] pc_in;
@@ -261,7 +264,8 @@ slurm16_cpu_execute #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_exec0
 	load_pc,
 	pc_in,
 	interrupt_flag_set,
-	interrupt_flag_clear
+	interrupt_flag_clear,
+	halt
 );
 
 wire [BITS - 1:0] aluOut;

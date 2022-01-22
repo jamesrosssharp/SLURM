@@ -53,7 +53,9 @@ module slurm16_cpu_pipeline #(parameter REGISTER_BITS = 4, BITS = 16, ADDRESS_BI
 	input  			interrupt,		/* interrupt line from interrupt controller */	
 	input  [3:0]	irq,				/* irq from interrupt controller */
 
-	input [ADDRESS_BITS - 1:0] pc_in
+	input [ADDRESS_BITS - 1:0] pc_in,
+
+	output wake
 );
 
 `include "cpu_decode_functions.v"
@@ -114,6 +116,9 @@ reg [2:0] stall_count_r, stall_count_r_next; // pipeline fifo wr ptr
 reg [2:0] stall_read_count_r, stall_read_count_r_next; // pipeline fifo rd ptr
 
 reg interrupt_flag_r, interrupt_flag_r_next;
+
+reg wake_r;
+assign wake = wake_r;
 
 reg [ADDRESS_BITS - 1:0] branch_target;
 
@@ -259,6 +264,19 @@ begin
 
 end
 
+// Wake
+
+always @(*)
+begin
+
+	wake_r = 1'b0;		
+
+	if (interrupt)
+		wake_r = 1'b1;
+
+end
+
+
 //
 //	Actual pipeline logic
 //
@@ -309,7 +327,7 @@ begin
 				) begin	// Interrupt?
 				pipeline_stage0_r_next = {16'h050, irq}; // Inject INT Instruction
 				pipeline_clear_interrupt = 1'b1;
-		
+
 				if (pipeline_stage0_r[15:12] == 4'h1) begin
 					pc_stage0_r_next = memory_address - 2;
 				end

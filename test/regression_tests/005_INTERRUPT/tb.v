@@ -112,7 +112,7 @@ end
 
 initial begin
     $dumpvars(0, tb);
-	# 400000 $finish;
+	# 1000000 $finish;
 end
 
 genvar j;
