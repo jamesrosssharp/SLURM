@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Fri Jan 21 07:56:07 2022
+[*] Sat Jan 22 03:15:59 2022
 [*]
 [dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/005_INTERRUPT/dump.vcd"
-[dumpfile_mtime] "Fri Jan 21 07:50:51 2022"
-[dumpfile_size] 1457453
+[dumpfile_mtime] "Sat Jan 22 03:09:25 2022"
+[dumpfile_size] 1136209
 [savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/005_INTERRUPT/config.gtkw"
-[timestart] 40969000
+[timestart] 34823000
 [size] 1920 996
 [pos] -1 -1
-*-19.194408 43100000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-19.194408 36100000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tb.
 [treeopen] tb.cpu0.
 [treeopen] tb.cpu0.cpu0.
@@ -42,7 +42,7 @@ tb.cpu0.cpu0.cpu_mem0.memory_is_instruction
 tb.cpu0.pc0.u0.TX
 @200
 -
-@8023
+@8022
 tb.gpio_in[5:0]
 @200
 -
@@ -79,6 +79,16 @@ tb.cpu0.pc0.tr0.traceChar_r[7:0]
 @22
 tb.cpu0.pc0.tr0.traceHex_r[15:0]
 tb.cpu0.pc0.tr0.traceVal_r[15:0]
+@200
+-
+@23
+tb.cpu0.cpu0.cpu_pip0.memory_address[15:0]
+@22
+tb.cpu0.cpu0.cpu_pip0.pc_stage0_r[15:0]
+tb.cpu0.cpu0.cpu_pip0.pc_stage1_r[15:0]
+tb.cpu0.cpu0.cpu_pip0.pc_stage2_r[15:0]
+tb.cpu0.cpu0.cpu_pip0.pc_stage3_r[15:0]
+tb.cpu0.cpu0.cpu_pip0.pc_stage4_r[15:0]
 @200
 -
 @22

@@ -53,9 +53,7 @@ module slurm16_cpu_pipeline #(parameter REGISTER_BITS = 4, BITS = 16, ADDRESS_BI
 	input  			interrupt,		/* interrupt line from interrupt controller */	
 	input  [3:0]	irq,				/* irq from interrupt controller */
 
-	input [ADDRESS_BITS - 1:0] pc_in,
-
-	input int_flag_set2
+	input [ADDRESS_BITS - 1:0] pc_in
 );
 
 `include "cpu_decode_functions.v"
@@ -251,7 +249,7 @@ always @(*)
 begin
 	interrupt_flag_r_next = interrupt_flag_r; 
 
-	if (interrupt_flag_set || int_flag_set2) begin
+	if (interrupt_flag_set) begin
 		interrupt_flag_r_next = 1'b1;
 	end
 
@@ -312,7 +310,7 @@ begin
 				pipeline_stage0_r_next = {16'h050, irq}; // Inject INT Instruction
 				pipeline_clear_interrupt = 1'b1;
 		
-				if (pipeline_stage1_r[15:12] == 4'h1) begin
+				if (pipeline_stage0_r[15:12] == 4'h1) begin
 					pc_stage0_r_next = memory_address - 2;
 				end
 				else begin

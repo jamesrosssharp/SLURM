@@ -20,10 +20,7 @@ module slurm16_cpu_writeback #(parameter REGISTER_BITS = 4, BITS = 16, ADDRESS_B
 	output [REGISTER_BITS - 1:0] reg_wr_sel,
 	output [BITS - 1:0] reg_out,
 
-	input [ADDRESS_BITS - 1: 0] pc_stage4,
-
-	output interrupt_flag_set 
-
+	input [ADDRESS_BITS - 1: 0] pc_stage4
 );
 
 `include "cpu_decode_functions.v"
@@ -76,26 +73,6 @@ begin
 		default: ;
 	endcase
 end
-
-
-/* determine interrupt flag set / clear */
-
-reg interrupt_flag_set_r;
-assign interrupt_flag_set = 1'b0; // interrupt_flag_set_r;
-
-
-always @(*)
-begin
-	interrupt_flag_set_r = 1'b0;
-
-	casex (instruction) 
-		INSTRUCTION_CASEX_RET_IRET:	begin	/* iret? */
-//			if (is_ret_or_iret(instruction) == 1'b1)
-//				interrupt_flag_set_r = 1'b1; // set on iret
-		end
-	endcase
-end
-
 
 
 endmodule

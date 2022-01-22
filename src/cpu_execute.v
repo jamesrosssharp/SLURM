@@ -232,8 +232,8 @@ begin
 				interrupt_flag_set_r = 1'b1;
 		end
 		INSTRUCTION_CASEX_RET_IRET:	begin	/* iret? */
-		//	if (is_ret_or_iret(instruction) == 1'b1)
-		//		interrupt_flag_set_r = 1'b1; // set on iret
+			if (is_ret_or_iret(instruction) == 1'b1)
+				interrupt_flag_set_r = 1'b1; // set on iret
 		end
 		default: ;
 	endcase

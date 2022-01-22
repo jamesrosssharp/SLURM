@@ -10,64 +10,22 @@ reg RSTb = 1'b0;
 wire [3:0] gpio_out;
 reg [5:0] gpio_in = 6'd0;
 
-initial begin
-	#20000 gpio_in[0] = 1'b0;
-	#100 gpio_in[0] = 1'b1;
-	#300 gpio_in[0] = 1'b0;
-	#500 gpio_in[0] = 1'b1;
-	#1300 gpio_in[0] = 1'b0;
-	#5000 gpio_in[0] = 1'b1;
-	#3000 gpio_in[0] = 1'b0;
-	#5000 gpio_in[0] = 1'b1;
-	#200 gpio_in[0] = 1'b1;
-	#700 gpio_in[0] = 1'b0;
-	#200 gpio_in[0] = 1'b1;
-	#600 gpio_in[0] = 1'b0;
-	#5500 gpio_in[0] = 1'b1;
-	#500 gpio_in[0] = 1'b0;
-	#200 gpio_in[0] = 1'b1;
-	#100 gpio_in[0] = 1'b1;
-	#300 gpio_in[0] = 1'b0;
-	#500 gpio_in[0] = 1'b1;
-	#1300 gpio_in[0] = 1'b0;
-	#5000 gpio_in[0] = 1'b1;
-	#3000 gpio_in[0] = 1'b0;
-	#100 gpio_in[0] = 1'b1;
-	#300 gpio_in[0] = 1'b0;
-	#500 gpio_in[0] = 1'b1;
-	#1300 gpio_in[0] = 1'b0;
-	#5000 gpio_in[0] = 1'b1;
-	#3000 gpio_in[0] = 1'b0;
-	#5000 gpio_in[0] = 1'b1;
-	#100 gpio_in[0] = 1'b1;
-	#300 gpio_in[0] = 1'b0;
-	#500 gpio_in[0] = 1'b1;
-	#1300 gpio_in[0] = 1'b0;
-	#5000 gpio_in[0] = 1'b1;
-	#3000 gpio_in[0] = 1'b0;
-	#5000 gpio_in[0] = 1'b1;
-	#200 gpio_in[0] = 1'b1;
-	#700 gpio_in[0] = 1'b0;
-	#200 gpio_in[0] = 1'b1;
-	#600 gpio_in[0] = 1'b0;
-	#5500 gpio_in[0] = 1'b1;
-	#500 gpio_in[0] = 1'b0;
-	#200 gpio_in[0] = 1'b1;
-	#100 gpio_in[0] = 1'b1;
-	#300 gpio_in[0] = 1'b0;
-	#500 gpio_in[0] = 1'b1;
-	#1300 gpio_in[0] = 1'b0;
-	#5000 gpio_in[0] = 1'b1;
-	#3000 gpio_in[0] = 1'b0;
-	#100 gpio_in[0] = 1'b1;
-	#300 gpio_in[0] = 1'b0;
-	#500 gpio_in[0] = 1'b1;
-	#1300 gpio_in[0] = 1'b0;
-	#5000 gpio_in[0] = 1'b1;
-	#3000 gpio_in[0] = 1'b0;
-	#5000 gpio_in[0] = 1'b1;
-#5000 gpio_in[0] = 1'b1;
+integer k;
 
+initial begin
+	#20000;
+
+	for (k = 0; k < 100; k = k + 1) begin
+		 gpio_in[0] = 1'b0;
+		#100 gpio_in[0] = 1'b1;
+		#300 gpio_in[0] = 1'b0;
+		#500 gpio_in[0] = 1'b1;
+		#1300 gpio_in[0] = 1'b0;
+		#5000 gpio_in[0] = 1'b1;
+		#100 gpio_in[0] = 1'b0;
+		#200 gpio_in[0] = 1'b1;
+		#1000;
+	end
 end
 
 wire [3:0] vid_r;
@@ -154,7 +112,7 @@ end
 
 initial begin
     $dumpvars(0, tb);
-	# 200000 $finish;
+	# 400000 $finish;
 end
 
 genvar j;
