@@ -229,35 +229,27 @@ static uint16_t get_branch(OpCode opcode, int lineNum)
 	switch (opcode)
 	{
 		case OpCode::BZ:
-		case OpCode::BZ_REL:
 			branch = 0;
 			break;
 		case OpCode::BNZ:
-		case OpCode::BNZ_REL:
 			branch = 1;
 			break;
 		case OpCode::BS:
-		case OpCode::BS_REL:
 			branch = 2;
 			break;
 		case OpCode::BNS:
-		case OpCode::BNS_REL:
 			branch = 3;
 			break;
 		case OpCode::BC:
-		case OpCode::BC_REL:
 			branch = 4;
 			break;
 		case OpCode::BNC:
-		case OpCode::BNC_REL:
 			branch = 5;
 			break;
 		case OpCode::BA:
-		case OpCode::BA_REL:
 			branch = 6;
 			break;
 		case OpCode::BL:
-		case OpCode::BL_REL:
 			branch = 7;
 			break;
 		default:
@@ -511,12 +503,6 @@ void Assembly::makeIncDecInstruction(OpCode opcode, std::vector<uint16_t>& assem
 
 	switch (opcode)
 	{
-		case OpCode::INC:
-			op = SLRM_INC_INSTRUCTION;
-			break;
-		case OpCode::DEC:
-			op = SLRM_DEC_INSTRUCTION;
-			break; 
 		default:
 		{
 	        std::stringstream ss;

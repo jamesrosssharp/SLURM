@@ -69,14 +69,9 @@ enum class OpCode : uint32_t
 	XOR,
 	CMP,
 	TEST,
-	BA_REL,
-	BL_REL,
-	BZ_REL,
-	BNZ_REL,
-	BC_REL,
-	BNC_REL,
-	BS_REL,
-	BNS_REL
+	STI,
+	CLI,
+	SLEEP
 };
 
 enum class UniqueOpCode

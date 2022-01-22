@@ -110,16 +110,6 @@ void Statement::firstPassAssemble(uint32_t& curAddress, SymbolTable& syms)
                     else
                         assembledWords.resize(2 * repetitionCount);
                     break;
-             	case OpCode::BL_REL:
-				case OpCode::BA_REL:
-				case OpCode::BZ_REL:
-				case OpCode::BNZ_REL:
-				case OpCode::BC_REL:
-				case OpCode::BNC_REL:
-				case OpCode::BS_REL:
-				case OpCode::BNS_REL:
-					assembledWords.resize(1 * repetitionCount);
-					break;
 			    default:
                 {
                     std::stringstream ss;
@@ -277,8 +267,20 @@ void Statement::assemble(uint32_t &curAddress)
 				case OpCode::RET:
 					words[0] = SLRM_RET_INSTRUCTION;
 					break;
-        		case OpCode::NOP:
+        		case OpCode::IRET:
+					words[0] = SLRM_IRET_INSTRUCTION;
+					break;
+				case OpCode::NOP:
 					words[0] = SLRM_NOP_INSTRUCTION;
+					break;
+				case OpCode::CLI:
+					words[0] = SLRM_CLI_INSTRUCTION;
+					break;
+				case OpCode::STI:
+					words[0] = SLRM_STI_INSTRUCTION;
+					break;
+				case OpCode::SLEEP:
+					words[0] = SLRM_SLEEP_INSTRUCTION;
 					break;
 		        default:
                 {					
@@ -446,18 +448,6 @@ void Statement::assemble(uint32_t &curAddress)
 				case OpCode::BZ:
 					Assembly::makeFlowControlInstruction(opcode, address, expression.value, Register::r0, lineNum,
                                            words, false);
-
-					break;
-				case OpCode::BA_REL:
-				case OpCode::BC_REL:
-				case OpCode::BL_REL:
-				case OpCode::BNC_REL:
-				case OpCode::BNS_REL:
-				case OpCode::BNZ_REL:
-				case OpCode::BS_REL:
-				case OpCode::BZ_REL:
-					Assembly::makeRelativeFlowControlInstruction(opcode, address, expression.value, lineNum,
-                                           words);
 
 					break;
 				case OpCode::IMM:

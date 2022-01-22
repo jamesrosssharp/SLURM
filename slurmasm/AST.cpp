@@ -480,39 +480,20 @@ OpCode AST::convertOpCode(char* opcode)
 	{
 		return OpCode::TEST;
 	}
-	else if (s == "BA.R")
+    else if (s == "STI")
 	{
-		return OpCode::BA_REL;
+		return OpCode::STI;
 	}
-	else if (s == "BL.R")
+	else if (s == "CLI")
 	{
-		return OpCode::BL_REL;
+		return OpCode::CLI;
 	}
-	else if (s == "BZ.R")
+	else if (s == "SLEEP")
 	{
-		return OpCode::BZ_REL;
+		return OpCode::SLEEP;
 	}
-	else if (s == "BNZ.R")
-	{
-		return OpCode::BNZ_REL;
-	}
-	else if (s == "BC.R")
-	{
-		return OpCode::BC_REL;
-	}
-	else if (s == "BNC.R")
-	{
-		return OpCode::BNC_REL;
-	}
-	else if (s == "BS.R")
-	{
-		return OpCode::BS_REL;
-	}
-	else if (s == "BNS.R")
-	{
-		return OpCode::BNS_REL;
-	}
-    return OpCode::None;
+
+	return OpCode::None;
 
 }
 

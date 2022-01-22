@@ -96,12 +96,12 @@ die:
 	out [r0, INTERRUPT_ENABLE_PORT], r1
 
 	/* enable interrupts */
-	dw 0x0601
+	sti
 
 	/* sleep forever */
 
 sleep_loop:
-	dw 0x0700	// sleep
+	sleep	// sleep
 /*	mov r3, 0xffff
 inner_loop:
 	mov r4, 0x20
@@ -125,7 +125,7 @@ dummy_handler:
 		out [r0, UART_TX_REG], r8
 		mov r9, 0xffff
 		out [r0, 0x7001], r9
-		dw 	0x0101
+		iret
 
 hs_handler:
 		mov r10, 1
@@ -137,11 +137,11 @@ done_flags:
 		mov r9, 0xffff
 		out [r0, 0x7001], r9
 		or  r10, r10
-		dw 	0x0101
+		iret
 vs_handler:
 		mov r7, 0
 		mov r9, 0xffff
 		out [r0, 0x7001], r9
-		dw 	0x0101
-		
+		iret
+	
 		.end
