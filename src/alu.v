@@ -47,6 +47,11 @@ wire [BITS - 1 : 0] lslOp = {B[BITS - 2:0],1'b0};
 wire [BITS - 1 : 0] asrOp = {B[BITS-1], B[BITS - 1:1]};
 wire [BITS - 1 : 0] lsrOp = {1'b0, B[BITS - 1:1]};
 
+wire [2*BITS - 1 : 0] mulOp;
+
+mult m0 (A, B, mulOp);
+
+
 reg [BITS - 1 : 0] out;
 reg [BITS - 1 : 0] out_r;
 assign aluOut = out_r;
@@ -124,9 +129,18 @@ begin
 			Z_flag_reg_next = (xorOp[BITS - 1:0] == {BITS{1'b0}}) ? 1'b1 : 1'b0;	
 		end
 		/* multiplier? */
-		5'd8: ; /* mul */
-		5'd9: ; /* muls */
-	
+		5'd8: begin /* mul */
+			out = mulOp[BITS - 1:0];
+			Z_flag_reg_next = (mulOp[BITS - 1:0] == {BITS{1'b0}}) ? 1'b1 : 1'b0;
+			C_flag_reg_next = 1'b0;
+			S_flag_reg_next = mulOp[BITS - 1] ? 1'b1 : 1'b0;
+		end
+		5'd9: begin /* mulu */
+			out = mulOp[2*BITS - 1:BITS];
+			Z_flag_reg_next = (mulOp[2*BITS - 1:BITS] == {BITS{1'b0}}) ? 1'b1 : 1'b0;
+			C_flag_reg_next = 1'b0;
+			S_flag_reg_next = mulOp[2*BITS - 1] ? 1'b1 : 1'b0;
+		end
 		/* barrel shifter? */
 		5'd10: ; /* bsr */
 		5'd11: ; /* bsl */

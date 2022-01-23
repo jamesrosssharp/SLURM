@@ -105,6 +105,8 @@ void Statement::firstPassAssemble(uint32_t& curAddress, SymbolTable& syms)
 				case OpCode::XOR:
 				case OpCode::CMP:
 				case OpCode::TEST:
+				case OpCode::MUL:
+				case OpCode::MULU:
 					if (expressionCanFitIn4Bits)
                         assembledWords.resize(1 * repetitionCount);
                     else
@@ -343,6 +345,8 @@ void Statement::assemble(uint32_t &curAddress)
 				case OpCode::XOR:
 				case OpCode::CMP:
 				case OpCode::TEST:
+				case OpCode::MUL:
+				case OpCode::MULU:
 			 		Assembly::makeArithmeticInstruction(opcode,
                                          regDest,
                                          regSrc, words,
@@ -366,22 +370,10 @@ void Statement::assemble(uint32_t &curAddress)
 
             switch (opcode)
             {
-				case OpCode::ADC:
-				case OpCode::ADD:
-				case OpCode::AND:
-				case OpCode::OR:
-				case OpCode::SBB:
-				case OpCode::SUB:
-				case OpCode::XOR:
-			 		Assembly::makeThreeRegisterArithmeticInstruction(opcode,
-                                         regDest,
-                                         regSrc, regSrc2, words,
-                                         lineNum);
-            		break; 
                 default:
                 {
             		std::stringstream ss;
-                    ss << "Error: opcode does not support two register mode on line " << lineNum << std::endl;
+                    ss << "Error: opcode does not support three register mode on line " << lineNum << std::endl;
                     throw std::runtime_error(ss.str());
 
                     break;
@@ -409,6 +401,8 @@ void Statement::assemble(uint32_t &curAddress)
 				case OpCode::XOR:
 				case OpCode::CMP:
 				case OpCode::TEST:
+				case OpCode::MUL:
+				case OpCode::MULU:
 			 		Assembly::makeArithmeticInstructionWithImmediate(opcode,
                                          regDest,
                                          expression.value, words,

@@ -113,6 +113,7 @@ reg WR_AUDIO;
 reg WR_SPI;
 reg WR_TRACE;
 reg WR_INTERRUPT;
+reg WR_SCRATCH;
 
 wire RD_TRACE = 1'b0;
 
@@ -125,6 +126,7 @@ wire [BITS - 1 : 0] DATA_OUT_AUDIO;
 wire [BITS - 1 : 0] DATA_OUT_SPI;
 wire [BITS - 1 : 0] DATA_OUT_TRACE;
 wire [BITS - 1 : 0] DATA_OUT_INTERRUPT;
+wire [BITS - 1 : 0] DATA_OUT_SCRATCH;
 
 reg [BITS - 1 : 0] dout_next;
 reg [BITS - 1 : 0] dout;
@@ -165,6 +167,7 @@ begin
 	WR_SPI   = 1'b0;
 	WR_TRACE = 1'b0;
 	WR_INTERRUPT = 1'b0;
+	WR_SCRATCH = 1'b0;
 
 	dout_next = dout;
 
@@ -199,6 +202,9 @@ begin
 			dout_next = DATA_OUT_INTERRUPT;
 			WR_INTERRUPT = memWR;
 		end
+		16'h8xxx: begin
+			WR_SCRATCH = memWR;
+		end
 		default: ;
 	endcase
 end
@@ -214,6 +220,9 @@ begin
 		end
 		16'h5xxx: begin /* gfx reads are already delayed by one cycle */ 
 			DATA_OUT_REG = DATA_OUT_GFX;
+		end
+		16'h8xxx: begin
+			DATA_OUT_REG = DATA_OUT_SCRATCH;
 		end
 		default: ;
 	endcase
@@ -363,5 +372,20 @@ interrupt_controller #(.BITS(BITS)) irq0
 	interrupt,	
 	irq
 );
+
+// Scratchpad RAM
+
+bram #(.BITS(16), .ADDRESS_BITS(9)) scr0
+(
+	CLK,
+	ADDRESS[8:0],
+	DATA_OUT_SCRATCH,
+	ADDRESS[8:0],
+	DATA_IN,
+	WR_SCRATCH
+);
+
+
+
 
 endmodule

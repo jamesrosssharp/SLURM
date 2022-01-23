@@ -73,7 +73,9 @@ enum class OpCode : uint32_t
 	CLI,
 	SLEEP,
 	STF,	/* store flags */
-	RSF		/* restore flags */
+	RSF,		/* restore flags */
+	MUL, /* multiply */
+	MULU /* upper 16 bits of multiply */
 };
 
 enum class UniqueOpCode

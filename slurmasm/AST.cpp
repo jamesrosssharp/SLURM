@@ -500,6 +500,14 @@ OpCode AST::convertOpCode(char* opcode)
 	{
 		return OpCode::RSF;
 	}
+	else if (s == "MUL")
+	{
+		return OpCode::MUL;
+	}
+	else if (s == "MULU")
+	{
+		return OpCode::MULU;
+	}
 
 	return OpCode::None;
 

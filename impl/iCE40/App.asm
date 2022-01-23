@@ -152,7 +152,8 @@ hs_handler:
 		iret
 
 vs_handler:
-		mov r7, r0
+		mov r7, 0x0f
+		mul r7, 0x80
 		mov r9, 0xffff
 		out [r0, 0x7001], r9
 		iret

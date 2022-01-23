@@ -42,6 +42,12 @@ void Assembly::makeArithmeticInstructionWithImmediate(OpCode opcode, Register re
 		case OpCode::XOR:
 			aluOp = 7;
 			break;
+		case OpCode::MUL:
+			aluOp = 8;
+			break;
+		case OpCode::MULU:
+			aluOp = 9;
+			break;
 		case OpCode::CMP:
 			aluOp = 12;
 			break;		
@@ -112,6 +118,12 @@ static void get_aluOp(OpCode opcode, uint32_t lineNum, uint16_t& aluOp)
 			break;
 		case OpCode::XOR:
 			aluOp = 7;
+			break;
+		case OpCode::MUL:
+			aluOp = 8;
+			break;
+		case OpCode::MULU:
+			aluOp = 9;
 			break;
     	case OpCode::ASR:
 			aluOp = 16;
