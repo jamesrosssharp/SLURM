@@ -26,6 +26,11 @@ PWM_BLUE  equ 0x2002
 
 INTERRUPT_ENABLE_PORT equ 0x7000
 
+AUDIO_BASE equ 0x3000
+AUDIO_LEFT_MEM equ AUDIO_BASE + 0
+AUDIO_RIGHT_MEM equ AUDIO_BASE + 0x200
+AUDIO_CONTROL equ AUDIO_BASE + 0x400
+
 my_vector_table:
 RESET_VEC:
 	ba start
@@ -74,7 +79,7 @@ pal_loop:
 		out [r0, SPRITE0_Y], r2
 		mov r2, 256
 		out [r0, SPRITE0_H], r2
-		mov r2, 0x4000 	
+		mov r2, 0x8000 	
 		out [r0, SPRITE0_A], r2
 
 		mov r4, 3
@@ -83,6 +88,28 @@ pal_loop:
 		out [r0, PWM_GREEN], r4
 		mov r4, 1
 		out [r0, PWM_BLUE], r4
+
+		// Fill audio buffers with saw tooth wave
+		// octave higher in left channel
+
+		mov r2, 512
+		mov r3, 0	// index
+		mov r4, 0	// saw value
+saw_loop:
+		out [r3, AUDIO_LEFT_MEM], r4
+		mov r5, r4
+		lsl r5
+		out [r3, AUDIO_RIGHT_MEM], r5
+		add r3, 1
+		add r4, 4
+		sub r2, 1
+		bnz saw_loop
+
+		// Set to run
+		mov r1, 1
+		out [r0, AUDIO_CONTROL], r1
+	
+
 
 		mov r2, banner
 loop:
@@ -399,7 +426,7 @@ pacman_palette:
 
 	
 
-		.padto 0x4000
+		.padto 0x8000
 
 pacman_sprite_sheet:
 	dw 0x0

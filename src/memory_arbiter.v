@@ -306,8 +306,8 @@ always @(*) begin
 	case (state_r_1)
 		s_idle: begin
 			if (sprite_rvalid == 1'b1 && sprite_memory_address[15:14] == 2'b01) begin
-				b2_addr_r = sprite_memory_address;				
-				state_r_1_next = s_grant_sp; 
+				//b2_addr_r = sprite_memory_address;				
+				//state_r_1_next = s_grant_sp; 
 			end else
 			if (bg0_rvalid == 1'b1 && bg0_memory_address[15:14] == 2'b01) begin
 				//b2_addr_r = bg0_memory_address;				
@@ -398,8 +398,8 @@ always @(*) begin
 	case (state_r_2)
 		s_idle: begin
 			if (sprite_rvalid == 1'b1 && sprite_memory_address[15:14] == 2'b10) begin
-				//b3_addr_r = sprite_memory_address;				
-				//state_r_2_next = s_grant_sp; 
+				b3_addr_r = sprite_memory_address;				
+				state_r_2_next = s_grant_sp; 
 			end else
 			if (bg0_rvalid == 1'b1 && bg0_memory_address[15:14] == 2'b10) begin
 				//b3_addr_r = bg0_memory_address;				
@@ -419,8 +419,8 @@ always @(*) begin
 				b3_data_r = fl_memory_data; 
 				state_r_2_next = s_grant_fl;	
 			end else if (au_rvalid == 1'b1 && au_memory_address[15:14] == 2'b10) begin
-				b3_addr_r = au_memory_address;				
-				state_r_2_next = s_grant_au;	
+				//b3_addr_r = au_memory_address;				
+				//state_r_2_next = s_grant_au;	
 			end else if (cpu_valid == 1'b1 && cpu_memory_address[15:14] == 2'b10) begin
 				//b3_addr_r = cpu_memory_address;				
 				//b3_data_r = cpu_memory_data;				

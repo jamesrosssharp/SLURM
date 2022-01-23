@@ -42,11 +42,11 @@ module memory_controller
 	output  		fl_wready,  // memory data valid
 	
 	/* audio controller */
-	input  [15:0] 	au_memory_address,
+	/*input  [15:0] 	au_memory_address,
 	output [15:0] 	au_memory_data,
 	input 			au_rvalid, // memory address valid
 	output  		au_rready,  // memory data valid
-
+*/
 	/* CPU */
 	input  [15:0] 	cpu_memory_address,
 	input  [15:0]   cpu_memory_data_in,
@@ -135,6 +135,9 @@ boot_memory #(.BITS(BITS), .ADDRESS_BITS(8)) theBootMem
 	wr_boot
 );
 
+wire dummy;
+wire [BITS - 1:0] dummy_data;
+
 memory_arbiter ma0
 (
 	CLK,
@@ -159,10 +162,13 @@ memory_arbiter ma0
 	fl_memory_data,
 	fl_wvalid, // memory address valid
 	fl_wready,  // memory data valid
-	au_memory_address,
-	au_memory_data,
+	
+	// Audio: unused
+	16'd0,
+	dummy_data,
 	1'b0, //au_rvalid, // memory address valid
-	au_rready,  // memory data valid
+	dummy,  // memory data valid
+
 	cpu_memory_address,
 	cpu_memory_data_in,
 	cpu_memory_data_w,

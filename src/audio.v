@@ -1,13 +1,32 @@
+/*
+ *
+ *	i2s audio core
+ *
+ *	Interface to CPU is via block RAM fifo; CPU writes to left and right buffers
+ *
+ */
+
 module audio
-#(parameter BITS = 16, ADDRESS_BITS = 4, CLK_FREQ = 25125000)
+#(parameter BITS = 16, ADDRESS_BITS = 12, CLK_FREQ = 25125000)
 (
 	input CLK,	
 	input RSTb,
-	input [ADDRESS_BITS - 1 : 0]  ADDRESS,
-	input [BITS - 1 : 0] DATA_IN,
-	output [BITS - 1 : 0] DATA_OUT,
-	input WR,  /* write memory */
-	output [3:0] PINS /* output pins */ 
+
+	// Port interface
+	input 	[ADDRESS_BITS - 1 : 0]  ADDRESS,
+	input 	[BITS - 1 : 0] DATA_IN,
+	output 	[BITS - 1 : 0] DATA_OUT,
+	input 	WR,  /* write memory */
+
+	// I2S 
+	output 	mclk,
+	output 	lr_clk,
+	output 	sclk,
+	output 	sdat,
+
+	// Interrupt 
+	output  irq
+	
 );
 
 localparam MCLK_FREQ  = CLK_FREQ / 2;
@@ -18,79 +37,111 @@ assign DATA_OUT = {BITS{1'b0}};
 
 reg m_clk_r;
 
-assign PINS[0] = CLK;
+assign mclk = CLK;
 
 reg lr_clk_r = 1'b0;
 reg lr_clk_r_next;
 
-assign PINS[1] = lr_clk_r;
+assign lr_clk = lr_clk_r;
 
 reg sclk_r = 1'b0;
 reg sclk_r_next;
 
-assign PINS[2] = sclk_r;
+assign sclk = sclk_r;
 
 reg [7:0] lr_clk_count_r; // CLK / 256
 reg [1:0] sclk_count_r;   // CLK / 8
 
-reg [23:0] sq_wave_count_r = 24'h00000;
-reg [23:0] sq_wave_count_r_next;
-
-reg sq_wave_val_r = 1'b0;
-reg sq_wave_val_r_next;
-
 reg [63:0] serial_data_r = {64{1'b0}};
 reg [63:0] serial_data_r_next;
 
-assign PINS[3] = serial_data_r[63]; // serial data out
+assign sdat = serial_data_r[63]; // serial data out
 
-reg [BITS - 1:0] phase_r = {BITS{1'b0}};
-reg [BITS - 1:0] phase_r_next;
+reg [8:0] left_rd_addr, left_rd_addr_next;
+reg [8:0] left_rd_data;
 
-reg [BITS - 1:0] ampl_r = {BITS{1'b0}};
-reg [BITS - 1:0] ampl_r_next;
+reg left_wr;
 
-reg [BITS - 1:0] ampl_neg_r = {BITS{1'b0}};
-reg [BITS - 1:0] ampl_neg_r_next;
+bram #(.BITS(16), .ADDRESS_BITS(9)) left_bram
+(
+	CLK,
+	left_rd_addr,
+	left_rd_data,
+	ADDRESS[8:0],
+	DATA_IN,
+	left_wr
+);
+
+reg [8:0] right_rd_addr, right_rd_addr_next;
+reg [8:0] right_rd_data;
+
+reg right_wr;
+
+bram #(.BITS(16), .ADDRESS_BITS(9)) right_bram
+(
+	CLK,
+	right_rd_addr,
+	right_rd_data,
+	ADDRESS[8:0],
+	DATA_IN,
+	right_wr
+);
+
+assign irq = right_rd_addr[8] ^ right_rd_addr_next[8];
+
+reg control_run, control_run_next;
 
 always @(posedge CLK)
 begin
-	m_clk_r <= !m_clk_r;
-	lr_clk_count_r <= lr_clk_count_r + 1;	
-	sclk_count_r <= sclk_count_r + 1;
-	lr_clk_r <= lr_clk_r_next;
-	sclk_r <= sclk_r_next;
-	sq_wave_count_r <= sq_wave_count_r_next;
-	sq_wave_val_r <= sq_wave_val_r_next;
-	serial_data_r <= serial_data_r_next;
-	phase_r <= phase_r_next;
-	ampl_r <= ampl_r_next;
-	ampl_neg_r <= ampl_neg_r_next;
+	if (RSTb == 1'b0) begin
+		left_rd_addr  <= 9'd0;
+		right_rd_addr <= 9'd0;
+		control_run <= 1'b0;
+	end else begin
+		lr_clk_count_r 	<= lr_clk_count_r + 1;	
+		sclk_count_r 	<= sclk_count_r + 1;
+		lr_clk_r 		<= lr_clk_r_next;
+		sclk_r 			<= sclk_r_next;
+		serial_data_r 	<= serial_data_r_next;
+
+		left_rd_addr  <= left_rd_addr_next;
+		right_rd_addr <= right_rd_addr_next;
+		control_run   <= control_run_next;
+	end
 end
 
 always @(*)
 begin
-	sq_wave_count_r_next = sq_wave_count_r + phase_r;
 	lr_clk_r_next = lr_clk_r;
 	sclk_r_next = sclk_r;
-	sq_wave_val_r_next = sq_wave_val_r;
 	if (lr_clk_count_r == 7'd0)
 		lr_clk_r_next = !lr_clk_r;
 	if (sclk_count_r == 2'd0)
 		sclk_r_next = !sclk_r;
-	if (sq_wave_count_r > 24'h7fffff) begin
-		sq_wave_count_r_next = 24'h000000;
-		sq_wave_val_r_next = !sq_wave_val_r;
-	end
 end
 
 always @(*)
 begin
 	serial_data_r_next = serial_data_r;
 
+	left_rd_addr_next  = left_rd_addr;
+	right_rd_addr_next = right_rd_addr;
+	
+
 	if (lr_clk_r_next != lr_clk_r) begin
 		serial_data_r_next = {64{1'b0}};
-		serial_data_r_next[62:47] = (sq_wave_val_r == 1'b1) ? ampl_neg_r : ampl_r;
+
+		if (control_run == 1'b1) begin
+			if (lr_clk_r == 1'b0) begin // Left channel going to right channel
+				serial_data_r_next[62:47] = right_rd_data;
+				right_rd_addr_next = right_rd_addr + 1;	
+			end else begin
+				serial_data_r_next[62:47] = left_rd_data;
+				left_rd_addr_next = left_rd_addr + 1;	
+			end
+		end else
+			serial_data_r_next[62:47] = 16'd0; 			
+	
 	end
 	else if (sclk_r_next == 1'b0 && sclk_r == 1'b1) begin
 		serial_data_r_next = {serial_data_r[62:0],1'b0};
@@ -98,23 +149,29 @@ begin
 
 end
 
+reg dout;
+assign DATA_OUT = dout;
+
 always @(*)
 begin
-	phase_r_next = phase_r;
-	ampl_r_next = ampl_r;
-	ampl_neg_r_next = ampl_neg_r;
+	left_wr  = 1'b0;
+	right_wr = 1'b0;
+	control_run_next = control_run;
+	dout = 16'd0;
 
-
-	case (ADDRESS)
-		4'h0:	/* Freq reg */
+	casex (ADDRESS)
+		12'b000xxxxxxxxx:	/* left BRAM : 512 words */
+			left_wr = WR;
+		12'b001xxxxxxxxx:	/* right BRAM : 512 */
+			right_wr = WR;
+		12'h400:	/* Control reg */
 			if (WR == 1'b1) begin
-				phase_r_next = DATA_IN; 
+				control_run_next = DATA_IN[0];
 			end
-		4'h1: /* Amplitude register */
-			if (WR == 1'b1) begin
-				ampl_r_next = DATA_IN;
-				ampl_neg_r_next = -DATA_IN;
-			end
+		12'h401: /* Left read pointer */
+			dout = {7'd0, left_rd_addr};
+		12'h402: /* Right read pointer */
+			dout = {7'd0, right_rd_addr};
 		default:;
 	endcase
 end

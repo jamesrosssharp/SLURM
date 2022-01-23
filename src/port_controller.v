@@ -10,8 +10,7 @@
  * 0x5000 - 0x5fff: GFX
  * 0x6000 - 0x6fff: Trace port 
  * 0x7000 - 0x7fff: Interrupt controller
- * 0x8000 - 0x80ff: Boot memory write port (reprogram interrupt vectors etc)
- * 0x9000 - 0x93ff: scratch pad RAM
+ * 0x8000 - 0x83ff: scratch pad RAM
  */
 
 module port_controller
@@ -86,11 +85,12 @@ module port_controller
 	output 			fl_wvalid, // memory address valid
 	input  			fl_wready,  // memory data valid
 	
-	// Audio 
+	/*// Audio 
 	output  [15:0] 	au_memory_address,
 	input [15:0] 	au_memory_data,
 	output 			au_rvalid, // memory address valid
 	input  			au_rready,  // memory data valid
+*/
 
 	// Interrupt request quotients
 	output [3:0]	irq,
@@ -100,13 +100,10 @@ module port_controller
 
 wire irq_hsync;
 wire irq_vsync;
-wire irq_audio = 1'b0;
+wire irq_audio;
 wire irq_spi_flash;
 
 //assign gpio_out[0] = cpu_debug_pin;
-
-// TODO: remove this when we add in the audio core
-assign au_rvalid = 1'b0;
 
 reg WR_UART;
 reg WR_GPIO;
@@ -313,20 +310,21 @@ gfx #(.BITS(BITS), .BANK_ADDRESS_BITS(14), .ADDRESS_BITS(12)) gfx0
 );
 
 
-/*audio
-#(.BITS(BITS), .ADDRESS_BITS(8), .CLK_FREQ(CLOCK_FREQ)) aud0
+audio
+#(.BITS(BITS), .ADDRESS_BITS(12), .CLK_FREQ(CLOCK_FREQ)) aud0
 (
 	CLK,	
 	RSTb,
-	ADDRESS[3:0],
+	ADDRESS[11:0],
 	DATA_IN,
 	DATA_OUT_AUDIO,
 	WR_AUDIO, 
-	i2s_sclk,
+	i2s_mclk,
 	i2s_lrclk,
+	i2s_sclk,
 	i2s_data,
-	i2s_mclk
-);*/
+	irq_audio
+);
 
 
 spi_flash

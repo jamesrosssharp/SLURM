@@ -73,11 +73,12 @@ wire [15:0] fl_memory_address;
 wire [15:0] fl_memory_data;
 wire fl_wvalid;
 wire fl_wready;
-wire [15:0] au_memory_address;
+
+/*wire [15:0] au_memory_address;
 wire [15:0] au_memory_data;
 wire au_rvalid;
 wire au_rready;
-
+*/
 wire cpu_debug_pin;
 
 // CPU Top level
@@ -161,10 +162,10 @@ pc0
 	.fl_memory_data(fl_memory_data),
 	.fl_wvalid(fl_wvalid),
 	.fl_wready(fl_wready),
-	.au_memory_address(au_memory_address),
+	/*.au_memory_address(au_memory_address),
 	.au_memory_data(au_memory_data),
 	.au_rvalid(au_rvalid),
-	.au_rready(au_rready),
+	.au_rready(au_rready),*/
 	.interrupt(cpuInterrupt),
 	.irq(cpuIRQ)
 );
@@ -203,11 +204,11 @@ mem0
 	fl_wvalid, // memory address valid
 	fl_wready,  // memory data valid
 	
-	au_memory_address,
+/*	au_memory_address,
 	au_memory_data,
 	au_rvalid, // memory address valid
 	au_rready,  // memory data valid
-
+*/
 	cpuMemoryAddr,
 	cpuMemoryOut,
 	cpuMemoryIn,
