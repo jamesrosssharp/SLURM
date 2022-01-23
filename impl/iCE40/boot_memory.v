@@ -1,11 +1,13 @@
-/* rom.v : rom */
+/* boot_memory.v : boot memory */
 
-module rom
+module boot_memory
 #(parameter BITS = 16, ADDRESS_BITS = 8)
 (
 	input CLK,
 	input [ADDRESS_BITS - 1 : 0]  ADDRESS,
+  input [BITS - 1 : 0] DATA_IN,
 	output [BITS - 1 : 0] DATA_OUT,
+  input WR
 );
 
 localparam ROM_ADDRESS_BITS = 8;
@@ -271,6 +273,7 @@ initial mem[254] = 16'h0000;
 initial mem[255] = 16'h0000;
 always @(posedge CLK)
 begin
+	if (WR == 1'b1) mem[ADDRESS] <= DATA_IN; 
        dout <= mem[ADDRESS];
 end
 endmodule

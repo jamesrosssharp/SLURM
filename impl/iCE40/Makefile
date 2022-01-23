@@ -25,7 +25,7 @@ memory.v				\
 mult.v					\
 $(SRCDIR)/port_controller.v			\
 pwm_led.v					\
-rom.v						\
+boot_memory.v						\
 $(SRCDIR)/spi_flash.v				\
 $(SRCDIR)/sprite_controller.v		\
 trace.v					\
@@ -58,7 +58,7 @@ app_image: App.asm
 	$(AS) App.asm -o app_image
 	
 
-rom.v: rom_image.mem
+boot_memory.v: rom_image.mem
 	python3 ../../scripts/genrom.py
 
 %.h: %.bin

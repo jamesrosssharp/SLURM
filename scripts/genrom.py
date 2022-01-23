@@ -1,15 +1,17 @@
 
 
-with open("rom.v","w") as theRomFile:
+with open("boot_memory.v","w") as theRomFile:
 
-	theRomFile.write("/* rom.v : rom */\n")
+	theRomFile.write("/* boot_memory.v : boot memory */\n")
 	theRomFile.write("\n")
-	theRomFile.write("module rom\n")
+	theRomFile.write("module boot_memory\n")
 	theRomFile.write("#(parameter BITS = 16, ADDRESS_BITS = 8)\n")
 	theRomFile.write("(\n")
 	theRomFile.write("	input CLK,\n")
 	theRomFile.write("	input [ADDRESS_BITS - 1 : 0]  ADDRESS,\n")
+	theRomFile.write("  input [BITS - 1 : 0] DATA_IN,\n")
 	theRomFile.write("	output [BITS - 1 : 0] DATA_OUT,\n")
+	theRomFile.write("  input WR\n")
 	theRomFile.write(");\n")
 	theRomFile.write("\n")
 	theRomFile.write("localparam ROM_ADDRESS_BITS = 8;\n")
@@ -25,6 +27,7 @@ with open("rom.v","w") as theRomFile:
  
 	theRomFile.write("always @(posedge CLK)\n")
 	theRomFile.write("begin\n")
+	theRomFile.write("	if (WR == 1'b1) mem[ADDRESS] <= DATA_IN; \n")
 	theRomFile.write("       dout <= mem[ADDRESS];\n")
 	theRomFile.write("end\n")
 	theRomFile.write("endmodule\n")
