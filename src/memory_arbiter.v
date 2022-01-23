@@ -327,13 +327,13 @@ always @(*) begin
 				b2_wr_r = 1'b1;
 				state_r_1_next = s_grant_fl;	
 			end else if (au_rvalid == 1'b1 && au_memory_address[15:14] == 2'b01) begin
-				b2_addr_r = au_memory_address;				
-				state_r_1_next = s_grant_au;	
+				//b2_addr_r = au_memory_address;				
+				//state_r_1_next = s_grant_au;	
 			end else if (cpu_valid == 1'b1 && cpu_memory_address[15:14] == 2'b01) begin
-				//b2_addr_r = cpu_memory_address;				
-				//b2_data_r = cpu_memory_data;				
-				//b2_wr_r = cpu_wr;
-				//state_r_1_next = s_grant_cpu;	
+				b2_addr_r = cpu_memory_address;				
+				b2_data_r = cpu_memory_data;				
+				b2_wr_r = cpu_wr;
+				state_r_1_next = s_grant_cpu;	
 			end
 		end
 		s_grant_sp: begin
@@ -402,16 +402,16 @@ always @(*) begin
 				//state_r_2_next = s_grant_sp; 
 			end else
 			if (bg0_rvalid == 1'b1 && bg0_memory_address[15:14] == 2'b10) begin
-				b3_addr_r = bg0_memory_address;				
-				state_r_2_next = s_grant_bg0;
+				//b3_addr_r = bg0_memory_address;				
+				//state_r_2_next = s_grant_bg0;
 			end else
 			if (bg1_rvalid == 1'b1 && bg1_memory_address[15:14] == 2'b10) begin
-				b3_addr_r = bg1_memory_address;				
-				state_r_2_next = s_grant_bg1;	
+				//b3_addr_r = bg1_memory_address;				
+				//state_r_2_next = s_grant_bg1;	
 			end else
 			if (ov_rvalid == 1'b1 && ov_memory_address[15:14] == 2'b10) begin
-				b3_addr_r = ov_memory_address;				
-				state_r_2_next = s_grant_ov;	
+				//b3_addr_r = ov_memory_address;				
+				//state_r_2_next = s_grant_ov;	
 			end else
 			if (fl_wvalid == 1'b1 && fl_memory_address[15:14] == 2'b10) begin
 				b3_addr_r = fl_memory_address;				
@@ -419,8 +419,8 @@ always @(*) begin
 				b3_data_r = fl_memory_data; 
 				state_r_2_next = s_grant_fl;	
 			end else if (au_rvalid == 1'b1 && au_memory_address[15:14] == 2'b10) begin
-				//b3_addr_r = au_memory_address;				
-				//state_r_2_next = s_grant_au;	
+				b3_addr_r = au_memory_address;				
+				state_r_2_next = s_grant_au;	
 			end else if (cpu_valid == 1'b1 && cpu_memory_address[15:14] == 2'b10) begin
 				//b3_addr_r = cpu_memory_address;				
 				//b3_data_r = cpu_memory_data;				

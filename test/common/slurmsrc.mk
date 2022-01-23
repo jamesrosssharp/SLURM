@@ -18,7 +18,7 @@ $(SRCDIR)/memory.v				\
 $(SRCDIR)/mult.v					\
 $(SRCDIR)/port_controller.v			\
 $(SRCDIR)/pwm_led.v					\
-$(SRCDIR)/rom.v						\
+$(SRCDIR)/boot_memory.v				\
 $(SRCDIR)/spi_flash.v				\
 $(SRCDIR)/sprite_controller.v		\
 $(SRCDIR)/trace.v					\
