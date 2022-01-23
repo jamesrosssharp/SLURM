@@ -165,12 +165,12 @@ wire [15:0] data_out_cpr = (COPPER_WR == 1'b1) ? COPPER_DATA_OUT : DATA_IN;
 reg WR_fb_reg;
 reg WR_fb_pal;
 
-wire [15:0] fb_color = 16'h0000;
+wire [15:0] fb_color; // = 16'h0000;
 
-//wire [15:0] fb_memory_address;
-//wire [15:0] fb_memory_data;
-//wire fb_rvalid;
-//wire fb_rready;
+wire [15:0] fb_memory_address;
+wire [15:0] fb_memory_data;
+wire fb_rvalid;
+wire fb_rready;
 
 wire alpha_override_out;
 wire [3:0] alpha_out;
@@ -223,7 +223,7 @@ background_controller2 #(48, 369, 33, 513) bgcon0
 	bg0_rready 
 );
 
-/*
+
 fb_doubler fb0
 (
 	CLK,
@@ -247,8 +247,8 @@ fb_doubler fb0
 	ov_rvalid,
 	ov_rready 
 );
-*/
-assign ov_rvalid = 1'b0;
+
+//assign ov_rvalid = 1'b0;
 
 /*background_controller #(48, 369, 33, 513) bgcon1
 (
