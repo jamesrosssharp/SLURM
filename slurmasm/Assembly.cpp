@@ -161,6 +161,14 @@ static void get_aluOp(OpCode opcode, uint32_t lineNum, uint16_t& aluOp)
 		case OpCode::TEST:
 			aluOp = 13;
 			break;
+		case OpCode::STF:
+			// Store flags.
+			aluOp = 29;
+			break;
+		case OpCode::RSF:
+			// Restore flags
+			aluOp = 30;
+			break;
 		default:
 		{
 	        std::stringstream ss;

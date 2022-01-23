@@ -159,7 +159,6 @@ begin
 			out = lslOp;
 			Z_flag_reg_next = (lslOp[BITS - 1:0] == {BITS{1'b0}}) ? 1'b1 : 1'b0;	
 		end
-/*
 		5'd19: begin // rolc
 			out = rolcOp;
 			C_flag_reg_next = A[BITS - 1];	
@@ -193,10 +192,16 @@ begin
 		5'd28: begin // set sign
 			out = 0;
 			S_flag_reg_next = 1'b1;
-		end*/
-		5'd29: ; /* clz ? */
-		5'd30: ; /* ctz ? */
-		5'd31: ; /* is power of two? */
+		end
+		5'd29: begin	// Store flags
+			out = {13'h0000, S, C, Z};
+		end
+		5'd30: begin // Restore flags
+			C_flag_reg_next = B[1];
+			S_flag_reg_next = B[2];
+			Z_flag_reg_next = B[0];
+		end
+		5'd31: ; 
 		default: ; /* reserved */	
 	endcase				
 end

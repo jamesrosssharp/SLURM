@@ -88,19 +88,16 @@ banner:
 		dw 0
 
 hs_handler:
-		mov r10, 1
-		bnz done_flags
-		mov r10, 0
-done_flags:
+		stf r10	// Store flags
 		add r7, 1	
 		out [r0, GFX_CPR_BGCOL], r7
 		mov r9, 0xffff
 		out [r0, 0x7001], r9
-		or  r10, r10
+		rsf r10	// Restore flags
 		iret
 
 vs_handler:
-		mov r7, 0
+		mov r7, r0
 		mov r9, 0xffff
 		out [r0, 0x7001], r9
 		iret

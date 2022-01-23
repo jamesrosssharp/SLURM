@@ -71,7 +71,9 @@ enum class OpCode : uint32_t
 	TEST,
 	STI,
 	CLI,
-	SLEEP
+	SLEEP,
+	STF,	/* store flags */
+	RSF		/* restore flags */
 };
 
 enum class UniqueOpCode

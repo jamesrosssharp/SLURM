@@ -492,6 +492,14 @@ OpCode AST::convertOpCode(char* opcode)
 	{
 		return OpCode::SLEEP;
 	}
+	else if (s == "STF")
+	{
+		return OpCode::STF;
+	}
+	else if (s == "RSF")
+	{
+		return OpCode::RSF;
+	}
 
 	return OpCode::None;
 

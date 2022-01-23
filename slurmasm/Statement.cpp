@@ -307,21 +307,15 @@ void Statement::assemble(uint32_t &curAddress)
 				case OpCode::RORC:
 				case OpCode::ROL:
 				case OpCode::ROR:
-
+				case OpCode::STF:
+				case OpCode::RSF:
 
 			 		Assembly::makeExtendedArithmeticInstruction(opcode,
                                          regDest,
                                          words,
                                          lineNum);
             		break;
-				case OpCode::INC:
-				case OpCode::DEC:
-				{
- 				 	Assembly::makeIncDecInstruction(opcode,
-      									 words,
-                                         lineNum, regDest);
-            		break;
-                }
+				
 				default:
                 {
             		std::stringstream ss;
