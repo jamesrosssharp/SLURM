@@ -155,8 +155,11 @@ Class 2: Register to register ALU operation
         5 - and : DEST <- DEST & SRC
         6 - or  : DEST <- DEST | SRC
         7 - xor : DEST <- DEST ^ SRC
-        8-15 - reserved
-    
+    	8 - mul : DEST <- DEST * SRC (LO)
+		9 - mulu : DEST <- DEST * SRC (HI)
+		10 - 15 - reserved
+ 
+
 	DEST: destination and operand (alu A input)
     SRC:  source and second operand (alu B input)
 
@@ -169,15 +172,17 @@ Class 3: immediate to register ALU operation
 
 
     ALU OP: 4 bits ALU operation
-        0 - mov : DEST <- SRC
-        1 - add : DEST <- DEST + SRC
-        2 - adc : DEST <- DEST + SRC + Carry
-        3 - sub : DEST <- DEST - SRC
-        4 - sbb : DEST <- DEST - SRC - Carry
-        5 - and : DEST <- DEST & SRC
-        6 - or  : DEST <- DEST | SRC
-        7 - xor : DEST <- DEST ^ SRC
-        8-15 - reserved
+        0 - mov : DEST <- IMM
+        1 - add : DEST <- DEST + IMM
+        2 - adc : DEST <- DEST + IMM + Carry
+        3 - sub : DEST <- DEST - IMM
+        4 - sbb : DEST <- DEST - IMM - Carry
+        5 - and : DEST <- DEST & IMM
+        6 - or  : DEST <- DEST | IMM
+        7 - xor : DEST <- DEST ^ IMM
+        8 - mul : DEST <- DEST * IMM (LO)
+		9 - mulu : DEST <- DEST * IMM (HI)
+		10 - 15 - reserved
  
     DEST: destination and operand (alu A input)
     IMM LO : 4 bit immediate which can be combined with the immediate register to produce a 
