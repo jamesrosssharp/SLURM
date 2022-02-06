@@ -175,11 +175,11 @@ begin
 		end
 		5'd19: begin // rolc
 			out = rolcOp;
-			C_flag_reg_next = A[BITS - 1];	
+			C_flag_reg_next = B[BITS - 1];	
 		end
 		5'd20: begin // rorc
 			out = rorcOp;
-			C_flag_reg_next = A[0];	
+			C_flag_reg_next = B[0];	
 		end
 		5'd21: ; // rol
 		5'd22: ; // ror	

@@ -92,8 +92,9 @@ Class 0 has 4 sub-classes, bits 9 - 8 of the opcode.
         26 - sz : set zero
         27 - cs : clear sign
         28 - ss : set sign
-        29 - bswap : byte swap
-        30 - 31 : reserved
+        29 - stf : store flags
+        30 - rsf: restore flags
+		31 : reserved
 
 5. Interrupt
 
