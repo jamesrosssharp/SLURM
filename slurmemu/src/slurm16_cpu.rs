@@ -157,6 +157,34 @@ impl Slurm16CPU {
         self.c = false;
     }
  
+    pub fn alu_asr(&mut self, instruction : u16, src : u16) {
+        let reg_dest    = (instruction & 0xf) as usize;
+        
+        let a = src as i16;
+        let shift = a >> 1;
+
+        self.registers[reg_dest] = shift as u16;
+        self.z = shift == 0;
+        self.s = shift > 0;
+        self.c = false;
+    }
+
+    pub fn alu_lsr(&mut self, instruction : u16, src : u16) {
+        let reg_dest    = (instruction & 0xf) as usize;
+        
+        let a = src as u16;
+        let shift = a >> 1;
+
+        self.registers[reg_dest] = shift as u16;
+        self.z = shift == 0;
+        match shift & 0x8000 {
+            0x8000 => self.s = true,
+            _ => self.s = false
+        }
+        self.c = false;
+    }
+
+
 
     pub fn alu_op_reg_imm(&mut self, instruction : u16) {
         let imm         = self.imm_hi | (instruction & 0xf);
@@ -230,9 +258,11 @@ impl Slurm16CPU {
         let reg_src = (instruction & 0xf) as usize;
         let src_val = self.registers[reg_src];
         
-        match ((instruction & 0x0f00) >> 8) | 0x10 {
+        match ((instruction & 0x00f0) >> 4) | 0x10 {
             //  16 - asr : arithmetic shift right REG
+            16 => self.alu_asr(instruction, src_val), 
             //  17 - lsr : logical shift right REG
+            17 => self.alu_lsr(instruction, src_val),
             //  18 - lsl : logical shift left REG
             //  19 - rolc
             //  20 - rorc
@@ -369,6 +399,24 @@ mod tests {
         let mem : Vec<u16> = vec![0x1001, 0x3010, 0x3025, 0x2112];
         cpu.execute_n_instructions(&mem, mem.len());
         assert_eq!(cpu.get_register(1) , 0x15);
+    }
+
+    #[test]
+    fn test_asr_reg() {
+        let mut cpu = Slurm16CPU::new();
+        let mem : Vec<u16> = vec![0x1fff, 0x3018, 0x0401];
+        cpu.execute_n_instructions(&mem, mem.len());
+        println!("ARS: {}", cpu.get_register(1));
+        assert_eq!(cpu.get_register(1) , 0xfffc);
+    }
+
+    #[test]
+    fn test_lsr_reg() {
+        let mut cpu = Slurm16CPU::new();
+        let mem : Vec<u16> = vec![0x1fff, 0x3018, 0x0411];
+        cpu.execute_n_instructions(&mem, mem.len());
+        println!("ARS: {}", cpu.get_register(1));
+        assert_eq!(cpu.get_register(1) , 0x7ffc);
     }
 
 
