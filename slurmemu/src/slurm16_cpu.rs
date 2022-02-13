@@ -11,6 +11,8 @@ pub struct Slurm16CPU {
     pub registers: Vec<u16>,
 
     pub int_flag : bool,
+
+    pub halt : bool,
 }
 
 impl Slurm16CPU {
@@ -23,7 +25,8 @@ impl Slurm16CPU {
             imm_hi: 0,
             pc: 0,
             registers: vec![0; 16],
-            int_flag: false
+            int_flag: false,
+            halt : false
         }
     }
 
@@ -263,6 +266,61 @@ impl Slurm16CPU {
         self.c = false;
     }
 
+    pub fn alu_cc(&mut self) {
+        self.c = false;
+    }
+    
+    pub fn alu_sc(&mut self) {
+        self.c = true;
+    }
+
+    pub fn alu_cz(&mut self) {
+        self.z = false;
+    }
+
+    pub fn alu_sz(&mut self) {
+        self.z = true;
+    }
+
+    pub fn alu_cs(&mut self) {
+        self.s = false;
+    }
+
+    pub fn alu_ss(&mut self) {
+        self.s = true;
+    }
+
+    pub fn alu_stf(&mut self, instruction : u16) {
+    
+        let reg_dest    = (instruction & 0xf) as usize;
+        let c_int = if self.c { 2 } else { 0 } as u16;
+        let z_int = if self.z { 1 } else { 0 } as u16;
+        let s_int = if self.s { 4 } else { 0 } as u16;
+
+        self.registers[reg_dest] = c_int | z_int | s_int;
+    }       
+
+    pub fn alu_rsf(&mut self, src_val : u16) {
+
+        self.c = if src_val & 2 == 2 { true } else { false };
+        self.z = if src_val & 1 == 1 { true } else { false };
+        self.s = if src_val & 4 == 4 { true } else { false };
+
+    }
+
+    pub fn int(&mut self, _instruction : u16 ) {
+        // TODO: Interrupt
+
+    }
+
+    pub fn setif(&mut self, instruction : u16) {
+        self.int_flag = instruction & 1 == 1;
+    }
+
+    pub fn sleep(&mut self) {
+        self.halt = true;
+    }
+
     pub fn alu_op_reg_imm(&mut self, instruction : u16) {
         let imm         = self.imm_hi | (instruction & 0xf);
         //let reg_src = (instruction & 0xf) as usize;
@@ -351,13 +409,21 @@ impl Slurm16CPU {
             //  22 - ror
             22 => self.alu_ror(instruction, src_val),
             //  23 - cc : clear carry
+            23 => self.alu_cc(),
             //  24 - sc : set carry
+            24 => self.alu_sc(),
             //  25 - cz : clear zero
+            25 => self.alu_cz(),
             //  26 - sz : set zero
+            26 => self.alu_sz(),
             //  27 - cs : clear sign
+            27 => self.alu_cs(),
             //  28 - ss : set sign
+            28 => self.alu_ss(),
             //  29 - stf : store flags
+            29 => self.alu_stf(instruction),
             //  30 - rsf: restore flags
+            30 => self.alu_rsf(src_val),
             // 31 - reserved
             _ => self.nop()
         }
@@ -376,6 +442,9 @@ impl Slurm16CPU {
         match instruction {
             "0000_0000_0000_0000" => self.nop(),
             "0000_0100_????_????" => self.alu_op_single_reg(instruction),
+            "0000_0101_????_????" => self.int(instruction),
+            "0000_0110_????_????" => self.setif(instruction),
+            "0000_0111_????_????" => self.sleep(),
             "0001_????_????_????" => self.imm(instruction),
             "0010_????_????_????" => self.alu_op_reg_reg(instruction),
             "0011_????_????_????" => self.alu_op_reg_imm(instruction),
@@ -543,6 +612,13 @@ mod tests {
         assert_eq!(cpu.c, false);
     }
 
+    #[test]
+    fn test_stf() {
+        let mut cpu = Slurm16CPU::new();
+        let mem : Vec<u16> = vec![0x0480, 0x04a0, 0x04b0, 0x04d1];
+        cpu.execute_n_instructions(&mem, mem.len());
+        assert_eq!(cpu.get_register(1), 0x0003);
+    }
 
 }
 
