@@ -184,7 +184,84 @@ impl Slurm16CPU {
         self.c = false;
     }
 
+    pub fn alu_lsl(&mut self, instruction : u16, src : u16) {
+        let reg_dest    = (instruction & 0xf) as usize;
+        
+        let a = src as u16;
+        let shift = a << 1;
 
+        self.registers[reg_dest] = shift as u16;
+        self.z = shift == 0;
+        match shift & 0x8000 {
+            0x8000 => self.s = true,
+            _ => self.s = false
+        }
+        self.c = false;
+    }
+
+    pub fn alu_rolc(&mut self, instruction : u16, src : u16) {
+        let reg_dest    = (instruction & 0xf) as usize;
+        
+        let a = src as u16;
+        let carry = if self.c { 1 } else { 0 } as u16;
+        let rolc = a << 1 | carry;
+
+        self.registers[reg_dest] = rolc as u16;
+        self.z = rolc == 0;
+        match rolc & 0x8000 {
+            0x8000 => self.s = true,
+            _ => self.s = false
+        }
+        self.c = if src & 0x8000 == 0x8000 { true } else { false };
+    }
+
+   pub fn alu_rorc(&mut self, instruction : u16, src : u16) {
+        let reg_dest    = (instruction & 0xf) as usize;
+        
+        let a = src as u16;
+        let carry = if self.c { 0x8000 } else { 0 } as u16;
+        let rorc = a >> 1 | carry;
+
+        self.registers[reg_dest] = rorc as u16;
+        self.z = rorc == 0;
+        match rorc & 0x8000 {
+            0x8000  => self.s = true,
+            _       => self.s = false
+        }
+        self.c = if src & 0x0001 == 0x0001 { true } else { false };
+    }
+
+    pub fn alu_rol(&mut self, instruction : u16, src : u16) {
+        let reg_dest    = (instruction & 0xf) as usize;
+        
+        let a = src as u16;
+        let carry = if src & 0x8000 == 0x8000 { 1 } else { 0 } as u16;
+        let rol = a << 1 | carry;
+
+        self.registers[reg_dest] = rol as u16;
+        self.z = rol == 0;
+        match rol & 0x8000 {
+            0x8000 => self.s = true,
+            _ => self.s = false
+        }
+        self.c = false;
+    }
+
+   pub fn alu_ror(&mut self, instruction : u16, src : u16) {
+        let reg_dest    = (instruction & 0xf) as usize;
+        
+        let a = src as u16;
+        let carry = if src & 1 == 1 { 0x8000 } else { 0 } as u16;
+        let ror = a >> 1 | carry;
+
+        self.registers[reg_dest] = ror as u16;
+        self.z = ror == 0;
+        match ror & 0x8000 {
+            0x8000  => self.s = true,
+            _       => self.s = false
+        }
+        self.c = false;
+    }
 
     pub fn alu_op_reg_imm(&mut self, instruction : u16) {
         let imm         = self.imm_hi | (instruction & 0xf);
@@ -264,10 +341,15 @@ impl Slurm16CPU {
             //  17 - lsr : logical shift right REG
             17 => self.alu_lsr(instruction, src_val),
             //  18 - lsl : logical shift left REG
+            18 => self.alu_lsl(instruction, src_val),
             //  19 - rolc
+            19 => self.alu_rolc(instruction, src_val),
             //  20 - rorc
+            20 => self.alu_rorc(instruction, src_val),
             //  21 - rol
+            21 => self.alu_rol(instruction, src_val),
             //  22 - ror
+            22 => self.alu_ror(instruction, src_val),
             //  23 - cc : clear carry
             //  24 - sc : set carry
             //  25 - cz : clear zero
@@ -406,7 +488,6 @@ mod tests {
         let mut cpu = Slurm16CPU::new();
         let mem : Vec<u16> = vec![0x1fff, 0x3018, 0x0401];
         cpu.execute_n_instructions(&mem, mem.len());
-        println!("ARS: {}", cpu.get_register(1));
         assert_eq!(cpu.get_register(1) , 0xfffc);
     }
 
@@ -415,8 +496,51 @@ mod tests {
         let mut cpu = Slurm16CPU::new();
         let mem : Vec<u16> = vec![0x1fff, 0x3018, 0x0411];
         cpu.execute_n_instructions(&mem, mem.len());
-        println!("ARS: {}", cpu.get_register(1));
         assert_eq!(cpu.get_register(1) , 0x7ffc);
+    }
+
+    #[test]
+    fn test_lsl_reg() {
+        let mut cpu = Slurm16CPU::new();
+        let mem : Vec<u16> = vec![0x1fff, 0x3018, 0x0421];
+        cpu.execute_n_instructions(&mem, mem.len());
+        assert_eq!(cpu.get_register(1) , 0xfff0);
+    }
+
+    #[test]
+    fn test_rolc_reg() {
+        let mut cpu = Slurm16CPU::new();
+        let mem : Vec<u16> = vec![0x1fff, 0x3018, 0x0431];
+        cpu.execute_n_instructions(&mem, mem.len());
+        assert_eq!(cpu.get_register(1), 0xfff0);
+        assert_eq!(cpu.c, true);
+    }
+
+    #[test]
+    fn test_rorc_reg() {
+        let mut cpu = Slurm16CPU::new();
+        let mem : Vec<u16> = vec![0x1fff, 0x3019, 0x0441];
+        cpu.execute_n_instructions(&mem, mem.len());
+        assert_eq!(cpu.get_register(1), 0x7ffc);
+        assert_eq!(cpu.c, true);
+    }
+
+    #[test]
+    fn test_rol_reg() {
+        let mut cpu = Slurm16CPU::new();
+        let mem : Vec<u16> = vec![0x1fff, 0x3018, 0x0451];
+        cpu.execute_n_instructions(&mem, mem.len());
+        assert_eq!(cpu.get_register(1), 0xfff1);
+        assert_eq!(cpu.c, false);
+    }
+
+    #[test]
+    fn test_ror_reg() {
+        let mut cpu = Slurm16CPU::new();
+        let mem : Vec<u16> = vec![0x1fff, 0x3019, 0x0461];
+        cpu.execute_n_instructions(&mem, mem.len());
+        assert_eq!(cpu.get_register(1), 0xfffc);
+        assert_eq!(cpu.c, false);
     }
 
 
