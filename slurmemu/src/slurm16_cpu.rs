@@ -77,8 +77,23 @@ impl Slurm16CPU {
         self.c = sum > 65535;
     }
 
+    pub fn alu_cmp(&mut self, instruction : u16, src : u16) {
+        let reg_dest    = ((instruction & 0xf0) >> 4) as usize;
+        
+        let a = src as u32;
+        let b = self.get_register(reg_dest) as u32;
+        let sum = b - a;
+
+        self.z = sum & 65535 == 0;
+        match sum & 0x8000 {
+            0x8000 => self.s = true,
+            _ => self.s = false
+        }
+        self.c = sum > 65535;
+    }
+
     pub fn alu_and(&mut self, instruction : u16, src : u16) {
-         let reg_dest    = ((instruction & 0xf0) >> 4) as usize;
+        let reg_dest    = ((instruction & 0xf0) >> 4) as usize;
         
         let a = src;
         let b = self.get_register(reg_dest);
@@ -93,6 +108,24 @@ impl Slurm16CPU {
         self.c = false;
 
     }
+
+    pub fn alu_test(&mut self, instruction : u16, src : u16) {
+        let reg_dest    = ((instruction & 0xf0) >> 4) as usize;
+        
+        let a = src;
+        let b = self.get_register(reg_dest);
+        let andop = b & a;
+
+        self.z = andop == 0;
+        match andop & 0x8000 {
+            0x8000 => self.s = true,
+            _ => self.s = false
+        }
+        self.c = false;
+
+    }
+
+
 
    pub fn alu_or(&mut self, instruction : u16, src : u16) {
         let reg_dest    = ((instruction & 0xf0) >> 4) as usize;
@@ -348,7 +381,10 @@ impl Slurm16CPU {
             8 => self.alu_mul(instruction, imm), 
         //9 - mulu : DEST <- DEST * IMM (HI)
             9 => self.alu_mulu(instruction, imm),
-        // 10 - 15 - reserved
+        // 10 - 11 reserved for barrel shifter 
+            12 => self.alu_cmp(instruction, imm),
+            13 => self.alu_test(instruction, imm),
+        // 14 - 15 - reserved
             _ => self.nop()
         }
 
@@ -382,7 +418,10 @@ impl Slurm16CPU {
             8 => self.alu_mul(instruction, src_val), 
         //9 - mulu : DEST <- DEST * IMM (HI)
             9 => self.alu_mulu(instruction, src_val),
-        // 10 - 15 - reserved
+        // 10 - 11 reserved for barrel shifter 
+            12 => self.alu_cmp(instruction, src_val),
+            13 => self.alu_test(instruction, src_val),
+        // 14 - 15 - reserved
             _ => self.nop()
         }
 
@@ -532,6 +571,84 @@ impl Slurm16CPU {
         self.pc = target;
     }
 
+    pub fn beq_op(&mut self, instruction : u16) {
+
+        let reg_src = ((instruction & 0xf0) >> 8) as usize;
+        let reg_addr = self.get_register(reg_src);
+
+        let target : u16 = reg_addr + self.imm_hi + instruction & 0xf - 1; // PC will be incremented after we return 
+
+        if  self.z
+        {
+            self.pc = target;
+        }
+    }
+
+    pub fn bne_op(&mut self, instruction : u16) {
+
+        let reg_src = ((instruction & 0xf0) >> 8) as usize;
+        let reg_addr = self.get_register(reg_src);
+
+        let target : u16 = reg_addr + self.imm_hi + instruction & 0xf - 1; // PC will be incremented after we return 
+
+        if  ! self.z
+        {
+            self.pc = target;
+        }
+    }
+
+    pub fn bgt_op(&mut self, instruction : u16) {
+
+        let reg_src = ((instruction & 0xf0) >> 8) as usize;
+        let reg_addr = self.get_register(reg_src);
+
+        let target : u16 = reg_addr + self.imm_hi + instruction & 0xf - 1; // PC will be incremented after we return 
+
+        if  ! self.z && !self.s
+        {
+            self.pc = target;
+        }
+    }
+
+    pub fn bge_op(&mut self, instruction : u16) {
+
+        let reg_src = ((instruction & 0xf0) >> 8) as usize;
+        let reg_addr = self.get_register(reg_src);
+
+        let target : u16 = reg_addr + self.imm_hi + instruction & 0xf - 1; // PC will be incremented after we return 
+
+        if  self.z || !self.s
+        {
+            self.pc = target;
+        }
+    }
+
+    pub fn blt_op(&mut self, instruction : u16) {
+
+        let reg_src = ((instruction & 0xf0) >> 8) as usize;
+        let reg_addr = self.get_register(reg_src);
+
+        let target : u16 = reg_addr + self.imm_hi + instruction & 0xf - 1; // PC will be incremented after we return 
+
+        if  ! self.z && self.s
+        {
+            self.pc = target;
+        }
+    }
+
+    pub fn ble_op(&mut self, instruction : u16) {
+
+        let reg_src = ((instruction & 0xf0) >> 8) as usize;
+        let reg_addr = self.get_register(reg_src);
+
+        let target : u16 = reg_addr + self.imm_hi + instruction & 0xf - 1; // PC will be incremented after we return 
+
+        if  self.z || self.s
+        {
+            self.pc = target;
+        }
+    }
+
     pub fn branch_op(&mut self, instruction : u16) {
 
         match (instruction & 0x0f00) >> 12 {
@@ -552,11 +669,17 @@ impl Slurm16CPU {
             //7  - BL, branch and link
             7 => self.bl_op(instruction),
 		    //8  - BEQ, branch if equal
-		    //9  - BNE, branch if not equal
+		    8 => self.beq_op(instruction),
+            //9  - BNE, branch if not equal
+            9 => self.bne_op(instruction),
 		    //10 - BGT, branch if greater than
+            10 => self.bgt_op(instruction),
 		    //11 - BGE, branch if greater than or equal
+            11 => self.bge_op(instruction),
 		    //12 - BLT, branch if less than
+            12 => self.blt_op(instruction),
 		    //13 - BLE, branch if less than or equal
+            13 => self.ble_op(instruction),
             _ => self.nop()
         }
 
