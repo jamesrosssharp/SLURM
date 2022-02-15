@@ -1,4 +1,7 @@
 use bitmatch::bitmatch;
+use std::io::stdout;
+use std::io::Write;
+
 
 pub struct Slurm16CPU {
     pub z: bool,
@@ -67,6 +70,8 @@ impl Slurm16CPU {
         let a = src as u32;
         let b = self.get_register(reg_dest) as u32;
         let sum = b - a;
+
+        //println!("Subtract: {} {} {}", a, b, sum);
 
         self.registers[reg_dest] = sum as u16;
         self.z = sum & 65535 == 0;
@@ -474,12 +479,12 @@ impl Slurm16CPU {
 
     pub fn bz_op(&mut self, instruction : u16) {
 
-        let reg_src = ((instruction & 0xf0) >> 8) as usize;
+        let reg_src = ((instruction & 0xf0) >> 4) as usize;
         let reg_addr = self.get_register(reg_src);
 
         let target : u16 = reg_addr + self.imm_hi + instruction & 0xf - 1; // PC will be incremented after we return 
 
-        if ! self.z
+        if self.z
         {
             self.pc = target;
         }
@@ -487,20 +492,21 @@ impl Slurm16CPU {
 
    pub fn bnz_op(&mut self, instruction : u16) {
 
-        let reg_src = ((instruction & 0xf0) >> 8) as usize;
+        let reg_src = ((instruction & 0xf0) >> 4) as usize;
         let reg_addr = self.get_register(reg_src);
 
-        let target : u16 = reg_addr + self.imm_hi + instruction & 0xf - 1; // PC will be incremented after we return 
+        let target : u16 = reg_addr + self.imm_hi + (instruction & 0xf) - 1; // PC will be incremented after we return 
 
-        if  self.z
+        if  ! self.z
         {
+            
             self.pc = target;
         }
     }
 
     pub fn bs_op(&mut self, instruction : u16) {
 
-        let reg_src = ((instruction & 0xf0) >> 8) as usize;
+        let reg_src = ((instruction & 0xf0) >> 4) as usize;
         let reg_addr = self.get_register(reg_src);
 
         let target : u16 = reg_addr + self.imm_hi + instruction & 0xf - 1; // PC will be incremented after we return 
@@ -513,7 +519,7 @@ impl Slurm16CPU {
 
    pub fn bns_op(&mut self, instruction : u16) {
 
-        let reg_src = ((instruction & 0xf0) >> 8) as usize;
+        let reg_src = ((instruction & 0xf0) >> 4) as usize;
         let reg_addr = self.get_register(reg_src);
 
         let target : u16 = reg_addr + self.imm_hi + instruction & 0xf - 1; // PC will be incremented after we return 
@@ -526,7 +532,7 @@ impl Slurm16CPU {
 
     pub fn bc_op(&mut self, instruction : u16) {
 
-        let reg_src = ((instruction & 0xf0) >> 8) as usize;
+        let reg_src = ((instruction & 0xf0) >> 4) as usize;
         let reg_addr = self.get_register(reg_src);
 
         let target : u16 = reg_addr + self.imm_hi + instruction & 0xf - 1; // PC will be incremented after we return 
@@ -539,7 +545,7 @@ impl Slurm16CPU {
 
    pub fn bnc_op(&mut self, instruction : u16) {
 
-        let reg_src = ((instruction & 0xf0) >> 8) as usize;
+        let reg_src = ((instruction & 0xf0) >> 4) as usize;
         let reg_addr = self.get_register(reg_src);
 
         let target : u16 = reg_addr + self.imm_hi + instruction & 0xf - 1; // PC will be incremented after we return 
@@ -552,17 +558,17 @@ impl Slurm16CPU {
 
     pub fn ba_op(&mut self, instruction : u16) {
 
-        let reg_src = ((instruction & 0xf0) >> 8) as usize;
+        let reg_src = ((instruction & 0xf0) >> 4) as usize;
         let reg_addr = self.get_register(reg_src);
 
-        let target : u16 = reg_addr + self.imm_hi + instruction & 0xf - 1; // PC will be incremented after we return 
+        let target : u16 = (reg_addr + self.imm_hi + (instruction & 0xf)) - 1; // PC will be incremented after we return 
 
         self.pc = target;
     }
 
     pub fn bl_op(&mut self, instruction : u16) {
 
-        let reg_src = ((instruction & 0xf0) >> 8) as usize;
+        let reg_src = ((instruction & 0xf0) >> 4) as usize;
         let reg_addr = self.get_register(reg_src);
 
         let target : u16 = reg_addr + self.imm_hi + instruction & 0xf - 1; // PC will be incremented after we return 
@@ -573,7 +579,7 @@ impl Slurm16CPU {
 
     pub fn beq_op(&mut self, instruction : u16) {
 
-        let reg_src = ((instruction & 0xf0) >> 8) as usize;
+        let reg_src = ((instruction & 0xf0) >> 4) as usize;
         let reg_addr = self.get_register(reg_src);
 
         let target : u16 = reg_addr + self.imm_hi + instruction & 0xf - 1; // PC will be incremented after we return 
@@ -586,7 +592,7 @@ impl Slurm16CPU {
 
     pub fn bne_op(&mut self, instruction : u16) {
 
-        let reg_src = ((instruction & 0xf0) >> 8) as usize;
+        let reg_src = ((instruction & 0xf0) >> 4) as usize;
         let reg_addr = self.get_register(reg_src);
 
         let target : u16 = reg_addr + self.imm_hi + instruction & 0xf - 1; // PC will be incremented after we return 
@@ -599,7 +605,7 @@ impl Slurm16CPU {
 
     pub fn bgt_op(&mut self, instruction : u16) {
 
-        let reg_src = ((instruction & 0xf0) >> 8) as usize;
+        let reg_src = ((instruction & 0xf0) >> 4) as usize;
         let reg_addr = self.get_register(reg_src);
 
         let target : u16 = reg_addr + self.imm_hi + instruction & 0xf - 1; // PC will be incremented after we return 
@@ -612,7 +618,7 @@ impl Slurm16CPU {
 
     pub fn bge_op(&mut self, instruction : u16) {
 
-        let reg_src = ((instruction & 0xf0) >> 8) as usize;
+        let reg_src = ((instruction & 0xf0) >> 4) as usize;
         let reg_addr = self.get_register(reg_src);
 
         let target : u16 = reg_addr + self.imm_hi + instruction & 0xf - 1; // PC will be incremented after we return 
@@ -625,7 +631,7 @@ impl Slurm16CPU {
 
     pub fn blt_op(&mut self, instruction : u16) {
 
-        let reg_src = ((instruction & 0xf0) >> 8) as usize;
+        let reg_src = ((instruction & 0xf0) >> 4) as usize;
         let reg_addr = self.get_register(reg_src);
 
         let target : u16 = reg_addr + self.imm_hi + instruction & 0xf - 1; // PC will be incremented after we return 
@@ -638,7 +644,7 @@ impl Slurm16CPU {
 
     pub fn ble_op(&mut self, instruction : u16) {
 
-        let reg_src = ((instruction & 0xf0) >> 8) as usize;
+        let reg_src = ((instruction & 0xf0) >> 4) as usize;
         let reg_addr = self.get_register(reg_src);
 
         let target : u16 = reg_addr + self.imm_hi + instruction & 0xf - 1; // PC will be incremented after we return 
@@ -651,7 +657,7 @@ impl Slurm16CPU {
 
     pub fn branch_op(&mut self, instruction : u16) {
 
-        match (instruction & 0x0f00) >> 12 {
+        match (instruction & 0x0f00) >> 8 {
             //0  - BZ, branch if zero
             0 => self.bz_op(instruction),
             //1  - BNZ, branch if not zero
@@ -686,14 +692,59 @@ impl Slurm16CPU {
         self.imm_hi = 0;
     }
 
+    pub fn ret_op(&mut self, instruction : u16) {
+        if (instruction & 1) == 1 {
+
+            let addr = self.get_register(14);
+            self.pc = addr - 1; // This will get incremented
+
+        } else {
+
+            let addr = self.get_register(15);
+            self.pc = addr - 1; // This will get incremented
+
+        }
+        self.imm_hi = 0;
+    }
+
+    #[allow(unused_must_use)]
+    pub fn port_op(&mut self, instruction : u16) {
+
+        let reg_p = ((instruction & 0x1e00) >> 9) as usize;
+        let reg_addr : u16 = self.get_register(reg_p);
+
+        let imm : u16 = self.imm_hi | (instruction & 0xf);
+
+        let port : u16 = imm + reg_addr;
+
+        let reg_src = ((instruction & 0xf0) >> 4) as usize;
+        let val : u16 = self.get_register(reg_src);
+
+        let write = (instruction & 0x100) == 0x100;
+
+        // TODO:
+        //port_controller.port_op(port, val, write);
+
+        if port == 0x0000 {
+            if write {
+                print!("{}", (val & 0xff) as u8 as char);    
+                stdout().flush();
+            }
+        }
+        self.imm_hi = 0;
+    }
+
     #[bitmatch]
     pub fn execute_one_instruction(&mut self, /*mut*/ memory: &Vec<u16>) {
         let instruction = memory[self.pc as usize];
+
+        //println!("PC: {}", self.pc);
 
         // Decode instruction
         #[bitmatch]
         match instruction {
             "0000_0000_0000_0000" => self.nop(),
+            "0000_0001_0000_000?" => self.ret_op(instruction),
             "0000_0100_????_????" => self.alu_op_single_reg(instruction),
             "0000_0101_????_????" => self.int(instruction),
             "0000_0110_????_????" => self.setif(instruction),
@@ -702,6 +753,7 @@ impl Slurm16CPU {
             "0010_????_????_????" => self.alu_op_reg_reg(instruction),
             "0011_????_????_????" => self.alu_op_reg_imm(instruction),
             "0100_????_????_????" => self.branch_op(instruction),
+            "111?_????_????_????" => self.port_op(instruction),
             _ => self.nop()
         }
 
@@ -877,9 +929,17 @@ mod tests {
     #[test]
     fn test_branch() {
         let mut cpu = Slurm16CPU::new();
-        let mem : Vec<u16> = vec![0x3013, 0x2020, 0x3311, 0x3121, 0x4102];
-        cpu.execute_n_instructions(&mem, 11);
-        assert_eq!(cpu.get_register(2), 4);
+        let mem : Vec<u16> = vec![0x3013, 0x2020, 0x3121, 0x3311, 0x4102];
+        cpu.execute_n_instructions(&mem, 9);
+        assert_eq!(cpu.get_register(2), 3);
+    }
+
+    #[test]
+    fn test_uart() {
+        let mut cpu = Slurm16CPU::new();
+        let mem : Vec<u16> = vec![0x1004, 0x3011, 0xe110, 0x4602];
+        cpu.execute_n_instructions(&mem, 20);
+        assert_eq!(cpu.get_register(1), 0x41);
     }
 }
 
