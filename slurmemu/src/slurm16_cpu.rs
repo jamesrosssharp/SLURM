@@ -2,7 +2,10 @@ use bitmatch::bitmatch;
 use std::io::stdout;
 use std::io::Write;
 
-
+/// The Slurm16CPU structure encapsulates the SlURM16 CPU.
+/// The implementation is not cycle accurate, and does not
+/// model the interaction with the memory controller.
+/// (Perhaps this should be added in future)
 pub struct Slurm16CPU {
     pub z: bool,
     pub c: bool,
