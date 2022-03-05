@@ -779,7 +779,7 @@ impl Slurm16CPU {
 
 #[cfg(test)]
 mod tests {
-    use crate::Slurm16CPU;
+    use super::Slurm16CPU;
 
     #[test]
     fn test_imm() {
