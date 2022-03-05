@@ -1,8 +1,8 @@
-use crate::slurm16_soc::Slurm16SoC;
+use super::uart::Uart;
 
 pub struct PortController {
-
-
+    pub uart: Uart,
+    pub exit: bool,
 }
 
 ///     The PortController simply implements the port address map
@@ -10,35 +10,40 @@ impl PortController {
 
     pub fn new() -> Self 
     {
-        PortController { }
-    }
-
-    pub fn handle_trace(&self, soc : &mut Slurm16SoC, port : u16, _val : u16, write : bool)
-    {
-        if port == 0x6006 && write
-        {
-            soc.trap();
+        PortController { 
+            uart: Uart::new(),
+            exit: false
         }
     }
 
-    pub fn port_op(& self, soc : &mut Slurm16SoC, port : u16, val: u16, write : bool)
+    pub fn handle_trace(&mut self, port : u16, _val : u16, write : bool)
+    {
+        //println!("handle trace: Port: {:#01x}", port);
+        if (port == 0x6006) && write
+        {
+            self.exit = true;
+        }
+    }
+
+    pub fn port_op(&mut self, port : u16, val: u16, write : bool) -> u16
     {
    
         match (port & 0xf000) >> 12 {
             // 0 - UART
-            0 => soc.uart.port_op(port, val, write),
+            0 => return self.uart.port_op(port, val, write),
             // 1 - GPIO
             // 2 - PWM
             // 3 - Audio
             // 4 - SPI
             // 5 - GFX
             // 6 - Trace port
-            6 => self.handle_trace( soc, port, val, write),
+            6 => self.handle_trace(port, val, write),
             // 7 - Interrupt controller
             // 8 - scratch pad RAM
             // Else, do nothing
             _ => ()
         }
+        return 0;
     }
 }
 

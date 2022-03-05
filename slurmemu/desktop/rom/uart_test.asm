@@ -4,9 +4,8 @@
 UART_TX_REG 	equ 	0x0000
 UART_TX_STATUS 	equ 	0x0001
 
-		mov r1, 'A'
-		out [r0, UART_TX_REG], r1
-		out [r0, 0x6006], r0 // Exit emulator
+		//mov r1, 'A'
+		//out [r0, UART_TX_REG], r1
 
 		// Print a banner
 
@@ -25,7 +24,10 @@ test_loop:
 
 		ba loop
 
+
 die:
+		out [r0, 0x6006], r0 // Exit emulator
+
 		ba die
 
 banner:

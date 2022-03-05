@@ -3,7 +3,6 @@
 
 use super::slurm16_cpu::*;
 use super::port_controller::*;
-use super::uart::*;
 
 use std::{thread, time};
 
@@ -15,7 +14,6 @@ pub struct Slurm16SoC {
     pub mem : Vec<u16>,
     pub cpu : Slurm16CPU,
     pub port_controller : PortController,
-    pub uart : Uart,
 
     pub exit_run_loop : bool,
 }
@@ -28,7 +26,6 @@ impl Slurm16SoC
             mem: vec![0; MEM_SIZE],
             cpu: Slurm16CPU::new(),
             port_controller: PortController::new(),
-            uart: Uart::new(),
             exit_run_loop: false
         }
 
@@ -56,18 +53,16 @@ impl Slurm16SoC
             let frame_time = time::Instant::now();
 
             for _j in 0..416_667 {
-                self.cpu.execute_one_instruction(&self.mem);
+                self.cpu.execute_one_instruction(&mut self.mem, &mut self.port_controller);
+                if self.port_controller.exit { self.exit_run_loop = true; break; }
             }
 
             if let Some(i) = (target_ft).checked_sub(frame_time.elapsed()) {
                 thread::sleep(i)
             }
         }
+        println!("Emulation finished");
     }
 
-    pub fn trap(& mut self)
-    {
-        self.exit_run_loop = true;
-    }
 
 }
