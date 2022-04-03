@@ -36,10 +36,13 @@ impl Slurm16CPU {
             halt : false
         }
     }
-
+    
+    pub fn print_pc(& self) {
+        println!("\n\nPC = {:#01x}", self.pc);
+    }
+    
     pub fn print_regs(& self) {
         
-        println!("\n\nPC = {:#01x}", self.pc);
         for i in 0..15 {
             println!("r{} = {:#01x}", i, self.registers[i]);
         }
@@ -585,7 +588,7 @@ impl Slurm16CPU {
 
         let target : u16 = reg_addr + self.imm_hi + (instruction & 0xf) - 1; // PC will be incremented after we return 
 
-        self.registers[15] = self.pc;
+        self.registers[15] = self.pc + 1;
         self.pc = target;
     }
 

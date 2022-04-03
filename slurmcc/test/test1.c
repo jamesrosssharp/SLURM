@@ -1,5 +1,5 @@
 
-char* string = "Hello world!";
+char* string = "Hello world from C compiled code!\n";
 
 extern void putc(char c);
 

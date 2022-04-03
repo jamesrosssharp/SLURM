@@ -69,8 +69,9 @@ impl Slurm16SoC
     pub fn single_step(& mut self)
     {
         loop {
-            self.cpu.print_regs();     
+            self.cpu.print_pc();     
             self.cpu.execute_one_instruction(&mut self.mem, &mut self.port_controller);
+            self.cpu.print_regs();
             if self.port_controller.exit { break; }
             stdin().read(&mut [0]).unwrap();
         }

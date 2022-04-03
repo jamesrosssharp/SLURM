@@ -83,7 +83,7 @@ void Assembly::makeArithmeticInstructionWithImmediate(OpCode opcode, Register re
             ss << "Error: not enough space allocated for instruction on line " << lineNum << std::endl;
             throw std::runtime_error(ss.str());
         }
-		assembledWords[0] = SLRM_IMM_INSTRUCTION | ((uint32_t)value >> 4);
+		assembledWords[0] = SLRM_IMM_INSTRUCTION | ((uint16_t)value >> 4);
 	
 		op = SLRM_ALU_REG_IMM_INSTRUCTION | ((aluOp & 0xf) << 8) | ((int)regDest << 4) | ((uint16_t)value & 0xf);
         assembledWords[1] = op;
@@ -201,7 +201,7 @@ void Assembly::makeThreeRegisterArithmeticInstruction(OpCode opcode,
 	
 	get_aluOp(opcode, lineNum, aluOp);
 
-	op = SLRM_ALU_REG_REG_REG_INSTRUCTION | ((aluOp & 0xf) << 9) | ((int)regDest << 6) | ((int)regSrc2 << 3) | ((int)regSrc);
+	throw std::runtime_error("Cannot make three reg alu op");
 
     assembledWords[0] = op;
 
@@ -349,15 +349,15 @@ void Assembly::makeRelativeFlowControlInstruction(OpCode opcode, uint32_t addres
 
 	int16_t diff = target - address - 2; // need to subtract two, because PC will have already advanced once the instruction is in the pipeline
 	
-	if ((diff < -256) || (diff > 255))
-	{
+	//if ((diff < -256) || (diff > 255))
+	//{
         std::stringstream ss;
 		ss << "Error: relative branch out of range on line " << lineNum << std::endl;
 		throw std::runtime_error(ss.str());
-	}
+	//}
 
-	op = SLRM_RELATIVE_BRANCH_INSTRUCTION | (branch << 10) | ((uint16_t)diff & 0x1ff);	
-	assembledWords[0] = op;
+	//op = SLRM_RELATIVE_BRANCH_INSTRUCTION | (branch << 10) | ((uint16_t)diff & 0x1ff);	
+	//assembledWords[0] = op;
 }
 
 void Assembly::makeLoadStore(OpCode opcode, uint32_t lineNum, std::vector<uint16_t>& assembledWords, Register regInd, Register regDest, bool postIncrement, bool postDecrement)
@@ -384,7 +384,8 @@ void Assembly::makeLoadStore(OpCode opcode, uint32_t lineNum, std::vector<uint16
 		}
 	}
 
-	uint16_t op = SLRM_INDEX_REGISTER_MEMORY_INSTRUCTION | (PD << 10) | (PI << 9) | (LS << 8) | ((uint16_t)regDest << 4) | ((uint16_t)regInd); 	
+	uint16_t op = SLRM_IMMEDIATE_PLUS_REG_MEMORY_INSTRUCTION | (LS << 8) | ((uint16_t)regDest << 4) |  (uint16_t)regInd << 9;
+	//uint16_t op = SLRM_INDEX_REGISTER_MEMORY_INSTRUCTION | (PD << 10) | (PI << 9) | (LS << 8) | ((uint16_t)regDest << 4) | ((uint16_t)regInd); 	
 	assembledWords[0] = op;
 }
 
@@ -410,8 +411,8 @@ void Assembly::makeLoadStoreWithExpression(OpCode opcode, uint32_t lineNum, std:
             throw std::runtime_error(ss.str());  
 		}
 	}
-
-	uint16_t op = SLRM_IMMEDIATE_MEMORY_INSTRUCTION  | (LS << 8) | ((uint16_t)regDest << 4) | ((uint16_t)value & 0xf); 	
+	uint16_t op = SLRM_IMMEDIATE_PLUS_REG_MEMORY_INSTRUCTION | (LS << 8) | ((uint16_t)regDest << 4) | ((uint16_t)value & 0xf) | 0<<9 /* r0 */;
+//	uint16_t op = SLRM_IMMEDIATE_MEMORY_INSTRUCTION  | (LS << 8) | ((uint16_t)regDest << 4) | ((uint16_t)value & 0xf); 	
 	
 	if (value >= 0 && value < 16)
     {
