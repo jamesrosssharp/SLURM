@@ -329,14 +329,14 @@ reg: RSHI4(reg,reg)  "?\tmov r%c, r%0\n\t.ashiftright(r%c, r%1) \n"   10
 reg: RSHU2(reg,reg)  "?\tmov r%c, r%0\n\t.shiftright(r%c, r%1) \n"    10
 reg: RSHU4(reg,reg)  "?\tmov r%c, r%0\n\t.shiftright(r%c, r%1) \n"   10
 
-reg: LSHI2(reg,con)  "?\tmov r%c, r%0\n\t.shiftleft(r%c, %1) \n"   1
-reg: LSHI4(reg,con)  "?\tmov r%c, r%0\n\t.shiftleft(r%c, %1) \n"   1
-reg: LSHU2(reg,con)  "?\tmov r%c, r%0\n\t.shiftleft(r%c, %1) \n"   1
-reg: LSHU4(reg,con)  "?\tmov r%c, r%0\n\t.shiftleft(r%c, %1) \n"   1
-reg: RSHI2(reg,con)  "?\tmov r%c, r%0\n\t.ashiftright(r%c, %1) \n"   1
-reg: RSHI4(reg,con)  "?\tmov r%c, r%0\n\t.ashifright(r%c, %1) \n"   1
-reg: RSHU2(reg,con)  "?\tmov r%c, r%0\n\t.shiftright(r%c, %1) \n"   1
-reg: RSHU4(reg,con)  "?\tmov r%c, r%0\n\t.shiftright(r%c, %1) \n"   1
+reg: LSHI2(reg,con)  "?\tmov r%c, r%0\n\t.times %1 lsl r%c \n"   1
+reg: LSHI4(reg,con)  "?\tmov r%c, r%0\n\t.times %1 lsl r%c \n"   1
+reg: LSHU2(reg,con)  "?\tmov r%c, r%0\n\t.times %1 lsl r%c \n"   1
+reg: LSHU4(reg,con)  "?\tmov r%c, r%0\n\t.times %1 lsl r%c \n"   1
+reg: RSHI2(reg,con)  "?\tmov r%c, r%0\n\t.times %1 asr r%c \n"   1
+reg: RSHI4(reg,con)  "?\tmov r%c, r%0\n\t.times %1 asr r%c \n"   1
+reg: RSHU2(reg,con)  "?\tmov r%c, r%0\n\t.times %1 lsr r%c \n"   1
+reg: RSHU4(reg,con)  "?\tmov r%c, r%0\n\t.times %1 lsr r%c \n"   1
 
 reg: BCOMI2(reg)  "?\tmov r%c,r%0\n\txori r%c,-1\n"   1
 reg: BCOMI4(reg)  "?\tmov r%c,r%0\n\txori r%c,-1\n"   1
@@ -357,13 +357,13 @@ reg: MULF4(reg,reg)  ""  fp()
 reg: SUBF4(reg,reg)  ""  fp()
 reg: LOADF4(reg)     ""       move(a)+fp()
 reg: NEGF4(reg)      ""  fp()
-reg: CVII2(reg)  "nop\n"  1
-reg: CVUI2(reg)  "nop\n"  1
-reg: CVUU2(reg)  "nop\n"  1
-reg: CVII4(reg)  "nop\n"  1
-reg: CVIU4(reg)  "nop\n"  1
-reg: CVUI4(reg)  "nop\n"  1
-reg: CVUU4(reg)  "nop\n"  1
+reg: CVII2(reg)  "\tmov r%c,r%0\n"  1
+reg: CVUI2(reg)  "\tmov r%c,r%0\n"   1
+reg: CVUU2(reg)  "\tmov r%c,r%0\n"   1
+reg: CVII4(reg)  "\tmov r%c,r%0\n"   1
+reg: CVIU4(reg)  "\tmov r%c,r%0\n"   1
+reg: CVUI4(reg)  "\tmov r%c,r%0\n"   1
+reg: CVUU4(reg)  "\tmov r%c,r%0\n"   1
 reg: CVFF4(reg)  ""  fp()
 reg: CVIF4(reg)  ""  fp()
 reg: CVFI2(reg)  ""  fp()
@@ -681,15 +681,15 @@ static void function(Symbol f, Symbol caller[], Symbol callee[], int ncalls) {
         gencode(caller, callee);
         if (ncalls)
                 usedmask[IREG] |= ((unsigned)1)<<31;
-        usedmask[IREG] &= 0xc0ff0000;
+        usedmask[IREG] &= 0x1fff;
         usedmask[FREG] &= 0xfff00000;
         if (pic && ncalls)
                 usedmask[IREG] |= 1<<25;
         maxargoffset = roundup(maxargoffset, usedmask[FREG] ? 8 : 4);
         if (ncalls && maxargoffset < 16)
                 maxargoffset = 16;
-        sizefsave = 4*bitcount(usedmask[FREG]);
-        sizeisave = 4*bitcount(usedmask[IREG]);
+        sizefsave = 0; //bitcount(usedmask[FREG]);
+        sizeisave = bitcount(usedmask[IREG]);
         framesize = roundup(maxargoffset + sizefsave
                 + sizeisave + maxoffset, 16);
         segment(CODE);
@@ -701,7 +701,7 @@ static void function(Symbol f, Symbol caller[], Symbol callee[], int ncalls) {
         //if (pic)
         //        print(".set noreorder\n.cpload $25\n.set reorder\n");
         if (framesize > 0)
-                print("\tadd r13,%d\n", -framesize);
+                print("\tsub r13,%d\n", framesize);
         //if (usedmask[FREG])
         //        print(".fmask 0x%x,%d\n", usedmask[FREG], i - 8);
         //if (usedmask[IREG])
@@ -716,7 +716,11 @@ static void function(Symbol f, Symbol caller[], Symbol callee[], int ncalls) {
                 }
 		*/
 
-        for (i = 4; i <= 15; i++)
+		// Save LR
+		print("\tst [r13, %d], r15\n", saved);
+		saved += 1;
+
+        for (i = 4; i <= 12; i++)
                 if (usedmask[IREG]&(1<<i)) {
                         print("\tst [r13, %d], r%d\n", saved, i);
                         saved += 1;
@@ -744,7 +748,7 @@ static void function(Symbol f, Symbol caller[], Symbol callee[], int ncalls) {
                                 else if (rs == IREG && tyin == F+sizeop(4))
                                         print("mtc1 $%d,$f%d\n",   rn,   outn);
                                 else*/
-                                        print("\tmov $%d,$%d\n",    outn, rn);
+                                        print("\tmov r%d,r%d\n",    outn, rn);
                         } else {
                                 int off = in->x.offset + framesize;
                                /* if (rs == FREG && tyin == F+sizeop(8))
@@ -754,7 +758,7 @@ static void function(Symbol f, Symbol caller[], Symbol callee[], int ncalls) {
                                 else*/ {
                                         int i, n = (in->type->size + 3)/4;
                                         for (i = rn; i < rn+n && i <= 7; i++)
-                                                print("sw $%d,%d($sp)\n", i, off + (i-rn)*4);
+                                                print("\tst [r13, %d], r%d\n", off + (i-rn)*4, i);
                                 }
                         }
                 }
@@ -772,10 +776,14 @@ static void function(Symbol f, Symbol caller[], Symbol callee[], int ncalls) {
                         saved += 8;
                 }
 		*/
-        for (i = 4; i <= 15; i++)
+       	// restore LR
+		print("\tld r15, [r13, %d]\n", saved);
+		saved += 1;		
+
+		for (i = 4; i <= 12; i++)
                 if (usedmask[IREG]&(1<<i)) {
                         print("\tld r%d, [r13, %d]\n", i, saved);
-                        saved += 4;
+                        saved += 1;
                 }
         if (framesize > 0)
                 print("\tadd r13,%d\n", framesize);
@@ -953,7 +961,7 @@ Interface slurm16IR = {
         2, 2, 0,  /* T * */
         0, 1, 0,  /* struct */
         1,      /* little_endian */
-        0,  /* mulops_calls */
+        1,  /* mulops_calls */
         0,  /* wants_callb */
         1,  /* wants_argb */
         1,  /* left_to_right */

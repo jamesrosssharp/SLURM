@@ -16,6 +16,8 @@ VECTORS:
 	.times 20 dw 0x0000
 
 start:
+	// Set up stack
+	mov r13, 0x7fff
 	bl main
 die:
 	ba die
