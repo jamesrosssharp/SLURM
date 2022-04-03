@@ -119,7 +119,7 @@ begin
 		4'b1000:		/* 0x8 - BEQ */
 			if (Z_in == 1'b1) branch_taken_from_ins = 1'b1;
 			else branch_taken_from_ins = 1'b0;
-		4'b1001:		/* 0x9 - BNEQ */
+		4'b1001:		/* 0x9 - BNE */
 			if (Z_in == 1'b0) branch_taken_from_ins = 1'b1;
 			else branch_taken_from_ins = 1'b0;
  		4'b1010:		/* 0xa - BGT */
@@ -128,10 +128,10 @@ begin
 		4'b1011:		/* 0xb - BGE */
 			if (S_in == 1'b0 || Z_in == 1'b1) branch_taken_from_ins = 1'b1;
 			else branch_taken_from_ins = 1'b0;	
-  		4'b1100:		/* 0xa - BLT */
+  		4'b1100:		/* 0xc - BLT */
 			if (S_in == 1'b1 && Z_in == 1'b0) branch_taken_from_ins = 1'b1;
 			else branch_taken_from_ins = 1'b0;	
-		4'b1101:		/* 0xb - BLE */
+		4'b1101:		/* 0xd - BLE */
 			if (S_in == 1'b1 || Z_in == 1'b1) branch_taken_from_ins = 1'b1;
 			else branch_taken_from_ins = 1'b0;	
 		default:	

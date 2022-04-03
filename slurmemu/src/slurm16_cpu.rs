@@ -2,6 +2,7 @@ use bitmatch::bitmatch;
 
 use super::port_controller::PortController;
 
+
 /// The Slurm16CPU structure encapsulates the SlURM16 CPU.
 /// The implementation is not cycle accurate, and does not
 /// model the interaction with the memory controller.
@@ -33,6 +34,14 @@ impl Slurm16CPU {
             registers: vec![0; 16],
             int_flag: false,
             halt : false
+        }
+    }
+
+    pub fn print_regs(& self) {
+        
+        println!("\n\nPC = {:#01x}", self.pc);
+        for i in 0..15 {
+            println!("r{} = {:#01x}", i, self.registers[i]);
         }
     }
 

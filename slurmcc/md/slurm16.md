@@ -430,13 +430,13 @@ stmt: GTF4(reg,reg)  ""  fp()
 stmt: NEF4(reg,reg)  ""  fp()
 ar:   ADDRGP2     "%a"
 
-reg:  CALLF4(ar)  "bl %0\n"  fp()
-reg:  CALLI2(ar)  "bl %0\n"  1
-reg:  CALLI4(ar)  "bl %0\n"  1
-reg:  CALLP2(ar)  "bl %0\n"  1
-reg:  CALLU2(ar)  "bl %0\n"  1
-reg:  CALLU4(ar)  "bl %0\n"  1
-stmt: CALLV(ar)  "bl %0\n"  1
+reg:  CALLF4(ar)  "\tbl %0\n"  fp()
+reg:  CALLI2(ar)  "\tbl %0\n"  1
+reg:  CALLI4(ar)  "\tbl %0\n"  1
+reg:  CALLP2(ar)  "\tbl %0\n"  1
+reg:  CALLU2(ar)  "\tbl %0\n"  1
+reg:  CALLU4(ar)  "\tbl %0\n"  1
+stmt: CALLV(ar)  "\tbl %0\n"  1
 ar: reg    "r%0"
 ar: CNSTP2  "%a"   range(a, 0, 0x0ffff)
 stmt: RETF4(reg)  "# ret\n"  fp()
@@ -459,7 +459,7 @@ stmt: ASGNB(reg,INDIRB(reg))  "# asgnb %0 %1\n"  1
 
 
 %%
-static void progend(void){}
+static void progend(void){ print(".end\n");}
 static void progbeg(int argc, char *argv[]) {
         int i;
 
@@ -700,27 +700,26 @@ static void function(Symbol f, Symbol caller[], Symbol callee[], int ncalls) {
         //print(".frame $sp,%d,$31\n", framesize);
         //if (pic)
         //        print(".set noreorder\n.cpload $25\n.set reorder\n");
-        //if (framesize > 0)
-        //        print("addu $sp,$sp,%d\n", -framesize);
+        if (framesize > 0)
+                print("\tadd r13,%d\n", -framesize);
         //if (usedmask[FREG])
         //        print(".fmask 0x%x,%d\n", usedmask[FREG], i - 8);
         //if (usedmask[IREG])
         //        print(".mask 0x%x,%d\n",  usedmask[IREG],
         //                i + sizeisave - 4);
         saved = maxargoffset;
-        for (i = 20; i <= 30; i += 2)
+        /*  No floating point regs
+ 			for (i = 20; i <= 30; i += 2)
                 if (usedmask[FREG]&(3<<i)) {
                         print("s.d $f%d,%d($sp)\n", i, saved);
                         saved += 8;
                 }
+		*/
 
-        for (i = 16; i <= 31; i++)
+        for (i = 4; i <= 15; i++)
                 if (usedmask[IREG]&(1<<i)) {
-                        if (i == 25)
-                                print(".cprestore %d\n", saved);
-                        else
-                                print("sw $%d,%d($sp)\n", i, saved);
-                        saved += 4;
+                        print("\tst [r13, %d], r%d\n", saved, i);
+                        saved += 1;
                 }
         for (i = 0; i < 4 && callee[i]; i++) {
                 r = argregs[i];
@@ -736,7 +735,7 @@ static void function(Symbol f, Symbol caller[], Symbol callee[], int ncalls) {
                         if (out->sclass == REGISTER
                         && (isint(out->type) || out->type == in->type)) {
                                 int outn = out->x.regnode->number;
-                                if (rs == FREG && tyin == F+sizeop(8))
+                                /*if (rs == FREG && tyin == F+sizeop(8))
                                         print("mov.d $f%d,$f%d\n", outn, rn);
                                 else if (rs == FREG && tyin == F+sizeop(4))
                                         print("mov.s $f%d,$f%d\n", outn, rn);
@@ -744,15 +743,15 @@ static void function(Symbol f, Symbol caller[], Symbol callee[], int ncalls) {
                                         print("mtc1.d $%d,$f%d\n", rn,   outn);
                                 else if (rs == IREG && tyin == F+sizeop(4))
                                         print("mtc1 $%d,$f%d\n",   rn,   outn);
-                                else
-                                        print("move $%d,$%d\n",    outn, rn);
+                                else*/
+                                        print("\tmov $%d,$%d\n",    outn, rn);
                         } else {
                                 int off = in->x.offset + framesize;
-                                if (rs == FREG && tyin == F+sizeop(8))
+                               /* if (rs == FREG && tyin == F+sizeop(8))
                                         print("s.d $f%d,%d($sp)\n", rn, off);
                                 else if (rs == FREG && tyin == F+sizeop(4))
                                         print("s.s $f%d,%d($sp)\n", rn, off);
-                                else {
+                                else*/ {
                                         int i, n = (in->type->size + 3)/4;
                                         for (i = rn; i < rn+n && i <= 7; i++)
                                                 print("sw $%d,%d($sp)\n", i, off + (i-rn)*4);
@@ -767,18 +766,19 @@ static void function(Symbol f, Symbol caller[], Symbol callee[], int ncalls) {
                 }
         emitcode();
         saved = maxargoffset;
-        for (i = 20; i <= 30; i += 2)
+     	/*   for (i = 20; i <= 30; i += 2)
                 if (usedmask[FREG]&(3<<i)) {
                         print("l.d $f%d,%d($sp)\n", i, saved);
                         saved += 8;
                 }
-        for (i = 16; i <= 31; i++)
+		*/
+        for (i = 4; i <= 15; i++)
                 if (usedmask[IREG]&(1<<i)) {
-                        print("lw $%d,%d($sp)\n", i, saved);
+                        print("\tld r%d, [r13, %d]\n", i, saved);
                         saved += 4;
                 }
         if (framesize > 0)
-                print("addu $sp,$sp,%d\n", framesize);
+                print("\tadd r13,%d\n", framesize);
         print("\tret\n");
        // print(".end %s\n", f->x.name);
 }
@@ -802,19 +802,19 @@ static void defconst(int suffix, int size, Value v) {
                 print("dw 0x%x\n", (unsigned)(suffix == I ? v.i : v.u));
 }
 static void defaddress(Symbol p) {
-        if (pic && p->scope == LABELS)
-                print(".gpword %s\n", p->x.name);
-        else
-                print(".word %s\n", p->x.name);
+        //if (pic && p->scope == LABELS)
+        //        print(".gpword %s\n", p->x.name);
+        //else
+                print("\tdw %s\n", p->x.name);
 }
 static void defstring(int n, char *str) {
         char *s;
 
         for (s = str; s < str + n; s++)
-                print(".byte %d\n", (*s)&0377);
+                print("\tdw 0x%x\n", (*s)&0377);
 }
 static void export(Symbol p) {
-        print(".globl %s\n", p->x.name);
+        print(".global %s\n", p->x.name);
 }
 static void import(Symbol p) {
         if (!isfunc(p->type))
@@ -851,8 +851,8 @@ static void global(Symbol p) {
                 && (p->type->size == 0 || p->type->size > gnum))
                         print(".data\n");
                 else if (p->u.seg == DATA)
-                        print(".sdata\n");
-                print(".align %c\n", ".01.2...3"[p->type->align]);
+                        print(".data\n");
+                //print(".align %c\n", ".01.2...3"[p->type->align]);
                 print("%s:\n", p->x.name);
         }
 }
@@ -860,7 +860,7 @@ static void segment(int n) {
         cseg = n;
         switch (n) {
         case CODE: print(".text\n");  break;
-        case LIT:  print(".rdata\n"); break;
+        case LIT:  print(".data\n"); break;
         }
 }
 static void space(int n) {

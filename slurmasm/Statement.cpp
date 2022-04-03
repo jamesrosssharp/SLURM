@@ -107,6 +107,12 @@ void Statement::firstPassAssemble(uint32_t& curAddress, SymbolTable& syms)
 				case OpCode::TEST:
 				case OpCode::MUL:
 				case OpCode::MULU:
+				case OpCode::BNE:
+				case OpCode::BEQ:
+				case OpCode::BGT:
+				case OpCode::BGE:
+				case OpCode::BLT:
+				case OpCode::BLE:
 					if (expressionCanFitIn4Bits)
                         assembledWords.resize(1 * repetitionCount);
                     else
@@ -434,6 +440,12 @@ void Statement::assemble(uint32_t &curAddress)
 				case OpCode::BNZ:
 				case OpCode::BS:
 				case OpCode::BZ:
+				case OpCode::BLE:
+				case OpCode::BLT:
+				case OpCode::BEQ:
+				case OpCode::BNE:
+				case OpCode::BGT:
+				case OpCode::BGE:
 					Assembly::makeFlowControlInstruction(opcode, address, expression.value, Register::r0, lineNum,
                                            words, false);
 

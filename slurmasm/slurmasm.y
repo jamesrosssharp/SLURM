@@ -33,6 +33,7 @@
   char *opcval;
   char *mopcval;
   char *pseudoopval;
+  char *sectionval;
 }
 %define parse.error verbose
 
@@ -55,6 +56,7 @@
 %token <opcval> OPCODE
 %token <mopcval> MOPCODE
 %token <pseudoopval> PSEUDOOP
+%token <sectionval> SECTION
 
 %%
 
@@ -107,20 +109,18 @@ integer:                INT                 { g_ast.addIntToCurrentStatementExpr
 
 equ: STRING EQU expressions ENDL {g_ast.addEqu(line_num - 1, $1); } ;
 
-times_line: times ;
-
 times: TIMES expressions { g_ast.addTimes(line_num); } ;
 
-pseudoop_line: pseudoop ;
-
 pseudoop: PSEUDOOP expressions ENDL { g_ast.addExpressionPseudoOp(line_num - 1, $1); } ;
+
+section: SECTION ENDL {g_ast.addSection(line_num - 1, $1); };
 
 label: STRING LABEL ENDL { g_ast.addLabel(line_num - 1, $1); } ;
 
 body_section: body_lines ;
 body_lines: body_lines body_line | body_line ;
 
-body_line: op_code | times | pseudoop | label | equ | blank_line;
+body_line: op_code | times | pseudoop | label | equ | blank_line | section;
 
 blank_line: ENDLS;
 
@@ -130,10 +130,10 @@ ENDLS: ENDLS ENDL | ENDL ;
 
 void printUsage(char *arg0)
 {
-    std::cout << "Usage: " << arg0 << " [-t <bin|elf>] [-o <output.o>] <file.asm>" << std::endl;
+    std::cout << "Usage: " << arg0 << " [-t <bin|slmobj>] [-o <output.o>] <file.asm>" << std::endl;
     std::cout << std::endl;
     std::cout << "      options: " << std::endl;
-    std::cout << "          -t: type (bin / elf) " << std::endl;
+    std::cout << "          -t: type (bin / slmobj): write flat binary (bin), or slurm object file (slmobj) " << std::endl;
 
 }
 

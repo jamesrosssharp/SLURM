@@ -30,5 +30,6 @@ fn main() {
     }
     soc.set_memory(&rom_data, 0, rom_data.len());  
 
-    soc.run();
+    //soc.run();
+    soc.single_step();
 }

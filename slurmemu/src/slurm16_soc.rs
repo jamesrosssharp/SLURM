@@ -1,5 +1,6 @@
 
-
+use std::io::Read;
+use std::io::stdin;
 
 use super::slurm16_cpu::*;
 use super::port_controller::*;
@@ -64,5 +65,15 @@ impl Slurm16SoC
         println!("Emulation finished");
     }
 
+    // Single step the CPU
+    pub fn single_step(& mut self)
+    {
+        loop {
+            self.cpu.print_regs();     
+            self.cpu.execute_one_instruction(&mut self.mem, &mut self.port_controller);
+            if self.port_controller.exit { break; }
+            stdin().read(&mut [0]).unwrap();
+        }
+    }
 
 }

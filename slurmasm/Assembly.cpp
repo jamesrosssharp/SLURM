@@ -9,7 +9,7 @@ void Assembly::makeArithmeticInstructionWithImmediate(OpCode opcode, Register re
 	uint16_t op 	= 0;
 	uint16_t aluOp 	= 0;
 
-    if (((uint32_t)value & 0xffff) != (uint32_t)value)
+    if ((((uint32_t)value & 0xffff) != (uint32_t)value) && (value > 0))
     {
         std::stringstream ss;
         ss << "Error: expression will not fit in 16 bits on line " << lineNum << std::endl;
@@ -271,6 +271,24 @@ static uint16_t get_branch(OpCode opcode, int lineNum)
 			break;
 		case OpCode::BL:
 			branch = 7;
+			break;
+		case OpCode::BEQ:
+			branch = 8;
+			break;
+		case OpCode::BNE:
+			branch = 9;
+			break;
+		case OpCode::BGT:
+			branch = 10;
+			break;
+		case OpCode::BGE:
+			branch = 11;
+			break;
+		case OpCode::BLT:
+			branch = 12;
+			break;
+		case OpCode::BLE:
+			branch = 13;
 			break;
 		default:
 		{

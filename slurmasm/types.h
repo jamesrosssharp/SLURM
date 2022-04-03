@@ -75,7 +75,14 @@ enum class OpCode : uint32_t
 	STF,	/* store flags */
 	RSF,		/* restore flags */
 	MUL, /* multiply */
-	MULU /* upper 16 bits of multiply */
+	MULU, /* upper 16 bits of multiply */
+	/* more branches */
+	BNE,
+	BEQ,
+	BGE,
+	BGT,
+	BLE,
+	BLT
 };
 
 enum class UniqueOpCode

@@ -52,6 +52,7 @@ public:
 	void addPCRelativeExpressionOpcode(int linenum, char* opcode);
 
     void addExpressionPseudoOp(int linenum, char* pseudoOp);
+	void addSection(int linenum, char* section);
 
     void addStringLiteralToCurrentStatementExpression(char* string);
     void addCharLiteralToCurrentStatementExpression(char* string);

@@ -286,6 +286,11 @@ void AST::addExpressionPseudoOp(int linenum, char* pseudoOp)
     m_currentStatement.reset();
 }
 
+void AST::addSection(int linenum, char* section)
+{
+	/* TODO : Sections and object format */
+}
+
 void AST::addLabel(int linenum, char* label)
 {
     m_currentStatement.lineNum = linenum;
@@ -507,6 +512,30 @@ OpCode AST::convertOpCode(char* opcode)
 	else if (s == "MULU")
 	{
 		return OpCode::MULU;
+	}
+	else if (s == "BEQ")
+	{
+		return OpCode::BEQ;
+	}
+	else if (s == "BNE")
+	{
+		return OpCode::BNE;
+	}
+	else if (s == "BLT")
+	{
+		return OpCode::BLT;
+	}
+	else if (s == "BLE")
+	{
+		return OpCode::BLE;
+	}
+	else if (s == "BGT")
+	{
+		return OpCode::BGT;
+	}
+	else if (s == "BGE")
+	{
+		return OpCode::BGE;
 	}
 
 	return OpCode::None;
