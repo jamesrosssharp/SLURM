@@ -24,6 +24,12 @@ Five stage pipeline.
 
 Penalties for accessing memory (bubble inserted into pipeline), especially when out of execution bank.
 
+Memory addressed are byte addresses. No unaligned accesses can occur, as memory address is masked on word transfers including instruction fetches. Memory may be accessed with byte granularity,
+so there can be a "char" type in C.
+
+C compiler provided (for now) by retargeting lcc, as per Jan gray's XR16. However, it is hoped to replace lcc with a custom, optimising C compiler supporting C11 at a later point in time.
+
+
 Instruction Set
 ===============
 
@@ -236,7 +242,22 @@ Reserved
 
 Class 8/9: Reserved
 
-Class 10/11: Reserved
+Class 10/11: immediate + register byte memory operation
+-------------------------------------------------------
+
+|15 | 14 | 13 | 12 - 9  | 8  | 7  - 4 | 3 - 0 |
+|---|----|----|---------|----|--------|-------|
+| 1 | 0  | 1  |   IDX   | LS |  REG   | IMM   |
+
+	Provides bytewise access. Lowest byte of a register is loaded or stored. Lowest bit of address
+	indicates either lower or upper byte in memory.
+
+    LS: 0 = load, 1 = store
+    IDX: index register, holds address of memory location
+    REG: source for store, destination for load
+    IMM: immediate address of memory location, effective address = [IDX] + IMM
+
+
 
 Class 12/13: immediate + register memory operation
 -----------------------------------------------

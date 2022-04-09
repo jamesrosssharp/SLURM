@@ -188,10 +188,6 @@ void Statement::firstPassAssemble(uint32_t& curAddress, SymbolTable& syms)
                         throw std::runtime_error(ss.str());
                     }
 
-					printf("CurAddress: %d\n", caddr);
-					printf("ExprValue: %d\n",  exprValue);
-					fflush(0);	
-
 					if (exprValue < caddr)
 					{
 					   	std::stringstream ss;

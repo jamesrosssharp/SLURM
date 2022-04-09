@@ -261,14 +261,14 @@ reg:  CVUI4(INDIRU1(addr))     "\tld r%c,[%0]\n"  1
 reg:  CVUI4(INDIRU2(addr))     "\tld r%c,[%0]\n"  1
 reg:  INDIRF4(addr)     "# fp\n"  fp()
 stmt: ASGNF4(addr,reg)  "# fp\n"  fp()
-reg: DIVI2(reg,reg)  "\tbl _divi2\n"   1
-reg: DIVI4(reg,reg)  "\tbl _divi4\n"   1
-reg: DIVU2(reg,reg)  "\tbl _divu2\n"  1
-reg: DIVU4(reg,reg)  "\tbl _divu4\n"  1
-reg: MODI2(reg,reg)  "\tbl _modi2\n"   1
-reg: MODI4(reg,reg)  "\tbl _modi4\n"   1
-reg: MODU2(reg,reg)  "\tbl _modu2\n"  1
-reg: MODU4(reg,reg)  "\tbl _modu4\n"  1
+reg: DIVI2(reg,reg)  "\tmov r4, r%0\n\tmov r5, r%1\n\tbl _divi2\n\tmov r%c, r2\n"   1
+reg: DIVI4(reg,reg)  "\tmov r4, r%0\n\tmov r5, r%1\n\tbl _divi2\n\tmov r%c, r2\n"    1
+reg: DIVU2(reg,reg)  "\tmov r4, r%0\n\tmov r5, r%1\n\tbl _divu2\n\tmov r%c, r2\n"   1
+reg: DIVU4(reg,reg)  "\tmov r4, r%0\n\tmov r5, r%1\n\tbl _divu2\n\tmov r%c, r2\n"   1
+reg: MODI2(reg,reg)  "\tmov r4, r%0\n\tmov r5, r%1\n\tbl _modi2\n\tmov r%c, r2\n"    1
+reg: MODI4(reg,reg)  "\tmov r4, r%0\n\tmov r5, r%1\n\tbl _modi2\n\tmov r%c, r2\n"    1
+reg: MODU2(reg,reg)  "\tmov r4, r%0\n\tmov r5, r%1\n\tbl _modu2\n\tmov r%c, r2\n"   1
+reg: MODU4(reg,reg)  "\tmov r4, r%0\n\tmov r5, r%1\n\tbl _modu2\n\tmov r%c, r2\n"   1
 reg: MULI2(reg,reg)  "?\tmov r%c, r%0\n\tmul r%c,r%1\n"   1
 reg: MULI4(reg,reg)  "\tbl _muli4\n"   1
 reg: MULU2(reg,reg)  "?\tmov r%c, r%0\n\tmul r%c,r%1\n"   1
