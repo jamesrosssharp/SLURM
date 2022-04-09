@@ -12,7 +12,7 @@ UART_TX_STATUS 	equ 	0x0001
 
 		mov r2, banner
 loop:
-		ld r1, [r2, 0]
+		ldb r1, [r2, 0]
 		add r2, 1
 		or r1, r1
 		bz die 
@@ -31,7 +31,8 @@ die:
 		ba die
 
 banner:
-	dw "Hello world!\n"
+	db "Hello world!\n"
+	.align 2
 	dw 0
 
 	.end

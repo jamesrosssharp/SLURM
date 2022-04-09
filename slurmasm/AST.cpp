@@ -537,6 +537,15 @@ OpCode AST::convertOpCode(char* opcode)
 	{
 		return OpCode::BGE;
 	}
+	else if (s == "LDB")
+	{
+		return OpCode::LDB;
+	}
+	else if (s == "STB")
+	{
+		return OpCode::STB;
+	}
+
 
 	return OpCode::None;
 
@@ -561,6 +570,10 @@ PseudoOp AST::convertPseudoOp(char* pseudoOp)
     else if (s == "DW")
     {
         return PseudoOp::DW;
+    }
+    else if (s == "DB")
+    {
+        return PseudoOp::DB;
     }
     else if (s == "DD")
     {
@@ -1127,7 +1140,8 @@ void AST::assemble()
                 switch (s.pseudoOp)
                 {
                     case PseudoOp::DD:
-                    case PseudoOp::DW:
+					case PseudoOp::DB:
+					case PseudoOp::DW:
                     {
                         curAddress = s.address;
                         s.assemble(curAddress);
@@ -1150,28 +1164,44 @@ void AST::writeBinOutput(std::string path)
     uint32_t maxAddress = m_orgAddress;
 
     for (Statement& s : m_statements)
-        if (s.address + s.assembledWords.size() > maxAddress)
-            maxAddress = s.address + s.assembledWords.size();
+		if (s.useBytes)
+        	if (s.address + s.assembledBytes.size() > maxAddress)
+            	maxAddress = s.address + s.assembledBytes.size();
+		else
+        	if ((s.address + s.assembledWords.size()*2) > maxAddress)
+            	maxAddress = s.address + 2*s.assembledWords.size();
 
-    std::vector<uint16_t> assembly;
+    std::vector<uint8_t> assembly;
 
     assembly.resize(((maxAddress - m_orgAddress)) + 1);
 
     for (Statement& s : m_statements)
-        for (int i = 0; i < s.assembledWords.size(); i++)
-            assembly[(s.address - m_orgAddress) + i] = s.assembledWords[i];
-
+	{
+		if (s.useBytes)
+		{
+			for (int i = 0; i < s.assembledBytes.size(); i++)
+            	assembly[(s.address - m_orgAddress) + i] = s.assembledBytes[i];	
+		}
+		else 
+		{
+			for (int i = 0; i < s.assembledWords.size(); i++)
+			{
+				assembly[(s.address - m_orgAddress) + i*2] = s.assembledWords[i] & 0xff;
+            	assembly[(s.address - m_orgAddress) + i*2 + 1] = (s.assembledWords[i] >> 8);
+			}
+		}
+	}
 
     std::ofstream out;
 
     out.open(path.c_str(), std::ios_base::out | std::ios_base::binary);
 
-    for (uint16_t word : assembly)
-        out.write((char*)&word, sizeof(uint16_t));
+    for (uint8_t word : assembly)
+        out.write((char*)&word, sizeof(uint8_t));
 
 	// Make a verilog memory file 32 kB big
 
-    std::ofstream outm;
+   /* std::ofstream outm;
 
     outm.open((path + ".mem").c_str(), std::ios_base::out);
 
@@ -1183,7 +1213,7 @@ void AST::writeBinOutput(std::string path)
 	}
 	for (int j = i; j < 32768; j++)
 		outm << "0000" << std::endl;
-
+*/
 }
 
 void AST::printAssembly()
@@ -1191,17 +1221,35 @@ void AST::printAssembly()
 
     for (Statement&s : m_statements)
     {
-        if (s.assembledWords.size() == 0)
-            continue;
+		if (s.useBytes)
+		{
+			if (s.assembledBytes.size() == 0)
+				continue;
 
-        std::cout << std::hex << std::setfill('0') << std::setw(4) << s.address << " : ";
+			std::cout << std::hex << std::setfill('0') << std::setw(4) << s.address << " : ";
 
-        for (uint16_t w : s.assembledWords)
-        {
-            std::cout << std::setfill('0') << std::setw(4) << w << " ";
-        }
+			for (uint8_t w : s.assembledBytes)
+			{
+				std::cout << std::setfill('0') << std::setw(2) << (uint16_t)w << " ";
+			}
 
-        std::cout << std::endl;
-    }
+			std::cout << std::endl;	
+	
+		}
+		else
+		{
+			if (s.assembledWords.size() == 0)
+				continue;
+
+			std::cout << std::hex << std::setfill('0') << std::setw(4) << s.address << " : ";
+
+			for (uint16_t w : s.assembledWords)
+			{
+				std::cout << std::setfill('0') << std::setw(4) << w << " ";
+			}
+
+			std::cout << std::endl;	
+		}	
+	}
 
 }

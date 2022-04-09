@@ -184,7 +184,7 @@ static void get_aluOp(OpCode opcode, uint32_t lineNum, uint16_t& aluOp)
 		default:
 		{
 	        std::stringstream ss;
-            ss << "Upsupported ALU operation on line " << lineNum << std::endl;
+            ss << "Unsupported ALU operation on line " << lineNum << std::endl;
             throw std::runtime_error(ss.str());  
 		}
 	}
@@ -293,7 +293,7 @@ static uint16_t get_branch(OpCode opcode, int lineNum)
 		default:
 		{
 	        std::stringstream ss;
-            ss << "Upsupported branch operation on line " << lineNum << std::endl;
+            ss << "Unsupported branch operation on line " << lineNum << std::endl;
             throw std::runtime_error(ss.str());  
 		}
 	}
@@ -360,59 +360,58 @@ void Assembly::makeRelativeFlowControlInstruction(OpCode opcode, uint32_t addres
 	//assembledWords[0] = op;
 }
 
-void Assembly::makeLoadStore(OpCode opcode, uint32_t lineNum, std::vector<uint16_t>& assembledWords, Register regInd, Register regDest, bool postIncrement, bool postDecrement)
+void Assembly::makeLoadStore(OpCode opcode, uint32_t lineNum, std::vector<uint16_t>& assembledWords, Register regInd, Register regDest, bool isByte )
 {
-
-	uint16_t PI = postIncrement ? 0 : 1;
-	uint16_t PD = postDecrement ? 0 : 1;
 
 	uint16_t LS = 0;
 
 	switch (opcode)
 	{
 		case OpCode::LD:
+		case OpCode::LDB:
 			LS = 0;
 			break;
 		case OpCode::ST:
+		case OpCode::STB:
 			LS = 1;
 			break; 
 		default:
 		{
 	        std::stringstream ss;
-            ss << "Upsupported load store operation on line " << lineNum << std::endl;
+            ss << "Unsupported load store operation on line " << lineNum << std::endl;
             throw std::runtime_error(ss.str());  
 		}
 	}
 
-	uint16_t op = SLRM_IMMEDIATE_PLUS_REG_MEMORY_INSTRUCTION | (LS << 8) | ((uint16_t)regDest << 4) |  (uint16_t)regInd << 9;
-	//uint16_t op = SLRM_INDEX_REGISTER_MEMORY_INSTRUCTION | (PD << 10) | (PI << 9) | (LS << 8) | ((uint16_t)regDest << 4) | ((uint16_t)regInd); 	
+	uint16_t op = (isByte ? SLRM_IMMEDIATE_PLUS_REG_MEMORY_BYTE_INSTRUCTION : SLRM_IMMEDIATE_PLUS_REG_MEMORY_INSTRUCTION) | (LS << 8) | ((uint16_t)regDest << 4) |  (uint16_t)regInd << 9;
 	assembledWords[0] = op;
 }
 
 
 
 void Assembly::makeLoadStoreWithExpression(OpCode opcode, uint32_t lineNum, std::vector<uint16_t>& assembledWords, int32_t value,
-                                           Register regDest)
+                                           Register regDest, bool isByte)
 {
 	uint16_t LS = 0;
 
 	switch (opcode)
 	{
 		case OpCode::LD:
+		case OpCode::LDB:
 			LS = 0;
 			break;
 		case OpCode::ST:
+		case OpCode::STB:
 			LS = 1;
 			break; 
 		default:
 		{
 	        std::stringstream ss;
-            ss << "Upsupported load store operation on line " << lineNum << std::endl;
+            ss << "Unsupported load store operation on line " << lineNum << std::endl;
             throw std::runtime_error(ss.str());  
 		}
 	}
-	uint16_t op = SLRM_IMMEDIATE_PLUS_REG_MEMORY_INSTRUCTION | (LS << 8) | ((uint16_t)regDest << 4) | ((uint16_t)value & 0xf) | 0<<9 /* r0 */;
-//	uint16_t op = SLRM_IMMEDIATE_MEMORY_INSTRUCTION  | (LS << 8) | ((uint16_t)regDest << 4) | ((uint16_t)value & 0xf); 	
+	uint16_t op = (isByte? SLRM_IMMEDIATE_PLUS_REG_MEMORY_BYTE_INSTRUCTION : SLRM_IMMEDIATE_PLUS_REG_MEMORY_INSTRUCTION) | (LS << 8) | ((uint16_t)regDest << 4) | ((uint16_t)value & 0xf) | 0<<9 /* r0 */;
 	
 	if (value >= 0 && value < 16)
     {
@@ -439,7 +438,7 @@ void Assembly::makeLoadStoreWithExpression(OpCode opcode, uint32_t lineNum, std:
 }
 
 void Assembly::makeLoadStoreWithIndexAndExpression(OpCode opcode, uint32_t lineNum, std::vector<uint16_t>& assembledWords, int32_t value,
-                                           Register regDest, Register regInd)
+                                           Register regDest, Register regInd, bool isByte)
 {
 	uint16_t LS = 0;
 
@@ -448,20 +447,23 @@ void Assembly::makeLoadStoreWithIndexAndExpression(OpCode opcode, uint32_t lineN
 	switch (opcode)
 	{
 		case OpCode::LD:
+		case OpCode::LDB:
 			LS = 0;
 			break;
 		case OpCode::ST:
+		case OpCode::STB:
 			LS = 1;
 			break; 
 		default:
 		{
 	        std::stringstream ss;
-            ss << "Upsupported load store operation on line " << lineNum << std::endl;
+            ss << "Unsupported load store operation on line " << lineNum << std::endl;
             throw std::runtime_error(ss.str());  
 		}
 	}
 
-	uint16_t op = SLRM_IMMEDIATE_PLUS_REG_MEMORY_INSTRUCTION | (LS << 8) | ((uint16_t)regDest << 4) | ((uint16_t)value & 0xf) | ((uint16_t)regInd << 9); 	
+	uint16_t op = (isByte? SLRM_IMMEDIATE_PLUS_REG_MEMORY_BYTE_INSTRUCTION : SLRM_IMMEDIATE_PLUS_REG_MEMORY_INSTRUCTION) 
+		| (LS << 8) | ((uint16_t)regDest << 4) | ((uint16_t)value & 0xf) | ((uint16_t)regInd << 9); 	
 	
 	if (value >= 0 && value < 16)
     {

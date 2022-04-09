@@ -82,7 +82,9 @@ enum class OpCode : uint32_t
 	BGE,
 	BGT,
 	BLE,
-	BLT
+	BLT,
+	LDB,	/* Load byte */
+	STB		/* Store byte */
 };
 
 enum class UniqueOpCode
@@ -97,6 +99,7 @@ enum class PseudoOp : uint32_t
     ALIGN,
     DW,
     DD,
+	DB,
 	PADTO,
     None
 };

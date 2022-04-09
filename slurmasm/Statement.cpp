@@ -21,8 +21,12 @@ void Statement::reset()
 	regDest	 = Register::None;
     timesStatement = nullptr;
     repetitionCount = 1;
-    assembledWords.clear();
-    address = 0;
+
+	assembledWords.clear();
+	assembledBytes.clear();
+	useBytes = false;
+
+	address = 0;
 	postDecrement = false;
 	postIncrement = false;
 }
@@ -113,6 +117,8 @@ void Statement::firstPassAssemble(uint32_t& curAddress, SymbolTable& syms)
 				case OpCode::BGE:
 				case OpCode::BLT:
 				case OpCode::BLE:
+				case OpCode::LDB:
+				case OpCode::STB:
 					if (expressionCanFitIn4Bits)
                         assembledWords.resize(1 * repetitionCount);
                     else
@@ -164,7 +170,13 @@ void Statement::firstPassAssemble(uint32_t& curAddress, SymbolTable& syms)
                         throw std::runtime_error(ss.str());
                     }
 
-                    assembledWords.resize(exprValue - curAddress%exprValue);
+					uint16_t size = exprValue - curAddress%exprValue;
+
+					printf("Align: %d\n", size);
+
+					useBytes = true;
+
+                    assembledBytes.resize(size);
 
                     break;
                 }
@@ -200,7 +212,7 @@ void Statement::firstPassAssemble(uint32_t& curAddress, SymbolTable& syms)
 					break;
                 }
 				case PseudoOp::DW:
-
+				{
                     // If DW string literal, then set the word count to the length of the string
 
                     char* stringLit;
@@ -214,16 +226,27 @@ void Statement::firstPassAssemble(uint32_t& curAddress, SymbolTable& syms)
                         assembledWords.resize(1 * repetitionCount);
                     }
                     break;
-                case PseudoOp::DD:
+				}
+				case PseudoOp::DB:
+				{
+					useBytes = true;
+                    // If DW string literal, then set the word count to the length of the string
+
+                    char* stringLit;
+
                     if (expression.isStringLiteral(stringLit))
                     {
-                        assembledWords.resize(2 * repetitionCount * Expression::stringLength(stringLit));
+                        assembledBytes.resize(repetitionCount * Expression::stringLength(stringLit));
                     }
                     else
                     {
-                        assembledWords.resize(2 * repetitionCount);
+                        assembledBytes.resize(1 * repetitionCount);
                     }
                     break;
+				}
+				case PseudoOp::DD:
+                    // Do we need this?
+					break;
             }
 
             break;
@@ -231,7 +254,10 @@ void Statement::firstPassAssemble(uint32_t& curAddress, SymbolTable& syms)
             break;
     }
 
-    curAddress += assembledWords.size();
+	if (useBytes)
+		curAddress += assembledBytes.size();
+	else
+    	curAddress += 2*assembledWords.size();
 
 }
 
@@ -469,9 +495,13 @@ void Statement::assemble(uint32_t &curAddress)
             {
     			case OpCode::LD:
 				case OpCode::ST:
-           			Assembly::makeLoadStore(opcode, lineNum, words, regInd, regDest, postIncrement, postDecrement);
+           			Assembly::makeLoadStore(opcode, lineNum, words, regInd, regDest);
 					break;	
-			    case OpCode::BA:
+				case OpCode::LDB:
+				case OpCode::STB:
+           			Assembly::makeLoadStore(opcode, lineNum, words, regInd, regDest, true);
+					break;		
+				case OpCode::BA:
 			    case OpCode::BL:
 			    case OpCode::BZ:
 			    case OpCode::BNZ:
@@ -529,7 +559,12 @@ void Statement::assemble(uint32_t &curAddress)
 				case OpCode::ST:
            			Assembly::makeLoadStoreWithExpression(opcode, lineNum, words, expression.value, regDest);
 					break;	
-			    default:
+ 				case OpCode::LDB:
+				case OpCode::STB:
+           			Assembly::makeLoadStoreWithExpression(opcode, lineNum, words, expression.value, regDest, true);
+					break;	
+	
+				default:
                 {
                     std::stringstream ss;
                     ss << "Error: opcode cannot take indirect addressing on line " << lineNum << std::endl;
@@ -549,6 +584,10 @@ void Statement::assemble(uint32_t &curAddress)
     			case OpCode::LD:
 				case OpCode::ST:
            			Assembly::makeLoadStoreWithIndexAndExpression(opcode, lineNum, words, expression.value, regDest, regInd);
+					break;
+    			case OpCode::LDB:
+				case OpCode::STB:
+           			Assembly::makeLoadStoreWithIndexAndExpression(opcode, lineNum, words, expression.value, regDest, regInd, true);
 					break;
 				case OpCode::IN:
 				case OpCode::OUT:
@@ -571,7 +610,10 @@ void Statement::assemble(uint32_t &curAddress)
         {
             switch (pseudoOp)
             {
-                case PseudoOp::DW:
+
+				case PseudoOp::DB:
+                	useBytes = true;
+				case PseudoOp::DW:
                 {
                     // If the expression is a string literal, repeat the string literal repetition count number of times.
 
@@ -600,7 +642,7 @@ void Statement::assemble(uint32_t &curAddress)
 
                     break;
                 }
-                case PseudoOp::DD:
+				case PseudoOp::DD:
                 {
 
                     break;
@@ -615,17 +657,33 @@ void Statement::assemble(uint32_t &curAddress)
 
     // handle repetition count by repeating assembled bytes repetition count number of times.
 
-    if (assembledWords.size() != words.size() * repetitionCount)
-        assembledWords.resize(words.size() * repetitionCount);
+	if (useBytes) {
+		
+		if (assembledBytes.size() != words.size() * repetitionCount)
+			assembledBytes.resize(words.size() * repetitionCount);
 
-    for (int i = 0; i < repetitionCount; i++)
-        for (int j = 0; j < words.size(); j++)
-        {
-            assembledWords[i*words.size() + j] = words[j];
-        }
+		for (int i = 0; i < repetitionCount; i++)
+			for (int j = 0; j < words.size(); j++)
+			{
+				assembledBytes[i*words.size() + j] = words[j];
+			}
 
+	} else {	
 
-    curAddress += assembledWords.size();
+		if (assembledWords.size() != words.size() * repetitionCount)
+			assembledWords.resize(words.size() * repetitionCount);
+
+		for (int i = 0; i < repetitionCount; i++)
+			for (int j = 0; j < words.size(); j++)
+			{
+				assembledWords[i*words.size() + j] = words[j];
+			}
+	}
+
+	if (useBytes)
+		curAddress += assembledBytes.size();
+	else
+    	curAddress += 2*assembledWords.size();
 
 }
 

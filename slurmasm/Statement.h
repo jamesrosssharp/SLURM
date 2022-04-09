@@ -60,6 +60,9 @@ struct Statement
 
     std::vector<uint16_t> assembledWords;
     uint32_t address;
+	
+	std::vector<uint8_t> assembledBytes;
+	bool useBytes;
 
     Statement* timesStatement = nullptr;
     int32_t repetitionCount = 1;

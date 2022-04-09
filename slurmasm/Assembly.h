@@ -38,10 +38,10 @@ public:
                                            std::vector<uint16_t>& assembledWords);
 
     static void makeLoadStoreWithExpression(OpCode opcode, uint32_t lineNum, std::vector<uint16_t>& words, int32_t value,
-                                            Register regDest);
+                                            Register regDest, bool isByte = false);
     static void makeLoadStoreWithIndexAndExpression(OpCode opcode, uint32_t lineNum, std::vector<uint16_t>& words, int32_t value,
-                                            Register regDest, Register regInd);
-    static void makeLoadStore(OpCode opcode, uint32_t lineNum, std::vector<uint16_t>& words, Register regInd, Register regDest, bool postIncrement, bool postDecrement);
+                                            Register regDest, Register regInd, bool isByte = false);
+    static void makeLoadStore(OpCode opcode, uint32_t lineNum, std::vector<uint16_t>& words, Register regInd, Register regDest, bool isByte = false);
 
 	static void makeIncDecInstruction(OpCode opcode, std::vector<uint16_t>& words,  uint32_t lineNum, Register reg);
  

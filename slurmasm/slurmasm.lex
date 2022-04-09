@@ -39,7 +39,7 @@ int g_str_idx = 0;
 [0-9]+         { yylval.ival = atoi(yytext); return INT; }
 0x[0-9a-fA-F]+|[0-9a-fA-F]+h         { yylval.ival = strtol(yytext, NULL, 16); return HEXVAL; }
 
-\.org|\.align|dw|dd|\.padto|\.global {yylval.pseudoopval = strdup(yytext); return PSEUDOOP; }
+\.org|\.align|dw|dd|db|\.padto|\.global {yylval.pseudoopval = strdup(yytext); return PSEUDOOP; }
 
 \.text|\.data {yylval.sectionval = strdup(yytext); return SECTION; }
 
@@ -47,7 +47,7 @@ int g_str_idx = 0;
 
 equ {return EQU; }
 
-adc|add|and|asr|ba|bc|bl|bnc|bns|bnz|bs|bz|cc|cs|cz|imm|iret|ld|lsl|lsr|mov|nop|or|ret|rol|rolc|rorc|sbb|sc|ss|st|sub|sz|xor|cmp|test|inc|dec|in|out|sleep|sti|cli|stf|rsf|mul|mulu|bne|beq|bge|blt|ble|bgt { yylval.sval = strdup(yytext); return OPCODE; }
+adc|add|and|asr|ba|bc|bl|bnc|bns|bnz|bs|bz|cc|cs|cz|imm|iret|ld|lsl|lsr|mov|nop|or|ret|rol|rolc|rorc|sbb|sc|ss|st|sub|sz|xor|cmp|test|inc|dec|in|out|sleep|sti|cli|stf|rsf|mul|mulu|bne|beq|bge|blt|ble|bgt|ldb|stb { yylval.sval = strdup(yytext); return OPCODE; }
 
 incm|decm { yylval.sval = strdup(yytext); return MOPCODE; }
 

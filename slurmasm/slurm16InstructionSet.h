@@ -51,7 +51,11 @@
 
 // Instruction Class 8/9 reserved
 
-// Instruction Class 10/11 reserved
+// Instruction Class 10/11
+
+#define SLRM_IMMEDIATE_PLUS_REG_MEMORY_BYTE_INSTRUCTION  	0b1010000000000000
+#define SLRM_IMMEDIATE_PLUS_REG_MEMORY_BYTE_INSTRCTION_MASK	0b1110000000000000
+
 
 // Instruction Class 12 / 13
 
