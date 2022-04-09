@@ -225,9 +225,10 @@ acon: con     "%0"
 acon: ADDRGP2 "%a"
 addr: acon  "%0"
 addr: reg   "r%0"
-addr: ADDRFP2  "r13, %a"
-addr: ADDRLP2  "r13, %a"
+addr_i: ADDRFP2  "r13, %a"
+addr_i: ADDRLP2  "r13, %a"
 reg: addr  "\tmov r%c,r0\n\tadd r%c, %0\n"  1
+reg: addr_i  "\tld r%c, [%0]\n"  1
 reg: CNSTI1  "# reg\n"  range(a, 0, 0)
 reg: CNSTI2  "# reg\n"  range(a, 0, 0)
 reg: CNSTI4  "# reg\n"  range(a, 0, 0)
@@ -338,10 +339,10 @@ reg: RSHI4(reg,con)  "?\tmov r%c, r%0\n\t.times %1 asr r%c \n"   1
 reg: RSHU2(reg,con)  "?\tmov r%c, r%0\n\t.times %1 lsr r%c \n"   1
 reg: RSHU4(reg,con)  "?\tmov r%c, r%0\n\t.times %1 lsr r%c \n"   1
 
-reg: BCOMI2(reg)  "?\tmov r%c,r%0\n\txori r%c,-1\n"   1
-reg: BCOMI4(reg)  "?\tmov r%c,r%0\n\txori r%c,-1\n"   1
-reg: BCOMU2(reg)  "?\tmov r%c,r%0\n\txori r%c,-1\n"   1
-reg: BCOMU4(reg)  "?\tmov r%c,r%0\n\txori r%c,-1\n"   1
+reg: BCOMI2(reg)  "?\tmov r%c,r%0\n\txor r%c,-1\n"   1
+reg: BCOMI4(reg)  "?\tmov r%c,r%0\n\txor r%c,-1\n"   1
+reg: BCOMU2(reg)  "?\tmov r%c,r%0\n\txor r%c,-1\n"   1
+reg: BCOMU4(reg)  "?\tmov r%c,r%0\n\txor r%c,-1\n"   1
 reg: NEGI2(reg)   "\tmov r%c, r0\n\tsub r%c,r%0\n"  1
 reg: NEGI4(reg)   "\tmov r%c, r0\n\tsub r%c,r%0\n"  1
 reg: LOADI1(reg)  "\tmov r%c,r%0\n"  move(a)
@@ -803,7 +804,7 @@ static void defconst(int suffix, int size, Value v) {
         else if (suffix == P)
                 print("dw 0x%x\n", (unsigned)v.p);
         else if (size == 1)
-                print("dw 0x%x\n", (unsigned)((unsigned char)(suffix == I ? v.i : v.u)));
+                print("db 0x%x\n", (unsigned)((unsigned char)(suffix == I ? v.i : v.u)));
         else if (size == 2)
                 print("dw 0x%x\n", (unsigned)((unsigned short)(suffix == I ? v.i : v.u)));
         else if (size == 4)
@@ -819,7 +820,8 @@ static void defstring(int n, char *str) {
         char *s;
 
         for (s = str; s < str + n; s++)
-                print("\tdw 0x%x\n", (*s)&0377);
+                print("\tdb 0x%x\n", (*s)&0377);
+		print(".align 2\n");
 }
 static void export(Symbol p) {
         print(".global %s\n", p->x.name);
