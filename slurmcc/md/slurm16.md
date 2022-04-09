@@ -235,23 +235,23 @@ reg: CNSTU1  "# reg\n"  range(a, 0, 0)
 reg: CNSTU2  "# reg\n"  range(a, 0, 0)
 reg: CNSTU4  "# reg\n"  range(a, 0, 0)
 reg: CNSTP2  "# reg\n"  range(a, 0, 0)
-stmt: ASGNI1(addr,reg)  "\tst [%0], r%1\n"  1
-stmt: ASGNU1(addr,reg)  "\tst [%0], r%1\n"  1
+stmt: ASGNI1(addr,reg)  "\tstb [%0], r%1\n"  1
+stmt: ASGNU1(addr,reg)  "\tstb [%0], r%1\n"  1
 stmt: ASGNI2(addr,reg)  "\tst [%0], r%1\n"  1
 stmt: ASGNU2(addr,reg)  "\tst [%0], r%1\n"  1
 stmt: ASGNI4(addr,reg)  "\tst [%0], r%1\n"  1
 stmt: ASGNU4(addr,reg)  "\tst [%0], r%1\n"  1
 stmt: ASGNP2(addr,reg)  "\tst [%0], r%1\n"  1
-reg:  INDIRI1(addr)     "\tld r%c,[%0]\n"  1
-reg:  INDIRU1(addr)     "\tld r%c,[%0]\n"  1
+reg:  INDIRI1(addr)     "\tldb r%c,[%0]\n"  1
+reg:  INDIRU1(addr)     "\tldb r%c,[%0]\n"  1
 reg:  INDIRI2(addr)     "\tld r%c,[%0]\n"  1
 reg:  INDIRU2(addr)     "\tld r%c,[%0]\n"  1
 reg:  INDIRI4(addr)     "\tld r%c,[%0]\n"  1
 reg:  INDIRU4(addr)     "\tld r%c,[%0]\n"  1
 reg:  INDIRP2(addr)     "\tld r%c,[%0]\n"  1
 
-reg:  CVII2(INDIRI1(addr))     "\tld r%c,[%0]\n"  1
-reg:  CVUU2(INDIRU1(addr))     "\tld r%c,[%0]\n"  1
+reg:  CVII2(INDIRI1(addr))     "\tldb r%c,[%0]\n"  1
+reg:  CVUU2(INDIRU1(addr))     "\tldb r%c,[%0]\n"  1
 reg:  CVUI2(INDIRU1(addr))     "\tld r%c,[%0]\n"  1
 reg:  CVII4(INDIRI1(addr))     "\tld r%c,[%0]\n"  1
 reg:  CVII4(INDIRI2(addr))     "\tld r%c,[%0]\n"  1

@@ -1164,30 +1164,38 @@ void AST::writeBinOutput(std::string path)
     uint32_t maxAddress = m_orgAddress;
 
     for (Statement& s : m_statements)
+	{
 		if (s.useBytes)
-        	if (s.address + s.assembledBytes.size() > maxAddress)
+		{
+			if ((s.address + s.assembledBytes.size()) > maxAddress)
             	maxAddress = s.address + s.assembledBytes.size();
+		}
 		else
-        	if ((s.address + s.assembledWords.size()*2) > maxAddress)
+		{
+			if ((s.address + s.assembledWords.size()*2) > maxAddress)
             	maxAddress = s.address + 2*s.assembledWords.size();
+		}
+	}
 
     std::vector<uint8_t> assembly;
 
-    assembly.resize(((maxAddress - m_orgAddress)) + 1);
+	printf("maxAddress: %d\n", maxAddress);
+
+    assembly.resize(((maxAddress - m_orgAddress)) + 2);
 
     for (Statement& s : m_statements)
 	{
 		if (s.useBytes)
 		{
 			for (int i = 0; i < s.assembledBytes.size(); i++)
-            	assembly[(s.address - m_orgAddress) + i] = s.assembledBytes[i];	
+            	assembly.at((s.address - m_orgAddress) + i) = s.assembledBytes[i];	
 		}
 		else 
 		{
 			for (int i = 0; i < s.assembledWords.size(); i++)
 			{
-				assembly[(s.address - m_orgAddress) + i*2] = s.assembledWords[i] & 0xff;
-            	assembly[(s.address - m_orgAddress) + i*2 + 1] = (s.assembledWords[i] >> 8);
+				assembly.at((s.address - m_orgAddress) + i*2) = s.assembledWords[i] & 0xff;
+            	assembly.at((s.address - m_orgAddress) + i*2 + 1) = (s.assembledWords[i] >> 8);
 			}
 		}
 	}
