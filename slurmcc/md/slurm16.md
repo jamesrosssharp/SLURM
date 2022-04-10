@@ -225,10 +225,9 @@ acon: con     "%0"
 acon: ADDRGP2 "%a"
 addr: acon  "%0"
 addr: reg   "r%0"
-addr_i: ADDRFP2  "r13, %a"
-addr_i: ADDRLP2  "r13, %a"
 reg: addr  "\tmov r%c,r0\n\tadd r%c, %0\n"  1
-reg: addr_i  "\tld r%c, [%0]\n"  1
+reg: ADDRFP2 "\tmov r%c, r0\n\tadd r%c, %F\n\tadd r%c, r13\n\tadd r%c, %a\n" 1
+reg: ADDRLP2 "\tmov r%c, r0\n\tadd r%c, %F\n\tadd r%c, r13\n\tadd r%c, %a\n" 1
 reg: CNSTI1  "# reg\n"  range(a, 0, 0)
 reg: CNSTI2  "# reg\n"  range(a, 0, 0)
 reg: CNSTI4  "# reg\n"  range(a, 0, 0)
@@ -582,7 +581,7 @@ static void emit2(Node p) {
                 else if (q == NULL && ty == F)
                         print("s.d $f%d,%d($sp)\n", src, p->syms[2]->u.c.v.i);
                 else if (q == NULL)
-                        print("sw $%d,%d($sp)\n", src, p->syms[2]->u.c.v.i);
+                        print("\tst r%d,[r13, %d]\n", src, p->syms[2]->u.c.v.i);
                 else if (ty == F && sz == 4 && q->x.regnode->set == IREG)
                         print("mfc1 $%d,$f%d\n", q->x.regnode->number, src);
                 else if (ty == F && q->x.regnode->set == IREG)
@@ -719,12 +718,12 @@ static void function(Symbol f, Symbol caller[], Symbol callee[], int ncalls) {
 
 		// Save LR
 		print("\tst [r13, %d], r15\n", saved);
-		saved += 1;
+		saved += 2;
 
         for (i = 4; i <= 12; i++)
                 if (usedmask[IREG]&(1<<i)) {
                         print("\tst [r13, %d], r%d\n", saved, i);
-                        saved += 1;
+                        saved += 2;
                 }
         for (i = 0; i < 4 && callee[i]; i++) {
                 r = argregs[i];
@@ -779,12 +778,12 @@ static void function(Symbol f, Symbol caller[], Symbol callee[], int ncalls) {
 		*/
        	// restore LR
 		print("\tld r15, [r13, %d]\n", saved);
-		saved += 1;		
+		saved += 2;		
 
 		for (i = 4; i <= 12; i++)
                 if (usedmask[IREG]&(1<<i)) {
                         print("\tld r%d, [r13, %d]\n", i, saved);
-                        saved += 1;
+                        saved += 2;
                 }
         if (framesize > 0)
                 print("\tadd r13,%d\n", framesize);

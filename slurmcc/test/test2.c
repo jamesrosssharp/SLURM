@@ -11,9 +11,46 @@ void print_hex_num(unsigned int n)
 	}
 }
 
+unsigned int clz(unsigned int num)
+{
+	unsigned int n = 0x8000;
+	unsigned int lz = 0;
+
+	while (n)
+	{
+		if (num & n) return lz;
+		n >>= 1;
+		lz ++;
+	}
+	return lz;
+}
+
 void divmodu(unsigned int a, unsigned int b, unsigned int* quotient, unsigned int* rem)
 {
+	int lz;
+	int i;
 
+	*quotient = 0;
+	*rem = 0;
+
+	lz = clz(b) - 1;
+
+	for (i = 0; i < lz; i++)
+		b <<= 1;
+
+	while (lz)
+	{
+		if (a >= b)
+		{
+			a -= b;
+			*quotient |= 1;
+		}
+
+		b >>= 1;
+		*quotient <<= 1;
+		lz --;
+	}
+	*rem = a;
 }
 
 
@@ -72,7 +109,7 @@ int main()
 	print_hex_num(a);
 	putc('\n');
 
-	a /= 26;
+	a /= 5;
 
 	print_hex_num(a);
 	putc('\n');

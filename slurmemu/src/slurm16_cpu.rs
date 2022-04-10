@@ -43,7 +43,7 @@ impl Slurm16CPU {
     
     pub fn print_regs(& self) {
         
-        for i in 0..15 {
+        for i in 0..16 {
             println!("r{} = {:#01x}", i, self.registers[i]);
         }
     }
@@ -67,7 +67,7 @@ impl Slurm16CPU {
         let a = src as u32;
         let b = self.get_register(reg_dest) as u32;
 
-        let sum = a + b;
+        let sum = a.wrapping_add(b);
 
         self.registers[reg_dest] = sum as u16;
         self.z = sum & 65535 == 0;
@@ -84,7 +84,7 @@ impl Slurm16CPU {
         
         let a = src as u32;
         let b = self.get_register(reg_dest) as u32;
-        let sum = b - a;
+        let sum = b.wrapping_sub(a);
 
         //println!("Subtract: {} {} {}", a, b, sum);
 
@@ -102,7 +102,7 @@ impl Slurm16CPU {
         
         let a = src as u32;
         let b = self.get_register(reg_dest) as u32;
-        let sum = b - a;
+        let sum = b.wrapping_sub(a);
 
         self.z = sum & 65535 == 0;
         match sum & 0x8000 {
@@ -588,7 +588,7 @@ impl Slurm16CPU {
 
         let target : u16 = reg_addr + self.imm_hi + (instruction & 0xf) - 2; // PC will be incremented after we return 
 
-        self.registers[15] = self.pc + 1;
+        self.registers[15] = self.pc + 2;
         self.pc = target;
     }
 
@@ -748,7 +748,7 @@ impl Slurm16CPU {
 
         self.imm_hi = 0;
     }
-
+    
     pub fn mem_op(&mut self, instruction : u16, mem:  & mut Vec<u16>) {
 
         let reg_p = ((instruction & 0x1e00) >> 9) as usize;
@@ -756,7 +756,7 @@ impl Slurm16CPU {
 
         let imm : u16 = self.imm_hi | (instruction & 0xf);
 
-        let addr : usize = (imm + reg_addr) as usize;
+        let addr : usize = imm.wrapping_add(reg_addr) as usize;
 
         let reg_src = ((instruction & 0xf0) >> 4) as usize;
         let val : u16 = self.get_register(reg_src);
