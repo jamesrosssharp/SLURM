@@ -31,9 +31,9 @@ end
 always @(posedge CLK)
 begin
 	if (RSTb == 1'b0) begin
-		traceVal_r = 16'h0;
-		traceChar_r = 8'h0;
-		traceHex_r = 16'h0;
+		traceVal_r <= 16'h0;
+		traceChar_r <= 8'h0;
+		traceHex_r <= 16'h0;
 	end else
 	if (memWR == 1'b1) begin
 		case (ADDRESS)

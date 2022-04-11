@@ -30,6 +30,18 @@ putc.loop:
 	bz putc.loop
 	ret
 
+trace_dec:
+	out [r0, 0x6000], r4
+	ret
+
+trace_char:
+	out [r0, 0x6001], r4
+	ret
+
+trace_hex:
+	out [r0, 0x6002], r4
+	ret
+
 exit:
 	out [r0, 0x6006], r0 
 

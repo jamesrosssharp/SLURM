@@ -16,13 +16,26 @@ impl PortController {
         }
     }
 
-    pub fn handle_trace(&mut self, port : u16, _val : u16, write : bool)
+    pub fn handle_trace(&mut self, port : u16, val : u16, write : bool)
     {
         //println!("handle trace: Port: {:#01x}", port);
         if (port == 0x6006) && write
         {
             self.exit = true;
         }
+        else if (port == 0x6000) && write
+        {
+           print!("{}", val); 
+        }
+        else if (port == 0x6001) && write
+        {
+            print!("{}", val as u8 as char);
+        }
+        else if (port == 0x6002) && write
+        {
+            print!("{:#01x}", val);
+        }
+
     }
 
     pub fn port_op(&mut self, port : u16, val: u16, write : bool) -> u16

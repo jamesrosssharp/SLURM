@@ -689,7 +689,7 @@ static void function(Symbol f, Symbol caller[], Symbol callee[], int ncalls) {
         if (ncalls && maxargoffset < 16)
                 maxargoffset = 16;
         sizefsave = 0; //bitcount(usedmask[FREG]);
-        sizeisave = bitcount(usedmask[IREG]);
+        sizeisave = 2*bitcount(usedmask[IREG]);
         framesize = roundup(maxargoffset + sizefsave
                 + sizeisave + maxoffset, 16);
         segment(CODE);
@@ -756,9 +756,9 @@ static void function(Symbol f, Symbol caller[], Symbol callee[], int ncalls) {
                                 else if (rs == FREG && tyin == F+sizeop(4))
                                         print("s.s $f%d,%d($sp)\n", rn, off);
                                 else*/ {
-                                        int i, n = (in->type->size + 3)/4;
+                                        int i, n = (in->type->size + 1)/2;
                                         for (i = rn; i < rn+n && i <= 7; i++)
-                                                print("\tst [r13, %d], r%d\n", off + (i-rn)*4, i);
+                                                print("\tst [r13, %d], r%d\n", off + (i-rn)*2, i);
                                 }
                         }
                 }

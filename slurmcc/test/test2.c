@@ -1,4 +1,7 @@
 
+
+void divmodu(unsigned int a, unsigned int b, unsigned int* quotient, unsigned int* rem);
+
 void print_hex_num(unsigned int n)
 {
 	static char convertBuffer[] = "0123456789abcdef";
@@ -9,6 +12,38 @@ void print_hex_num(unsigned int n)
 
 		n <<= 4;
 	}
+}
+
+void print_dec_num(int n)
+{
+	int div;
+	int nlz;
+	int a;
+	static char convertBuffer[] = "0123456789";
+	
+	if (n < 0) 
+	{
+		putc('-');
+		n = -n;
+	}
+
+	div = 10000;
+	nlz = 0;
+
+	while (div)
+	{
+		a = n / div;
+
+		if (a != 0 || nlz)
+		{
+			nlz = 1;
+			putc(convertBuffer[a]);
+		}
+		n %= div;
+		div /= 10;
+
+	}
+
 }
 
 unsigned int clz(unsigned int num)
@@ -33,13 +68,15 @@ void divmodu(unsigned int a, unsigned int b, unsigned int* quotient, unsigned in
 	*quotient = 0;
 	*rem = 0;
 
-	lz = clz(b) - 1;
+	lz = clz(b);
 
-	for (i = 0; i < lz; i++)
+	for (i = 0; i < lz - 1; i++)
 		b <<= 1;
 
 	while (lz)
 	{
+		*quotient <<= 1;
+
 		if (a >= b)
 		{
 			a -= b;
@@ -47,7 +84,6 @@ void divmodu(unsigned int a, unsigned int b, unsigned int* quotient, unsigned in
 		}
 
 		b >>= 1;
-		*quotient <<= 1;
 		lz --;
 	}
 	*rem = a;
@@ -87,32 +123,71 @@ int _divi2(int a, int b)
 	return quotient;
 }
 
+int _modi2(int a, int b)
+{
+	unsigned int quotient;
+	unsigned int rem;
+
+	/* Signed integer divide a by b */
+	int sign = 1;
+	if (a < 0 && b >= 0)
+	{
+		sign = -1;
+		a = -a;
+	}
+
+	if (b < 0 && a >= 0)
+	{
+		sign = -1;
+		b = -b;
+	}
+
+	if (b < 0 && a < 0)
+	{
+		a = -a;
+		b = -b;
+	}
+
+	divmodu(a, b, &quotient, &rem);
+
+	return rem;
+}
+
+
+
+
 int main()
 {
 	int a = 3;
 
-	print_hex_num(a);
+	print_dec_num(a);
 	putc('\n');
 
 	a += 7;
 
-	print_hex_num(a);
+	print_dec_num(a);
 	putc('\n');
 
 	a *= 2;
 
-	print_hex_num(a);
+	print_dec_num(a);
 	putc('\n');
 
 	a *= 13;
 
-	print_hex_num(a);
+	print_dec_num(a);
 	putc('\n');
 
 	a /= 5;
 
-	print_hex_num(a);
+	print_dec_num(a);
 	putc('\n');
+
+	a *= 17;
+
+	print_dec_num(a);
+	putc('\n');
+
 
 	exit();
 }
