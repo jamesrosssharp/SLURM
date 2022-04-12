@@ -17,7 +17,7 @@ VECTORS:
 
 start:
 	// Set up stack
-	mov r13, 0x7fff
+	mov r13, 0x7ffe
 	bl main
 die:
 	ba die

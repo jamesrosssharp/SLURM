@@ -763,8 +763,10 @@ impl Slurm16CPU {
 
         let write = (instruction & 0x100) == 0x100;
 
-        //println!("Mem op: {:#01x} {:#01x} {} {:#01x}", addr, val, write, mem[addr]);
-        
+        //if addr >= (0x7f00 as usize) {
+        //    println!("Mem op: {:#01x} {:#01x} {} {:#01x} {:#01x}", addr, val, write, mem[addr], self.pc);
+        //}
+
         if !write {
             self.registers[reg_src] = mem[addr>>1];
         }
@@ -790,7 +792,13 @@ impl Slurm16CPU {
         let write = (instruction & 0x100) == 0x100;
 
         //println!("Mem op: {:#01x} {:#01x} {} {:#01x}", addr, val, write, mem[addr]);
-        
+       
+        //if addr >= (0x7f00 as usize) {
+        //    println!("Byte Mem op: {:#01x} {:#01x} {} {:#01x} {:#01x}", addr, val, write, mem[addr], self.pc);
+        //}
+
+
+
         if !write {
             if addr & 1 == 0
             {
