@@ -765,8 +765,8 @@ static void function(Symbol f, Symbol caller[], Symbol callee[], int ncalls) {
         }
         if (varargs && callee[i-1]) {
                 i = callee[i-1]->x.offset + callee[i-1]->type->size;
-                for (i = roundup(i, 4)/4; i <= 3; i++)
-                        print("sw $%d,%d($sp)\n", i + 4, framesize + 4*i);
+                for (i = roundup(i, 2)/2; i <= 3; i++)
+                        print("\tst [r13, %d], r%d\n", framesize + 2*i, i+4);
                 }
         emitcode();
         saved = maxargoffset;
@@ -851,10 +851,14 @@ static void address(Symbol q, Symbol p, long n) {
 }
 static void global(Symbol p) {
         if (p->u.seg == BSS) {
-                if (p->sclass == STATIC || Aflag >= 2)
-                        print(".lcomm %s,%d\n", p->x.name, p->type->size);
-                else
-                        print( ".comm %s,%d\n", p->x.name, p->type->size);
+				print("%s:\n", p->x.name);
+				for (int i = 0; i < p->type->size; i+= 2)
+					print("\tdw 0\n");
+					
+                //if (p->sclass == STATIC || Aflag >= 2)
+                //        print(".lcomm %s,%d\n", p->x.name, p->type->size);
+                //else
+                //        print( ".comm %s,%d\n", p->x.name, p->type->size);
         } else {
                 if (p->u.seg == DATA
                 && (p->type->size == 0 || p->type->size > gnum))

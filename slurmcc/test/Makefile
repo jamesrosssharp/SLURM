@@ -13,8 +13,11 @@ output/test.asm: output/test1.asm top.asm
 output/test.bin: output/test.asm
 	$(AS) -o output/test.bin output/test.asm
 
-output/test2.asm: test2.c $(CC)
-	$(CC) -target=slurm16 -c test2.c -o output/test2.asm
+output/test2.c: test2.c
+	cpp test2.c -o output/test2.c
+
+output/test2.asm: output/test2.c $(CC)
+	$(CC) -target=slurm16 -c output/test2.c -o output/test2.asm
 	cat output/test2.asm	
 
 output/test2c.asm: output/test2.asm top.asm

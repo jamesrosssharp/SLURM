@@ -1,4 +1,27 @@
 
+#if !defined(_VA_LIST) && !defined(__VA_LIST_DEFINED)
+#define _VA_LIST
+#define _VA_LIST_DEFINED
+typedef char *__va_list;
+#endif
+static float __va_arg_tmp;
+typedef __va_list va_list;
+
+#define va_start(list, start) ((void)((list) = (sizeof(start)<4 ? \
+	(char *)((int *)&(start)+1) : (char *)(&(start)+1))))
+#define __va_arg(list, mode, n) (\
+	__typecode(mode)==1 && sizeof(mode)==4 ? \
+	  (__va_arg_tmp = *(double *)(&(list += ((sizeof(double)+n)&~n))[-(int)((sizeof(double)+n)&~n)]), \
+		*(mode *)&__va_arg_tmp) : \
+	  *(mode *)(&(list += ((sizeof(mode)+n)&~n))[-(int)((sizeof(mode)+n)&~n)]))
+#define _bigendian_va_arg(list, mode, n) (\
+	sizeof(mode)==1 ? *(mode *)(&(list += 4)[-1]) : \
+	sizeof(mode)==2 ? *(mode *)(&(list += 4)[-2]) : __va_arg(list, mode, n))
+#define _littleendian_va_arg(list, mode, n) __va_arg(list, mode, n)
+#define va_end(list) ((void)0)
+#define va_arg(list, mode) _littleendian_va_arg(list, mode, 1U)
+typedef void *__gnuc_va_list;
+
 
 void divmodu(unsigned int a, unsigned int b, unsigned int* quotient, unsigned int* rem);
 
@@ -153,40 +176,63 @@ int _modi2(int a, int b)
 	return rem;
 }
 
+void my_printf(char* format, ...)
+{
+	va_list arg;
+	char c;
+	va_start(arg, format);
 
+
+	while (c = *format++)
+	{
+		if (c == '%')
+		{
+			c = *format++;
+
+			if (c == '%')
+				putc('%');
+			else if (c == 'x') {
+				int a = va_arg(arg, unsigned int);
+				print_hex_num(a);
+			}
+			else if (c == 'd')
+				print_dec_num(va_arg(arg, int));
+			else putc('?');
+		}
+		else
+			putc(c);
+	}
+
+	va_end(arg);
+
+}
 
 
 int main()
 {
 	int a = 3;
 
-	print_dec_num(a);
-	putc('\n');
+	my_printf("a = %d\n", a);
 
 	a += 7;
 
-	print_dec_num(a);
-	putc('\n');
+	my_printf("a = %d\n", a);
 
 	a *= 2;
 
-	print_dec_num(a);
-	putc('\n');
+	my_printf("a = %d\n", a);
 
 	a *= 13;
 
-	print_dec_num(a);
-	putc('\n');
+	my_printf("a = %d (%x) %d!!\n", a, a, a/3);
 
 	a /= 5;
 
-	print_dec_num(a);
-	putc('\n');
+	my_printf("a = %d\n", a);
 
 	a *= 17;
 
-	print_dec_num(a);
-	putc('\n');
+	my_printf("a = %d\n", a);
 
 
 	exit();
