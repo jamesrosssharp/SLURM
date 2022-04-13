@@ -226,11 +226,11 @@ acon: ADDRGP2 "%a"
 addr: acon  "%0"
 addr: reg   "r%0"
 reg: addr  "\tmov r%c,r0\n\tadd r%c, %0\n"  1
-reg: ADDRFP2 "\tmov r%c, r13\n\tadd r%c, %a + %F\n" 1
-reg: ADDRLP2 "\tmov r%c, r13\n\tadd r%c, %a + %F\n" 1
+reg: ADDRFP2 "\tmov r%c, r13\n\tadd r%c, (%a) + %F\n" 1
+reg: ADDRLP2 "\tmov r%c, r13\n\tadd r%c, (%a) + %F\n" 1
 
-addr_i: ADDRFP2 "[r13, %a + %F]"
-addr_i: ADDRLP2 "[r13, %a + %F]"
+addr_i: ADDRFP2 "[r13, (%a) + %F]"
+addr_i: ADDRLP2 "[r13, (%a) + %F]"
 stmt: ASGNI2(addr_i, reg) "\tst %0, r%1\n" 1
 stmt: ASGNU2(addr_i, reg) "\tst %0, r%1\n" 1
 stmt: ASGNI1(addr_i, reg) "\tstb %0, r%1\n" 1
