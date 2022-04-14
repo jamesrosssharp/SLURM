@@ -11,3 +11,7 @@ edition = "2021"
 
 [dependencies.slurm_emulator]
 path = "../"
+
+[dependencies]
+piston_window = "0.123.0"
+image = "0.24.1"

@@ -1,8 +1,10 @@
 use super::uart::Uart;
+use super::gfx::Gfx;
 
 pub struct PortController {
     pub uart: Uart,
     pub exit: bool,
+    pub gfx: Gfx,
 }
 
 ///     The PortController simply implements the port address map
@@ -12,6 +14,7 @@ impl PortController {
     {
         PortController { 
             uart: Uart::new(),
+            gfx: Gfx::new(),
             exit: false
         }
     }

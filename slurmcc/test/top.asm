@@ -45,6 +45,7 @@ trace_hex:
 
 exit:
 	out [r0, 0x6006], r0 
+	ret
 
 dummy_handler:
 	iret
