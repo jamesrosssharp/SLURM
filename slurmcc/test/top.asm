@@ -19,6 +19,7 @@ start:
 	// Set up stack
 	mov r13, 0x7ffe
 	bl main
+	bl exit
 die:
 	ba die
 

@@ -602,7 +602,7 @@ static void emit2(Node p) {
                         p->syms[0]->u.c.v.i, tmpregs);
                 break;
         case ARG+B:
-                dalign = 4;
+                dalign = 2;
                 salign = p->syms[1]->u.c.v.i;
                 blkcopy(29, p->syms[2]->u.c.v.i,
                         getregnum(p->x.kids[0]), 0,
@@ -610,7 +610,7 @@ static void emit2(Node p) {
                 n   = p->syms[2]->u.c.v.i + p->syms[0]->u.c.v.i;
                 dst = p->syms[2]->u.c.v.i;
                 for ( ; dst <= 12 && dst < n; dst += 4)
-                        print("lw $%d,%d($sp)\n", (dst/4)+4, dst);
+                        print("\tld r%d,[r13, %d] // ARG+B emit2\n", dst, (dst/4)+4);
                 break;
         }
 }
@@ -901,29 +901,17 @@ static void blkloop(int dreg, int doff, int sreg, int soff, int size, int tmps[]
         print("bltu $%d,$%d,L.%d\n", dreg, tmps[2], lab);
 }
 static void blkfetch(int size, int off, int reg, int tmp) {
-        assert(size == 1 || size == 2 || size == 4);
+        assert(size == 1 || size == 2);
         if (size == 1)
-                print("lbu $%d,%d($%d)\n",  tmp, off, reg);
-        else if (salign >= size && size == 2)
-                print("lhu $%d,%d($%d)\n",  tmp, off, reg);
-        else if (salign >= size)
-                print("lw $%d,%d($%d)\n",   tmp, off, reg);
+                print("\tldb r%d,[r%d, %d] //blkfetch \n",  tmp, reg, off);
         else if (size == 2)
-                print("ulhu $%d,%d($%d)\n", tmp, off, reg);
-        else
-                print("ulw $%d,%d($%d)\n",  tmp, off, reg);
+                print("\tld r%d,[r%d, %d] // blkfetch\n", tmp, reg, off);
 }
 static void blkstore(int size, int off, int reg, int tmp) {
         if (size == 1)
-                print("sb $%d,%d($%d)\n",  tmp, off, reg);
-        else if (dalign >= size && size == 2)
-                print("sh $%d,%d($%d)\n",  tmp, off, reg);
-        else if (dalign >= size)
-                print("sw $%d,%d($%d)\n",  tmp, off, reg);
+                print("\tstb [r%d, %d], r%d) // blkstore\n",  reg, off, tmp);
         else if (size == 2)
-                print("ush $%d,%d($%d)\n", tmp, off, reg);
-        else
-                print("usw $%d,%d($%d)\n", tmp, off, reg);
+                print("\tst [r%d, %d], r%d // blkstore \n", reg, off, tmp);
 }
 static void stabinit(char *, int, char *[]);
 static void stabline(Coordinate *);
@@ -1000,7 +988,7 @@ Interface slurm16IR = {
         space,
         0, 0, 0, stabinit, stabline, stabsym, 0,
         {
-                4,      /* max_unaligned_load */
+                2,      /* max_unaligned_load */
                 rmap,
                 blkfetch, blkstore, blkloop,
                 _label,

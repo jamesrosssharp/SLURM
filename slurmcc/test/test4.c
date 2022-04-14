@@ -1,23 +1,31 @@
 
-int afunc(int a, int b, int c, int d, int e)
+struct TestStruct {
+	int a;
+	int b;
+	char c;
+	char d;
+};
+
+struct TestStruct fillStruct(struct TestStruct struc)
 {
-	return a + b + c + d + e;
+	struc.a = 4;
+	struc.b = 5;
+	struc.c = 'A';
+	struc.d = 'B';
+
+	return struc;
 }
-
-int bfunc(int a, int b, int c, int d, int e)
-{
-	int f = a + b;
-	int g = c - d;
-	int h = e * 2;
-
-	return f + g - h;
-
-}
-
 
 int main(int argc, char** argv)
 {
-	afunc(1,2,3,4,5);
-	bfunc(1,2,3,4,5);
+	struct TestStruct struc;
+
+	struc = fillStruct(struc);
+
+	trace_dec(struc.a);
+	trace_dec(struc.b);
+	trace_char(struc.c);
+	trace_char(struc.d);
+
 	return 0;
 }
