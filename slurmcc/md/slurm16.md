@@ -491,9 +491,9 @@ static void progbeg(int argc, char *argv[]) {
                         pic = argv[i][5]-'0';
         for (i = 0; i < 31; i += 2)
                 freg2[i] = mkreg("%d", i, 3, FREG);
-        for (i = 0; i < 32; i++)
+        for (i = 0; i < 31; i++)
                 ireg[i]  = mkreg("%d", i, 1, IREG);
-        ireg[29]->x.name = "sp";
+        ireg[13]->x.name = "sp";
         d6 = mkreg("6", 6, 3, IREG);
         freg2w = mkwildcard(freg2);
         iregw = mkwildcard(ireg);
@@ -604,13 +604,13 @@ static void emit2(Node p) {
         case ARG+B:
                 dalign = 2;
                 salign = p->syms[1]->u.c.v.i;
-                blkcopy(29, p->syms[2]->u.c.v.i,
+                blkcopy(13, p->syms[2]->u.c.v.i,
                         getregnum(p->x.kids[0]), 0,
                         p->syms[0]->u.c.v.i, tmpregs);
                 n   = p->syms[2]->u.c.v.i + p->syms[0]->u.c.v.i;
                 dst = p->syms[2]->u.c.v.i;
                 for ( ; dst <= 12 && dst < n; dst += 4)
-                        print("\tld r%d,[r13, %d] // ARG+B emit2\n", dst, (dst/4)+4);
+                        print("\tld r%d,[r13, %d] // ARG+B emit2\n", (dst/4)+4, dst);
                 break;
         }
 }
