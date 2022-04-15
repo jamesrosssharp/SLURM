@@ -43,7 +43,7 @@ fn main() {
     let mut fb = [[[0; NUM_OF_COLOR]; VISIBLE_SCREEN_WIDTH]; VISIBLE_SCREEN_HEIGHT];
 
     let opengl = OpenGL::V3_2;
-    let mut window: PistonWindow = WindowSettings::new("rust-nes-emulator", (width, height))
+    let mut window: PistonWindow = WindowSettings::new("slurm16 emulator", (width, height))
         .exit_on_esc(true)
         .graphics_api(opengl)
         .build()

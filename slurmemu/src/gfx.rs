@@ -43,8 +43,8 @@ impl Gfx {
         {
             match (port & 0xf00) >> 8 {
 
-                0x4 | 0x5 =>  { self.copper.write_mem(port & 0x1ff, val); }
-
+                0x4 | 0x5 =>  self.copper.write_mem(port & 0x1ff, val),
+                _ => {}
             }
         }
 
@@ -57,7 +57,7 @@ impl Gfx {
         let hs = self.x >= TOTAL_X - H_FRONT_PORCH - H_SYNC_PULSE;
         let vs = self.y >= TOTAL_Y - V_FRONT_PORCH - V_SYNC_PULSE; 
 
-        let (r, g, b, xout, yout, regwr, reg, data) = self.copper.step(self.x, self.y, hs, vs);
+        let (r, g, b, _xout, _yout, _regwr, _reg, _data) = self.copper.step(self.x, self.y, hs, vs);
 
         if (self.x >= H_BACK_PORCH) && (self.x < H_BACK_PORCH + VISIBLE_SCREEN_WIDTH as u16) && (self.y >= V_BACK_PORCH) && (self.y < V_BACK_PORCH + VISIBLE_SCREEN_HEIGHT as u16)
         {
@@ -73,13 +73,13 @@ impl Gfx {
 
         self.x += 1;
 
-        if self.x > TOTAL_X
+        if self.x >= TOTAL_X
         {
             self.x = 0;
             self.y += 1;
         }
 
-        if self.y > TOTAL_Y
+        if self.y >= TOTAL_Y
         {
             self.y = 0;
             self.x = 0;

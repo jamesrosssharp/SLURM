@@ -6,8 +6,8 @@ load_copper_list:
 load_copper_list.loop:
 	ld r1, [r4, 0]
 	out [r2, 0x5400], r1 // Copper list memory
-	add r2, 1
-	add r4, 1
+	add r2, 2
+	add r4, 2
 	sub r5, 1
 	bnz load_copper_list.loop
 	ret
