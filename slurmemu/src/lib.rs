@@ -6,3 +6,4 @@ pub mod slurm16_cpu;
 pub mod port_controller;
 pub mod uart;
 pub mod gfx;
+pub mod copper;

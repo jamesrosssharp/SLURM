@@ -52,6 +52,7 @@ impl PortController {
             // 3 - Audio
             // 4 - SPI
             // 5 - GFX
+            5 => return self.gfx.port_op(port, val, write),
             // 6 - Trace port
             6 => self.handle_trace(port, val, write),
             // 7 - Interrupt controller
