@@ -92,7 +92,7 @@ impl Slurm16SoC
     pub fn step(& mut self, fb : &mut [[[u8; NUM_OF_COLOR]; VISIBLE_SCREEN_WIDTH]; VISIBLE_SCREEN_HEIGHT])
     {
         self.cpu.execute_one_instruction(&mut self.mem, &mut self.port_controller);
-        self.port_controller.gfx.step_render(fb);
+        self.port_controller.gfx.step_render(&mut self.mem, fb);
     }
 
 }

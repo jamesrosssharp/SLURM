@@ -15,3 +15,4 @@ path = "../"
 [dependencies]
 piston_window = "0.123.0"
 image = "0.24.1"
+fps_counter = "2.0.0"

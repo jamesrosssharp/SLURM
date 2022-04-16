@@ -7,3 +7,4 @@ pub mod port_controller;
 pub mod uart;
 pub mod gfx;
 pub mod copper;
+pub mod sprite;

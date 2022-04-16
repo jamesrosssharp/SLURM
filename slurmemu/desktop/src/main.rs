@@ -4,10 +4,14 @@ use slurm_emulator::slurm16_soc::*;
 use std::env;
 use std::process;
 
+use std::time::{Duration, Instant};
+
 extern crate piston_window;
 use piston_window::*;
 
 extern crate image as im;
+
+use fps_counter::*;
 
 #[allow(dead_code)]
 fn main() {
@@ -35,10 +39,10 @@ fn main() {
     }
     soc.set_memory(&rom_data, 0, rom_data.len());  
 
-    let scale = 1;
+    let scale = 1.5;
 
-    let width = (VISIBLE_SCREEN_WIDTH * scale) as u32;
-    let height = (VISIBLE_SCREEN_HEIGHT * scale) as u32;
+    let width = ((VISIBLE_SCREEN_WIDTH as f32) * scale) as u32;
+    let height = ((VISIBLE_SCREEN_HEIGHT as f32) * scale) as u32;
 
     let mut fb = [[[0; NUM_OF_COLOR]; VISIBLE_SCREEN_WIDTH]; VISIBLE_SCREEN_HEIGHT];
 
@@ -57,9 +61,7 @@ fn main() {
     let mut texture: G2dTexture =
         Texture::from_image(&mut texture_context, &canvas, &TextureSettings::new()).unwrap();
 
-    //soc.run();
-    //soc.single_step();
-
+    let mut fps_counter = FPSCounter::default();
     while let Some(e) = window.next() {
         if let Some(_) = e.render_args() {
 
@@ -71,7 +73,6 @@ fn main() {
 
                 cycles += 1;
              }
-
 
              for j in 0..VISIBLE_SCREEN_HEIGHT {
                 for i in 0..VISIBLE_SCREEN_WIDTH {
@@ -91,6 +92,7 @@ fn main() {
                 image(&texture, c.transform.scale(scale as f64, scale as f64), g);
             });
 
+            window.set_title(format!("[slurm-emulator] fps:{}", fps_counter.tick()));
         }
     }
 

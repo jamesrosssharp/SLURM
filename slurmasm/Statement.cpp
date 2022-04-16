@@ -207,7 +207,8 @@ void Statement::firstPassAssemble(uint32_t& curAddress, SymbolTable& syms)
 						throw std::runtime_error(ss.str());
 					}
 
-		            assembledWords.resize(exprValue - caddr);
+		            assembledBytes.resize(exprValue - caddr);
+					useBytes = true;
 
 					break;
                 }

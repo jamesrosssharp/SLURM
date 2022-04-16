@@ -467,7 +467,7 @@ stmt: ASGNB(reg,INDIRB(reg))  "# asgnb %0 %1\n"  1
 
 
 %%
-static void progend(void){ print(".end\n");}
+static void progend(void){}
 static void progbeg(int argc, char *argv[]) {
         int i;
 
@@ -834,8 +834,8 @@ static void export(Symbol p) {
         print(".global %s\n", p->x.name);
 }
 static void import(Symbol p) {
-        if (!isfunc(p->type))
-                print(".extern %s %d\n", p->name, p->type->size);
+        //if (!isfunc(p->type))
+        //        print(".extern %s %d\n", p->name, p->type->size);
 }
 static void defsymbol(Symbol p) {
         if (p->scope >= LOCAL && p->sclass == STATIC)
