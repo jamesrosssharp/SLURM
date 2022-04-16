@@ -76,7 +76,7 @@ impl SpriteCore {
                 let sprite_address = self.a_ram[i];
 
 
-                if y >= sprite_y && y <= sprite_end_y && sprite_enable {
+                if y >= sprite_y && y < sprite_end_y && sprite_enable {
 
                     let mut xcoord = sprite_x;
                     let mut addr = sprite_address + if stride == 0 { (y - sprite_y) * 128 / 4 } else { (y - sprite_y) * 256 / 4 };

@@ -3,16 +3,17 @@ extern void load_copper_list(short* list, int len);
 extern void load_palette(short* palette, int len);
 
 short copperList[] = {
+		0x0000,
 		0x6f00,
-		0x7010,
+		0x7007,
 		0x60f0,
-		0x7010,
+		0x7007,
 		0x600f,
-		0x7010,
-		0x6fff,
-		0x7010,
+		0x7007,
+		0x60ff,
+		0x7007,
 		0x4200,
-		0x1000,
+		0x1001,
 		0x2fff		 
 };
 
@@ -49,83 +50,47 @@ struct Sprite sprites[] = {
 		1,
 		0,
 		{(16*5*64) + 12, (16 * 5 * 64) + 8, (16*5*64) + 12, (16 * 5 * 64) + 8}
+	},
+	{
+		200,
+		200,
+		16,
+		16,
+		-1,
+		-1,
+		0,
+		{64*4*16, 64*4*16+4,64*4*16, 64*4*16+4}
+	},
+	{
+		600,
+		300,
+		16,
+		16,
+		2,
+		1,
+		0,
+		{8 + 64*3*16, 8 + 64*3*16, 8 + 64*3*16, 8 + 64*3*16 }
+	},
+	{
+		280,
+		400,
+		16,
+		16,
+		-1,
+		2,
+		0,
+		{12 + 64*3*16, 12 + 64*3*16, 12 + 64*3*16, 12 + 64*3*16 }	
+	},
+	{
+		250,
+		150,
+		16,
+		16,
+		-2,
+		-1,
+		0,
+		{16 + 64*3*16, 16 + 64*3*16, 16 + 64*3*16, 16 + 64*3*16 }	
 	}
-
-/*spr1:
-	dw 400
-	dw 100
-	dw 1
-	dw 1
-	dw pacman_sprite_sheet + (16 * 5 * 64) + 12
-	dw  pacman_sprite_sheet + (16 * 5 * 64) + 8
-	dw  pacman_sprite_sheet + (16 * 5 * 64) + 12
-	dw  pacman_sprite_sheet + (16 * 5 * 64) + 8
-spr2:
-	dw 200
-	dw 200
-	dw -1
-	dw -1
-	dw pacman_sprite_sheet + 0 + (64*4*16)
-	dw pacman_sprite_sheet + 4 + (64*4*16)
-	dw pacman_sprite_sheet + 0 + (64*4*16)
-	dw pacman_sprite_sheet + 4 + (64*4*16)
-spr3:
-	dw 600
-	dw 300
-	dw 2
-	dw 1
-	dw pacman_sprite_sheet + 8 + (64*3*16)
-	dw pacman_sprite_sheet + 8 + (64*3*16)
-	dw pacman_sprite_sheet + 8 + (64*3*16)
-	dw pacman_sprite_sheet + 8 + (64*3*16)
-spr4:
-	dw 280
-	dw 400
-	dw -1
-	dw 2
-	dw pacman_sprite_sheet + 12 + (64*3*16)
-	dw pacman_sprite_sheet + 12 + (64*3*16)
-	dw pacman_sprite_sheet + 12 + (64*3*16)
-	dw pacman_sprite_sheet + 12 + (64*3*16)
-spr5:
-	dw 250
-	dw 150
-	dw -2
-	dw -1
-	dw pacman_sprite_sheet + 16 + (64*3*16)
-	dw pacman_sprite_sheet + 16 + (64*3*16)
-	dw pacman_sprite_sheet + 16 + (64*3*16)
-	dw pacman_sprite_sheet + 16 + (64*3*16)
-spr6:
-	dw 250
-	dw 150
-	dw -2
-	dw 0
-	dw pacman_sprite_sheet + 20 + (64*3*16)
-	dw pacman_sprite_sheet + 20 + (64*3*16)
-	dw pacman_sprite_sheet + 20 + (64*3*16)
-	dw pacman_sprite_sheet + 20 + (64*3*16)
-spr7:
-	dw 250
-	dw 150
-	dw 1
-	dw -1
-	dw pacman_sprite_sheet + 24 + (64*3*16)
-	dw pacman_sprite_sheet + 24 + (64*3*16)
-	dw pacman_sprite_sheet + 24 + (64*3*16)
-	dw pacman_sprite_sheet + 24 + (64*3*16)
-spr8:
-	dw 250
-	dw 150
-	dw -2
-	dw 3
-	dw pacman_sprite_sheet + 28 + (64*3*16)
-	dw pacman_sprite_sheet + 28 + (64*3*16)
-	dw pacman_sprite_sheet + 28 + (64*3*16)
-	dw pacman_sprite_sheet + 28 + (64*3*16)
-		*/
-
-
 
 };
 
@@ -177,6 +142,9 @@ void enable_interrupts()
 
 int main()
 {
+	
+	short frame = 0;
+	
 	load_copper_list(copperList, COUNT_OF(copperList));
 	load_palette(&pacman_palette, 16);
 
@@ -185,6 +153,8 @@ int main()
 	while (1)
 	{
 		update_sprites();
+		copperList[0] = 0x7000 | (frame++ & 31);
+		load_copper_list(copperList, COUNT_OF(copperList));
 		__sleep();
 	}
 	putc('!');
