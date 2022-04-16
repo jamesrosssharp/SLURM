@@ -47,6 +47,20 @@ exit:
 	out [r0, 0x6006], r0 
 	ret
 
+__out:
+	out [r4, 0], r5
+	ret
+
+__in: 
+	in r2, [r4, 0]
+	ret
+
+__sleep:
+	sleep
+	ret	
+
 dummy_handler:
+	mov r1, 0xffff
+	out [r0, 0x7001], r1
 	iret
 

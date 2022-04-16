@@ -59,7 +59,7 @@ impl Gfx {
                 0x4 | 0x5 => /* Copper list */
                     self.copper.write_mem(port & 0x1ff, val),
                 0xe =>  /* Palette */
-                    {println!("Palette: {:#01x} {:#01x}", port, val); self.palette[(port & 0xff) as usize] = val; },
+                    {/*println!("Palette: {:#01x} {:#01x}", port, val);*/ self.palette[(port & 0xff) as usize] = val; },
                 _ => {}
             }
         }
@@ -67,12 +67,15 @@ impl Gfx {
         return 0;
     }
 
-    pub fn step_render(& mut self, mem : & mut Vec<u16>, fb: &mut [[[u8; NUM_OF_COLOR]; VISIBLE_SCREEN_WIDTH]; VISIBLE_SCREEN_HEIGHT])
+    pub fn step_render(& mut self, mem : & mut Vec<u16>, fb: &mut [[[u8; NUM_OF_COLOR]; VISIBLE_SCREEN_WIDTH]; VISIBLE_SCREEN_HEIGHT]) -> (bool /* HS int */ , bool /* VS int */)
     {
 
         let hs = self.x >= TOTAL_X - H_FRONT_PORCH - H_SYNC_PULSE;
-        let vs = self.y >= TOTAL_Y - V_FRONT_PORCH - V_SYNC_PULSE; 
+        let vs = self.y >= TOTAL_Y - V_FRONT_PORCH - V_SYNC_PULSE;
 
+        let hs_int = self.x == TOTAL_X - H_FRONT_PORCH - H_SYNC_PULSE;
+        let vs_int = self.y == TOTAL_Y - V_FRONT_PORCH - V_SYNC_PULSE;
+ 
         let (bg_r, bg_g, bg_b, _xout, _yout, _regwr, _reg, _data) = self.copper.step(self.x, self.y, hs, vs);
 
         let sprite_idx = self.sprite.step(mem, self.x, self.y, hs, vs);
@@ -113,7 +116,8 @@ impl Gfx {
             self.y = 0;
             self.x = 0;
         }
-    
+
+        (hs_int, vs_int)
     }
 
 }

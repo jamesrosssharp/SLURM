@@ -368,6 +368,7 @@ impl Slurm16CPU {
     }
 
     pub fn setif(&mut self, instruction : u16) {
+        //println!("Setif: {}", instruction & 1);
         self.int_flag = instruction & 1 == 1;
         self.imm_hi = 0;
     }
@@ -711,7 +712,7 @@ impl Slurm16CPU {
 
     pub fn ret_op(&mut self, instruction : u16) {
         if (instruction & 1) == 1 {
-
+            self.int_flag = true;
             let addr = self.get_register(14);
             self.pc = addr - 2; // This will get incremented
 
@@ -831,7 +832,20 @@ impl Slurm16CPU {
 
 
     #[bitmatch]
-    pub fn execute_one_instruction(&mut self, mem: &mut Vec<u16>, portcon: &mut PortController) {
+    pub fn execute_one_instruction(&mut self, mem: &mut Vec<u16>, portcon: &mut PortController, irq : u8) {
+
+        // Interrupt?
+        if (irq != 0) && self.int_flag {
+            self.registers[14] = self.pc;
+            self.int_flag = false;
+            self.pc = (irq as u16) * 4;
+           // println!("Interrupt: Jumping to {:#01x}", self.pc);
+            self.halt = false;
+        }
+
+
+        if self.halt { return; }
+
         let instruction = mem[(self.pc>>1) as usize];
 
         //println!("PC: {}", self.pc);
@@ -858,12 +872,13 @@ impl Slurm16CPU {
         self.pc += 2;
     }
 
+ /* DEPRECATED
     pub fn execute_n_instructions(&mut self, mem: &mut Vec<u16>, portcon:  & mut PortController, n : usize) {
         for _i in 0..n {
             self.execute_one_instruction(mem, portcon);
         }
     }
-
+*/
     pub fn get_register(& self, reg : usize) -> u16 {
         if reg == 0 {
             return 0;

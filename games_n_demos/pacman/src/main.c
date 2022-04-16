@@ -24,7 +24,7 @@ struct Sprite {
 	short vx;
 	short vy;
 	short frame;
-	short frames[4];
+	unsigned short frame_offsets[4];
 };
 
 extern short pacman_sprite_sheet;
@@ -36,11 +36,97 @@ struct Sprite sprites[] = {
 		240,
 		16,
 		16,
-		0,
+		1,
 		0,
 		0,
 		{0, 4, 8, 4}
+	},
+	{	400,
+		100,
+		16,
+		16,
+		1,
+		1,
+		0,
+		{(16*5*64) + 12, (16 * 5 * 64) + 8, (16*5*64) + 12, (16 * 5 * 64) + 8}
 	}
+
+/*spr1:
+	dw 400
+	dw 100
+	dw 1
+	dw 1
+	dw pacman_sprite_sheet + (16 * 5 * 64) + 12
+	dw  pacman_sprite_sheet + (16 * 5 * 64) + 8
+	dw  pacman_sprite_sheet + (16 * 5 * 64) + 12
+	dw  pacman_sprite_sheet + (16 * 5 * 64) + 8
+spr2:
+	dw 200
+	dw 200
+	dw -1
+	dw -1
+	dw pacman_sprite_sheet + 0 + (64*4*16)
+	dw pacman_sprite_sheet + 4 + (64*4*16)
+	dw pacman_sprite_sheet + 0 + (64*4*16)
+	dw pacman_sprite_sheet + 4 + (64*4*16)
+spr3:
+	dw 600
+	dw 300
+	dw 2
+	dw 1
+	dw pacman_sprite_sheet + 8 + (64*3*16)
+	dw pacman_sprite_sheet + 8 + (64*3*16)
+	dw pacman_sprite_sheet + 8 + (64*3*16)
+	dw pacman_sprite_sheet + 8 + (64*3*16)
+spr4:
+	dw 280
+	dw 400
+	dw -1
+	dw 2
+	dw pacman_sprite_sheet + 12 + (64*3*16)
+	dw pacman_sprite_sheet + 12 + (64*3*16)
+	dw pacman_sprite_sheet + 12 + (64*3*16)
+	dw pacman_sprite_sheet + 12 + (64*3*16)
+spr5:
+	dw 250
+	dw 150
+	dw -2
+	dw -1
+	dw pacman_sprite_sheet + 16 + (64*3*16)
+	dw pacman_sprite_sheet + 16 + (64*3*16)
+	dw pacman_sprite_sheet + 16 + (64*3*16)
+	dw pacman_sprite_sheet + 16 + (64*3*16)
+spr6:
+	dw 250
+	dw 150
+	dw -2
+	dw 0
+	dw pacman_sprite_sheet + 20 + (64*3*16)
+	dw pacman_sprite_sheet + 20 + (64*3*16)
+	dw pacman_sprite_sheet + 20 + (64*3*16)
+	dw pacman_sprite_sheet + 20 + (64*3*16)
+spr7:
+	dw 250
+	dw 150
+	dw 1
+	dw -1
+	dw pacman_sprite_sheet + 24 + (64*3*16)
+	dw pacman_sprite_sheet + 24 + (64*3*16)
+	dw pacman_sprite_sheet + 24 + (64*3*16)
+	dw pacman_sprite_sheet + 24 + (64*3*16)
+spr8:
+	dw 250
+	dw 150
+	dw -2
+	dw 3
+	dw pacman_sprite_sheet + 28 + (64*3*16)
+	dw pacman_sprite_sheet + 28 + (64*3*16)
+	dw pacman_sprite_sheet + 28 + (64*3*16)
+	dw pacman_sprite_sheet + 28 + (64*3*16)
+		*/
+
+
+
 };
 
 #define COUNT_OF(x) ((sizeof(x)) / (sizeof(x[0])))
@@ -66,23 +152,41 @@ void update_sprites()
 		short x = MAKE_SPRITE_X(sp->x, 1, 0, 1);
 		short y = MAKE_SPRITE_Y(sp->y, sp->width);
 		short h = MAKE_SPRITE_H(sp->y + sp->height);
-		short a = MAKE_SPRITE_A((unsigned short)(&pacman_sprite_sheet) >> 1);
+		short frame = sp->frame;
+		short a = MAKE_SPRITE_A(((unsigned short)&pacman_sprite_sheet >> 1) + (sp->frame_offsets[frame >> 2]));
 
 		load_sprite_x(i, x);
 		load_sprite_y(i, y);
 		load_sprite_h(i, h);
 		load_sprite_a(i, a);
 
+		sp->frame = (sp->frame + 1) & 15;
+		sp->x += sp->vx;
+		sp->y += sp->vy;
+
+		sp->x &= 1023;
+		sp->y &= 511;
 	}
+}
+
+void enable_interrupts()
+{
+	__out(0x7000, 0x2);
+	global_interrupt_enable();
 }
 
 int main()
 {
-	trace_hex(&pacman_sprite_sheet);
 	load_copper_list(copperList, COUNT_OF(copperList));
 	load_palette(&pacman_palette, 16);
-	update_sprites();
 
+	enable_interrupts();
+
+	while (1)
+	{
+		update_sprites();
+		__sleep();
+	}
 	putc('!');
 	exit();
 	return 0;

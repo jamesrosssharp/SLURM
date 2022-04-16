@@ -5,15 +5,16 @@
 //
 //
 
-use std::io::Read;
+/*use std::io::Read;
 use std::io::stdin;
+*/
 
 use super::slurm16_cpu::*;
 use super::port_controller::*;
 
-use std::{thread, time};
+//use std::{thread, time};
 
-const TARGET_HZ: u64 = 60;
+//const TARGET_HZ: u64 = 60;
 const MEM_SIZE : usize = 65536;
 
 pub const NUM_OF_COLOR : usize = 3;
@@ -57,6 +58,7 @@ impl Slurm16SoC
     ///
     /// DEPRECATED - SINCE WE NOW USE TIMING FROM PISTON_WINDOW EVENTS IN DESKTOP
     ///
+  /*
     pub fn run(& mut self)
     {
         let target_ft = time::Duration::from_micros(1000000 / TARGET_HZ);
@@ -76,7 +78,8 @@ impl Slurm16SoC
         }
         println!("Emulation finished");
     }
-
+*/
+    /*
     // Single step the CPU with debug
     pub fn single_step(& mut self)
     {
@@ -88,11 +91,13 @@ impl Slurm16SoC
             stdin().read(&mut [0]).unwrap();
         }
     }
-
+*/
     pub fn step(& mut self, fb : &mut [[[u8; NUM_OF_COLOR]; VISIBLE_SCREEN_WIDTH]; VISIBLE_SCREEN_HEIGHT])
     {
-        self.cpu.execute_one_instruction(&mut self.mem, &mut self.port_controller);
-        self.port_controller.gfx.step_render(&mut self.mem, fb);
+        let (hs_int, vs_int) = self.port_controller.gfx.step_render(&mut self.mem, fb);
+        let irq = self.port_controller.interrupt_controller.process_irq(hs_int, vs_int, false, false, false);
+   
+        self.cpu.execute_one_instruction(&mut self.mem, &mut self.port_controller, irq);
     }
 
 }

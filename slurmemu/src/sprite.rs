@@ -5,6 +5,8 @@
  *
  */
 
+use std::cmp;
+
 const LINEBUFFER_SIZE : usize = 1024;
 
 pub struct SpriteCore {
@@ -80,10 +82,10 @@ impl SpriteCore {
                     let mut addr = sprite_address + if stride == 0 { (y - sprite_y) * 128 / 4 } else { (y - sprite_y) * 256 / 4 };
 
 
-                    while xcoord < sprite_x + sprite_width {
+                    while (xcoord < sprite_x + sprite_width) && ((xcoord as usize) < LINEBUFFER_SIZE)  {
                         let data : u16 = mem[addr as usize];
 
-                        match sprite_x + sprite_width - xcoord
+                        match cmp::min(sprite_x + sprite_width - xcoord, LINEBUFFER_SIZE as u16 - xcoord)
                         {
                             1 => {
                                 self.line_buffers[render_buffer][xcoord as usize] = ((pal_hi << 4)  | data & 0xf) as u8;

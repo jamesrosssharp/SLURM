@@ -1,10 +1,14 @@
 use super::uart::Uart;
 use super::gfx::Gfx;
+use super::interrupt_controller::InterruptController;
+
+use std::io::{self, Write};
 
 pub struct PortController {
     pub uart: Uart,
     pub exit: bool,
     pub gfx: Gfx,
+    pub interrupt_controller: InterruptController,
 }
 
 ///     The PortController simply implements the port address map
@@ -15,7 +19,8 @@ impl PortController {
         PortController { 
             uart: Uart::new(),
             gfx: Gfx::new(),
-            exit: false
+            exit: false,
+            interrupt_controller: InterruptController::new(),
         }
     }
 
@@ -38,6 +43,7 @@ impl PortController {
         {
             print!("{:#01x}", val);
         }
+        io::stdout().flush().unwrap();
 
     }
 
@@ -56,6 +62,7 @@ impl PortController {
             // 6 - Trace port
             6 => self.handle_trace(port, val, write),
             // 7 - Interrupt controller
+            7 => return self.interrupt_controller.port_op(port, val, write),
             // 8 - scratch pad RAM
             // Else, do nothing
             _ => ()
