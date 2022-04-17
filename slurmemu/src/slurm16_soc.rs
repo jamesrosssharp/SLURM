@@ -98,7 +98,7 @@ impl Slurm16SoC
         let irq = self.port_controller.interrupt_controller.process_irq(hs_int, vs_int, false, false, false);
    
         self.cpu.execute_one_instruction(&mut self.mem, &mut self.port_controller, irq);
-        (vs_int)
+        vs_int
     }
 
 }

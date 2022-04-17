@@ -13,8 +13,7 @@ short copperList[] = {
 		0x60ff,
 		0x7007,
 		0x4200,
-		0x1001,
-*/
+		0x1001,*/
 		0x2fff		 
 };
 
@@ -139,8 +138,8 @@ void update_sprites()
 }
 
 short bg_x = 73;
-short bg_y = 12; //10;
-short vx = 1;
+short bg_y = 0; //10;
+short vx = 0;
 short vy = 0;
 
 void update_background()
@@ -206,7 +205,7 @@ int main()
 	{
 		update_background();
 		update_sprites();
-		//copperList[0] = 0x7000 | (frame++ & 31);
+//		copperList[0] = 0x7000 | (frame++ & 31);
 		load_copper_list(copperList, COUNT_OF(copperList));
 		__sleep();
 	}

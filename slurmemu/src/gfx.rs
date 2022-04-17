@@ -101,13 +101,13 @@ impl Gfx {
         let mut g : u8 = bg_g;
         let mut b : u8 = bg_b;
 
-        if sprite_idx != 0
+        if (sprite_idx & 0xf) != 0
         {
             r = ((self.palette[sprite_idx as usize] & 0xf00) >> 4) as u8;
             g = (self.palette[sprite_idx as usize] & 0xf0) as u8;
             b = ((self.palette[sprite_idx as usize] & 0xf) << 4) as u8;
         } 
-        else if bg_idx != 0
+        else if (bg_idx & 0xf) != 0
         {
             r = ((self.palette[bg_idx as usize] & 0xf00) >> 4) as u8;
             g = (self.palette[bg_idx as usize] & 0xf0) as u8;

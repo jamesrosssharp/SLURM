@@ -4,8 +4,6 @@ use slurm_emulator::slurm16_soc::*;
 use std::env;
 use std::process;
 
-use std::time::{Duration, Instant};
-
 extern crate piston_window;
 use piston_window::*;
 
