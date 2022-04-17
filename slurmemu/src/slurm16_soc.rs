@@ -92,12 +92,13 @@ impl Slurm16SoC
         }
     }
 */
-    pub fn step(& mut self, fb : &mut [[[u8; NUM_OF_COLOR]; VISIBLE_SCREEN_WIDTH]; VISIBLE_SCREEN_HEIGHT])
+    pub fn step(& mut self, fb : &mut [[[u8; NUM_OF_COLOR]; VISIBLE_SCREEN_WIDTH]; VISIBLE_SCREEN_HEIGHT]) -> bool
     {
         let (hs_int, vs_int) = self.port_controller.gfx.step_render(&mut self.mem, fb);
         let irq = self.port_controller.interrupt_controller.process_irq(hs_int, vs_int, false, false, false);
    
         self.cpu.execute_one_instruction(&mut self.mem, &mut self.port_controller, irq);
+        (vs_int)
     }
 
 }

@@ -7,6 +7,7 @@ use super::slurm16_soc::*;
 
 use super::copper::*;
 use super::sprite::*;
+use super::background::*;
 
 pub struct Gfx {
 
@@ -15,8 +16,10 @@ pub struct Gfx {
 
     copper: Copper,
     sprite: SpriteCore,
+    bg: BackgroundCore,
 
-    palette : [u16; 256]    
+    palette : [u16; 256],
+
 }
 
 const H_BACK_PORCH  : u16 = 48; 
@@ -37,6 +40,7 @@ impl Gfx {
             y: 0,
             copper: Copper::new(),
             sprite: SpriteCore::new(),
+            bg: BackgroundCore::new(),
             palette: [0; 256],
         }
     }
@@ -58,6 +62,17 @@ impl Gfx {
                     self.sprite.write_a_mem((port & 0xff) as u8, val),
                 0x4 | 0x5 => /* Copper list */
                     self.copper.write_mem(port & 0x1ff, val),
+                0xd => /* Multiple cores */ {
+                    match (port & 0xf0) >> 4 {
+                       0x0 => /* Background */ {
+                            self.bg.port_op(port & 0xf, val, write);
+                        },
+                       0x2 => /* Copper */ {
+                        },
+                       _ => {}
+                    }
+
+                },
                 0xe =>  /* Palette */
                     {/*println!("Palette: {:#01x} {:#01x}", port, val);*/ self.palette[(port & 0xff) as usize] = val; },
                 _ => {}
@@ -76,9 +91,11 @@ impl Gfx {
         let hs_int = self.x == TOTAL_X - H_FRONT_PORCH - H_SYNC_PULSE;
         let vs_int = self.y == TOTAL_Y - V_FRONT_PORCH - V_SYNC_PULSE;
  
-        let (bg_r, bg_g, bg_b, _xout, _yout, _regwr, _reg, _data) = self.copper.step(self.x, self.y, hs, vs);
+        let (bg_r, bg_g, bg_b, _xout, _yout, _regwr, _reg, _data) = self.copper.step(self.x>>1, self.y>>1, hs, vs);
 
-        let sprite_idx = self.sprite.step(mem, self.x, self.y, hs, vs);
+        let sprite_idx = self.sprite.step(mem, self.x>>1, self.y>>1, hs, vs);
+
+        let bg_idx = self.bg.step(mem, self.x>>1, self.y>>1, hs, vs);
 
         let mut r : u8 = bg_r;
         let mut g : u8 = bg_g;
@@ -89,6 +106,12 @@ impl Gfx {
             r = ((self.palette[sprite_idx as usize] & 0xf00) >> 4) as u8;
             g = (self.palette[sprite_idx as usize] & 0xf0) as u8;
             b = ((self.palette[sprite_idx as usize] & 0xf) << 4) as u8;
+        } 
+        else if bg_idx != 0
+        {
+            r = ((self.palette[bg_idx as usize] & 0xf00) >> 4) as u8;
+            g = (self.palette[bg_idx as usize] & 0xf0) as u8;
+            b = ((self.palette[bg_idx as usize] & 0xf) << 4) as u8; 
         }
 
         if (self.x >= H_BACK_PORCH) && (self.x < H_BACK_PORCH + VISIBLE_SCREEN_WIDTH as u16) && (self.y >= V_BACK_PORCH) && (self.y < V_BACK_PORCH + VISIBLE_SCREEN_HEIGHT as u16)
@@ -119,5 +142,6 @@ impl Gfx {
 
         (hs_int, vs_int)
     }
+
 
 }

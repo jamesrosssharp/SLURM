@@ -9,3 +9,4 @@ pub mod gfx;
 pub mod copper;
 pub mod sprite;
 pub mod interrupt_controller;
+pub mod background;

@@ -39,7 +39,7 @@ fn main() {
     }
     soc.set_memory(&rom_data, 0, rom_data.len());  
 
-    let scale = 1.5;
+    let scale = 1.0;
 
     let width = ((VISIBLE_SCREEN_WIDTH as f32) * scale) as u32;
     let height = ((VISIBLE_SCREEN_HEIGHT as f32) * scale) as u32;
@@ -66,23 +66,28 @@ fn main() {
         if let Some(_) = e.render_args() {
 
              let mut cycles = 0;
+             let mut fired = false;
+                
+             while cycles < 25175000 / 60 {
 
-             while cycles < 25125000 / 60 {
-
-                soc.step(& mut fb);
+                if soc.step(& mut fb) && !fired
+                {
+                    fired = true;
+                    for j in 0..VISIBLE_SCREEN_HEIGHT {
+                                for i in 0..VISIBLE_SCREEN_WIDTH {
+                                    let x = i as u32;
+                                    let y = j as u32;
+                                    let color = fb[j][i];
+                                    canvas.put_pixel(x, y, im::Rgba([color[0], color[1], color[2], 255]));
+                                }
+                            }
+                           
+                }
 
                 cycles += 1;
              }
 
-             for j in 0..VISIBLE_SCREEN_HEIGHT {
-                for i in 0..VISIBLE_SCREEN_WIDTH {
-                    let x = i as u32;
-                    let y = j as u32;
-                    let color = fb[j][i];
-                    canvas.put_pixel(x, y, im::Rgba([color[0], color[1], color[2], 255]));
-                }
-            }
-            
+           
             texture.update(&mut texture_context, &canvas).unwrap();
             window.draw_2d(&e, |c, g, device| {
                 // Update texture before rendering.

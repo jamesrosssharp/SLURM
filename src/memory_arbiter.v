@@ -310,8 +310,8 @@ always @(*) begin
 				state_r_1_next = s_grant_sp; 
 			end else
 			if (bg0_rvalid == 1'b1 && bg0_memory_address[15:14] == 2'b01) begin
-				//b2_addr_r = bg0_memory_address;				
-				//state_r_1_next = s_grant_bg0;
+				b2_addr_r = bg0_memory_address;				
+				state_r_1_next = s_grant_bg0;
 			end else
 			if (bg1_rvalid == 1'b1 && bg1_memory_address[15:14] == 2'b01) begin
 				//b2_addr_r = bg1_memory_address;				
@@ -402,8 +402,8 @@ always @(*) begin
 				state_r_2_next = s_grant_sp; 
 			end else
 			if (bg0_rvalid == 1'b1 && bg0_memory_address[15:14] == 2'b10) begin
-				//b3_addr_r = bg0_memory_address;				
-				//state_r_2_next = s_grant_bg0;
+				b3_addr_r = bg0_memory_address;				
+				state_r_2_next = s_grant_bg0;
 			end else
 			if (bg1_rvalid == 1'b1 && bg1_memory_address[15:14] == 2'b10) begin
 				//b3_addr_r = bg1_memory_address;				
@@ -490,16 +490,16 @@ always @(*) begin
 	case (state_r_3)
 		s_idle: begin
 			if (sprite_rvalid == 1'b1 && sprite_memory_address[15:14] == 2'b11) begin
-				//b4_addr_r = sprite_memory_address;				
-				//state_r_3_next = s_grant_sp; 
+				b4_addr_r = sprite_memory_address;				
+				state_r_3_next = s_grant_sp; 
 			end else
 			if (bg0_rvalid == 1'b1 && bg0_memory_address[15:14] == 2'b11) begin
 				b4_addr_r = bg0_memory_address;				
 				state_r_3_next = s_grant_bg0;
 			end else
 			if (bg1_rvalid == 1'b1 && bg1_memory_address[15:14] == 2'b11) begin
-				b4_addr_r = bg1_memory_address;				
-				state_r_3_next = s_grant_bg1;	
+				//b4_addr_r = bg1_memory_address;				
+				//state_r_3_next = s_grant_bg1;	
 			end else
  			if (ov_rvalid == 1'b1 && ov_memory_address[15:14] == 2'b11) begin
 				b4_addr_r = ov_memory_address;				

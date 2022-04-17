@@ -1,10 +1,10 @@
 
 extern void load_copper_list(short* list, int len);
-extern void load_palette(short* palette, int len);
+extern void load_palette(short* palette, int offset, int len);
 
 short copperList[] = {
-		0x0000,
-		0x6f00,
+		0x6000,
+/*		0x6f00,
 		0x7007,
 		0x60f0,
 		0x7007,
@@ -14,6 +14,7 @@ short copperList[] = {
 		0x7007,
 		0x4200,
 		0x1001,
+*/
 		0x2fff		 
 };
 
@@ -29,7 +30,10 @@ struct Sprite {
 };
 
 extern short pacman_sprite_sheet;
-extern short pacman_palette;
+extern short pacman_spritesheet_palette;
+extern short pacman_tilemap;
+extern short pacman_tileset;
+extern short pacman_tileset_palette;
 
 struct Sprite sprites[] = {
 	{
@@ -134,6 +138,52 @@ void update_sprites()
 	}
 }
 
+short bg_x = 73;
+short bg_y = 12; //10;
+short vx = 1;
+short vy = 0;
+
+void update_background()
+{
+
+
+	// Set BG enable and pal hi
+	
+	__out(0x5d00, 0x1 | (1<<4));
+
+	// Set X
+	
+	__out(0x5d01, bg_x);
+
+	// Set Y
+	
+	__out(0x5d02, bg_y);
+
+	// Set map address
+
+	__out(0x5d03, (unsigned short)&pacman_tilemap >> 1);
+
+	// Set tile set address
+	
+	__out(0x5d04, (unsigned short)&pacman_tileset >> 1);
+
+	bg_x += vx;
+	bg_y += vy;
+
+	if (bg_x > 150)
+	{
+		bg_x = 149;
+		vx = 0-vx;
+		vy = 0-vy;
+	}
+	else if (bg_x < 0)
+	{
+		vx = 0-vx;
+		vy = 0-vy;
+		bg_x = 0;
+	}
+}
+
 void enable_interrupts()
 {
 	__out(0x7000, 0x2);
@@ -146,14 +196,17 @@ int main()
 	short frame = 0;
 	
 	load_copper_list(copperList, COUNT_OF(copperList));
-	load_palette(&pacman_palette, 16);
+	load_palette(&pacman_spritesheet_palette, 0, 16);
+	load_palette(&pacman_tileset_palette, 16, 16);
+
 
 	enable_interrupts();
 
 	while (1)
 	{
+		update_background();
 		update_sprites();
-		copperList[0] = 0x7000 | (frame++ & 31);
+		//copperList[0] = 0x7000 | (frame++ & 31);
 		load_copper_list(copperList, COUNT_OF(copperList));
 		__sleep();
 	}

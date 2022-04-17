@@ -4,7 +4,7 @@ AS=../../slurmasm/slurmasm
 
 SRC_DIR=src
 
-TARGET=build/pacman.bin
+TARGET=build/pocman.bin
 
 all: $(TARGET)
 
@@ -12,7 +12,7 @@ SRCS = $(wildcard src/*.c)
 PREPROCESSED = $(patsubst %.c,build/%.c1,$(SRCS))
 ASM_SRCS = $(wildcard src/*.asm)
 
-ASSETS_SRC = assets/sprites.png
+ASSETS_SRC = assets/sprites.png assets/bg_tiles.png assets/background.tmx
 ASSETS_ASM = assets/assets.asm
 
 $(ASSETS_ASM): $(ASSETS_SRC) assets/gen-assets.py
