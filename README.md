@@ -1,6 +1,8 @@
 SLURM16 SoC - SLightly Useful RISC Machine, 16 bit, system-on-chip
 ==================================================================
 
+![ScreenShot](ScreenShot.png)
+
 Video console system-on-chip made for the iCE40 UP5K FPGA.
 
 64k x 16bit memory, shared between CPU and gfx / sound / flash DMA. Split into 4 banks so CPU, GPU, sound core, and flash dma can access the (single port) memory banks simultaneously.
@@ -30,10 +32,6 @@ so there can be a "char" type in C.
 C compiler provided (for now) by retargeting lcc, as per Jan gray's XR16. However, it is hoped to replace lcc with a custom, optimising C compiler supporting C11 at a later point in time.
 
 
-Instruction Set
-===============
-
-All instructions are 16 bits wide. With bit 15 low, The highest 4 bits are the instruction class. With bit 15, high, the top three bits are the instruction class / 2.
 
 Interrupt Vectors
 =================
@@ -51,6 +49,11 @@ will simply transfer execution to the vector address on an interrupt.
 |   4    |      0x8      |   SPI flash DMA|
 |   5-15 |      0xe      |   Reserved     |	
 
+
+Instruction Set
+===============
+
+All instructions are 16 bits wide. With bit 15 low, The highest 4 bits are the instruction class. With bit 15, high, the top three bits are the instruction class / 2.
 
 Class 0: General purpose
 ------------------------
