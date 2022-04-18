@@ -231,10 +231,10 @@ reg: ADDRLP2 "\tmov r%c, r13\n\tadd r%c, (%a) + %F\n" 1
 
 addr_i: ADDRFP2 "[r13, (%a) + %F]"
 addr_i: ADDRLP2 "[r13, (%a) + %F]"
-stmt: ASGNI2(addr_i, reg) "\tst %0, r%1\n" 1
-stmt: ASGNU2(addr_i, reg) "\tst %0, r%1\n" 1
-stmt: ASGNI1(addr_i, reg) "\tstb %0, r%1\n" 1
-stmt: ASGNI1(addr_i, reg) "\tstb %0, r%1\n" 1
+stmt: ASGNI2(addr_i, reg) "\tst %0, r%1 // dodgy\n" 1
+stmt: ASGNU2(addr_i, reg) "\tst %0, r%1 // dodgy\n" 1
+stmt: ASGNI1(addr_i, reg) "\tstb %0, r%1 // dodgy\n" 1
+stmt: ASGNI1(addr_i, reg) "\tstb %0, r%1 // dodgy\n" 1
 
 reg: CNSTI1  "# reg\n"  range(a, 0, 0)
 reg: CNSTI2  "# reg\n"  range(a, 0, 0)
@@ -258,14 +258,14 @@ reg:  INDIRI4(addr)     "\tld r%c,[%0]\n"  1
 reg:  INDIRU4(addr)     "\tld r%c,[%0]\n"  1
 reg:  INDIRP2(addr)     "\tld r%c,[%0]\n"  1
 
-reg:  CVII2(INDIRI1(addr))     "\tldb r%c,[%0]\n"  1
-reg:  CVUU2(INDIRU1(addr))     "\tldb r%c,[%0]\n"  1
-reg:  CVUI2(INDIRU1(addr))     "\tld r%c,[%0]\n"  1
-reg:  CVII4(INDIRI1(addr))     "\tld r%c,[%0]\n"  1
+reg:  CVII2(INDIRI1(addr))     "\tldb r%c,[%0]\n\tand r%c, 0xff\n"  1
+reg:  CVUU2(INDIRU1(addr))     "\tldb r%c,[%0]\n\tand r%c, 0xff\n"  1
+reg:  CVUI2(INDIRU1(addr))     "\tldb r%c,[%0]\n\tand r%c, 0xff\n"  1
+reg:  CVII4(INDIRI1(addr))     "\tldb r%c,[%0]\n\tand r%c, 0xff\n"  1
 reg:  CVII4(INDIRI2(addr))     "\tld r%c,[%0]\n"  1
-reg:  CVUU4(INDIRU1(addr))     "\tld r%c,[%0]\n"  1
+reg:  CVUU4(INDIRU1(addr))     "\tldb r%c,[%0]\n"  1
 reg:  CVUU4(INDIRU2(addr))     "\tld r%c,[%0]\n"  1
-reg:  CVUI4(INDIRU1(addr))     "\tld r%c,[%0]\n"  1
+reg:  CVUI4(INDIRU1(addr))     "\tldb r%c,[%0]\n"  1
 reg:  CVUI4(INDIRU2(addr))     "\tld r%c,[%0]\n"  1
 reg:  INDIRF4(addr)     "# fp\n"  fp()
 stmt: ASGNF4(addr,reg)  "# fp\n"  fp()
@@ -346,12 +346,12 @@ reg: RSHI4(reg,con)  "?\tmov r%c, r%0\n\t.times %1 asr r%c \n"   1
 reg: RSHU2(reg,con)  "?\tmov r%c, r%0\n\t.times %1 lsr r%c \n"   1
 reg: RSHU4(reg,con)  "?\tmov r%c, r%0\n\t.times %1 lsr r%c \n"   1
 
-reg: BCOMI2(reg)  "?\tmov r%c,r%0\n\txor r%c,-1\n"   1
-reg: BCOMI4(reg)  "?\tmov r%c,r%0\n\txor r%c,-1\n"   1
-reg: BCOMU2(reg)  "?\tmov r%c,r%0\n\txor r%c,-1\n"   1
-reg: BCOMU4(reg)  "?\tmov r%c,r%0\n\txor r%c,-1\n"   1
-reg: NEGI2(reg)   "\tmov r%c, r0\n\tsub r%c,r%0\n"  1
-reg: NEGI4(reg)   "\tmov r%c, r0\n\tsub r%c,r%0\n"  1
+reg: BCOMI2(reg)  "?\tmov r%c,r%0\n\txor r%c,0xffff\n"   1
+reg: BCOMI4(reg)  "?\tmov r%c,r%0\n\txor r%c,0xffff\n"   1
+reg: BCOMU2(reg)  "?\tmov r%c,r%0\n\txor r%c,0xffff\n"   1
+reg: BCOMU4(reg)  "?\tmov r%c,r%0\n\txor r%c,0xffff\n"   1
+reg: NEGI2(reg)   "\tmov r1, r%0\n\tmov r%c, r0\n\tsub r%c,r1\n"  1
+reg: NEGI4(reg)   "\tmov r1, r%0\n\tmov r%c, r0\n\tsub r%c,r1\n"  1
 reg: LOADI1(reg)  "\tmov r%c,r%0\n"  move(a)
 reg: LOADU1(reg)  "\tmov r%c,r%0\n"  move(a)
 reg: LOADI2(reg)  "\tmov r%c,r%0\n"  move(a)

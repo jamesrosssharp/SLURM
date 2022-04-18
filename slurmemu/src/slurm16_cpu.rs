@@ -798,8 +798,6 @@ impl Slurm16CPU {
         //    println!("Byte Mem op: {:#01x} {:#01x} {} {:#01x} {:#01x}", addr, val, write, mem[addr], self.pc);
         //}
 
-
-
         if !write {
             if addr & 1 == 0
             {
@@ -815,11 +813,11 @@ impl Slurm16CPU {
 
             if addr & 1 == 0
             {
-                mem[addr>>1] = v & 0xff00 | (val & 0xff);
+                mem[addr>>1] = (v & 0xff00) | (val & 0xff);
             }
             else
             {
-                mem[addr >> 1] = v & 0x00ff | ((val & 0xff) << 8)
+                mem[addr >> 1] = (v & 0x00ff) | ((val & 0xff) << 8)
             }
 
         }

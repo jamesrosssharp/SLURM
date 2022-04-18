@@ -232,45 +232,244 @@ short keys = 0;
 #define A_KEY 16
 #define B_KEY 32
 
+short old_map_tile;
+
+#define COLLISION_CAN_UP 	1
+#define COLLISION_CAN_DOWN 	2
+#define COLLISION_CAN_LEFT 	4
+#define COLLISION_CAN_RIGHT 8
+
+short old_map_x;
+short old_map_y;
+
+
+short collision_detect(short x, short y)
+{
+	short mask = 0;
+	short collisions[9];
+	int i;
+	int j;
+
+	short g_cur_map_x = (x + bg_x + 3 + 4) >> 3;
+	short g_cur_map_y = (y + bg_y + 3 + 4) >> 3;
+
+	// Test up
+
+	mask = 0xf;
+
+	for (i = 0; i < 3; i++)
+	{
+			short cur_map_x = (x + bg_x + 3  + 2 + i*2) >> 3;
+			short cur_map_y = (y + bg_y + 3 + 4 - 4) >> 3;
+	
+			unsigned char* cur_map_tile_p = (unsigned char*)&pacman_tilemap + ((cur_map_x) + ((cur_map_y) << 6));
+			unsigned char cur_map_tile = *cur_map_tile_p;
+	
+			if (cur_map_tile < 42)
+				mask &= ~COLLISION_CAN_UP;
+
+			if (old_map_x != g_cur_map_x || old_map_y != g_cur_map_y)
+			{
+
+				trace_dec(cur_map_x);
+				trace_char(' ');
+				trace_dec(cur_map_y);
+				trace_char(' ');
+				trace_dec(cur_map_tile);
+				trace_char(' ');
+				trace_dec(i);
+				trace_char('\n');
+			}
+	}
+
+	for (i = 0; i < 3; i++)
+	{
+			short cur_map_x = (x + bg_x + 3 + 2 + i*2) >> 3;
+			short cur_map_y = (y + bg_y + 3 + 4 + 4) >> 3;
+	
+			unsigned char* cur_map_tile_p = (unsigned char*)&pacman_tilemap + ((cur_map_x) + ((cur_map_y) << 6));
+			unsigned char cur_map_tile = *cur_map_tile_p;
+	
+			if (cur_map_tile < 42)
+				mask &= ~COLLISION_CAN_DOWN;
+	}
+
+	for (i = 0; i < 3; i++)
+	{
+			short cur_map_x = (x + bg_x + 3 + 4 - 4) >> 3;
+			short cur_map_y = (y + bg_y + 3 + 2 + i*2) >> 3;
+	
+			unsigned char* cur_map_tile_p = (unsigned char*)&pacman_tilemap + ((cur_map_x) + ((cur_map_y) << 6));
+			unsigned char cur_map_tile = *cur_map_tile_p;
+	
+			if (cur_map_tile < 42)
+				mask &= ~COLLISION_CAN_LEFT;
+	}
+
+	for (i = 0; i < 3; i++)
+	{
+			short cur_map_x = (x + bg_x + 3 + 4 + 4) >> 3;
+			short cur_map_y = (y + bg_y + 3 + 2 + i*2) >> 3;
+	
+			unsigned char* cur_map_tile_p = (unsigned char*)&pacman_tilemap + ((cur_map_x) + ((cur_map_y) << 6));
+			unsigned char cur_map_tile = *cur_map_tile_p;
+	
+			if (cur_map_tile < 42)
+				mask &= ~COLLISION_CAN_RIGHT;
+	}
+
+
+/*	for (i = 0; i < 3; i++)
+	{
+		for (j = 0; j < 3; j++)
+		{
+			short cur_map_x = (x + bg_x + 3 + i*4) >> 3;
+			short cur_map_y = (y + bg_y + 3 + j*4) >> 3;
+	
+			unsigned char* cur_map_tile_p = (unsigned char*)&pacman_tilemap + ((cur_map_x) + ((cur_map_y) << 6));
+			unsigned char cur_map_tile = *cur_map_tile_p;
+			
+			//if (i == 2 && j == 2)
+			//	continue;
+
+			if (old_map_x != g_cur_map_x || old_map_y != g_cur_map_y)
+			{
+
+				trace_dec(cur_map_x);
+				trace_char(' ');
+				trace_dec(cur_map_y);
+				trace_char(' ');
+				trace_dec(cur_map_tile);
+				trace_char(' ');
+				trace_dec(i);
+				trace_char(' ');
+				trace_dec(j);
+				trace_char('\n');
+			}
+
+
+			if (cur_map_tile < 42)
+				collisions[i + j*3] = 0;
+			else
+				collisions[i + j*3] = 1;	
+		}
+	}
+
+	if (collisions[0] && collisions[1] && collisions[2])
+		mask |= COLLISION_CAN_UP;
+
+	if (collisions[6] && collisions[7] && collisions[8])
+		mask |= COLLISION_CAN_DOWN;
+
+	if (collisions[0] && collisions[3] && collisions[6])
+		mask |= COLLISION_CAN_LEFT;
+
+	if (collisions[2] && collisions[5] && collisions[3])
+		mask |= COLLISION_CAN_RIGHT;
+*/
+	if (old_map_x != g_cur_map_x || old_map_y != g_cur_map_y)
+	{
+		trace_dec(mask);
+		trace_char('\n');
+		trace_char('\n');
+		old_map_x = g_cur_map_x;
+		old_map_y = g_cur_map_y;
+	}
+
+	return mask;
+}
+
+void eat(short x, short y)
+{
+	short cur_map_x = (x + bg_x + 3 + 4) >> 3;
+	short cur_map_y = (y + bg_y + 3 + 4) >> 3;
+	
+	unsigned char* cur_map_tile_p = ((unsigned char*)&pacman_tilemap + (cur_map_x) + ((cur_map_y) << 6));
+	unsigned char cur_map_tile = *cur_map_tile_p;
+	
+	if ((cur_map_tile) == 83)
+		*cur_map_tile_p = 0xff;
+
+	/*if (old_map_x != cur_map_x || old_map_y != cur_map_y)
+	{
+		int i, j; 
+
+		trace_dec(cur_map_x);
+		trace_char(' ');
+		trace_dec(cur_map_y);
+		trace_char(' ');
+		trace_dec(cur_map_tile);
+		trace_char('\n');
+
+		old_map_x = cur_map_x;
+		old_map_y = cur_map_y;
+
+		for (i = 0; i < 3; i++)
+		{
+			for (j = 0; j < 3; j++)
+			{
+				unsigned char* cur_map_tile_p = ((unsigned char*)&pacman_tilemap + (cur_map_x + i - 1) + ((cur_map_y + j - 1) << 6));
+				trace_hex(cur_map_tile_p);
+				trace_char(' ');	
+			}
+		}
+		trace_char('\n');
+	}
+	*/
+
+}
+
 void process_keys() 
 {
 	short old_keys = keys;
 
+	short dx = 0;
+	short dy = 0;
+
+	short collision = collision_detect(sprites[0].x, sprites[0].y);
+
+//	trace_hex(collision);
+//	trace_char('\n');
+
 	keys = __in(0x1001);
 
-	//if (keys != old_keys)
-	//	trace_char('!');
+	keys &= collision;
 
-	if (keys & UP_KEY)
+	if ((keys & UP_KEY))
 	{
-		sprites[0].y --;
+		dy = -1;
 		sprites[0].orientation = ORIENTATION_UP;
 	}
 
-	else if (keys & DOWN_KEY)
+	else if ((keys & DOWN_KEY))
 	{
-		sprites[0].y ++;
+		dy = 1;
 		sprites[0].orientation = ORIENTATION_DOWN;
 	}
 
 	else if (keys & LEFT_KEY) 
 	{
-		sprites[0].x --;
+		dx = -1;
 		sprites[0].orientation = ORIENTATION_LEFT;
 	}
 
 	else if (keys & RIGHT_KEY)
 	{
-		sprites[0].x ++;
+		dx = 1;
 		sprites[0].orientation = ORIENTATION_RIGHT;
 	}
 
-	// Collision detect
+	sprites[0].x += dx;
+	sprites[0].y += dy;
 
-	
+	eat(sprites[0].x, sprites[0].y);
 
+	if (sprites[0].x > 320 + 60)
+		sprites[0].x = 8;
+	if (sprites[0].x < 8)
+		sprites[0].x = 320 + 60;
 
-	if (keys)
+	if (dx || dy)
 		sprites[0].frame ++;
 	else
 		sprites[0].frame = 0;
