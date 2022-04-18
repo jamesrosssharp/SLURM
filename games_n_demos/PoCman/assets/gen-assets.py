@@ -37,7 +37,7 @@ with open("assets.asm", "w") as theAsmFile:
     imP = im.convert('RGB').convert('P', palette=Image.ADAPTIVE, colors=15)
     
     theAsmFile.write("\tpacman_tileset:\n")
-    convertImage(imP, theAsmFile, "pacman_tileset", 256, 16)
+    convertImage(imP, theAsmFile, "pacman_tileset", 256, 32)
 
     import xml.etree.ElementTree as ET
     tree = ET.parse('background.tmx')

@@ -66,7 +66,7 @@ fn main() {
              let mut cycles = 0;
              let mut fired = false;
                 
-             while cycles < 25175000 / 60 {
+             while cycles < 25125000 / 60 {
 
                 if soc.step(& mut fb) && !fired
                 {
@@ -96,6 +96,28 @@ fn main() {
             });
 
             window.set_title(format!("[slurm-emulator] fps:{}", fps_counter.tick()));
+        }
+         if let Some(Button::Keyboard(key)) = e.release_args() {
+            match key {
+                Key::A => soc.release_button(SlurmButton::A),
+                Key::S => soc.release_button(SlurmButton::B),
+                Key::Up => soc.release_button(SlurmButton::UP),
+                Key::Down => soc.release_button(SlurmButton::DOWN),
+                Key::Left => soc.release_button(SlurmButton::LEFT),
+                Key::Right => soc.release_button(SlurmButton::RIGHT),
+                _ => {}
+            }
+        }
+        if let Some(Button::Keyboard(key)) = e.press_args() {
+            match key {
+                Key::A => soc.push_button(SlurmButton::A),
+                Key::S => soc.push_button(SlurmButton::B),
+                Key::Up => soc.push_button(SlurmButton::UP),
+                Key::Down => soc.push_button(SlurmButton::DOWN),
+                Key::Left => soc.push_button(SlurmButton::LEFT),
+                Key::Right => soc.push_button(SlurmButton::RIGHT),
+                _ => {}
+            }
         }
     }
 

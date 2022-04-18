@@ -1,6 +1,7 @@
 use super::uart::Uart;
 use super::gfx::Gfx;
 use super::interrupt_controller::InterruptController;
+use super::gpio::GpioCore;
 
 use std::io::{self, Write};
 
@@ -9,6 +10,7 @@ pub struct PortController {
     pub exit: bool,
     pub gfx: Gfx,
     pub interrupt_controller: InterruptController,
+    pub gpio: GpioCore,
 }
 
 ///     The PortController simply implements the port address map
@@ -18,9 +20,10 @@ impl PortController {
     {
         PortController { 
             uart: Uart::new(),
-            gfx: Gfx::new(),
+            gfx:  Gfx::new(),
             exit: false,
             interrupt_controller: InterruptController::new(),
+            gpio: GpioCore::new(),
         }
     }
 
@@ -54,6 +57,7 @@ impl PortController {
             // 0 - UART
             0 => return self.uart.port_op(port, val, write),
             // 1 - GPIO
+            1 => return self.gpio.port_op(port, val, write),
             // 2 - PWM
             // 3 - Audio
             // 4 - SPI

@@ -21,6 +21,16 @@ pub const NUM_OF_COLOR : usize = 3;
 pub const VISIBLE_SCREEN_WIDTH: usize = 640;
 pub const VISIBLE_SCREEN_HEIGHT: usize = 480;
 
+
+pub enum SlurmButton {
+    A,
+    B,
+    UP,
+    DOWN,
+    LEFT,
+    RIGHT
+}
+
 pub struct Slurm16SoC {
 
     pub mem : Vec<u16>,
@@ -95,10 +105,23 @@ impl Slurm16SoC
     pub fn step(& mut self, fb : &mut [[[u8; NUM_OF_COLOR]; VISIBLE_SCREEN_WIDTH]; VISIBLE_SCREEN_HEIGHT]) -> bool
     {
         let (hs_int, vs_int) = self.port_controller.gfx.step_render(&mut self.mem, fb);
-        let irq = self.port_controller.interrupt_controller.process_irq(hs_int, vs_int, false, false, false);
+        let gpio_int = self.port_controller.gpio.step();
+        let irq = self.port_controller.interrupt_controller.process_irq(hs_int, vs_int, false, false, gpio_int);
    
         self.cpu.execute_one_instruction(&mut self.mem, &mut self.port_controller, irq);
         vs_int
+    }
+
+    pub fn push_button(& mut self, button : SlurmButton)
+    {
+        //println!("Push {}", button as u16);
+        self.port_controller.gpio.push_button(button);
+    }
+
+    pub fn release_button(& mut self, button : SlurmButton)
+    {
+        //println!("Release {}", button as u16);
+        self.port_controller.gpio.release_button(button);
     }
 
 }

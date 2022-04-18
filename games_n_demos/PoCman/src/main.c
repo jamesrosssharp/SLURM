@@ -25,7 +25,12 @@ struct Sprite {
 	short vx;
 	short vy;
 	short frame;
-	unsigned short frame_offsets[4];
+	short orientation;
+	unsigned short frames_up[4];
+	unsigned short frames_down[4];
+	unsigned short frames_left[4];
+	unsigned short frames_right[4];
+	unsigned short frames_die[13];
 };
 
 extern short pacman_sprite_sheet;
@@ -34,18 +39,30 @@ extern short pacman_tilemap;
 extern short pacman_tileset;
 extern short pacman_tileset_palette;
 
+#define SPRITE_PACMAN 0
+
+#define ORIENTATION_UP 0
+#define ORIENTATION_DOWN 1
+#define ORIENTATION_LEFT 2
+#define ORIENTATION_RIGHT 3
+
 struct Sprite sprites[] = {
-	{
-		320,
-		240,
+	{	/* SPRITE_PACMAN */
+		24 + 160 - 8,
+		16 + 120 - 8 + 29,
 		16,
 		16,
-		1,
 		0,
 		0,
-		{0, 4, 8, 4}
+		0,
+		ORIENTATION_UP,
+		{64*2*16, 64*2*16+4, 8, 64*2*16+4},
+		{64*3*16, 64*3*16+4, 8, 64*3*16+4},
+		{64*1*16, 64*1*16+4, 8, 64*1*16+4},
+		{0, 4, 8, 4},
+		{8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56}
 	},
-	{	400,
+/*	{	400,
 		100,
 		16,
 		16,
@@ -94,7 +111,7 @@ struct Sprite sprites[] = {
 		0,
 		{16 + 64*3*16, 16 + 64*3*16, 16 + 64*3*16, 16 + 64*3*16 }	
 	}
-
+*/
 };
 
 #define COUNT_OF(x) ((sizeof(x)) / (sizeof(x[0])))
@@ -116,19 +133,36 @@ void update_sprites()
 	for (i = 0; i < COUNT_OF(sprites); i++)
 	{
 		struct Sprite* sp = &sprites[i];
-
-		short x = MAKE_SPRITE_X(sp->x, 1, 0, 1);
-		short y = MAKE_SPRITE_Y(sp->y, sp->width);
-		short h = MAKE_SPRITE_H(sp->y + sp->height);
-		short frame = sp->frame;
-		short a = MAKE_SPRITE_A(((unsigned short)&pacman_sprite_sheet >> 1) + (sp->frame_offsets[frame >> 2]));
+		short x, y, h, a, frame;
+		
+		sp->frame = (sp->frame) & 15;
+		
+		x = MAKE_SPRITE_X(sp->x, 1, 0, 1);
+		y = MAKE_SPRITE_Y(sp->y, sp->width);
+		h = MAKE_SPRITE_H(sp->y + sp->height);
+		frame = sp->frame;
+		
+		switch(sp->orientation)
+		{
+			case ORIENTATION_UP:
+				a = MAKE_SPRITE_A(((unsigned short)&pacman_sprite_sheet >> 1) + (sp->frames_up[frame >> 2]));
+				break;
+			case ORIENTATION_DOWN:
+				a = MAKE_SPRITE_A(((unsigned short)&pacman_sprite_sheet >> 1) + (sp->frames_down[frame >> 2]));
+				break;
+			case ORIENTATION_LEFT:
+				a = MAKE_SPRITE_A(((unsigned short)&pacman_sprite_sheet >> 1) + (sp->frames_left[frame >> 2]));
+				break;
+			case ORIENTATION_RIGHT:
+				a = MAKE_SPRITE_A(((unsigned short)&pacman_sprite_sheet >> 1) + (sp->frames_right[frame >> 2]));
+				break;
+		}
 
 		load_sprite_x(i, x);
 		load_sprite_y(i, y);
 		load_sprite_h(i, h);
 		load_sprite_a(i, a);
 
-		sp->frame = (sp->frame + 1) & 15;
 		sp->x += sp->vx;
 		sp->y += sp->vy;
 
@@ -189,6 +223,59 @@ void enable_interrupts()
 	global_interrupt_enable();
 }
 
+short keys = 0;
+
+#define UP_KEY 1
+#define DOWN_KEY 2
+#define LEFT_KEY 4
+#define RIGHT_KEY 8
+#define A_KEY 16
+#define B_KEY 32
+
+void process_keys() 
+{
+	short old_keys = keys;
+
+	keys = __in(0x1001);
+
+	//if (keys != old_keys)
+	//	trace_char('!');
+
+	if (keys & UP_KEY)
+	{
+		sprites[0].y --;
+		sprites[0].orientation = ORIENTATION_UP;
+	}
+
+	else if (keys & DOWN_KEY)
+	{
+		sprites[0].y ++;
+		sprites[0].orientation = ORIENTATION_DOWN;
+	}
+
+	else if (keys & LEFT_KEY) 
+	{
+		sprites[0].x --;
+		sprites[0].orientation = ORIENTATION_LEFT;
+	}
+
+	else if (keys & RIGHT_KEY)
+	{
+		sprites[0].x ++;
+		sprites[0].orientation = ORIENTATION_RIGHT;
+	}
+
+	// Collision detect
+
+	
+
+
+	if (keys)
+		sprites[0].frame ++;
+	else
+		sprites[0].frame = 0;
+}
+
 int main()
 {
 	
@@ -203,6 +290,7 @@ int main()
 
 	while (1)
 	{
+		process_keys();
 		update_background();
 		update_sprites();
 //		copperList[0] = 0x7000 | (frame++ & 31);
