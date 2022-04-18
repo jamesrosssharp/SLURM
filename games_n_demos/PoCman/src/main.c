@@ -253,13 +253,13 @@ short collision_detect(short x, short y)
 	short g_cur_map_x = (x + bg_x + 3 + 4) >> 3;
 	short g_cur_map_y = (y + bg_y + 3 + 4) >> 3;
 
-	// Test up
+	short offsets[3] = {1,4,7};
 
 	mask = 0xf;
 
 	for (i = 0; i < 3; i++)
 	{
-			short cur_map_x = (x + bg_x + 3  + 2 + i*2) >> 3;
+			short cur_map_x = (x + bg_x + 3  + offsets[i]) >> 3;
 			short cur_map_y = (y + bg_y + 3 + 4 - 4) >> 3;
 	
 			unsigned char* cur_map_tile_p = (unsigned char*)&pacman_tilemap + ((cur_map_x) + ((cur_map_y) << 6));
@@ -267,24 +267,11 @@ short collision_detect(short x, short y)
 	
 			if (cur_map_tile < 42)
 				mask &= ~COLLISION_CAN_UP;
-
-			if (old_map_x != g_cur_map_x || old_map_y != g_cur_map_y)
-			{
-
-				trace_dec(cur_map_x);
-				trace_char(' ');
-				trace_dec(cur_map_y);
-				trace_char(' ');
-				trace_dec(cur_map_tile);
-				trace_char(' ');
-				trace_dec(i);
-				trace_char('\n');
-			}
 	}
 
 	for (i = 0; i < 3; i++)
 	{
-			short cur_map_x = (x + bg_x + 3 + 2 + i*2) >> 3;
+			short cur_map_x = (x + bg_x + 3 + offsets[i]) >> 3;
 			short cur_map_y = (y + bg_y + 3 + 4 + 4) >> 3;
 	
 			unsigned char* cur_map_tile_p = (unsigned char*)&pacman_tilemap + ((cur_map_x) + ((cur_map_y) << 6));
@@ -297,7 +284,7 @@ short collision_detect(short x, short y)
 	for (i = 0; i < 3; i++)
 	{
 			short cur_map_x = (x + bg_x + 3 + 4 - 4) >> 3;
-			short cur_map_y = (y + bg_y + 3 + 2 + i*2) >> 3;
+			short cur_map_y = (y + bg_y + 3 + offsets[i]) >> 3;
 	
 			unsigned char* cur_map_tile_p = (unsigned char*)&pacman_tilemap + ((cur_map_x) + ((cur_map_y) << 6));
 			unsigned char cur_map_tile = *cur_map_tile_p;
@@ -309,7 +296,7 @@ short collision_detect(short x, short y)
 	for (i = 0; i < 3; i++)
 	{
 			short cur_map_x = (x + bg_x + 3 + 4 + 4) >> 3;
-			short cur_map_y = (y + bg_y + 3 + 2 + i*2) >> 3;
+			short cur_map_y = (y + bg_y + 3 + offsets[i]) >> 3;
 	
 			unsigned char* cur_map_tile_p = (unsigned char*)&pacman_tilemap + ((cur_map_x) + ((cur_map_y) << 6));
 			unsigned char cur_map_tile = *cur_map_tile_p;
@@ -318,63 +305,14 @@ short collision_detect(short x, short y)
 				mask &= ~COLLISION_CAN_RIGHT;
 	}
 
-
-/*	for (i = 0; i < 3; i++)
-	{
-		for (j = 0; j < 3; j++)
-		{
-			short cur_map_x = (x + bg_x + 3 + i*4) >> 3;
-			short cur_map_y = (y + bg_y + 3 + j*4) >> 3;
-	
-			unsigned char* cur_map_tile_p = (unsigned char*)&pacman_tilemap + ((cur_map_x) + ((cur_map_y) << 6));
-			unsigned char cur_map_tile = *cur_map_tile_p;
-			
-			//if (i == 2 && j == 2)
-			//	continue;
-
-			if (old_map_x != g_cur_map_x || old_map_y != g_cur_map_y)
-			{
-
-				trace_dec(cur_map_x);
-				trace_char(' ');
-				trace_dec(cur_map_y);
-				trace_char(' ');
-				trace_dec(cur_map_tile);
-				trace_char(' ');
-				trace_dec(i);
-				trace_char(' ');
-				trace_dec(j);
-				trace_char('\n');
-			}
-
-
-			if (cur_map_tile < 42)
-				collisions[i + j*3] = 0;
-			else
-				collisions[i + j*3] = 1;	
-		}
-	}
-
-	if (collisions[0] && collisions[1] && collisions[2])
-		mask |= COLLISION_CAN_UP;
-
-	if (collisions[6] && collisions[7] && collisions[8])
-		mask |= COLLISION_CAN_DOWN;
-
-	if (collisions[0] && collisions[3] && collisions[6])
-		mask |= COLLISION_CAN_LEFT;
-
-	if (collisions[2] && collisions[5] && collisions[3])
-		mask |= COLLISION_CAN_RIGHT;
-*/
-	if (old_map_x != g_cur_map_x || old_map_y != g_cur_map_y)
+	/*if (old_map_x != g_cur_map_x || old_map_y != g_cur_map_y)
 	{
 		trace_dec(mask);
 		trace_char('\n');
 		trace_char('\n');
 		old_map_x = g_cur_map_x;
 		old_map_y = g_cur_map_y;
-	}
+	}*/
 
 	return mask;
 }
