@@ -26,6 +26,7 @@ struct Sprite {
 	short vy;
 	short frame;
 	short orientation;
+	short frames_in_cycle;
 	unsigned short frames_up[4];
 	unsigned short frames_down[4];
 	unsigned short frames_left[4];
@@ -40,15 +41,16 @@ extern short pacman_tileset;
 extern short pacman_tileset_palette;
 
 #define SPRITE_PACMAN 0
+#define SPRITE_GHOST1 1
 
-#define ORIENTATION_UP 0
-#define ORIENTATION_DOWN 1
-#define ORIENTATION_LEFT 2
-#define ORIENTATION_RIGHT 3
+#define ORIENTATION_UP 1
+#define ORIENTATION_DOWN 2
+#define ORIENTATION_LEFT 4
+#define ORIENTATION_RIGHT 8
 
 struct Sprite sprites[] = {
 	{	/* SPRITE_PACMAN */
-		24 + 160 - 8,
+		24 + 160 - 8 + 4 ,
 		16 + 120 - 8 + 29,
 		16,
 		16,
@@ -56,13 +58,33 @@ struct Sprite sprites[] = {
 		0,
 		0,
 		ORIENTATION_UP,
+		0,
 		{64*2*16, 64*2*16+4, 8, 64*2*16+4},
 		{64*3*16, 64*3*16+4, 8, 64*3*16+4},
 		{64*1*16, 64*1*16+4, 8, 64*1*16+4},
 		{0, 4, 8, 4},
 		{8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56}
 	},
-/*	{	400,
+	{	/* SPRITE_GHOST1 */
+		24 + 160 - 8,
+		16 + 128 - 8 + 29 - 32,
+		16,
+		16,
+		0,
+		-1,
+		0,
+		ORIENTATION_UP,
+		8,
+		{(16*5*64) + 12, (16 * 5 * 64) + 8, (16*5*64) + 12, (16 * 5 * 64) + 8},
+		{(16*5*64) + 12, (16 * 5 * 64) + 8, (16*5*64) + 12, (16 * 5 * 64) + 8},
+		{(16*5*64) + 12, (16 * 5 * 64) + 8, (16*5*64) + 12, (16 * 5 * 64) + 8},
+		{(16*5*64) + 12, (16 * 5 * 64) + 8, (16*5*64) + 12, (16 * 5 * 64) + 8},
+		{0}
+	},
+	
+	
+	
+	/*	{	400,
 		100,
 		16,
 		16,
@@ -163,11 +185,27 @@ void update_sprites()
 		load_sprite_h(i, h);
 		load_sprite_a(i, a);
 
-		sp->x += sp->vx;
-		sp->y += sp->vy;
+		if (sp->frames_in_cycle)
+		{
+			sp->x += sp->vx;
+			sp->y += sp->vy;
+			sp->frames_in_cycle--;
 
-		sp->x &= 1023;
-		sp->y &= 511;
+			if (sp->x > 320 + 60)
+				sp->x = 8;
+			if (sp->x < 8)
+				sp->x = 320 + 60;
+
+			sp->frame ++;
+
+		}
+		else
+		{
+			sp->vx = 0;
+			sp->vy = 0;
+			sp->frame = 0;
+		}
+
 	}
 }
 
@@ -253,14 +291,16 @@ short collision_detect(short x, short y)
 	short g_cur_map_x = (x + bg_x + 3 + 4) >> 3;
 	short g_cur_map_y = (y + bg_y + 3 + 4) >> 3;
 
-	short offsets[3] = {1,4,7};
+	short offsets[3] = {4,1,7};
+
+#define iter 1
 
 	mask = 0xf;
-
-	for (i = 0; i < 3; i++)
+	
+	for (i = 0; i < iter; i++)
 	{
 			short cur_map_x = (x + bg_x + 3  + offsets[i]) >> 3;
-			short cur_map_y = (y + bg_y + 3 + 4 - 4) >> 3;
+			short cur_map_y = (y + bg_y + 3 + 4 - 8) >> 3;
 	
 			unsigned char* cur_map_tile_p = (unsigned char*)&pacman_tilemap + ((cur_map_x) + ((cur_map_y) << 6));
 			unsigned char cur_map_tile = *cur_map_tile_p;
@@ -269,10 +309,10 @@ short collision_detect(short x, short y)
 				mask &= ~COLLISION_CAN_UP;
 	}
 
-	for (i = 0; i < 3; i++)
+	for (i = 0; i < iter; i++)
 	{
 			short cur_map_x = (x + bg_x + 3 + offsets[i]) >> 3;
-			short cur_map_y = (y + bg_y + 3 + 4 + 4) >> 3;
+			short cur_map_y = (y + bg_y + 3 + 4 + 8) >> 3;
 	
 			unsigned char* cur_map_tile_p = (unsigned char*)&pacman_tilemap + ((cur_map_x) + ((cur_map_y) << 6));
 			unsigned char cur_map_tile = *cur_map_tile_p;
@@ -281,9 +321,9 @@ short collision_detect(short x, short y)
 				mask &= ~COLLISION_CAN_DOWN;
 	}
 
-	for (i = 0; i < 3; i++)
+	for (i = 0; i < iter; i++)
 	{
-			short cur_map_x = (x + bg_x + 3 + 4 - 4) >> 3;
+			short cur_map_x = (x + bg_x + 3 + 4 - 8) >> 3;
 			short cur_map_y = (y + bg_y + 3 + offsets[i]) >> 3;
 	
 			unsigned char* cur_map_tile_p = (unsigned char*)&pacman_tilemap + ((cur_map_x) + ((cur_map_y) << 6));
@@ -293,9 +333,9 @@ short collision_detect(short x, short y)
 				mask &= ~COLLISION_CAN_LEFT;
 	}
 
-	for (i = 0; i < 3; i++)
+	for (i = 0; i < iter; i++)
 	{
-			short cur_map_x = (x + bg_x + 3 + 4 + 4) >> 3;
+			short cur_map_x = (x + bg_x + 3 + 4 + 8) >> 3;
 			short cur_map_y = (y + bg_y + 3 + offsets[i]) >> 3;
 	
 			unsigned char* cur_map_tile_p = (unsigned char*)&pacman_tilemap + ((cur_map_x) + ((cur_map_y) << 6));
@@ -364,7 +404,11 @@ void process_keys()
 	short dx = 0;
 	short dy = 0;
 
-	short collision = collision_detect(sprites[0].x, sprites[0].y);
+	short new_orientation;
+
+	struct Sprite* pax = &sprites[SPRITE_PACMAN];
+
+	short collision = collision_detect(pax->x, pax->y);
 
 //	trace_hex(collision);
 //	trace_char('\n');
@@ -376,41 +420,160 @@ void process_keys()
 	if ((keys & UP_KEY))
 	{
 		dy = -1;
-		sprites[0].orientation = ORIENTATION_UP;
+		new_orientation = ORIENTATION_UP;
 	}
 
 	else if ((keys & DOWN_KEY))
 	{
 		dy = 1;
-		sprites[0].orientation = ORIENTATION_DOWN;
+		new_orientation = ORIENTATION_DOWN;
 	}
 
 	else if (keys & LEFT_KEY) 
 	{
 		dx = -1;
-		sprites[0].orientation = ORIENTATION_LEFT;
+		new_orientation = ORIENTATION_LEFT;
 	}
 
 	else if (keys & RIGHT_KEY)
 	{
 		dx = 1;
-		sprites[0].orientation = ORIENTATION_RIGHT;
+		new_orientation = ORIENTATION_RIGHT;
 	}
 
-	sprites[0].x += dx;
-	sprites[0].y += dy;
+	/* cornering */
 
-	eat(sprites[0].x, sprites[0].y);
+	if (pax->frames_in_cycle == 0 && (dx || dy))
+	{
+		pax->frames_in_cycle = 8;
+		pax->vx = dx;
+		pax->vy = dy;
+		pax->orientation = new_orientation;
+	}
 
-	if (sprites[0].x > 320 + 60)
-		sprites[0].x = 8;
-	if (sprites[0].x < 8)
-		sprites[0].x = 320 + 60;
+	eat(pax->x, pax->y);
+	
+}
 
-	if (dx || dy)
-		sprites[0].frame ++;
-	else
-		sprites[0].frame = 0;
+short rand = 417;
+short run = 10;
+
+short complement_orientation(short orient)
+{
+	switch (orient)
+	{
+		case ORIENTATION_LEFT:
+			return ORIENTATION_RIGHT;
+		case ORIENTATION_RIGHT:
+			return ORIENTATION_LEFT;
+		case ORIENTATION_UP:
+			return ORIENTATION_DOWN;
+		case ORIENTATION_DOWN:
+			return ORIENTATION_UP;
+	}
+
+}
+
+void update_ghosts()
+{
+
+	struct Sprite* sp = &sprites[SPRITE_GHOST1];
+	struct Sprite* pac = &sprites[SPRITE_PACMAN];
+	short collision = collision_detect(sp->x,sp->y);
+
+	short spx = sp->x >> 3;
+	short spy = sp->y >> 3;
+	short px = pac->x >> 3;
+	short py = pac->y >> 3;
+
+
+	unsigned short dist_up = (spx - px)*(spx - px) + ((spy - 1)-py)*((spy - 1)-py);
+	unsigned short dist_down = (spx-px)*(spx-px) + ((spy + 1)-py)*((spy + 1)-py);
+	unsigned short dist_left = ((spx-1)-px)*((spx-1)-px) + (spy-py)*(spy-py);
+	unsigned short dist_right = ((spx+1)-px)*((spx+1)-px) + (spy-py)*(spy-py);
+
+	unsigned short min_dist = 32767;
+
+	short dx = 0;
+	short dy = 0;
+	short new_orientation = sp->orientation;
+
+	short compl_orient = complement_orientation(sp->orientation);
+	short masked_collision = collision & ~compl_orient;
+	short has_mult = (masked_collision != 1) && (masked_collision != 2) && (masked_collision != 4) && (masked_collision != 8);
+
+	if ((dist_up < min_dist) && (masked_collision & ORIENTATION_UP))
+		min_dist = dist_up;
+	if ((dist_down < min_dist) && (masked_collision & ORIENTATION_DOWN))
+		min_dist = dist_down;
+	if ((dist_left < min_dist) && (masked_collision & ORIENTATION_LEFT))
+		min_dist = dist_left;
+	if ((dist_right < min_dist) && (masked_collision & ORIENTATION_RIGHT))
+		min_dist = dist_right;
+
+	trace_hex(sp->orientation);
+	trace_char(' ');
+	trace_hex(masked_collision);
+	trace_char(' ');
+	trace_hex(has_mult);
+	trace_char(' ');
+	trace_dec(min_dist);
+	trace_char(' ');
+	trace_dec(dist_up);
+	trace_char(' ');
+	trace_dec(dist_down);
+	trace_char(' ');
+	trace_dec(dist_left);
+	trace_char(' ');
+	trace_dec(dist_right);
+	trace_char('\n');
+
+ 	if ( (collision & COLLISION_CAN_UP) && (sp->orientation != ORIENTATION_DOWN) && (!has_mult || (dist_up == min_dist)))
+	{
+		new_orientation = ORIENTATION_UP;
+		dy = -1;
+	}
+	else if ( (collision & COLLISION_CAN_LEFT) && (sp->orientation != ORIENTATION_RIGHT) && (!has_mult || (dist_left == min_dist)))
+	{
+		dx = -1;
+		new_orientation = ORIENTATION_LEFT;
+	}
+	else if ( (collision & COLLISION_CAN_RIGHT) && (sp->orientation != ORIENTATION_LEFT) && (!has_mult || (dist_right == min_dist)))
+	{
+		new_orientation = ORIENTATION_RIGHT;
+		dx = 1;
+	}
+	else if ( (collision & COLLISION_CAN_DOWN) && (sp->orientation != ORIENTATION_UP) && (!has_mult || (dist_down == min_dist)))
+	{
+		dy = 1;
+		new_orientation = ORIENTATION_DOWN;
+	}
+
+	/*	else {
+		short a = collision;
+
+		if (a & COLLISION_CAN_LEFT)
+			sp->x--;
+		else if (a & COLLISION_CAN_RIGHT)
+			sp->x++;
+		else if (a & COLLISION_CAN_UP)
+			sp->y--;
+		else if (a & COLLISION_CAN_DOWN)
+			sp->y++;
+
+	}	
+*/
+	if (sp->frames_in_cycle == 0 && (dx || dy))
+	{
+		sp->frames_in_cycle = 8;
+		sp->vx = dx;
+		sp->vy = dy;
+		sp->orientation = new_orientation;
+	}
+
+	run -= 1;
+
+	rand *= 7143;
 }
 
 int main()
@@ -427,6 +590,7 @@ int main()
 
 	while (1)
 	{
+		update_ghosts();
 		process_keys();
 		update_background();
 		update_sprites();
