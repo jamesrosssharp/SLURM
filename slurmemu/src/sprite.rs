@@ -88,22 +88,22 @@ impl SpriteCore {
                         match cmp::min(sprite_x + sprite_width - xcoord, LINEBUFFER_SIZE as u16 - xcoord)
                         {
                             1 => {
-                                self.line_buffers[render_buffer][xcoord as usize] = ((pal_hi << 4)  | data & 0xf) as u8;
+                                if data & 0xf != 0 {self.line_buffers[render_buffer][xcoord as usize] = ((pal_hi << 4)  | data & 0xf) as u8;}
                             },
                             2 => {
-                                self.line_buffers[render_buffer][xcoord as usize] = ((pal_hi << 4)  | data & 0xf) as u8;
-                                self.line_buffers[render_buffer][(xcoord + 1) as usize] = ((pal_hi << 4)  | ((data & 0xf0) >> 4)) as u8;
+                                if data & 0xf != 0 {self.line_buffers[render_buffer][xcoord as usize] = ((pal_hi << 4)  | data & 0xf) as u8;}
+                                if data & 0xf0 != 0 {self.line_buffers[render_buffer][(xcoord + 1) as usize] = ((pal_hi << 4)  | ((data & 0xf0) >> 4)) as u8;}
                             },
                             3 => {
-                                self.line_buffers[render_buffer][xcoord as usize] = ((pal_hi << 4)  | data & 0xf) as u8;
-                                self.line_buffers[render_buffer][(xcoord + 1) as usize] = ((pal_hi << 4)  | ((data & 0xf0) >> 4)) as u8;
-                                self.line_buffers[render_buffer][(xcoord + 2) as usize] = ((pal_hi << 4)  | ((data & 0xf00) >> 8)) as u8;
+                                if data & 0xf != 0 {self.line_buffers[render_buffer][xcoord as usize] = ((pal_hi << 4)  | data & 0xf) as u8;}
+                                if data & 0xf0 != 0 {self.line_buffers[render_buffer][(xcoord + 1) as usize] = ((pal_hi << 4)  | ((data & 0xf0) >> 4)) as u8;}
+                                if data & 0xf00 != 0 {self.line_buffers[render_buffer][(xcoord + 2) as usize] = ((pal_hi << 4)  | ((data & 0xf00) >> 8)) as u8;}
                             },
                             _ => {
-                                self.line_buffers[render_buffer][xcoord as usize] = ((pal_hi << 4)  | data & 0xf) as u8;
-                                self.line_buffers[render_buffer][(xcoord + 1) as usize] = ((pal_hi << 4)  | ((data & 0xf0) >> 4)) as u8;
-                                self.line_buffers[render_buffer][(xcoord + 2) as usize] = ((pal_hi << 4)  | ((data & 0xf00) >> 8)) as u8;
-                                self.line_buffers[render_buffer][(xcoord + 3) as usize] = ((pal_hi << 4)  | ((data & 0xf000) >> 12)) as u8;
+                                if data & 0xf != 0 {self.line_buffers[render_buffer][xcoord as usize] = ((pal_hi << 4)  | data & 0xf) as u8;}
+                                if data & 0xf0 != 0 {self.line_buffers[render_buffer][(xcoord + 1) as usize] = ((pal_hi << 4)  | ((data & 0xf0) >> 4)) as u8;}
+                                if data & 0xf00 != 0 {self.line_buffers[render_buffer][(xcoord + 2) as usize] = ((pal_hi << 4)  | ((data & 0xf00) >> 8)) as u8;}
+                                if data & 0xf000 != 0 {self.line_buffers[render_buffer][(xcoord + 3) as usize] = ((pal_hi << 4)  | ((data & 0xf000) >> 12)) as u8;}
                             },
                         }
 

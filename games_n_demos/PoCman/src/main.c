@@ -4,7 +4,7 @@ extern void load_palette(short* palette, int offset, int len);
 
 short copperList[] = {
 		0x6000,
-/*		0x6f00,
+		/*0x6f00,
 		0x7007,
 		0x60f0,
 		0x7007,
@@ -18,6 +18,7 @@ short copperList[] = {
 };
 
 struct Sprite {
+	short i; /* sprite index */
 	short x;
 	short y;
 	short width;
@@ -31,7 +32,20 @@ struct Sprite {
 	unsigned short frames_down[4];
 	unsigned short frames_left[4];
 	unsigned short frames_right[4];
-	unsigned short frames_die[13];
+	unsigned short frames_die_spawn[13];
+};
+
+#define GHOST_STATE_IDLE			  0
+#define GHOST_STATE_LEAVE_GHOST_HOUSE 1
+#define GHOST_STATE_CHASE_POCMAN	  2
+#define GHOST_STATE_SCATTER			  3
+
+struct Ghost {
+	struct Sprite sp;
+	short state;
+	short idle_count;
+	short scatter_x;
+	short scatter_y;
 };
 
 extern short pacman_sprite_sheet;
@@ -40,16 +54,15 @@ extern short pacman_tilemap;
 extern short pacman_tileset;
 extern short pacman_tileset_palette;
 
-#define SPRITE_PACMAN 0
-#define SPRITE_GHOST1 1
-
 #define ORIENTATION_UP 1
 #define ORIENTATION_DOWN 2
 #define ORIENTATION_LEFT 4
 #define ORIENTATION_RIGHT 8
+#define ORIENTATION_SPAWN 16
+#define ORIENTATION_DIE	  32
 
-struct Sprite sprites[] = {
-	{	/* SPRITE_PACMAN */
+struct Sprite pocman = 	{	
+		0,
 		24 + 160 - 8 + 4 ,
 		16 + 120 - 8 + 29,
 		16,
@@ -57,83 +70,105 @@ struct Sprite sprites[] = {
 		0,
 		0,
 		0,
-		ORIENTATION_UP,
-		0,
+		ORIENTATION_SPAWN,
+		26,
 		{64*2*16, 64*2*16+4, 8, 64*2*16+4},
 		{64*3*16, 64*3*16+4, 8, 64*3*16+4},
 		{64*1*16, 64*1*16+4, 8, 64*1*16+4},
 		{0, 4, 8, 4},
 		{8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56}
-	},
-	{	/* SPRITE_GHOST1 */
-		24 + 160 - 8,
-		16 + 128 - 8 + 29 - 32,
-		16,
-		16,
-		0,
-		-1,
-		0,
-		ORIENTATION_UP,
-		8,
-		{(16*5*64) + 12, (16 * 5 * 64) + 8, (16*5*64) + 12, (16 * 5 * 64) + 8},
-		{(16*5*64) + 12, (16 * 5 * 64) + 8, (16*5*64) + 12, (16 * 5 * 64) + 8},
-		{(16*5*64) + 12, (16 * 5 * 64) + 8, (16*5*64) + 12, (16 * 5 * 64) + 8},
-		{(16*5*64) + 12, (16 * 5 * 64) + 8, (16*5*64) + 12, (16 * 5 * 64) + 8},
-		{0}
-	},
-	
-	
-	
-	/*	{	400,
+	};
+
+struct Ghost ghosts[] = {
+	{
+		{	/* PINK GHOST */
+			16,
+			24 + 160 - 8 ,
+			16 + 128 - 8 + 29 - 32 + 10,
+			16,
+			16,
+			0,
+			-1,
+			0,
+			ORIENTATION_UP,
+			8,
+			{(16*5*64) + 16, (16 * 5 * 64) + 20, (16*5*64) + 16, (16 * 5 * 64) + 20},
+			{(16*5*64) + 24, (16 * 5 * 64) + 28, (16*5*64) + 24, (16 * 5 * 64) + 28},
+			{(16*5*64) + 8, (16 * 5 * 64) + 12, (16*5*64) + 8, (16 * 5 * 64) + 12},
+			{(16*5*64) + 0, (16 * 5 * 64) + 4, (16*5*64) + 0, (16 * 5 * 64) + 4},
+			{0}
+		},
+		GHOST_STATE_IDLE,
 		100,
-		16,
-		16,
-		1,
-		1,
-		0,
-		{(16*5*64) + 12, (16 * 5 * 64) + 8, (16*5*64) + 12, (16 * 5 * 64) + 8}
+		11,
+		5
 	},
 	{
-		200,
-		200,
-		16,
-		16,
-		-1,
-		-1,
-		0,
-		{64*4*16, 64*4*16+4,64*4*16, 64*4*16+4}
+		{	/* RED GHOST */
+			17,
+			24 + 160 - 8 + 16 ,
+			16 + 128 - 8 + 29 - 32 + 10,
+			16,
+			16,
+			0,
+			-1,
+			0,
+			ORIENTATION_UP,
+			8,
+			{(16*4*64) + 16, (16 * 4 * 64) + 20, (16*4*64) + 16, (16 * 4 * 64) + 20},
+			{(16*4*64) + 24, (16 * 4 * 64) + 28, (16*4*64) + 24, (16 * 4 * 64) + 28},
+			{(16*4*64) + 8, (16 * 4 * 64) + 12, (16*4*64) + 8, (16 * 4 * 64) + 12},
+			{(16*4*64) + 0, (16 * 4 * 64) + 4, (16*4*64) + 0, (16 * 4 * 64) + 4},
+			{0}
+		},
+		GHOST_STATE_IDLE,
+		1000,
+		36,5,
 	},
 	{
-		600,
-		300,
-		16,
-		16,
-		2,
-		1,
-		0,
-		{8 + 64*3*16, 8 + 64*3*16, 8 + 64*3*16, 8 + 64*3*16 }
+		{	/* BLUE GHOST */
+			18,
+			24 + 160 - 8 - 16 ,
+			16 + 128 - 8 + 29 - 32 + 10,
+			16,
+			16,
+			0,
+			-1,
+			0,
+			ORIENTATION_UP,
+			8,
+			{(16*6*64) + 16, (16 * 6 * 64) + 20, (16*6*64) + 16, (16 * 6 * 64) + 20},
+			{(16*6*64) + 24, (16 * 6 * 64) + 28, (16*6*64) + 24, (16 * 6 * 64) + 28},
+			{(16*6*64) + 8, (16 * 6 * 64) + 12, (16*6*64) + 8, (16 * 6 * 64) + 12},
+			{(16*6*64) + 0, (16 * 6 * 64) + 4, (16*6*64) + 0, (16 * 6 * 64) + 4},
+			{0}
+		},
+		GHOST_STATE_IDLE,
+		2000,
+		36,29,
 	},
 	{
-		280,
-		400,
-		16,
-		16,
-		-1,
-		2,
-		0,
-		{12 + 64*3*16, 12 + 64*3*16, 12 + 64*3*16, 12 + 64*3*16 }	
-	},
-	{
-		250,
-		150,
-		16,
-		16,
-		-2,
-		-1,
-		0,
-		{16 + 64*3*16, 16 + 64*3*16, 16 + 64*3*16, 16 + 64*3*16 }	
+		{	/* ORANGE GHOST */
+			19,
+			24 + 160 - 8 ,
+			16 + 128 - 8 + 29 - 32 - 6,
+			16,
+			16,
+			0,
+			-1,
+			0,
+			ORIENTATION_UP,
+			8,
+			{(16*7*64) + 16, (16 * 7 * 64) + 20, (16*7*64) + 16, (16 * 7 * 64) + 20},
+			{(16*7*64) + 24, (16 * 7 * 64) + 28, (16*7*64) + 24, (16 * 7 * 64) + 28},
+			{(16*7*64) + 8, (16 * 7 * 64) + 12, (16*7*64) + 8, (16 * 7 * 64) + 12},
+			{(16*7*64) + 0, (16 * 7 * 64) + 4, (16*7*64) + 0, (16 * 7 * 64) + 4},
+			{0}
+		},
+		GHOST_STATE_CHASE_POCMAN,
+		2000,
+		11,29,
 	}
-*/
 };
 
 #define COUNT_OF(x) ((sizeof(x)) / (sizeof(x[0])))
@@ -148,64 +183,65 @@ extern void load_sprite_y(short sprite, short y);
 extern void load_sprite_h(short sprite, short h);
 extern void load_sprite_a(short sprite, short a);
 
-void update_sprites()
+void update_sprite(struct Sprite* sp)
 {
-	int i;
-
-	for (i = 0; i < COUNT_OF(sprites); i++)
+	short x, y, h, a, frame;
+	
+	
+	x = MAKE_SPRITE_X(sp->x, 1, 0, 1);
+	y = MAKE_SPRITE_Y(sp->y, sp->width);
+	h = MAKE_SPRITE_H(sp->y + sp->height);
+	frame = sp->frame;
+	frame = (sp->frame) & 15;
+	
+	switch(sp->orientation)
 	{
-		struct Sprite* sp = &sprites[i];
-		short x, y, h, a, frame;
-		
-		sp->frame = (sp->frame) & 15;
-		
-		x = MAKE_SPRITE_X(sp->x, 1, 0, 1);
-		y = MAKE_SPRITE_Y(sp->y, sp->width);
-		h = MAKE_SPRITE_H(sp->y + sp->height);
-		frame = sp->frame;
-		
-		switch(sp->orientation)
-		{
-			case ORIENTATION_UP:
-				a = MAKE_SPRITE_A(((unsigned short)&pacman_sprite_sheet >> 1) + (sp->frames_up[frame >> 2]));
-				break;
-			case ORIENTATION_DOWN:
-				a = MAKE_SPRITE_A(((unsigned short)&pacman_sprite_sheet >> 1) + (sp->frames_down[frame >> 2]));
-				break;
-			case ORIENTATION_LEFT:
-				a = MAKE_SPRITE_A(((unsigned short)&pacman_sprite_sheet >> 1) + (sp->frames_left[frame >> 2]));
-				break;
-			case ORIENTATION_RIGHT:
-				a = MAKE_SPRITE_A(((unsigned short)&pacman_sprite_sheet >> 1) + (sp->frames_right[frame >> 2]));
-				break;
-		}
+		case ORIENTATION_UP:
+			a = MAKE_SPRITE_A(((unsigned short)&pacman_sprite_sheet >> 1) + (sp->frames_up[frame >> 2]));
+			break;
+		case ORIENTATION_DOWN:
+			a = MAKE_SPRITE_A(((unsigned short)&pacman_sprite_sheet >> 1) + (sp->frames_down[frame >> 2]));
+			break;
+		case ORIENTATION_LEFT:
+			a = MAKE_SPRITE_A(((unsigned short)&pacman_sprite_sheet >> 1) + (sp->frames_left[frame >> 2]));
+			break;
+		case ORIENTATION_RIGHT:
+			a = MAKE_SPRITE_A(((unsigned short)&pacman_sprite_sheet >> 1) + (sp->frames_right[frame >> 2]));
+			break;
+		case ORIENTATION_DIE:
+			a = MAKE_SPRITE_A(((unsigned short)&pacman_sprite_sheet >> 1) + (sp->frames_die_spawn[frame]));
+			break;
+		case ORIENTATION_SPAWN:
+			if (sp -> frame > 26) sp->frame = 26;
+			a = MAKE_SPRITE_A(((unsigned short)&pacman_sprite_sheet >> 1) + (sp->frames_die_spawn[13 - (sp->frame>>1)]));
+			break;
+	}
 
-		load_sprite_x(i, x);
-		load_sprite_y(i, y);
-		load_sprite_h(i, h);
-		load_sprite_a(i, a);
+	load_sprite_x(sp->i, x);
+	load_sprite_y(sp->i, y);
+	load_sprite_h(sp->i, h);
+	load_sprite_a(sp->i, a);
 
-		if (sp->frames_in_cycle)
-		{
-			sp->x += sp->vx;
-			sp->y += sp->vy;
-			sp->frames_in_cycle--;
+	if (sp->frames_in_cycle)
+	{
+		sp->x += sp->vx;
+		sp->y += sp->vy;
+		sp->frames_in_cycle--;
 
-			if (sp->x > 320 + 60)
-				sp->x = 8;
-			if (sp->x < 8)
-				sp->x = 320 + 60;
+		if (sp->x > 320 + 60)
+			sp->x = 8;
+		if (sp->x < 8)
+			sp->x = 320 + 60;
 
-			sp->frame ++;
+		sp->frame ++;
 
-		}
-		else
-		{
-			sp->vx = 0;
-			sp->vy = 0;
-			sp->frame = 0;
-		}
-
+	}
+	else
+	{
+		if (sp->orientation == ORIENTATION_SPAWN) sp->orientation = ORIENTATION_UP;
+		sp->vx = 0;
+		sp->vy = 0;
+		sp->frame = 0;
 	}
 }
 
@@ -305,7 +341,7 @@ short collision_detect(short x, short y)
 			unsigned char* cur_map_tile_p = (unsigned char*)&pacman_tilemap + ((cur_map_x) + ((cur_map_y) << 6));
 			unsigned char cur_map_tile = *cur_map_tile_p;
 	
-			if (cur_map_tile < 42)
+			if (cur_map_tile < 42 || cur_map_tile == 87)
 				mask &= ~COLLISION_CAN_UP;
 	}
 
@@ -317,7 +353,7 @@ short collision_detect(short x, short y)
 			unsigned char* cur_map_tile_p = (unsigned char*)&pacman_tilemap + ((cur_map_x) + ((cur_map_y) << 6));
 			unsigned char cur_map_tile = *cur_map_tile_p;
 	
-			if (cur_map_tile < 42)
+			if (cur_map_tile < 42 || cur_map_tile == 87)
 				mask &= ~COLLISION_CAN_DOWN;
 	}
 
@@ -329,7 +365,7 @@ short collision_detect(short x, short y)
 			unsigned char* cur_map_tile_p = (unsigned char*)&pacman_tilemap + ((cur_map_x) + ((cur_map_y) << 6));
 			unsigned char cur_map_tile = *cur_map_tile_p;
 	
-			if (cur_map_tile < 42)
+			if (cur_map_tile < 42 || cur_map_tile == 87)
 				mask &= ~COLLISION_CAN_LEFT;
 	}
 
@@ -341,20 +377,29 @@ short collision_detect(short x, short y)
 			unsigned char* cur_map_tile_p = (unsigned char*)&pacman_tilemap + ((cur_map_x) + ((cur_map_y) << 6));
 			unsigned char cur_map_tile = *cur_map_tile_p;
 	
-			if (cur_map_tile < 42)
+			if (cur_map_tile < 42 || cur_map_tile == 87)
 				mask &= ~COLLISION_CAN_RIGHT;
 	}
 
-	/*if (old_map_x != g_cur_map_x || old_map_y != g_cur_map_y)
-	{
-		trace_dec(mask);
-		trace_char('\n');
-		trace_char('\n');
-		old_map_x = g_cur_map_x;
-		old_map_y = g_cur_map_y;
-	}*/
-
 	return mask;
+}
+
+
+short complement_orientation(short orient);
+
+void scatter_ghosts()
+{
+	int i;
+
+	for (i = 0; i < COUNT_OF(ghosts); i++)
+	{
+		if (ghosts[i].state == GHOST_STATE_CHASE_POCMAN)
+		{
+			ghosts[i].idle_count = 1000;
+			ghosts[i].state = GHOST_STATE_SCATTER;
+			ghosts[i].sp.orientation = complement_orientation(ghosts[i].sp.orientation);
+		}
+	}
 }
 
 void eat(short x, short y)
@@ -365,36 +410,14 @@ void eat(short x, short y)
 	unsigned char* cur_map_tile_p = ((unsigned char*)&pacman_tilemap + (cur_map_x) + ((cur_map_y) << 6));
 	unsigned char cur_map_tile = *cur_map_tile_p;
 	
-	if ((cur_map_tile) == 83)
+	if (cur_map_tile == 83)
 		*cur_map_tile_p = 0xff;
 
-	/*if (old_map_x != cur_map_x || old_map_y != cur_map_y)
+	if (cur_map_tile == 85)
 	{
-		int i, j; 
-
-		trace_dec(cur_map_x);
-		trace_char(' ');
-		trace_dec(cur_map_y);
-		trace_char(' ');
-		trace_dec(cur_map_tile);
-		trace_char('\n');
-
-		old_map_x = cur_map_x;
-		old_map_y = cur_map_y;
-
-		for (i = 0; i < 3; i++)
-		{
-			for (j = 0; j < 3; j++)
-			{
-				unsigned char* cur_map_tile_p = ((unsigned char*)&pacman_tilemap + (cur_map_x + i - 1) + ((cur_map_y + j - 1) << 6));
-				trace_hex(cur_map_tile_p);
-				trace_char(' ');	
-			}
-		}
-		trace_char('\n');
+		*cur_map_tile_p = 0xff;
+		scatter_ghosts();
 	}
-	*/
-
 }
 
 void process_keys() 
@@ -406,12 +429,9 @@ void process_keys()
 
 	short new_orientation;
 
-	struct Sprite* pax = &sprites[SPRITE_PACMAN];
+	struct Sprite* pax = &pocman;
 
 	short collision = collision_detect(pax->x, pax->y);
-
-//	trace_hex(collision);
-//	trace_char('\n');
 
 	keys = __in(0x1001);
 
@@ -452,7 +472,9 @@ void process_keys()
 	}
 
 	eat(pax->x, pax->y);
-	
+
+	update_sprite(pax);
+
 }
 
 short rand = 417;
@@ -471,109 +493,168 @@ short complement_orientation(short orient)
 		case ORIENTATION_DOWN:
 			return ORIENTATION_UP;
 	}
-
+	return ORIENTATION_UP;
 }
 
 void update_ghosts()
 {
+	int i;
 
-	struct Sprite* sp = &sprites[SPRITE_GHOST1];
-	struct Sprite* pac = &sprites[SPRITE_PACMAN];
-	short collision = collision_detect(sp->x,sp->y);
-
-	short spx = sp->x >> 3;
-	short spy = sp->y >> 3;
-	short px = pac->x >> 3;
-	short py = pac->y >> 3;
-
-
-	unsigned short dist_up = (spx - px)*(spx - px) + ((spy - 1)-py)*((spy - 1)-py);
-	unsigned short dist_down = (spx-px)*(spx-px) + ((spy + 1)-py)*((spy + 1)-py);
-	unsigned short dist_left = ((spx-1)-px)*((spx-1)-px) + (spy-py)*(spy-py);
-	unsigned short dist_right = ((spx+1)-px)*((spx+1)-px) + (spy-py)*(spy-py);
-
-	unsigned short min_dist = 32767;
-
-	short dx = 0;
-	short dy = 0;
-	short new_orientation = sp->orientation;
-
-	short compl_orient = complement_orientation(sp->orientation);
-	short masked_collision = collision & ~compl_orient;
-	short has_mult = (masked_collision != 1) && (masked_collision != 2) && (masked_collision != 4) && (masked_collision != 8);
-
-	if ((dist_up < min_dist) && (masked_collision & ORIENTATION_UP))
-		min_dist = dist_up;
-	if ((dist_down < min_dist) && (masked_collision & ORIENTATION_DOWN))
-		min_dist = dist_down;
-	if ((dist_left < min_dist) && (masked_collision & ORIENTATION_LEFT))
-		min_dist = dist_left;
-	if ((dist_right < min_dist) && (masked_collision & ORIENTATION_RIGHT))
-		min_dist = dist_right;
-
-	trace_hex(sp->orientation);
-	trace_char(' ');
-	trace_hex(masked_collision);
-	trace_char(' ');
-	trace_hex(has_mult);
-	trace_char(' ');
-	trace_dec(min_dist);
-	trace_char(' ');
-	trace_dec(dist_up);
-	trace_char(' ');
-	trace_dec(dist_down);
-	trace_char(' ');
-	trace_dec(dist_left);
-	trace_char(' ');
-	trace_dec(dist_right);
-	trace_char('\n');
-
- 	if ( (collision & COLLISION_CAN_UP) && (sp->orientation != ORIENTATION_DOWN) && (!has_mult || (dist_up == min_dist)))
+	for (i = 0; i < COUNT_OF(ghosts); i++)
 	{
-		new_orientation = ORIENTATION_UP;
-		dy = -1;
-	}
-	else if ( (collision & COLLISION_CAN_LEFT) && (sp->orientation != ORIENTATION_RIGHT) && (!has_mult || (dist_left == min_dist)))
-	{
-		dx = -1;
-		new_orientation = ORIENTATION_LEFT;
-	}
-	else if ( (collision & COLLISION_CAN_RIGHT) && (sp->orientation != ORIENTATION_LEFT) && (!has_mult || (dist_right == min_dist)))
-	{
-		new_orientation = ORIENTATION_RIGHT;
-		dx = 1;
-	}
-	else if ( (collision & COLLISION_CAN_DOWN) && (sp->orientation != ORIENTATION_UP) && (!has_mult || (dist_down == min_dist)))
-	{
-		dy = 1;
-		new_orientation = ORIENTATION_DOWN;
-	}
 
-	/*	else {
-		short a = collision;
+		struct Ghost* gh = &ghosts[i];
+		struct Sprite* sp = &gh->sp;
 
-		if (a & COLLISION_CAN_LEFT)
-			sp->x--;
-		else if (a & COLLISION_CAN_RIGHT)
-			sp->x++;
-		else if (a & COLLISION_CAN_UP)
-			sp->y--;
-		else if (a & COLLISION_CAN_DOWN)
-			sp->y++;
+		if (gh->state == GHOST_STATE_CHASE_POCMAN || gh->state == GHOST_STATE_SCATTER)
+		{			
+			struct Sprite* pac = &pocman;
+			short collision = collision_detect(sp->x,sp->y);
 
-	}	
-*/
-	if (sp->frames_in_cycle == 0 && (dx || dy))
-	{
-		sp->frames_in_cycle = 8;
-		sp->vx = dx;
-		sp->vy = dy;
-		sp->orientation = new_orientation;
+			short spx; 
+			short spy;
+			short px; 
+			short py;
+
+			unsigned short dist_up;
+			unsigned short dist_down;
+			unsigned short dist_left;
+			unsigned short dist_right;
+
+			unsigned short min_dist;
+
+			short dx;
+			short dy;
+			short new_orientation = sp->orientation;
+
+			short compl_orient = complement_orientation(sp->orientation);
+			short masked_collision = collision & ~compl_orient;
+			short has_mult = (masked_collision != 1) && (masked_collision != 2) && (masked_collision != 4) && (masked_collision != 8);
+
+			spx = sp->x >> 3;
+			spy = sp->y >> 3;
+
+			if (gh->state == GHOST_STATE_CHASE_POCMAN)
+			{
+				px = pac->x >> 3;
+				py = pac->y >> 3;
+			}
+			else
+			{
+				px = gh->scatter_x;
+				py = gh->scatter_y;
+			}
+
+
+			dist_up = (spx - px)*(spx - px) + ((spy - 1)-py)*((spy - 1)-py);
+			dist_down = (spx-px)*(spx-px) + ((spy + 1)-py)*((spy + 1)-py);
+			dist_left = ((spx-1)-px)*((spx-1)-px) + (spy-py)*(spy-py);
+			dist_right = ((spx+1)-px)*((spx+1)-px) + (spy-py)*(spy-py);
+
+			min_dist = 32767;
+
+			dx = 0;
+			dy = 0;
+
+			update_sprite(sp);
+
+			if ((dist_up < min_dist) && (masked_collision & ORIENTATION_UP))
+				min_dist = dist_up;
+			if ((dist_down < min_dist) && (masked_collision & ORIENTATION_DOWN))
+				min_dist = dist_down;
+			if ((dist_left < min_dist) && (masked_collision & ORIENTATION_LEFT))
+				min_dist = dist_left;
+			if ((dist_right < min_dist) && (masked_collision & ORIENTATION_RIGHT))
+				min_dist = dist_right;
+
+			if ( (collision & COLLISION_CAN_UP) && (sp->orientation != ORIENTATION_DOWN) && (!has_mult || (dist_up == min_dist)))
+			{
+				new_orientation = ORIENTATION_UP;
+				dy = -1;
+			}
+			else if ( (collision & COLLISION_CAN_LEFT) && (sp->orientation != ORIENTATION_RIGHT) && (!has_mult || (dist_left == min_dist)))
+			{
+				dx = -1;
+				new_orientation = ORIENTATION_LEFT;
+			}
+			else if ( (collision & COLLISION_CAN_RIGHT) && (sp->orientation != ORIENTATION_LEFT) && (!has_mult || (dist_right == min_dist)))
+			{
+				new_orientation = ORIENTATION_RIGHT;
+				dx = 1;
+			}
+			else if ( (collision & COLLISION_CAN_DOWN) && (sp->orientation != ORIENTATION_UP) && (!has_mult || (dist_down == min_dist)))
+			{
+				dy = 1;
+				new_orientation = ORIENTATION_DOWN;
+			}
+
+			if (sp->frames_in_cycle == 0 && (dx || dy))
+			{
+				sp->frames_in_cycle = 8;
+				sp->vx = dx;
+				sp->vy = dy;
+				sp->orientation = new_orientation;
+			}
+
+			if (gh->state == GHOST_STATE_SCATTER)
+			{
+				if (gh->idle_count-- == 0)
+					gh->state = GHOST_STATE_CHASE_POCMAN;
+			}
+
+		}
+		else if (gh->state == GHOST_STATE_LEAVE_GHOST_HOUSE)
+		{
+			#define GHOST_LEAVE_X (21*8+4)
+
+			if (sp->x != GHOST_LEAVE_X)
+			{
+
+				if (sp->x > GHOST_LEAVE_X)
+				{
+					sp->frames_in_cycle = sp->x - GHOST_LEAVE_X;
+					sp->vx = -1;
+					sp->orientation = ORIENTATION_LEFT;
+				}
+				else
+				{
+					sp->frames_in_cycle = GHOST_LEAVE_X - sp->x;
+					sp->vx = 1;
+					sp->orientation = ORIENTATION_RIGHT;
+				}
+
+			}
+			else
+			{
+				if (sp->frames_in_cycle == 0)
+				{
+					sp->frames_in_cycle = 16;
+					sp->vx = 0;
+					sp->vy = -1;
+					sp->orientation = ORIENTATION_UP;
+				}
+			}
+
+			if (sp->y == 14*8)
+				gh->state = GHOST_STATE_CHASE_POCMAN;
+
+			update_sprite(sp);
+		}
+		else if (gh->state == GHOST_STATE_IDLE)
+		{
+			if (gh->idle_count-- == 0)
+				gh->state = GHOST_STATE_LEAVE_GHOST_HOUSE;
+			if (sp->frames_in_cycle == 0)
+			{
+				sp->frames_in_cycle = 16;
+				sp->vx = 0;
+				sp->vy = 0;
+				sp->orientation = ORIENTATION_UP;
+			}
+			
+			update_sprite(sp);
+		}
 	}
-
-	run -= 1;
-
-	rand *= 7143;
 }
 
 int main()
@@ -593,7 +674,6 @@ int main()
 		update_ghosts();
 		process_keys();
 		update_background();
-		update_sprites();
 //		copperList[0] = 0x7000 | (frame++ & 31);
 		load_copper_list(copperList, COUNT_OF(copperList));
 		__sleep();

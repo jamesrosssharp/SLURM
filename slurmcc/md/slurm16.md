@@ -886,7 +886,7 @@ static void segment(int n) {
 }
 static void space(int n) {
         if (cseg != BSS)
-                print(".times %d dw 0\n", n);
+                print(".times %d db 0\n", n);
 }
 static void blkloop(int dreg, int doff, int sreg, int soff, int size, int tmps[]) {
         int lab = genlabel(1);
