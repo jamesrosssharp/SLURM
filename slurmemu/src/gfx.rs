@@ -78,6 +78,15 @@ impl Gfx {
                 _ => {}
             }
         }
+        else {
+
+            match (port & 0xf00) >> 8 {
+                7 => /* collision RAM */ {return self.sprite.read_collision_ram((port & 0xff) as u8)}
+                _ => {}
+            }
+
+
+        }
 
         return 0;
     }

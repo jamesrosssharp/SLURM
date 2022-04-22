@@ -15,8 +15,10 @@ pub struct SpriteCore {
     h_ram : [u16; 256],
     a_ram : [u16; 256],
     line_buffers : [[u8; LINEBUFFER_SIZE] ; 2], 
+    collision_buffers : [[u8; LINEBUFFER_SIZE] ; 2], 
     active_buffer : usize,
     prev_hs : bool,
+    collision_ram : [u16; 256],
 }
 
 impl SpriteCore {
@@ -28,9 +30,16 @@ impl SpriteCore {
             h_ram: [0; 256],
             a_ram: [0; 256],
             line_buffers : [[0; LINEBUFFER_SIZE] ; 2],
+            collision_buffers : [[0; LINEBUFFER_SIZE] ; 2],
             active_buffer : 0,
             prev_hs : false,
+            collision_ram : [0; 256],
         }
+    }
+
+    pub fn read_collision_ram(& self, addr: u8) -> u16
+    {
+        return self.collision_ram[addr as usize];
     }
 
     pub fn write_x_mem(& mut self, addr: u8, data: u16)
@@ -53,16 +62,29 @@ impl SpriteCore {
         self.a_ram[addr as usize] = data;
     }
 
+    pub fn collision_check(& mut self, render_buffer: usize, xcoord: u16, sprite: usize)
+    {
+        let coll = self.collision_buffers[render_buffer][xcoord as usize];  
+
+        if coll != 0xff
+        {
+            self.collision_ram[sprite] |= 1 << (coll >> 4);
+        }
+
+        self.collision_buffers[render_buffer][xcoord as usize] = sprite as u8;  
+    }
+
     pub fn render_line(& mut self, mem: & mut Vec<u16>,  _x : u16,  y : u16, render_buffer : usize)
     {
         // Clear render buffer
         for i in 0..LINEBUFFER_SIZE {
             self.line_buffers[render_buffer][i] = 0;
+            self.collision_buffers[render_buffer][i] = 0xff;
         }
 
         // Render next scanline
            
-            for i in 0..256 {
+        for i in 0..256 {
     
                 // Get sprite X, Y, width, height, enabled, and address
 
@@ -88,22 +110,53 @@ impl SpriteCore {
                         match cmp::min(sprite_x + sprite_width - xcoord, LINEBUFFER_SIZE as u16 - xcoord)
                         {
                             1 => {
-                                if data & 0xf != 0 {self.line_buffers[render_buffer][xcoord as usize] = ((pal_hi << 4)  | data & 0xf) as u8;}
+                                if data & 0xf != 0 {
+                                    self.line_buffers[render_buffer][xcoord as usize] = ((pal_hi << 4)  | data & 0xf) as u8;
+                                    self.collision_check(render_buffer, xcoord, i);
+                                }
+
                             },
                             2 => {
-                                if data & 0xf != 0 {self.line_buffers[render_buffer][xcoord as usize] = ((pal_hi << 4)  | data & 0xf) as u8;}
-                                if data & 0xf0 != 0 {self.line_buffers[render_buffer][(xcoord + 1) as usize] = ((pal_hi << 4)  | ((data & 0xf0) >> 4)) as u8;}
+                                if data & 0xf != 0 {
+                                    self.line_buffers[render_buffer][xcoord as usize] = ((pal_hi << 4)  | data & 0xf) as u8;
+                                    self.collision_check(render_buffer, xcoord, i);
+                                }
+                                if data & 0xf0 != 0 {
+                                    self.line_buffers[render_buffer][(xcoord + 1) as usize] = ((pal_hi << 4)  | ((data & 0xf0) >> 4)) as u8;
+                                    self.collision_check(render_buffer, xcoord + 1, i);
+                                }
                             },
                             3 => {
-                                if data & 0xf != 0 {self.line_buffers[render_buffer][xcoord as usize] = ((pal_hi << 4)  | data & 0xf) as u8;}
-                                if data & 0xf0 != 0 {self.line_buffers[render_buffer][(xcoord + 1) as usize] = ((pal_hi << 4)  | ((data & 0xf0) >> 4)) as u8;}
-                                if data & 0xf00 != 0 {self.line_buffers[render_buffer][(xcoord + 2) as usize] = ((pal_hi << 4)  | ((data & 0xf00) >> 8)) as u8;}
+                                if data & 0xf != 0 {
+                                    self.line_buffers[render_buffer][xcoord as usize] = ((pal_hi << 4)  | data & 0xf) as u8;
+                                    self.collision_check(render_buffer, xcoord, i);
+                                }
+                                if data & 0xf0 != 0 {
+                                    self.line_buffers[render_buffer][(xcoord + 1) as usize] = ((pal_hi << 4)  | ((data & 0xf0) >> 4)) as u8;
+                                    self.collision_check(render_buffer, xcoord + 1, i);
+                                }
+                                if data & 0xf00 != 0 {
+                                    self.line_buffers[render_buffer][(xcoord + 2) as usize] = ((pal_hi << 4)  | ((data & 0xf00) >> 8)) as u8;
+                                    self.collision_check(render_buffer, xcoord + 2, i);
+                                }
                             },
                             _ => {
-                                if data & 0xf != 0 {self.line_buffers[render_buffer][xcoord as usize] = ((pal_hi << 4)  | data & 0xf) as u8;}
-                                if data & 0xf0 != 0 {self.line_buffers[render_buffer][(xcoord + 1) as usize] = ((pal_hi << 4)  | ((data & 0xf0) >> 4)) as u8;}
-                                if data & 0xf00 != 0 {self.line_buffers[render_buffer][(xcoord + 2) as usize] = ((pal_hi << 4)  | ((data & 0xf00) >> 8)) as u8;}
-                                if data & 0xf000 != 0 {self.line_buffers[render_buffer][(xcoord + 3) as usize] = ((pal_hi << 4)  | ((data & 0xf000) >> 12)) as u8;}
+                                if data & 0xf != 0 {
+                                    self.line_buffers[render_buffer][xcoord as usize] = ((pal_hi << 4)  | data & 0xf) as u8;
+                                    self.collision_check(render_buffer, xcoord, i);
+                                }
+                                if data & 0xf0 != 0 {
+                                    self.line_buffers[render_buffer][(xcoord + 1) as usize] = ((pal_hi << 4)  | ((data & 0xf0) >> 4)) as u8;
+                                    self.collision_check(render_buffer, xcoord + 1, i);
+                                }
+                                if data & 0xf00 != 0 {
+                                    self.line_buffers[render_buffer][(xcoord + 2) as usize] = ((pal_hi << 4)  | ((data & 0xf00) >> 8)) as u8;
+                                    self.collision_check(render_buffer, xcoord + 2, i);
+                                }
+                                if data & 0xf000 != 0 {
+                                    self.line_buffers[render_buffer][(xcoord + 3) as usize] = ((pal_hi << 4)  | ((data & 0xf000) >> 12)) as u8;
+                                    self.collision_check(render_buffer, xcoord + 3, i);
+                                }
                             },
                         }
 
@@ -127,6 +180,10 @@ impl SpriteCore {
             let render_buffer : usize =  self.active_buffer;
             if self.active_buffer == 0 { self.active_buffer = 1;} else { self.active_buffer = 0;};
             self.render_line(mem, x, y, render_buffer);
+        }
+
+        if y == 0 { // Clear collision RAM
+            self.collision_ram[(x&0xff) as usize] = 0;
         }
 
         self.prev_hs = hs;

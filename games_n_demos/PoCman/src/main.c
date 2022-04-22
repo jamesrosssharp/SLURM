@@ -61,7 +61,7 @@ extern short pacman_tileset_palette;
 #define ORIENTATION_SPAWN 16
 #define ORIENTATION_DIE	  32
 
-struct Sprite pocman = 	{	
+struct Sprite pocman_start = 	{	
 		0,
 		24 + 160 - 8 + 4 ,
 		16 + 120 - 8 + 29,
@@ -79,12 +79,17 @@ struct Sprite pocman = 	{
 		{8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56}
 	};
 
-struct Ghost ghosts[] = {
+struct Sprite pocman;
+
+#define N_GHOSTS 4
+
+struct Ghost ghosts[N_GHOSTS];
+struct Ghost ghosts_start[N_GHOSTS] = {
 	{
 		{	/* PINK GHOST */
 			16,
 			24 + 160 - 8 ,
-			16 + 128 - 8 + 29 - 32 + 10,
+			16 + 128 - 8 + 29 - 32 + 10 - 4,
 			16,
 			16,
 			0,
@@ -107,7 +112,7 @@ struct Ghost ghosts[] = {
 		{	/* RED GHOST */
 			17,
 			24 + 160 - 8 + 16 ,
-			16 + 128 - 8 + 29 - 32 + 10,
+			16 + 128 - 8 + 29 - 32 + 10 - 4,
 			16,
 			16,
 			0,
@@ -129,7 +134,7 @@ struct Ghost ghosts[] = {
 		{	/* BLUE GHOST */
 			18,
 			24 + 160 - 8 - 16 ,
-			16 + 128 - 8 + 29 - 32 + 10,
+			16 + 128 - 8 + 29 - 32 + 10 - 4,
 			16,
 			16,
 			0,
@@ -151,7 +156,7 @@ struct Ghost ghosts[] = {
 		{	/* ORANGE GHOST */
 			19,
 			24 + 160 - 8 ,
-			16 + 128 - 8 + 29 - 32 - 6,
+			16 + 128 - 8 + 29 - 32 - 6 - 4,
 			16,
 			16,
 			0,
@@ -183,6 +188,8 @@ extern void load_sprite_y(short sprite, short y);
 extern void load_sprite_h(short sprite, short h);
 extern void load_sprite_a(short sprite, short a);
 
+void start_game();
+
 void update_sprite(struct Sprite* sp)
 {
 	short x, y, h, a, frame;
@@ -209,7 +216,8 @@ void update_sprite(struct Sprite* sp)
 			a = MAKE_SPRITE_A(((unsigned short)&pacman_sprite_sheet >> 1) + (sp->frames_right[frame >> 2]));
 			break;
 		case ORIENTATION_DIE:
-			a = MAKE_SPRITE_A(((unsigned short)&pacman_sprite_sheet >> 1) + (sp->frames_die_spawn[frame]));
+			if (sp -> frame > 26) sp->frame = 26;
+			a = MAKE_SPRITE_A(((unsigned short)&pacman_sprite_sheet >> 1) + (sp->frames_die_spawn[sp->frame>>1]));
 			break;
 		case ORIENTATION_SPAWN:
 			if (sp -> frame > 26) sp->frame = 26;
@@ -238,7 +246,11 @@ void update_sprite(struct Sprite* sp)
 	}
 	else
 	{
-		if (sp->orientation == ORIENTATION_SPAWN) sp->orientation = ORIENTATION_UP;
+		if (sp->orientation == ORIENTATION_DIE)
+		{
+			start_game();
+		}
+		else if (sp->orientation == ORIENTATION_SPAWN) sp->orientation = ORIENTATION_UP;
 		sp->vx = 0;
 		sp->vy = 0;
 		sp->frame = 0;
@@ -657,6 +669,46 @@ void update_ghosts()
 	}
 }
 
+void check_ghost_player_collisions()
+{
+	int i;
+	short collided = 0;
+
+	for (i = 0; i < 4; i++)
+	{
+		short coll = __in(0x5710 + i);
+		collided |= coll & 1;
+	}
+	if (collided & 1)
+	{
+		if (pocman.orientation != ORIENTATION_DIE)
+		{
+			pocman.frame = 0;
+			pocman.orientation = ORIENTATION_DIE;
+			pocman.frames_in_cycle = 26;
+			pocman.vx = 0;
+			pocman.vy = 0;
+		}
+	}
+}
+
+void start_game()
+{
+	int i;
+	short* sp_from = (short*)&pocman_start;
+	short* sp_to = (short*)&pocman;
+
+	short* gh_from = (short*)&ghosts_start;
+	short* gh_to = (short*)&ghosts;
+
+	for (i = 0; i < sizeof(struct Sprite) / sizeof(short); i++)
+		*sp_to++ = *sp_from++;
+
+	for (i = 0; i < N_GHOSTS*sizeof(struct Ghost)/sizeof(short); i++)
+		*gh_to++ = *gh_from++;
+
+}
+
 int main()
 {
 	
@@ -666,11 +718,13 @@ int main()
 	load_palette(&pacman_spritesheet_palette, 0, 16);
 	load_palette(&pacman_tileset_palette, 16, 16);
 
+	start_game();
 
 	enable_interrupts();
 
 	while (1)
 	{
+		check_ghost_player_collisions();
 		update_ghosts();
 		process_keys();
 		update_background();
