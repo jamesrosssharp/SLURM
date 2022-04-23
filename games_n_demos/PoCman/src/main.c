@@ -264,11 +264,12 @@ short vy = 0;
 
 void update_background()
 {
-
+	// set 320x240 mode
+	__out(0x5f02, 1);
 
 	// Set BG enable and pal hi
 	
-	__out(0x5d00, 0x1 | (1<<4));
+	__out(0x5d00, 0x1 | (1<<4) | (2<<8) | (1<<15));
 
 	// Set X
 	

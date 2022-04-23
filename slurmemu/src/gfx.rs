@@ -13,12 +13,15 @@ pub struct Gfx {
 
     x: u16,
     y: u16,
+    frame : u16,
 
     copper: Copper,
     sprite: SpriteCore,
     bg: BackgroundCore,
 
     palette : [u16; 256],
+
+    display_mode_halved : bool, /* true = 320x240, false = 640x480 */
 
 }
 
@@ -38,11 +41,33 @@ impl Gfx {
         Gfx { 
             x: 0,
             y: 0,
+            frame: 0,
             copper: Copper::new(),
             sprite: SpriteCore::new(),
             bg: BackgroundCore::new(),
             palette: [0; 256],
+            display_mode_halved: false,
         }
+    }
+
+    pub fn gfx_reg(& mut self, port : u16, val : u16, write: bool) -> u16
+    {
+
+        if write {
+            match port & 0xf {
+               2 => /* display mode */ { if val & 1 == 1 { self.display_mode_halved = true } else { self.display_mode_halved = false } }, 
+               _ => {}
+            }
+        }
+        else
+        {
+            match port & 0xf {
+                0 => /* frame count */ { return self.frame },
+                1 => /* display y */ { return self.y},
+                _ => {},
+            }
+        }
+        return 0;
     }
 
     #[allow(unused_must_use)]
@@ -75,13 +100,18 @@ impl Gfx {
                 },
                 0xe =>  /* Palette */
                     {/*println!("Palette: {:#01x} {:#01x}", port, val);*/ self.palette[(port & 0xff) as usize] = val; },
+                0xf => /* gfx core */
+                {
+                    self.gfx_reg(port & 0xff, val, write);  
+                },
                 _ => {}
             }
         }
         else {
 
             match (port & 0xf00) >> 8 {
-                7 => /* collision RAM */ {return self.sprite.read_collision_ram((port & 0xff) as u8)}
+                0x7 => /* collision RAM */ {return self.sprite.read_collision_ram((port & 0xff) as u8)},
+                0xf => /* gfx core register */ {return self.gfx_reg(port & 0xff, val, write)},
                 _ => {}
             }
 
@@ -99,12 +129,15 @@ impl Gfx {
 
         let hs_int = self.x == TOTAL_X - H_FRONT_PORCH - H_SYNC_PULSE;
         let vs_int = self.y == TOTAL_Y - V_FRONT_PORCH - V_SYNC_PULSE;
- 
-        let (bg_r, bg_g, bg_b, _xout, _yout, _regwr, _reg, _data) = self.copper.step(self.x>>1, self.y>>1, hs, vs);
 
-        let sprite_idx = self.sprite.step(mem, self.x>>1, self.y>>1, hs, vs);
+        let x = if self.display_mode_halved { self.x >> 1 } else { self.x };
+        let y = if self.display_mode_halved { self.y >> 1 } else { self.y };
 
-        let bg_idx = self.bg.step(mem, self.x>>1, self.y>>1, hs, vs);
+        let (bg_r, bg_g, bg_b, _xout, _yout, _regwr, _reg, _data) = self.copper.step(x, y, hs, vs);
+
+        let sprite_idx = self.sprite.step(mem, x, y, hs, vs);
+
+        let bg_idx = self.bg.step(mem, x, y, hs, vs);
 
         let mut r : u8 = bg_r;
         let mut g : u8 = bg_g;
@@ -147,6 +180,7 @@ impl Gfx {
         {
             self.y = 0;
             self.x = 0;
+            self.frame += 1;
         }
 
         (hs_int, vs_int)
