@@ -31,12 +31,39 @@ def convertImage(im, theAsmFile, theBinFile, name, w, h):
 
 
 with open("assets.asm", "w") as theAsmFile:  
+    theAsmFile.write("\t.padto 0x8000\n\n")
+
     with open("sprites.bin", "wb") as theBinFile:
         im = Image.open("Sprites.png")
         convertImage(im, theAsmFile, theBinFile, "bloodlust_sprites", im.width, im.height)
+    with open("tiles.bin", "wb") as theBinFile:
+        im = Image.open("Tiles.png")
+        convertImage(im, theAsmFile, theBinFile, "bloodlust_tiles", im.width, im.height)
+
+    import xml.etree.ElementTree as ET
+    tree = ET.parse('Background.tmx')
+    root = tree.getroot()
+
+    for l in root.findall('layer'):
+        theAsmFile.write("bg1_tilemap:\n")
+        d = l.find('data')
+        i = 0
+        word = 0
+        for dat in d.text.split(','):
+            word >>= 8
+            dat2 = int(dat) - 1
+            if (dat2 < 0):
+                dat2 = 255
+            word = (word & 0xff)  | (dat2 << 8)
+            if (i & 1 == 1):
+                theAsmFile.write("\tdw 0x%x\n" % word)
+                word = 0
+            i += 1
+
+
 
 bundle_start = 65536
-bundle_files = [("sprites.bin", "spritesheet")]
+bundle_files = [("sprites.bin", "spritesheet"), ("tiles.bin", "tileset")]
 bundle_load_address = 1024*1024 + bundle_start
 
 offset = bundle_load_address

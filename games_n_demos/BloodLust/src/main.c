@@ -7,6 +7,8 @@ extern void load_palette(short* palette, int offset, int len);
 
 extern short bloodlust_copper_list;
 extern short bloodlust_sprites_palette;
+extern short bloodlust_tiles_palette;
+extern short bg1_tilemap;
 
 #define MAKE_SPRITE_X(x, en, pal, stride) ((x & 0x3ff) | ((en & 0x1) << 10) | ((pal & 0xf) << 11) | ((stride & 1) << 15))
 #define MAKE_SPRITE_Y(y, width) ((y & 0x3ff) | ((width & 0x3f) << 10)) 
@@ -122,6 +124,44 @@ void enable_interrupts()
 	global_interrupt_enable();
 }
 
+unsigned short bg_x = 220*16*4;
+short bg_y = 0; //10;
+short vx = -1;
+short vy = 0;
+
+void update_background()
+{
+	// Set BG enable and pal hi
+	
+	__out(0x5d00, 0x1 | (1<<4) | (0<<8) | (0<<15));
+
+	// Set X
+	
+	__out(0x5d01, bg_x >> 2);
+
+	// Set Y
+	
+	__out(0x5d02, bg_y);
+
+	// Set map address
+
+	__out(0x5d03, (unsigned short)&bg1_tilemap >> 1);
+
+	// Set tile set address
+	
+	__out(0x5d04, (unsigned short)0xc000);
+
+	bg_x += vx;
+	bg_y += vy;
+
+	if (bg_x < 16)
+	{
+		bg_x = 220*16*4;
+	}
+}
+
+
+
 int main()
 {
 
@@ -134,12 +174,13 @@ int main()
 
 	load_bl_copper_list();
 	load_palette(&bloodlust_sprites_palette, 0, 16);
-	//load_palette(&pacman_tileset_palette, 16, 16);
+	load_palette(&bloodlust_tiles_palette, 16, 16);
 	enable_interrupts();
 
 	while (1)
 	{
 		int i;
+		update_background();
 		update_bl_copper_list();
 		for (i = 0; i < COUNT_OF(sprites); i++)
 			update_sprite(&sprites[i]);

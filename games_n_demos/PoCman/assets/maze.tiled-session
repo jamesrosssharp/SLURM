@@ -9,11 +9,11 @@
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
         "/home/jrsharp/home_mnt/code/FPGA/SLURM/games_n_demos/BloodLust/assets/Background.tmx": {
-            "scale": 2,
+            "scale": 1,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 167,
-                "y": 128.25
+                "x": 3197,
+                "y": 236.5
             }
         },
         "/home/jrsharp/home_mnt/code/FPGA/SLURM/games_n_demos/BloodLust/assets/Tiles.tsx": {
