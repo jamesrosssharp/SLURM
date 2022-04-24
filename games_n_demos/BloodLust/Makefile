@@ -12,7 +12,7 @@ SRCS = $(wildcard src/*.c)
 PREPROCESSED = $(patsubst %.c,build/%.c1,$(SRCS))
 ASM_SRCS = $(wildcard src/*.asm)
 
-ASSETS_SRC = assets/Sprites.png assets/Tiles.png assets/Background.tmx
+ASSETS_SRC = assets/Sprites.png assets/Tiles.png assets/Background.tmx assets/Background2.tmx
 ASSETS_ASM = assets/assets.asm
 ASSETS_BIN = assets/bundle.bin
 

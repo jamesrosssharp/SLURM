@@ -60,6 +60,27 @@ with open("assets.asm", "w") as theAsmFile:
                 word = 0
             i += 1
 
+    tree = ET.parse('Background2.tmx')
+    root = tree.getroot()
+
+    for l in root.findall('layer'):
+        theAsmFile.write("bg2_tilemap:\n")
+        d = l.find('data')
+        i = 0
+        word = 0
+        for dat in d.text.split(','):
+            word >>= 8
+            dat2 = int(dat) - 1
+            if (dat2 < 0):
+                dat2 = 255
+            word = (word & 0xff)  | (dat2 << 8)
+            if (i & 1 == 1):
+                theAsmFile.write("\tdw 0x%x\n" % word)
+                word = 0
+            i += 1
+
+
+
 
 
 bundle_start = 65536

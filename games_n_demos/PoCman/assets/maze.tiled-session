@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "/home/jrsharp/home_mnt/code/FPGA/SLURM/games_n_demos/BloodLust/assets/Background.tmx",
+    "activeFile": "/home/jrsharp/home_mnt/code/FPGA/SLURM/games_n_demos/BloodLust/assets/Background2.tmx",
     "expandedProjectPaths": [
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
@@ -16,8 +16,16 @@
                 "y": 236.5
             }
         },
+        "/home/jrsharp/home_mnt/code/FPGA/SLURM/games_n_demos/BloodLust/assets/Background2.tmx": {
+            "scale": 1.5,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 3850.6666666666665,
+                "y": 80.33333333333331
+            }
+        },
         "/home/jrsharp/home_mnt/code/FPGA/SLURM/games_n_demos/BloodLust/assets/Tiles.tsx": {
-            "scaleInDock": 3,
+            "scaleInDock": 4,
             "scaleInEditor": 1
         },
         "/home/jrsharp/home_mnt/code/FPGA/SLURM/games_n_demos/pacman/assets/background.tmx": {
@@ -52,8 +60,8 @@
             "scale": 2,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 256.5,
-                "y": 160.25
+                "x": 256,
+                "y": 159.75
             }
         },
         "bg_tiles.tsx": {
@@ -61,22 +69,24 @@
         }
     },
     "map.fixedSize": true,
-    "map.height": 32,
+    "map.height": 10,
     "map.lastUsedFormat": "tmx",
     "map.orientation": 1,
-    "map.tileHeight": 8,
-    "map.tileWidth": 8,
+    "map.tileHeight": 16,
+    "map.tileWidth": 16,
     "map.width": 256,
     "openFiles": [
         "background.tmx",
         "/home/jrsharp/home_mnt/code/FPGA/SLURM/games_n_demos/BloodLust/assets/Background.tmx",
-        "/home/jrsharp/home_mnt/code/FPGA/SLURM/games_n_demos/BloodLust/assets/Tiles.tsx"
+        "/home/jrsharp/home_mnt/code/FPGA/SLURM/games_n_demos/BloodLust/assets/Tiles.tsx",
+        "/home/jrsharp/home_mnt/code/FPGA/SLURM/games_n_demos/BloodLust/assets/Background2.tmx"
     ],
     "project": "maze.tiled-project",
     "recentFiles": [
         "background.tmx",
-        "/home/jrsharp/home_mnt/code/FPGA/SLURM/games_n_demos/BloodLust/assets/Tiles.tsx",
         "/home/jrsharp/home_mnt/code/FPGA/SLURM/games_n_demos/BloodLust/assets/Background.tmx",
+        "/home/jrsharp/home_mnt/code/FPGA/SLURM/games_n_demos/BloodLust/assets/Tiles.tsx",
+        "/home/jrsharp/home_mnt/code/FPGA/SLURM/games_n_demos/BloodLust/assets/Background2.tmx",
         "/home/jrsharp/home_mnt/code/FPGA/SLURM/games_n_demos/pacman/assets/bg_tiles.tsx",
         "/home/jrsharp/home_mnt/code/FPGA/SLURM/games_n_demos/pacman/assets/background.tmx"
     ],

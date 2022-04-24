@@ -9,6 +9,7 @@ extern short bloodlust_copper_list;
 extern short bloodlust_sprites_palette;
 extern short bloodlust_tiles_palette;
 extern short bg1_tilemap;
+extern short bg2_tilemap;
 
 #define MAKE_SPRITE_X(x, en, pal, stride) ((x & 0x3ff) | ((en & 0x1) << 10) | ((pal & 0xf) << 11) | ((stride & 1) << 15))
 #define MAKE_SPRITE_Y(y, width) ((y & 0x3ff) | ((width & 0x3f) << 10)) 
@@ -128,6 +129,8 @@ unsigned short bg_x = 220*16*4;
 short bg_y = 0; //10;
 short vx = -1;
 short vy = 0;
+unsigned short bg2_x = 220*16*2;
+short bg2_y = 10; //10;
 
 void update_background()
 {
@@ -137,27 +140,58 @@ void update_background()
 
 	// Set X
 	
-	__out(0x5d01, bg_x >> 2);
+	__out(0x5d01, bg2_x >> 1);
 
 	// Set Y
 	
-	__out(0x5d02, bg_y);
+	__out(0x5d02, bg2_y);
 
 	// Set map address
 
-	__out(0x5d03, (unsigned short)&bg1_tilemap >> 1);
+	__out(0x5d03, (unsigned short)&bg2_tilemap >> 1);
 
 	// Set tile set address
 	
 	__out(0x5d04, (unsigned short)0xc000);
 
+	// Set BG enable and pal hi
+	
+	__out(0x5d05, 0x1 | (1<<4) | (0<<8) | (0<<15));
+
+	// Set X
+	
+	__out(0x5d06, bg_x >> 2);
+
+	// Set Y
+	
+	__out(0x5d07, bg_y);
+
+	// Set map address
+
+	__out(0x5d08, (unsigned short)&bg1_tilemap >> 1);
+
+	// Set tile set address
+	
+	__out(0x5d09, (unsigned short)0xc000);
+
+
 	bg_x += vx;
 	bg_y += vy;
+	bg2_x += vx;
+	bg2_y += vy;
+
 
 	if (bg_x < 16)
 	{
 		bg_x = 220*16*4;
 	}
+
+	if (bg2_x < 16)
+	{
+		bg2_x = 220*16*2;
+	}
+
+
 }
 
 
