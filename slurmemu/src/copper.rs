@@ -19,7 +19,10 @@ pub struct Copper {
     g : u8,
     b : u8,
     reg_addr : u16,
-    hv_wait : u16
+    hv_wait : u16,
+    y_flip: u16,
+    y_flip_en: bool,
+    x_pan: u16,
 }
 
 impl Copper {
@@ -33,7 +36,10 @@ impl Copper {
             g : 0,
             b : 0,
             reg_addr : 0,
-            hv_wait : 0
+            hv_wait : 0,
+            y_flip : 0,
+            y_flip_en : false,
+            x_pan : 0,
         }
     }
 
@@ -46,6 +52,27 @@ impl Copper {
     {
         // Wait state
         self.copper_state = CopperState::Execute;
+    }
+
+    pub fn port_op(& mut self, port : u16, val: u16, write : bool) -> u16
+    {
+        if write {
+            match port & 0xf {
+                0 => /* copper control */ {},
+                1 => /* copper Y flip */ {
+                    self.y_flip = val & 0x1ff;
+                    self.y_flip_en = (val & 0x8000) == 0x8000;
+                },
+                2 => /* background color */ {},
+                3 => /* x pan */ {
+                    self.x_pan = val;
+                },
+                4 => /* alpha - remove */ {},
+                _ => {},
+            }
+        }
+
+        0
     }
 
     pub fn execute(& mut self, x : u16, y : u16)
@@ -112,11 +139,13 @@ impl Copper {
             },
 			0xa => /* x pan write */
             {
-
+                self.x_pan = ins & 0x3ff; 
             },
 			0xb => /* x pan write and v wait next scanline */
             {
-
+                self.x_pan = ins & 0x3ff; 
+                self.hv_wait = y + 1;
+                self.copper_state = CopperState::WaitV;
             },
 			0xc => /* write background color */ {
                 self.r = ((ins & 0xf00) >> 4) as u8;
@@ -174,7 +203,13 @@ impl Copper {
 
         }
 
-        (self.r, self.g, self.b, x, y, false, 0, 0)
+        let mut yy = y;
+
+        if self.y_flip_en && y > self.y_flip {
+            yy = (self.y_flip - y) + self.y_flip;
+        }
+
+        (self.r, self.g, self.b, x + self.x_pan, yy, false, 0, 0)
 
     }
 

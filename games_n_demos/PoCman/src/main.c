@@ -18,6 +18,7 @@ short copperList[] = {
 };
 
 struct Sprite {
+	short enabled;
 	short i; /* sprite index */
 	short x;
 	short y;
@@ -33,6 +34,8 @@ struct Sprite {
 	unsigned short frames_left[4];
 	unsigned short frames_right[4];
 	unsigned short frames_die_spawn[13];
+	unsigned short frames_scatter[4];
+	unsigned short frames_dead[2]; /* dead ghosts going to ghost house */
 };
 
 #define GHOST_STATE_IDLE			  0
@@ -62,9 +65,10 @@ extern short pacman_tileset_palette;
 #define ORIENTATION_DIE	  32
 
 struct Sprite pocman_start = 	{	
+		1,
 		0,
 		24 + 160 - 8 + 4 ,
-		16 + 120 - 8 + 29,
+		16 + 120 - 8 + 29 + 24,
 		16,
 		16,
 		0,
@@ -76,7 +80,9 @@ struct Sprite pocman_start = 	{
 		{64*3*16, 64*3*16+4, 8, 64*3*16+4},
 		{64*1*16, 64*1*16+4, 8, 64*1*16+4},
 		{0, 4, 8, 4},
-		{8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56}
+		{8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56},
+		{0},
+		{0}
 	};
 
 struct Sprite pocman;
@@ -87,6 +93,7 @@ struct Ghost ghosts[N_GHOSTS];
 struct Ghost ghosts_start[N_GHOSTS] = {
 	{
 		{	/* PINK GHOST */
+			1,
 			16,
 			24 + 160 - 8 ,
 			16 + 128 - 8 + 29 - 32 + 10 - 4,
@@ -101,7 +108,9 @@ struct Ghost ghosts_start[N_GHOSTS] = {
 			{(16*5*64) + 24, (16 * 5 * 64) + 28, (16*5*64) + 24, (16 * 5 * 64) + 28},
 			{(16*5*64) + 8, (16 * 5 * 64) + 12, (16*5*64) + 8, (16 * 5 * 64) + 12},
 			{(16*5*64) + 0, (16 * 5 * 64) + 4, (16*5*64) + 0, (16 * 5 * 64) + 4},
-			{0}
+			{0},
+			{},
+			{}
 		},
 		GHOST_STATE_IDLE,
 		100,
@@ -110,6 +119,7 @@ struct Ghost ghosts_start[N_GHOSTS] = {
 	},
 	{
 		{	/* RED GHOST */
+			1,
 			17,
 			24 + 160 - 8 + 16 ,
 			16 + 128 - 8 + 29 - 32 + 10 - 4,
@@ -132,6 +142,7 @@ struct Ghost ghosts_start[N_GHOSTS] = {
 	},
 	{
 		{	/* BLUE GHOST */
+			1,
 			18,
 			24 + 160 - 8 - 16 ,
 			16 + 128 - 8 + 29 - 32 + 10 - 4,
@@ -154,6 +165,7 @@ struct Ghost ghosts_start[N_GHOSTS] = {
 	},
 	{
 		{	/* ORANGE GHOST */
+			1, 
 			19,
 			24 + 160 - 8 ,
 			16 + 128 - 8 + 29 - 32 - 6 - 4,
@@ -195,7 +207,7 @@ void update_sprite(struct Sprite* sp)
 	short x, y, h, a, frame;
 	
 	
-	x = MAKE_SPRITE_X(sp->x, 1, 0, 1);
+	x = MAKE_SPRITE_X(sp->x, sp->enabled, 0, 1);
 	y = MAKE_SPRITE_Y(sp->y, sp->width);
 	h = MAKE_SPRITE_H(sp->y + sp->height);
 	frame = sp->frame;
@@ -221,7 +233,8 @@ void update_sprite(struct Sprite* sp)
 			break;
 		case ORIENTATION_SPAWN:
 			if (sp -> frame > 26) sp->frame = 26;
-			a = MAKE_SPRITE_A(((unsigned short)&pacman_sprite_sheet >> 1) + (sp->frames_die_spawn[13 - (sp->frame>>1)]));
+			//a = MAKE_SPRITE_A(((unsigned short)&pacman_sprite_sheet >> 1) + (sp->frames_die_spawn[13 - (sp->frame>>1)]));
+			a = MAKE_SPRITE_A(((unsigned short)&pacman_sprite_sheet >> 1) + (sp->frames_left[2]));
 			break;
 	}
 
@@ -250,7 +263,7 @@ void update_sprite(struct Sprite* sp)
 		{
 			start_game();
 		}
-		else if (sp->orientation == ORIENTATION_SPAWN) sp->orientation = ORIENTATION_UP;
+		//else if (sp->orientation == ORIENTATION_SPAWN) sp->orientation = ORIENTATION_UP;
 		sp->vx = 0;
 		sp->vy = 0;
 		sp->frame = 0;
@@ -408,7 +421,7 @@ void scatter_ghosts()
 	{
 		if (ghosts[i].state == GHOST_STATE_CHASE_POCMAN)
 		{
-			ghosts[i].idle_count = 1000;
+			ghosts[i].idle_count = 100;
 			ghosts[i].state = GHOST_STATE_SCATTER;
 			ghosts[i].sp.orientation = complement_orientation(ghosts[i].sp.orientation);
 		}
@@ -476,7 +489,7 @@ void process_keys()
 
 	/* cornering */
 
-	if (pax->frames_in_cycle == 0 && (dx || dy))
+	if (pax->frames_in_cycle == 0 && (dx || dy) && pax->orientation != ORIENTATION_DIE)
 	{
 		pax->frames_in_cycle = 8;
 		pax->vx = dx;
@@ -684,14 +697,24 @@ void check_ghost_player_collisions()
 	{
 		if (pocman.orientation != ORIENTATION_DIE)
 		{
+
+			int i;
 			pocman.frame = 0;
 			pocman.orientation = ORIENTATION_DIE;
 			pocman.frames_in_cycle = 26;
 			pocman.vx = 0;
 			pocman.vy = 0;
+	
+			for (i = 0; i < N_GHOSTS; i++)
+			{
+				ghosts[i].sp.enabled = 0;	
+			}
 		}
 	}
 }
+
+
+short frame = 0;
 
 void start_game()
 {
@@ -708,12 +731,12 @@ void start_game()
 	for (i = 0; i < N_GHOSTS*sizeof(struct Ghost)/sizeof(short); i++)
 		*gh_to++ = *gh_from++;
 
+	frame = 0;
 }
 
 int main()
 {
 	
-	short frame = 0;
 	
 	load_copper_list(copperList, COUNT_OF(copperList));
 	load_palette(&pacman_spritesheet_palette, 0, 16);
@@ -725,6 +748,7 @@ int main()
 
 	while (1)
 	{
+		frame++;
 		check_ghost_player_collisions();
 		update_ghosts();
 		process_keys();

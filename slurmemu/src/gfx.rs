@@ -93,7 +93,8 @@ impl Gfx {
                             self.bg.port_op(port & 0xf, val, write);
                         },
                        0x2 => /* Copper */ {
-                        },
+                            self.copper.port_op(port & 0xf, val, write);
+                       },
                        _ => {}
                     }
 
@@ -135,9 +136,9 @@ impl Gfx {
 
         let (bg_r, bg_g, bg_b, _xout, _yout, _regwr, _reg, _data) = self.copper.step(x, y, hs, vs);
 
-        let sprite_idx = self.sprite.step(mem, x, y, hs, vs);
+        let sprite_idx = self.sprite.step(mem, _xout, _yout, hs, vs);
 
-        let bg_idx = self.bg.step(mem, x, y, hs, vs);
+        let bg_idx = self.bg.step(mem, _xout, _yout, hs, vs);
 
         let mut r : u8 = bg_r;
         let mut g : u8 = bg_g;

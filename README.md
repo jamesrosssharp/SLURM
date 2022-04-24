@@ -3,6 +3,9 @@ SLURM16 SoC - SLightly Useful RISC Machine, 16 bit, system-on-chip
 
 ![ScreenShot](ScreenShot.png)
 
+![ScreenShot2](ScreenShot2.png)
+
+
 Video console system-on-chip made for the iCE40 UP5K FPGA.
 
 64k x 16bit memory, shared between CPU and gfx / sound / flash DMA. Split into 4 banks so CPU, GPU, sound core, and flash dma can access the (single port) memory banks simultaneously.
