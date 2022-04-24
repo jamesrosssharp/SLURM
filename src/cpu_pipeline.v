@@ -144,7 +144,7 @@ begin
 		pc_stage2_r <= {ADDRESS_BITS{1'b0}};
 		pc_stage3_r <= {ADDRESS_BITS{1'b0}};
 		pc_stage4_r <= {ADDRESS_BITS{1'b0}};
-		mask_count_r 	<= 3'd2; // mask out of reset
+		mask_count_r 	<= 3'd1; // mask out of reset
 		stall_mask_count_r 	<= 2'd0;
 		alt_pip_ld_count_r 	<= 2'd0;
 		imm_r 			<= 12'h000;
@@ -329,10 +329,10 @@ begin
 				pipeline_clear_interrupt = 1'b1;
 
 				if (pipeline_stage0_r[15:12] == 4'h1) begin
-					pc_stage0_r_next = memory_address - 2;
+					pc_stage0_r_next = memory_address - 4;
 				end
 				else begin
-					pc_stage0_r_next = memory_address - 1;
+					pc_stage0_r_next = memory_address - 2;
 				end
 
 			end

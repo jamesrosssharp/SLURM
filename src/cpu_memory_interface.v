@@ -28,7 +28,7 @@ module slurm16_cpu_memory_interface #(parameter BITS = 16, ADDRESS_BITS = 16)  (
 
 	output memory_is_instruction,				/* current value of memory in is an instruction (i.e. previous memory operation was instruction read) */
 
-	output [ADDRESS_BITS - 1:0] memory_address_prev_plus_one
+	output [ADDRESS_BITS - 1:0] memory_address_prev_plus_two
 );
 
 /* CPU state */
@@ -51,7 +51,7 @@ localparam cpust_wait_mem_store2 = 4'b1001; // 9 CPU is waiting for memory grant
 reg [ADDRESS_BITS - 1:0] next_addr_r;
 reg [ADDRESS_BITS - 1:0] addr_r;
 
-assign memory_address = addr_r; 
+assign memory_address = {1'b0, addr_r[15:1]}; 
 
 reg is_executing_r;
 
@@ -243,14 +243,14 @@ begin
 	endcase
 end
 
-/* previous memory address plus 1 - points to return address for instructions */
+/* previous memory address plus 2 - points to return address for instructions */
 
-reg [ADDRESS_BITS - 1:0] prev_address_plus_one;
-assign memory_address_prev_plus_one = prev_address_plus_one;
+reg [ADDRESS_BITS - 1:0] prev_address_plus_two;
+assign memory_address_prev_plus_two = prev_address_plus_two;
 
 always @(posedge CLK)
 begin
-	prev_address_plus_one <= addr_r + 1;
+	prev_address_plus_two <= addr_r + 2;
 end
 
 

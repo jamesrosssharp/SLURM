@@ -35,8 +35,6 @@ localparam SCLK_FREQ  = LRCLK_FREQ * 64;
 
 assign DATA_OUT = {BITS{1'b0}};
 
-reg m_clk_r;
-
 assign mclk = CLK;
 
 reg lr_clk_r = 1'b0;
@@ -58,7 +56,7 @@ reg [63:0] serial_data_r_next;
 assign sdat = serial_data_r[63]; // serial data out
 
 reg [8:0] left_rd_addr, left_rd_addr_next;
-reg [8:0] left_rd_data;
+wire [15:0] left_rd_data;
 
 reg left_wr;
 
@@ -73,7 +71,7 @@ bram #(.BITS(16), .ADDRESS_BITS(9)) left_bram
 );
 
 reg [8:0] right_rd_addr, right_rd_addr_next;
-reg [8:0] right_rd_data;
+wire [15:0] right_rd_data;
 
 reg right_wr;
 
@@ -114,7 +112,7 @@ always @(*)
 begin
 	lr_clk_r_next = lr_clk_r;
 	sclk_r_next = sclk_r;
-	if (lr_clk_count_r == 7'd0)
+	if (lr_clk_count_r == 8'd0)
 		lr_clk_r_next = !lr_clk_r;
 	if (sclk_count_r == 2'd0)
 		sclk_r_next = !sclk_r;
@@ -149,7 +147,7 @@ begin
 
 end
 
-reg dout;
+reg [15:0] dout;
 assign DATA_OUT = dout;
 
 always @(*)
@@ -158,7 +156,7 @@ begin
 	right_wr = 1'b0;
 	control_run_next = control_run;
 	dout = 16'd0;
-
+// verilator lint_off CASEX
 	casex (ADDRESS)
 		12'b000xxxxxxxxx:	/* left BRAM : 512 words */
 			left_wr = WR;

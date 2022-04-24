@@ -9,49 +9,12 @@ TRACE_HEX_PORT  equ 0x6002
 	mov r2, banner
 	bl tr_string
 
-	mov r3, 0x2000 //0x8000
-	mov r4, 0xaa55
+	mov r3, 0x2001 //0x8000
+	mov r4, 0x55
 	bl  perform_store
 
-	mov r3, 0x2000 //0x8000
+	mov r3, 0x2001 //0x8000
 	bl  perform_load
-
-	mov r3, 0x2800 //0xc200
-	mov r4, 0x55aa
-	bl  perform_store
-
-	mov r3, 0x2800 //0xc200
-	bl  perform_load
-
-	mov r3, 0x2100
-	mov r4, 0xff00
-	bl  perform_store
-
-	mov r3, 0x2100
-	bl  perform_load
-
-	mov r3, 0x3f00
-	mov r4, 0x1234
-	bl  perform_store
-
-	mov r3, 0x3f00
-	bl  perform_load
-
-	mov r3, 0x2800
-	mov r4, 0x1234
-	mov r6, 0x3f00
-	mov r7, 0x4321
-	bl perform_double_store
-
-	mov r3, 0x2800
-	bl  perform_load
-
-	mov r3, 0x3f00
-	bl  perform_load
-
-	mov r3, 0x2800
-	mov r6, 0x3f00
-	bl perform_double_load
 
 die:
 		ba die
@@ -119,7 +82,7 @@ perform_store:
 	mov r2, 0xa
 	bl tr_char
 
-	st [r3, 0], r4	
+	stb [r3, 0], r4	
 
 	mov r15, r5
 	ret
@@ -146,7 +109,7 @@ perform_load:
 	bl tr_char
 
 	mov r4, 0xdead
-	ld r4, [r3, 0]	
+	ldb r4, [r3, 0]	
 	
 	mov r2, r4
 	bl tr_hex

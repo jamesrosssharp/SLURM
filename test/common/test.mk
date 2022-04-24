@@ -4,20 +4,24 @@ all: sim
 .PHONY: sim
 
 AS=../../../slurmasm/slurmasm
+MEMCONV=../../../scripts/genmem.py
 
 IVERILOG_RUN=@iverilog -grelative-include -o $(PROJECT)_design -D SIM -Winfloop tb.v $(SOURCE) 2>&1 >sim_wrn.txt &&	\
 			 vvp      -n $(PROJECT)_design 2>&1 >>sim_wrn.txt 
 	
 MEM_INIT=mem_init1.mem mem_init2.mem mem_init3.mem mem_init4.mem
 
-rom_image.mem: Boot.asm
+rom_image.meminit: Boot.asm
 	$(AS) Boot.asm -o rom_image
+	python3 $(MEMCONV) rom_image rom_image.meminit
+	cp rom_image.meminit rom_image.mem
 
 %.mem: %.asm
 	$(AS) $^ -o $(basename $@)
+	python3 $(MEMCONV) $(basename $@) $@
 
 
-sim: $(SOURCE) tb.v rom_image.mem $(MEM_INIT)
+sim: $(SOURCE) tb.v rom_image.meminit $(MEM_INIT)
 	@rm -f simout.txt
 	$(IVERILOG_RUN)
 	@cat simout.txt
@@ -34,6 +38,7 @@ clean:
 	rm $(PROJECT)_design
 	rm dump.vcd
 	rm rom_image
+	rm rom_image.meminit
 	rm rom_image.mem
 	rm mem_init1
 	rm mem_init1.mem

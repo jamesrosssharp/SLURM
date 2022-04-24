@@ -47,7 +47,7 @@ wire [BITS - 1:0] store_memory_data;
 wire is_executing;
 wire is_fetching;
 wire memory_is_instruction;
-wire [ADDRESS_BITS - 1:0] memory_address_prev_plus_one;
+wire [ADDRESS_BITS - 1:0] memory_address_prev_plus_two;
 
 wire interrupt_flag_set;
 wire interrupt_flag_clear;
@@ -77,7 +77,7 @@ slurm16_cpu_memory_interface #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_mem
 	is_fetching,							/* CPU is currently fetching */
 
 	memory_is_instruction,				/* current value of memory in is an instruction */
-	memory_address_prev_plus_one		/* points to return address */
+	memory_address_prev_plus_two		/* points to return address */
 );
 
 wire stall;
@@ -113,7 +113,7 @@ slurm16_cpu_pipeline #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_pip0
 	RSTb,
 
 	memory_in,
-	memory_address_prev_plus_one,
+	memory_address_prev_plus_two,
 
 	is_executing, /* CPU is executing */
 
