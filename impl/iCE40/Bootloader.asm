@@ -71,7 +71,7 @@ do_it:
 	sleep
 
 	cli	// Clear interrupts
-	ba 0x100	// Jump to app
+	ba 0x200	// Jump to app
 
 
 dummy_handler:

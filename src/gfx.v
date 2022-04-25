@@ -85,14 +85,20 @@ wire H_tick_next = (hcount == 10'd0) ? 1'b1 : 1'b0;
 reg V_tick;
 reg H_tick;
 
+reg video_mode_r, video_mode_r_next; /* 0 = 640 x 480, 1 = 320 x 240 */
+
 always @(posedge CLK)
 begin
-	V_tick = V_tick_next;
-	H_tick = H_tick_next;
+	V_tick <= V_tick_next;
+	H_tick <= H_tick_next;
+	if (RSTb == 1'b0) begin
+		video_mode_r <= 1'b0;
+	end else
+		video_mode_r <= video_mode_r_next;
 end
 
-wire [9:0] x = hcount;
-wire [9:0] y = vcount;
+wire [9:0] x = (video_mode_r == 1'b0) ? hcount : {1'b0, hcount[9:1]};
+wire [9:0] y = (video_mode_r == 1'b0) ? vcount : {1'b0, vcount[9:1]};
 
 wire spriteActive;
 wire [11:0] spriteColor;
@@ -223,55 +229,7 @@ background_controller2 #(48, 369, 33, 513) bgcon0
 	bg0_rready 
 );
 
-
-/*fb_doubler fb0
-(
-	CLK,
-	RSTb,
-
-	addr[7:0],
-	data_out_cpr,
-	WR_fb_reg,
-	WR_fb_pal,
-
-	V_tick,
-	H_tick,
-	
-	x,
-	y,
-	1'b1,
-	fb_color,
-
-	ov_memory_address,
-	ov_memory_data,
-	ov_rvalid,
-	ov_rready 
-);*/
-
 assign ov_rvalid = 1'b0;
-
-/*background_controller #(48, 369, 33, 513) bgcon1
-(
-	CLK,
-	RSTb,
-
-	addr,
-	data_out_cpr,
-	WR_bg1,
-
-	V_tick,
-	H_tick,
-
-	display_x_out,
-	display_y_out,
-	1'b1,
-	bg1_color_index,
-	bg1_memory_address,
-	bg1_memory_data,
-	bg1_rvalid,
-	bg1_rready 
-);
-*/
 
 copper cpr0 (
 	CLK,
@@ -413,9 +371,12 @@ begin
 	WR_cpr = 1'b0;
 	WR_fb_reg = 1'b0;
 	WR_fb_pal = 1'b0;
+	video_mode_r_next = video_mode_r;
 	casex (addr)
 		12'hf00:; 	/* frame count register */ 
 		12'hf01:;   /* display y register */
+		12'hf02:
+			video_mode_r_next = DATA_IN[0];
 		12'hexx:    /* palette regiser */
 			WR_pal = WR_sig;
 		12'hd0x:    /* bg0 */

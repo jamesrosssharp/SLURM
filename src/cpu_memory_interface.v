@@ -111,7 +111,7 @@ end
 function has_bank_switch;
 input [ADDRESS_BITS - 1:0] addr;
 input [ADDRESS_BITS - 1:0] addr2;
-	has_bank_switch = (addr[ADDRESS_BITS - 1:ADDRESS_BITS - 2] != addr2[ADDRESS_BITS - 1:ADDRESS_BITS - 2]);
+	has_bank_switch = (addr[ADDRESS_BITS - 1] ^ addr2[ADDRESS_BITS - 1]);
 endfunction
 
 

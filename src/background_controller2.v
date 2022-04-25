@@ -44,6 +44,12 @@ module background_controller2
 reg bg_enable;
 reg bg_enable_next;
 
+reg bg_tile_size;
+reg bg_tile_size_next;
+
+reg [1:0] bg_tile_stride;
+reg [1:0] bg_tile_stride_next;
+
 reg [15:0] tile_map_x;
 reg [15:0] tile_map_x_next;
 
@@ -61,6 +67,12 @@ reg [3:0] pal_hi_next;
 
 reg bg_enable2;
 reg bg_enable2_next;
+
+reg bg_tile_size2;
+reg bg_tile_size2_next;
+
+reg [1:0] bg_tile_stride2;
+reg [1:0] bg_tile_stride2_next;
 
 reg [15:0] tile_map_x2;
 reg [15:0] tile_map_x2_next;
@@ -161,11 +173,19 @@ reg [17:0] tile_lookup;
 
 always @(*)
 begin
-	if (layer == 1'b0)
-		tile_lookup = {10'd0, cur_tile[3:0], 4'd0}	+ 
-				  	  {2'd0, cur_tile[7:4], 12'd0}   +
-					  {6'd0, tilemap_y_disp[3:0], 8'd0} +  
-					  {14'd0, cur_render_x[3:0]} + {tile_set_address, 2'd0};
+	if (layer == 1'b0) begin
+		if (bg_tile_size == 1'b0) // 16x16
+			tile_lookup = {10'd0, cur_tile[3:0], 4'd0}	+ 
+					  	  {2'd0, cur_tile[7:4], 12'd0}   +
+						  {6'd0, tilemap_y_disp[3:0], 8'd0} +  
+						  {14'd0, cur_render_x[3:0]} + {tile_set_address, 2'd0};
+		else // 8x8
+			tile_lookup = {10'd0, cur_tile[2:0], 4'd0}	+ 
+					  	  {3'd0, cur_tile[6:3], 11'd0}   +
+						  {6'd0, tilemap_y_disp[2:0], 8'd0} +  
+						  {14'd0, cur_render_x[2:0]} + {tile_set_address, 2'd0};
+		
+	end
 	else
 		tile_lookup = {10'd0, cur_tile[3:0], 4'd0}	+ 
 				  	  {2'd0, cur_tile[7:4], 12'd0}   +
@@ -177,10 +197,30 @@ end
 
 integer i;
 
+wire [1:0] terminal_tile_count;
+
 always @(*)
 begin
 
-	// Fetcher process: fetch tile pixels into a 64 bit shift register
+	if (layer == 1'b0) begin
+
+		if (bg_tile_size == 1'b1) 
+			terminal_tile_count = 2'd1;
+		else
+			terminal_tile_count = 2'd3;
+
+	end else begin
+
+		if (bg_tile_size2 == 1'b1) 
+			terminal_tile_count = 2'd1;
+		else
+			terminal_tile_count = 2'd3;
+	end
+
+end
+
+always @(*)
+begin
 
 	f_state_r_next 			= f_state_r;
 	tilemap_index_r_next 	= tilemap_index_r;
@@ -238,7 +278,29 @@ begin
 		case (f_state_r)
 			f_idle:	;
 			f_begin: begin
-				tilemap_index_r_next = {tile_map_address, 1'd0} + {3'd0, tilemap_y_disp[10:4], tile_map_x[10:4]}; 
+				if (bg_tile_size == 1'b0) /* 16x16 */	
+					case (bg_tile_stride)
+						2'b00: /* stride 256 */
+							tilemap_index_r_next = {tile_map_address, 1'd0} + {3'd0, tilemap_y_disp[10:4], tile_map_x[10:4]}; 
+						2'b01: /* stride 128 */
+							tilemap_index_r_next = {tile_map_address, 1'd0} + {3'd0, tilemap_y_disp[10:4], tile_map_x[10:4]}; 
+						2'b10: /* stride 64 */
+							tilemap_index_r_next = {tile_map_address, 1'd0} + {3'd0, tilemap_y_disp[10:4], tile_map_x[10:4]}; 
+						2'b11: /* stride 32 */
+							tilemap_index_r_next = {tile_map_address, 1'd0} + {3'd0, tilemap_y_disp[10:4], tile_map_x[10:4]}; 
+					endcase
+				else /* 8x8 */
+					case (bg_tile_stride)
+						2'b00: /* stride 256 */
+							tilemap_index_r_next = {tile_map_address, 1'd0} + {3'd0, tilemap_y_disp[9:3], tile_map_x[9:3]}; 
+						2'b01: /* stride 128 */
+							tilemap_index_r_next = {tile_map_address, 1'd0} + {3'd0, tilemap_y_disp[9:3], tile_map_x[9:3]}; 
+						2'b10: /* stride 64 */
+							tilemap_index_r_next = {tile_map_address, 1'd0} + {3'd0, tilemap_y_disp[9:3], tile_map_x[9:3]}; 
+						2'b11: /* stride 32 */
+							tilemap_index_r_next = {tile_map_address, 1'd0} + {3'd0, tilemap_y_disp[9:3], tile_map_x[9:3]}; 
+					endcase
+
 				f_state_r_next 		 = f_fetch_tile;
 				cur_render_x_next    = 10'd32; 
 			end
@@ -294,7 +356,7 @@ begin
 				scanline_wr_data[active_buffer_idx] = memory_data;
 				cur_render_x_next = cur_render_x + 4;
 				fetch_count_next = fetch_count + 1;
-				if (fetch_count == 2'd3) begin
+				if (fetch_count == terminal_tile_count) begin
 					fetch_count_next = 2'd0;
 					f_state_r_next = f_fetch_tile;	
 					tilemap_index_r_next = tilemap_index_r + 1;	
@@ -376,12 +438,18 @@ begin
 	tile_set_address_next = tile_set_address;
 	pal_hi_next 		  = pal_hi;	
 
+	bg_tile_size_next	 = bg_tile_size;
+	bg_tile_stride_next	 = bg_tile_stride;
+
 	bg_enable2_next 		  = bg_enable2;
 	tile_map_x2_next 	  = tile_map_x2;
 	tile_map_y2_next 	  = tile_map_y2;
 	tile_map_address2_next = tile_map_address2;
 	tile_set_address2_next = tile_set_address2;
 	pal_hi2_next 		  = pal_hi2;	
+
+	bg_tile_size2_next	 = bg_tile_size2;
+	bg_tile_stride2_next = bg_tile_stride2;
 
 	if (WR == 1'b1)
 	begin
@@ -392,6 +460,8 @@ begin
 				*/
 				bg_enable_next 		 = DATA_IN[0];
 				pal_hi_next 		 = DATA_IN[7:4];
+				bg_tile_size_next 		 = DATA_IN[15];
+				bg_tile_stride_next 		 = DATA_IN[9:8];
 			end
 			4'd1: /* tile map x register */
 				tile_map_x_next = DATA_IN;
@@ -407,6 +477,8 @@ begin
 				*/
 				bg_enable2_next = DATA_IN[0];
 				pal_hi2_next 	= DATA_IN[7:4];
+				bg_tile_size2_next 		 = DATA_IN[15];
+				bg_tile_stride2_next 	 = DATA_IN[9:8];
 			end
 			4'd6: /* tile map x register 2 */
 				tile_map_x2_next = DATA_IN;
@@ -449,6 +521,10 @@ begin
 		color_index_r   <= 8'd0;
 		color_index2_r   <= 8'd0;
 		layer 			<= 1'b0;
+		bg_tile_stride		<= 2'b00;
+		bg_tile_size		<= 1'b0;
+		bg_tile_stride2		<= 2'b00;
+		bg_tile_size2		<= 1'b0;
 	end else begin
 		bg_enable 		 <= bg_enable_next;
 		tile_map_x 		 <= tile_map_x_next;
@@ -472,6 +548,10 @@ begin
 		color_index_r <= color_index_r_next;
 		color_index2_r <= color_index2_r_next;
 		layer			<= layer_next;
+		bg_tile_stride		<= bg_tile_stride_next;
+		bg_tile_size		<= bg_tile_size_next;
+		bg_tile_stride2		<= bg_tile_stride2_next;
+		bg_tile_size2		<= bg_tile_size2_next;	
 	end
 end
 

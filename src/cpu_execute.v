@@ -146,7 +146,7 @@ begin
 				load_pc_r = 1'b1;
 			end
 			INSTRUCTION_CASEX_INTERRUPT: begin
-				new_pc_r = {11'b0, instruction[3:0], 1'b0};
+				new_pc_r = {10'b0, instruction[3:0], 2'b0};
 				load_pc_r = 1'b1;
 			end
 		endcase
@@ -202,10 +202,12 @@ assign load_store_address = load_store_address_r;
 assign memory_out = memory_out_r;
 
 wire [15:0] load_store_addr_w = regB + imm_reg;
+wire low_bit_of_address = regB[0] ^ imm_reg[0];
+
 
 always @(*)
 begin
-	load_store_address_r = {ADDRESS_BITS{1'b0}};
+	load_store_address_r = load_store_addr_w;
 	memory_out_r 		 = {BITS{1'b0}};
 	load_memory_r 		 = 1'b0;
 	store_memory_r 		 = 1'b0;
@@ -214,8 +216,7 @@ begin
 	if (is_executing) begin
 		casex(instruction)
 			INSTRUCTION_CASEX_BYTE_LOAD_STORE: begin
-				load_store_address_r = load_store_addr_w;
-				if (load_store_addr_w[0] == 1'b1)
+				if (low_bit_of_address == 1'b1)
 					memory_wr_mask_r = 2'b10;
 				else
 					memory_wr_mask_r = 2'b01;
@@ -223,7 +224,7 @@ begin
 				if (is_load_store_from_ins(instruction) == 1'b1) begin
 					store_memory_r = 1'b1;
 
-					if (load_store_addr_w[0] == 1'b1)
+					if (low_bit_of_address == 1'b1)
 						memory_out_r = {regA[7:0], 8'h00};
 					else 
 						memory_out_r = regA;
@@ -232,7 +233,6 @@ begin
 					load_memory_r = 1'b1;
 			end
 			INSTRUCTION_CASEX_LOAD_STORE: begin
-				load_store_address_r = regB + imm_reg;
 				if (is_load_store_from_ins(instruction) == 1'b1) begin
 					store_memory_r = 1'b1;
 					memory_out_r = regA;

@@ -276,6 +276,19 @@ begin
 
 end
 
+// HACK!!!
+//
+
+reg [3:0] stall_count2_r;
+always @(posedge CLK)
+begin
+	if (stall_start == 1'b1)
+		stall_count2_r <= 4'd0;
+	else if (stall == 1'b1)
+		stall_count2_r <= stall_count2_r + 1;
+end
+
+// END HACK
 
 //
 //	Actual pipeline logic
@@ -396,7 +409,7 @@ begin
 		modifies_flags1_r_next = modifies_flags1_r;
 			
 		/* if there is a hazard between p0 and p1, but not between p2/p3 and p0, release p1 to clear hazard */
-		if (hazard1) begin
+		if (hazard1 && stall_count2_r >= 4'd2) begin
 			pipeline_stage1_r_next = NOP_INSTRUCTION;
 			pipeline_stage2_r_next = pipeline_stage1_r;
 

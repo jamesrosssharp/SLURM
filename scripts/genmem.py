@@ -11,7 +11,7 @@ with open(binFile, "rb") as binf:
         word = binf.read(2)
         while word != b"":
             data = struct.unpack('H', word)
-            memf.write("%x\n" % data)
+            memf.write("%04x\n" % data)
             word = binf.read(2)
 
 

@@ -5,6 +5,7 @@ DEVICE 	= up5k
 SRCDIR=../../src
 
 AS=../../slurmasm/slurmasm
+CC=../../slurmcc/lcc/lcc/build/rcc
 
 SOURCE=$(SRCDIR)/alpha.v	\
 $(SRCDIR)/alu.v				\
@@ -53,6 +54,13 @@ all: $(PROJ).h
 
 rom_image.mem: Bootloader.asm
 	$(AS) Bootloader.asm -o rom_image
+	python3 ../../scripts/genmem.py rom_image rom_image.mem
+
+App.asm: main.c top.asm bottom.asm
+	cpp main.c -o main.c1
+	$(CC) -target=slurm16 -c main.c1 -o main.asm
+	cat top.asm main.asm bottom.asm > App.asm
+
 
 app_image: App.asm
 	$(AS) App.asm -o app_image
@@ -85,7 +93,7 @@ sudo-prog: $(PROJ).bin
 	sudo $(ICEPROG) -S $<
 
 clean:
-	rm -f $(PROJ).json $(PROJ).asc $(PROJ).rpt $(PROJ).bin $(PROJ).h rom_image* app_image*
+	rm -f $(PROJ).json $(PROJ).asc $(PROJ).rpt $(PROJ).bin $(PROJ).h rom_image* app_image* App.asm main.asm
 
 .SECONDARY:
 .PHONY: all prog clean
