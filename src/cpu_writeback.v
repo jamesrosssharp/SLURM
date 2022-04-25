@@ -20,7 +20,8 @@ module slurm16_cpu_writeback #(parameter REGISTER_BITS = 4, BITS = 16, ADDRESS_B
 	output [REGISTER_BITS - 1:0] reg_wr_sel,
 	output [BITS - 1:0] reg_out,
 
-	input [ADDRESS_BITS - 1: 0] pc_stage4
+	input [ADDRESS_BITS - 1: 0] pc_stage4,
+	input [1:0] memory_wr_mask_delayed
 );
 
 `include "cpu_decode_functions.v"
@@ -52,6 +53,20 @@ begin
 				reg_wr_addr_r   = LINK_REGISTER; /* link register */
 				reg_out_r		= pc_stage4;
 			end
+		end
+		INSTRUCTION_CASEX_BYTE_LOAD_STORE: begin /* byte wise load / store */
+			if (is_load_store_from_ins(instruction) == 1'b0) begin /* load */
+				// write back value 
+				reg_wr_addr_r = reg_dest_from_ins(instruction);
+				
+				case (memory_wr_mask_delayed)
+					2'b10:
+						reg_out_r = {8'h00, memory_in[15:8]};
+					2'b01:
+						reg_out_r = {8'h00, memory_in[7:0]};
+					default:;
+				endcase
+			end	
 		end
 		INSTRUCTION_CASEX_LOAD_STORE:	begin /* load store */
 			if (is_load_store_from_ins(instruction) == 1'b0) begin /* load */

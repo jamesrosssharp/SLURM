@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Wed Jan 12 06:00:56 2022
+[*] Mon Apr 25 03:12:11 2022
 [*]
-[dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/002_LOAD_STORE/dump.vcd"
-[dumpfile_mtime] "Wed Jan 12 06:00:47 2022"
-[dumpfile_size] 17677754
-[savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/002_LOAD_STORE/config.gtkw"
-[timestart] 635680000
+[dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/006_BYTE_LOAD_STORE/dump.vcd"
+[dumpfile_mtime] "Mon Apr 25 03:11:34 2022"
+[dumpfile_size] 16628180
+[savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/006_BYTE_LOAD_STORE/config.gtkw"
+[timestart] 131650000
 [size] 1920 996
 [pos] -1 -1
-*-24.194408 704310000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-24.194408 189200000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tb.
 [treeopen] tb.cpu0.
 [treeopen] tb.cpu0.cpu0.
@@ -31,6 +31,8 @@ tb.cpu0.cpu0.cpu_pc0.pc[15:0]
 tb.cpu0.cpu0.memory_address[15:0]
 tb.cpu0.cpu0.memory_in[15:0]
 tb.cpu0.cpu0.memory_out[15:0]
+@29
+tb.cpu0.cpu0.cpu_mem0.memory_wr_mask[1:0]
 @28
 tb.cpu0.cpu0.memory_wr
 tb.cpu0.cpu0.memory_valid
@@ -60,10 +62,14 @@ tb.cpu0.cpu0.cpu_pip0.stall_mask_count_r[1:0]
 tb.cpu0.cpu0.cpu_pip0.alt_pip_ld_count_r[1:0]
 tb.cpu0.cpu0.cpu_pip0.reading_alt_pipeline
 tb.cpu0.cpu0.cpu_pip0.stall_count_r[2:0]
-@29
 tb.cpu0.cpu0.cpu_pip0.stall_read_count_r[2:0]
 @200
 -
+@28
+tb.cpu0.cpu0.cpu_exec0.memory_wr_mask[1:0]
+@22
+tb.cpu0.cpu0.cpu_exec0.memory_out[15:0]
+@200
 -
 @820
 tb.cpu0.pc0.tr0.traceChar_r[7:0]

@@ -15,21 +15,26 @@ module slurm16_cpu_memory_interface #(parameter BITS = 16, ADDRESS_BITS = 16)  (
 	input  [ADDRESS_BITS - 1:0] pc, /* pc input from pc module */
 	input  [ADDRESS_BITS - 1:0] load_store_address, /* load store address */
 	input  [ADDRESS_BITS - 1:0] store_memory_data,  /* data to store to memory */
+	input  [1:0] store_memory_wr_mask,
 
 	output [ADDRESS_BITS - 1:0] memory_address, /* memory address - to memory arbiter */
-	output [BITS - 1:0]			memory_out,		/* memory output */
-	
+	output [BITS - 1:0]			memory_out,		/* memory output */	
+
 	output memory_valid,						/* memory valid signal - request to mem. arbiter */
 	input  memory_ready,						/* grant - from memory arbiter */
 	output memory_wr,							/* write to memory */
+	output [1:0] memory_wr_mask,				/* write mask to memory */
 
 	output is_executing,						/* CPU is currently executing */
 	output is_fetching,							/* CPU is currently fetching */
 
 	output memory_is_instruction,				/* current value of memory in is an instruction (i.e. previous memory operation was instruction read) */
 
-	output [ADDRESS_BITS - 1:0] memory_address_prev_plus_two
+	output [ADDRESS_BITS - 1:0] memory_address_prev_plus_two,
+
+	output [1:0] memory_wr_mask_delayed 		/* delayed memory write mask - used in write back to select correct byte from memory */
 );
+
 
 /* CPU state */
 
@@ -73,6 +78,11 @@ assign memory_out = memory_out_r;
 reg 	memory_is_instruction_r, memory_is_instruction_r_next;
 assign  memory_is_instruction = memory_is_instruction_r;
 
+reg [1:0] memory_wr_mask_r;
+reg [1:0] memory_wr_mask_del_r;
+assign memory_wr_mask = memory_wr_mask_r;
+assign memory_wr_mask_delayed = memory_wr_mask_del_r;
+
 /* sequential logic */
 
 always @(posedge CLK)
@@ -81,13 +91,17 @@ begin
 		addr_r <= {ADDRESS_BITS{1'b0}};
 		cpu_state_r <= cpust_wait_mem_ready1; 	
 		memory_out_r <= {BITS{1'b0}};
-		memory_is_instruction_r = 1'b0;
+		memory_is_instruction_r <= 1'b0;
+		memory_wr_mask_r <= 2'b11;
 	end else begin
 		addr_r <= next_addr_r;
 		cpu_state_r <= cpu_state_r_next;
 		
-		if (is_executing_r)
+		if (is_executing_r) begin
 			memory_out_r <= store_memory_data;
+			memory_wr_mask_r <= store_memory_wr_mask;
+			memory_wr_mask_del_r <= memory_wr_mask_r;
+		end
 		memory_is_instruction_r <= memory_is_instruction_r_next;
 	end
 end
@@ -190,6 +204,7 @@ always @(*) begin
 		cpust_execute_load,
 		cpust_execute_store:
 			is_executing_r = 1'b1;
+		default: ;
 	endcase
 end
 

@@ -15,6 +15,7 @@ module slurm16_cpu_top
 	output						memory_valid,	/* memory request */
 	output						memory_wr,		/* memory write */
 	input						memory_ready,	/* memory ready - from arbiter */
+	output [1:0]				memory_wr_mask, /* write mask - for byte wise access to memory */
 
 	output [ADDRESS_BITS - 1:0] port_address,
 	input  [BITS - 1:0]			port_in,
@@ -52,6 +53,7 @@ wire [ADDRESS_BITS - 1:0] memory_address_prev_plus_two;
 wire interrupt_flag_set;
 wire interrupt_flag_clear;
 
+wire [1:0] memory_wr_mask_delayed;
 
 slurm16_cpu_memory_interface #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_mem0  (
 	CLK,
@@ -65,19 +67,22 @@ slurm16_cpu_memory_interface #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_mem
 	pc, /* pc input from pc module */
 	load_store_address, /* load store address */
 	store_memory_data, /* data to store to memory */
- 
+	store_memory_wr_mask, /* write mask for memory write from execute stage */
+
 	memory_address, /* memory address - to memory arbiter */
 	memory_out,		/* memory output */
 
 	memory_valid,						/* memory valid signal - request to mem. arbiter */
 	memory_ready,						/* grant - from memory arbiter */
 	memory_wr,							/* write to memory */
+	memory_wr_mask,						/* write mask to memory */
 
 	is_executing,						/* CPU is currently executing */
 	is_fetching,							/* CPU is currently fetching */
 
 	memory_is_instruction,				/* current value of memory in is an instruction */
-	memory_address_prev_plus_two		/* points to return address */
+	memory_address_prev_plus_two,		/* points to return address */
+	memory_wr_mask_delayed				/* delayed memory write mask - for writeback */
 );
 
 wire stall;
@@ -237,6 +242,7 @@ wire [ADDRESS_BITS - 1:0] ex_port_address;
 wire [BITS - 1:0] ex_port_out;
 wire ex_port_rd;
 wire ex_port_wr;
+wire [1:0] store_memory_wr_mask;
 
 slurm16_cpu_execute #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_exec0
 (
@@ -254,6 +260,7 @@ slurm16_cpu_execute #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_exec0
 	store_memory,
 	load_store_address,
 	store_memory_data,
+	store_memory_wr_mask,
 	ex_port_address,
 	ex_port_out, 
 	ex_port_rd,
@@ -302,7 +309,8 @@ slurm16_cpu_writeback #(.REGISTER_BITS(REGISTER_BITS), .BITS(BITS), .ADDRESS_BIT
 	regIn_sel,
 	regIn_data,
 
-	pc_stage4
+	pc_stage4,
+	memory_wr_mask_delayed
 );
 
 slurm16_cpu_port_interface #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_prt0 (

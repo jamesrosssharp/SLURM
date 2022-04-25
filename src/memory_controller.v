@@ -53,27 +53,33 @@ module memory_controller
 	output [15:0] 	cpu_memory_data,
 	input 			cpu_valid, // memory address valid
 	input			cpu_wr, // CPU is writing to memory
-	output  		cpu_ready  // memory access granted
+	output  		cpu_ready,  // memory access granted
+	input  [1:0]	cpu_wr_mask // Write mask from CPU (for byte wise writes)
+
 );
 
 wire [13:0]	B1_ADDR;
 wire [15:0]	B1_DOUT;
 wire [15:0] B1_DIN;
+wire [1:0]  B1_MASK;
 wire B1_WR;
 
 wire [13:0] B2_ADDR;
 wire [15:0] B2_DOUT;
 wire [15:0] B2_DIN;
+wire [1:0]  B2_MASK;
 wire B2_WR;
 
 wire [13:0] B3_ADDR;
 wire [15:0] B3_DOUT;
 wire [15:0] B3_DIN;
+wire [1:0]  B3_MASK;
 wire B3_WR;
 	
 wire [13:0] B4_ADDR;
 wire [15:0] B4_DOUT;
 wire [15:0] B4_DIN;
+wire [1:0]  B4_MASK;
 wire B4_WR;
 
 memory #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 2), .MEM_INIT_FILE("mem_init1.mem")) mb1
@@ -82,6 +88,7 @@ memory #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 2), .MEM_INIT_FILE("mem_init1
 	B1_ADDR,
 	B1_DIN,
 	B1_DOUT,
+	B1_MASK,
 	B1_WR
 );
 
@@ -91,6 +98,7 @@ memory #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 2), .MEM_INIT_FILE("mem_init2
 	B2_ADDR,
 	B2_DIN,
 	B2_DOUT,
+	B2_MASK,
 	B2_WR
 );
 
@@ -100,6 +108,7 @@ memory #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 2), .MEM_INIT_FILE("mem_init3
 	B3_ADDR,
 	B3_DIN,
 	B3_DOUT,
+	B3_MASK,
 	B3_WR
 );
 
@@ -109,6 +118,7 @@ memory #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 2), .MEM_INIT_FILE("mem_init4
 	B4_ADDR,
 	B4_DIN,
 	B4_DOUT,
+	B4_MASK,
 	B4_WR
 );
 
@@ -175,21 +185,26 @@ memory_arbiter ma0
 	cpu_valid, // memory address valid
 	cpu_wr, // CPU is writing to memory
 	cpu_ready,  // memory access granted
+	cpu_wr_mask, // Write mask from CPU (for byte wise writes)
 	B1_ADDR,
 	B1_DOUT,
 	B1_DIN,
+	B1_MASK,
 	B1_WR,
 	B2_ADDR,
 	B2_DOUT,
 	B2_DIN,
+	B2_MASK,
 	B2_WR,
 	B3_ADDR,
 	B3_DOUT,
 	B3_DIN,
+	B3_MASK,
 	B3_WR,
 	B4_ADDR,
 	B4_DOUT,
 	B4_DIN,
+	B4_MASK,
 	B4_WR
 );
 

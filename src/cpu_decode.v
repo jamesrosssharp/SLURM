@@ -50,7 +50,7 @@ begin
 		INSTRUCTION_CASEX_BRANCH:	begin /* branch */
 			regARdAddr_r	= reg_branch_ind_from_ins(instruction);
 		end
-		INSTRUCTION_CASEX_LOAD_STORE: begin /* memory, reg, reg + immediate index */ 
+		INSTRUCTION_CASEX_LOAD_STORE, INSTRUCTION_CASEX_BYTE_LOAD_STORE: begin /* memory, reg, reg + immediate index */ 
 			regBRdAddr_r 		= reg_idx_from_ins(instruction);	
 			regARdAddr_r 		= reg_dest_from_ins(instruction);	
 		end

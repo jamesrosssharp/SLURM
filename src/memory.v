@@ -7,6 +7,7 @@ module memory
 	input [ADDRESS_BITS - 1 : 0]  ADDRESS,
 	input [BITS - 1 : 0] DATA_IN,
 	output [BITS - 1 : 0] DATA_OUT,
+	input [1:0] MASK, /* write mask, bit 0 = write lower byte, bit 1 = write upper byte */
 	input WR  /* write memory */  
 );
 
@@ -23,8 +24,12 @@ end
 
 always @(posedge CLK)
 begin
-	if (WR == 1'b1)
-		RAM[ADDRESS] <= DATA_IN;
+	if (WR == 1'b1) begin
+		if (MASK[0] == 1'b1)
+			RAM[ADDRESS][7:0] <= DATA_IN[7:0];
+		if (MASK[1] == 1'b1)
+			RAM[ADDRESS][15:8] <= DATA_IN[15:8];
+	end
 	dout <= RAM[ADDRESS];
 end
 

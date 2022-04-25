@@ -43,6 +43,7 @@ wire [15:0] cpuMemoryAddr;
 wire cpuMemory_ready;
 wire cpuMemory_valid;
 wire cpuMemory_wr;
+wire [1:0] cpuMemory_wr_mask;
 
 wire [15:0] cpuPort_in;
 wire [15:0] cpuPort_out;
@@ -94,6 +95,7 @@ slurm16_cpu_top cpu0
 	cpuMemory_valid,	/* memory request */
 	cpuMemory_wr,		/* memory write */
 	cpuMemory_ready,	/* memory ready - from arbiter */
+	cpuMemory_wr_mask,	/* memory write mask */
 
 	cpuPort_address,
 	cpuPort_in,
@@ -214,7 +216,8 @@ mem0
 	cpuMemoryIn,
 	cpuMemory_valid, // memory address valid
 	cpuMemory_wr, // CPU is writing to memory
-	cpuMemory_ready  // memory access granted
+	cpuMemory_ready,  // memory access granted
+	cpuMemory_wr_mask
 );
 
 

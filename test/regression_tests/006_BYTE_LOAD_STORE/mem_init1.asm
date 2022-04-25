@@ -29,10 +29,10 @@ die:
 
 tr_string:
 tr_string_loop:
-		ld r1, [r2, 0]
+		ldb r1, [r2, 0]
 		or r1, r1
 		bz tr_string_die
-		add r2, 2
+		add r2, 1
 		out [r0, TRACE_CHAR_PORT], r1
 		ba tr_string_loop
 tr_string_die:
@@ -217,23 +217,28 @@ perform_double_load:
 
 
 banner:
-	dw "Load / Store Regression Test\n========================\n\n"
+	db "Load / Store Regression Test\n========================\n\n"
+	.align 2
 	dw 0
 
 string1:
-	dw "Store to address: "
+	db "Store to address: "
+	.align 2
 	dw 0
 
 string2: 
-	dw "Load from address: "
+	db "Load from address: "
+	.align 2
 	dw 0
 
 string3:
-	dw "Double store to addresses: "
+	db "Double store to addresses: "
+	.align 2
 	dw 0
 
 string4:
-	dw "Double load from addresses: "
+	db "Double load from addresses: "
+	.align 2
 	dw 0
 
 	.end

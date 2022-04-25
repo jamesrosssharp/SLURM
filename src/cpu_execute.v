@@ -30,6 +30,7 @@ module slurm16_cpu_execute #(parameter REGISTER_BITS = 4, BITS = 16, ADDRESS_BIT
 	output store_memory,
 	output [ADDRESS_BITS - 1:0] load_store_address,
 	output [BITS - 1:0] memory_out,
+	output [1:0] memory_wr_mask,
 
 	/* port op */
 	output [ADDRESS_BITS - 1:0] port_address,
@@ -192,10 +193,15 @@ reg store_memory_r;
 reg [ADDRESS_BITS - 1:0] load_store_address_r;
 reg [BITS - 1:0] memory_out_r;
 
+reg [1:0] memory_wr_mask_r;
+assign memory_wr_mask = memory_wr_mask_r;
+
 assign load_memory = load_memory_r;
 assign store_memory = store_memory_r;
 assign load_store_address = load_store_address_r;
 assign memory_out = memory_out_r;
+
+wire [15:0] load_store_addr_w = regB + imm_reg;
 
 always @(*)
 begin
@@ -203,9 +209,28 @@ begin
 	memory_out_r 		 = {BITS{1'b0}};
 	load_memory_r 		 = 1'b0;
 	store_memory_r 		 = 1'b0;
+	memory_wr_mask_r	 = 2'b11;
 
 	if (is_executing) begin
 		casex(instruction)
+			INSTRUCTION_CASEX_BYTE_LOAD_STORE: begin
+				load_store_address_r = load_store_addr_w;
+				if (load_store_addr_w[0] == 1'b1)
+					memory_wr_mask_r = 2'b10;
+				else
+					memory_wr_mask_r = 2'b01;
+
+				if (is_load_store_from_ins(instruction) == 1'b1) begin
+					store_memory_r = 1'b1;
+
+					if (load_store_addr_w[0] == 1'b1)
+						memory_out_r = {regA[7:0], 8'h00};
+					else 
+						memory_out_r = regA;
+
+				end else
+					load_memory_r = 1'b1;
+			end
 			INSTRUCTION_CASEX_LOAD_STORE: begin
 				load_store_address_r = regB + imm_reg;
 				if (is_load_store_from_ins(instruction) == 1'b1) begin
