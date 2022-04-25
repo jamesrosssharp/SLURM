@@ -1,5 +1,5 @@
 	.org 0x0000
-	.padto 0x100
+	.padto 0x200
 // Memory locations for gfx data
 
 SPRITE_ADDRESS equ 0x0000
@@ -65,9 +65,9 @@ GFX_COLLISION_LIST equ GFX_BASE + 0x0700
 		mov r6, r0
 cpr_loop:
 		ld r3, [r1, 0]
-		add r1, 1
+		add r1, 2
 		out [r6, GFX_CPR_LIST], r3
-		add r6, 1
+		add r6, 2
 		sub r2, 1
 		bnz cpr_loop
 

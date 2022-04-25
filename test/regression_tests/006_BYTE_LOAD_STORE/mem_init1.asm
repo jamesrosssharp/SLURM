@@ -32,7 +32,7 @@ tr_string_loop:
 		ld r1, [r2, 0]
 		or r1, r1
 		bz tr_string_die
-		add r2, 1
+		add r2, 2
 		out [r0, TRACE_CHAR_PORT], r1
 		ba tr_string_loop
 tr_string_die:
