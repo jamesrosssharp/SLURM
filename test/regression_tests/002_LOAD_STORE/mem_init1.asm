@@ -9,18 +9,18 @@ TRACE_HEX_PORT  equ 0x6002
 	mov r2, banner
 	bl tr_string
 
-	mov r3, 0x2000 //0x8000
+	mov r3, 0x8000
 	mov r4, 0xaa55
 	bl  perform_store
 
-	mov r3, 0x2000 //0x8000
+	mov r3, 0x8000
 	bl  perform_load
 
-	mov r3, 0x2800 //0xc200
+	mov r3, 0xc200
 	mov r4, 0x55aa
 	bl  perform_store
 
-	mov r3, 0x2800 //0xc200
+	mov r3, 0xc200
 	bl  perform_load
 
 	mov r3, 0x2100

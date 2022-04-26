@@ -1,10 +1,10 @@
 Load / Store Regression Test
 ========================
 
-Store to address: 2000 aa55
-Load from address: 2000 aa55
-Store to address: 2800 55aa
-Load from address: 2800 55aa
+Store to address: 8000 aa55
+Load from address: 8000 aa55
+Store to address: c200 55aa
+Load from address: c200 55aa
 Store to address: 2100 ff00
 Load from address: 2100 ff00
 Store to address: 3f00 1234

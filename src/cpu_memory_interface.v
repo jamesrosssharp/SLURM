@@ -55,6 +55,7 @@ localparam cpust_wait_mem_store2 = 4'b1001; // 9 CPU is waiting for memory grant
 
 reg [ADDRESS_BITS - 1:0] next_addr_r;
 reg [ADDRESS_BITS - 1:0] addr_r;
+reg [ADDRESS_BITS - 1:0] prev_addr_r;
 
 assign memory_address = {1'b0, addr_r[15:1]}; 
 
@@ -83,6 +84,8 @@ reg [1:0] memory_wr_mask_del_r;
 assign memory_wr_mask = memory_wr_mask_r;
 assign memory_wr_mask_delayed = memory_wr_mask_del_r;
 
+reg preserve_addr_r;
+
 /* sequential logic */
 
 always @(posedge CLK)
@@ -94,14 +97,18 @@ begin
 		memory_is_instruction_r <= 1'b0;
 		memory_wr_mask_r <= 2'b11;
 	end else begin
-		addr_r <= next_addr_r;
 		cpu_state_r <= cpu_state_r_next;
 		
-		if (is_executing_r) begin
-			memory_out_r <= store_memory_data;
-			memory_wr_mask_r <= store_memory_wr_mask;
-			memory_wr_mask_del_r <= memory_wr_mask_r;
+		if (!preserve_addr_r) begin
+			addr_r <= next_addr_r;
+			prev_addr_r <= addr_r;
+			if (is_executing_r) begin
+				memory_out_r <= store_memory_data;
+				memory_wr_mask_r <= store_memory_wr_mask;
+				memory_wr_mask_del_r <= memory_wr_mask_r;
+			end
 		end
+		
 		memory_is_instruction_r <= memory_is_instruction_r_next;
 	end
 end
@@ -121,6 +128,7 @@ always @(*)
 begin
 	cpu_state_r_next = cpu_state_r;
 	memory_is_instruction_r_next = memory_is_instruction_r;
+	preserve_addr_r = 1'b0;
 
 	case (cpu_state_r)
 		cpust_halt: 
@@ -135,18 +143,18 @@ begin
 				cpu_state_r_next = cpust_halt;
 			else if (load_memory == 1'b1) begin 
 				// If in same bank, short circuit 
-				if (! has_bank_switch(addr_r, next_addr_r))
+				if (! has_bank_switch(addr_r, prev_addr_r))
 					cpu_state_r_next = cpust_execute_load;
 				else 
 					cpu_state_r_next = cpust_wait_mem_load1;
 			end
 			else if (store_memory == 1'b1) begin
-				if (! has_bank_switch(addr_r, next_addr_r))
+				if (! has_bank_switch(addr_r, prev_addr_r))
 					cpu_state_r_next = cpust_execute_store;
 				else
 					cpu_state_r_next = cpust_wait_mem_store1;
 			end else begin
-				if (has_bank_switch(addr_r, next_addr_r))
+				if (has_bank_switch(addr_r, prev_addr_r))
 					cpu_state_r_next = cpust_wait_mem_ready1;
 			end
 		end 
@@ -157,14 +165,12 @@ begin
 				cpu_state_r_next = cpust_execute;
 		/* load instructions (access data memory) */
 		cpust_execute_load: begin
-			if (load_memory == 1'b0) begin
-				if (! has_bank_switch(addr_r, next_addr_r))
-					cpu_state_r_next = cpust_execute;
-				else
-					cpu_state_r_next = cpust_wait_mem_ready1;
-			end
-			else if (has_bank_switch(addr_r, next_addr_r))
+			if (has_bank_switch(addr_r, prev_addr_r)) begin
 				cpu_state_r_next = cpust_wait_mem_load1;
+				preserve_addr_r = 1'b1;
+			end
+			else if (load_memory == 1'b0)
+				cpu_state_r_next = cpust_execute;
 			memory_is_instruction_r_next = 1'b0;
 		end 
 		cpust_wait_mem_load1:
@@ -174,14 +180,12 @@ begin
 				cpu_state_r_next = cpust_execute_load;
 		/* store instructions (write to data memory) */
 		cpust_execute_store: begin
-			if (store_memory == 1'b0) begin
-				if (! has_bank_switch(addr_r, next_addr_r))
-					cpu_state_r_next = cpust_execute;
-				else
-					cpu_state_r_next = cpust_wait_mem_ready1;
-			end
-			else if (has_bank_switch(addr_r, next_addr_r))
+			if (has_bank_switch(addr_r, prev_addr_r)) begin
 				cpu_state_r_next = cpust_wait_mem_store1;
+				preserve_addr_r = 1'b1;
+			end
+			else if (store_memory == 1'b0)
+				cpu_state_r_next = cpust_execute;
 			memory_is_instruction_r_next = 1'b0;
 		end
 		cpust_wait_mem_store1:

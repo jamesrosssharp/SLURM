@@ -197,7 +197,7 @@ end
 
 integer i;
 
-wire [1:0] terminal_tile_count;
+reg [1:0] terminal_tile_count;
 
 always @(*)
 begin
