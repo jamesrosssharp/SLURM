@@ -172,10 +172,10 @@ begin
 						  {6'd0, tilemap_y_disp[3:0], 8'd0} +  
 						  {14'd0, cur_render_x[3:0]} + {tile_set_address, 2'd0};
 		else // 8x8
-			tile_lookup = {10'd0, cur_tile[2:0], 4'd0}	+ 
-					  	  {3'd0, cur_tile[6:3], 11'd0}   +
-						  {6'd0, tilemap_y_disp[2:0], 8'd0} +  
-						  {14'd0, cur_render_x[2:0]} + {tile_set_address, 2'd0};
+			tile_lookup = {10'd0, cur_tile[4:0], 3'd0}	+ 
+					  	  {3'd0, cur_tile[7:5], 11'd0}   +
+						  {7'd0, tilemap_y_disp[2:0], 8'd0} +  
+						  {15'd0, cur_render_x[2:0]} + {tile_set_address, 2'd0};
 		
 	end
 	else
@@ -268,36 +268,38 @@ begin
 		case (f_state_r)
 			f_idle:	;
 			f_begin: begin
-				if (bg_tile_size == 1'b0) /* 16x16 */	
+
+				if (bg_tile_size == 1'b0) begin // 16x16
 					case (bg_tile_stride)
 						2'b00: /* stride 256 */
-							tilemap_index_r_next = {tile_map_address, 1'd0} + {3'd0, tilemap_y_disp[10:4], tile_map_x[10:4]}; 
+							tilemap_index_r_next = {tile_map_address, 1'd0} + {      tilemap_y_disp[12:4], tile_map_x[11:4]}; 
 						2'b01: /* stride 128 */
-							tilemap_index_r_next = {tile_map_address, 1'd0} + {3'd0, tilemap_y_disp[10:4], tile_map_x[10:4]}; 
+							tilemap_index_r_next = {tile_map_address, 1'd0} + {      tilemap_y_disp[13:4], tile_map_x[10:4]}; 
 						2'b10: /* stride 64 */
-							tilemap_index_r_next = {tile_map_address, 1'd0} + {3'd0, tilemap_y_disp[10:4], tile_map_x[10:4]}; 
+							tilemap_index_r_next = {tile_map_address, 1'd0} + {      tilemap_y_disp[14:4], tile_map_x[9:4]}; 
 						2'b11: /* stride 32 */
-							tilemap_index_r_next = {tile_map_address, 1'd0} + {3'd0, tilemap_y_disp[10:4], tile_map_x[10:4]}; 
+							tilemap_index_r_next = {tile_map_address, 1'd0} + {      tilemap_y_disp[15:4], tile_map_x[8:4]}; 
 					endcase
-				else /* 8x8 */
+				end else begin // 8x8
 					case (bg_tile_stride)
 						2'b00: /* stride 256 */
-							tilemap_index_r_next = {tile_map_address, 1'd0} + {3'd0, tilemap_y_disp[9:3], tile_map_x[9:3]}; 
+							tilemap_index_r_next = {tile_map_address, 1'd0} + {tilemap_y_disp[11:3], tile_map_x[10:3]}; 
 						2'b01: /* stride 128 */
-							tilemap_index_r_next = {tile_map_address, 1'd0} + {3'd0, tilemap_y_disp[9:3], tile_map_x[9:3]}; 
+							tilemap_index_r_next = {tile_map_address, 1'd0} + {tilemap_y_disp[12:3], tile_map_x[9:3]}; 
 						2'b10: /* stride 64 */
-							tilemap_index_r_next = {tile_map_address, 1'd0} + {3'd0, tilemap_y_disp[9:3], tile_map_x[9:3]}; 
+							tilemap_index_r_next = {tile_map_address, 1'd0} + {tilemap_y_disp[13:3], tile_map_x[8:3]}; 
 						2'b11: /* stride 32 */
-							tilemap_index_r_next = {tile_map_address, 1'd0} + {3'd0, tilemap_y_disp[9:3], tile_map_x[9:3]}; 
+							tilemap_index_r_next = {tile_map_address, 1'd0} + {tilemap_y_disp[14:3], tile_map_x[7:3]}; 
 					endcase
+				end
 
 				f_state_r_next 		 = f_fetch_tile;
-				cur_render_x_next    = 10'd32; 
+				cur_render_x_next    = 10'd16; 
 			end
 			f_begin2: begin
 				tilemap_index_r_next = {tile_map_address2, 1'd0} + {3'd0, tilemap_y_disp[10:4], tile_map_x2[10:4]}; 
 				f_state_r_next 		 = f_fetch_tile;
-				cur_render_x_next    = 10'd32;
+				cur_render_x_next    = 10'd16;
 			end
 			f_fetch_tile: begin
 				if (cur_render_x == 10'd720)
@@ -324,7 +326,12 @@ begin
 			f_fetch_tile_data: begin
 			
 				if (cur_tile == 8'hff) begin
-					cur_render_x_next = cur_render_x + 16;
+					
+					if (bg_tile_size == 1'b0)  // 16x16
+						cur_render_x_next = cur_render_x + 16;
+					else
+						cur_render_x_next = cur_render_x + 8;
+
 					tilemap_index_r_next = tilemap_index_r + 1;
 					f_state_r_next = f_fetch_tile;
 				end else begin

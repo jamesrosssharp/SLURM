@@ -579,7 +579,7 @@ L.30:
 .global bg_x
 .data
 bg_x:
-dw 0x0
+dw 0x59
 .global bg_y
 .data
 bg_y:
@@ -587,7 +587,7 @@ dw 0x0
 .global vx
 .data
 vx:
-dw 0x0
+dw 0x1
 .global vy
 .data
 vy:
@@ -636,6 +636,44 @@ update_background:
 	mov r5, r9
 	.times 1 lsr r5 
 	bl __out
+	ld r9,[bg_x]
+	ld r8,[vx]
+	add r9,r8
+	st [bg_x], r9
+	ld r9,[bg_y]
+	ld r8,[vy]
+	add r9,r8
+	st [bg_y], r9
+	ld r9,[bg_x]
+	cmp r9,150
+	ble L.32
+	mov r9,r0
+	add r9, 149
+	st [bg_x], r9
+	ld r8,[vx]
+	mov r7,r0
+	sub r7,r8
+	st [vx], r7
+	ld r8,[vy]
+	mov r9,r0
+	sub r9,r8
+	st [vy], r9
+	ba L.33
+L.32:
+	ld r9,[bg_x]
+	cmp r9,r0
+	bge L.34
+	ld r8,[vx]
+	mov r7,r0
+	sub r7,r8
+	st [vx], r7
+	ld r8,[vy]
+	mov r9,r0
+	sub r9,r8
+	st [vy], r9
+	st [bg_x], r0
+L.34:
+L.33:
 L.31:
 	ld r15, [r13, 16]
 	ld r4, [r13, 18]
@@ -708,8 +746,8 @@ main:
 	add r5, 16384
 	bl __out
 	bl enable_interrupts
-	ba L.34
-L.33:
+	ba L.38
+L.37:
 	ld r9,[frame]
 	mov r8, r9
 	add r8,1
@@ -725,10 +763,10 @@ L.33:
 	bl load_copper_list
 	bl update_background
 	bl __sleep
-L.34:
-	ba L.33
+L.38:
+	ba L.37
 	mov r2,r0
-L.32:
+L.36:
 	ld r15, [r13, 16]
 	ld r4, [r13, 18]
 	ld r5, [r13, 20]

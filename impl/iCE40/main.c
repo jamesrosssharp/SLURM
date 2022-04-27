@@ -183,9 +183,9 @@ void enable_interrupts()
 	global_interrupt_enable();
 }
 
-short bg_x = 0;
+short bg_x = 89;
 short bg_y = 0; //10;
-short vx = 0;
+short vx = 1;
 short vy = 0;
 
 void update_background()
@@ -212,6 +212,23 @@ void update_background()
 	// Set tile set address
 	
 	__out(0x5d04, (unsigned short)&pacman_tileset >> 1);
+
+	bg_x += vx;
+	bg_y += vy;
+
+	if (bg_x > 150)
+	{
+		bg_x = 149;
+		vx = 0-vx;
+		vy = 0-vy;
+	}
+	else if (bg_x < 0)
+	{
+		vx = 0-vx;
+		vy = 0-vy;
+		bg_x = 0;
+	}
+
 
 }
 

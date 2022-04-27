@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Wed Apr 27 10:20:03 2022
+[*] Wed Apr 27 22:09:05 2022
 [*]
 [dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/008_BACKGROUND/dump.vcd"
-[dumpfile_mtime] "Wed Apr 27 10:15:15 2022"
-[dumpfile_size] 583474713
+[dumpfile_mtime] "Wed Apr 27 10:34:04 2022"
+[dumpfile_size] 581467877
 [savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/008_BACKGROUND/config.gtkw"
-[timestart] 0
+[timestart] 26398447000
 [size] 1920 996
 [pos] -1 -1
-*-19.194408 422000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-19.194408 26400250000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tb.
 [treeopen] tb.cpu0.
 [treeopen] tb.cpu0.cpu0.
@@ -94,7 +94,7 @@ tb.cpu0.pc0.irq0.irq_vsync
 tb.cpu0.pc0.irq0.irq_spi_flash
 tb.cpu0.pc0.irq0.irq_gpio
 tb.cpu0.pc0.irq0.irq_audio
-@23
+@22
 tb.cpu0.pc0.g0.gpio_in_reg_a[5:0]
 @820
 tb.cpu0.pc0.tr0.traceChar_r[7:0]
@@ -173,6 +173,8 @@ tb.cpu0.pc0.irq0.interrupt
 tb.cpu0.pc0.irq0.irq[3:0]
 tb.cpu0.pc0.gfx0.bgcon0.f_state_r[3:0]
 tb.cpu0.pc0.gfx0.bgcon0.memory_address_r_next[15:0]
+@23
+tb.cpu0.pc0.gfx0.bgcon0.memory_data[15:0]
 @200
 -
 @28
