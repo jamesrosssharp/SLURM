@@ -5,14 +5,7 @@
  *
  */
 
-module background_controller2
- #(
-	parameter H_START = 10'd48,
-	parameter H_END   = 10'd320,
-	parameter V_START = 10'd33,
-	parameter V_END   = 10'd513
-
-) (
+module background_controller2 (
 	input  CLK,
 	input  RSTb,
 
@@ -114,7 +107,6 @@ reg active_buffer_next;
 wire display_buffer = ! active_buffer;
 
 wire [1:0] active_buffer_idx  = {layer, active_buffer};
-wire [1:0] display_buffer_idx = {layer, display_buffer};
 
 wire [1:0] display_buffer_idx1 = {1'b0, display_buffer}; 
 wire [1:0] display_buffer_idx2 = {1'b1, display_buffer}; 
@@ -136,8 +128,8 @@ endgenerate
 
 // Fetch / blit
 
-reg [20:0] tilemap_index_r;
-reg [20:0] tilemap_index_r_next;
+reg [16:0] tilemap_index_r;
+reg [16:0] tilemap_index_r_next;
 
 reg [15:0] memory_address_r;
 reg [15:0] memory_address_r_next;
@@ -195,8 +187,6 @@ begin
 end
 
 
-integer i;
-
 reg [1:0] terminal_tile_count;
 
 always @(*)
@@ -219,7 +209,7 @@ begin
 
 end
 
-always @(*)
+always @(CLK)
 begin
 
 	f_state_r_next 			= f_state_r;
@@ -332,6 +322,7 @@ begin
 				end
 			end
 			f_fetch_tile_data: begin
+			
 				if (cur_tile == 8'hff) begin
 					cur_render_x_next = cur_render_x + 16;
 					tilemap_index_r_next = tilemap_index_r + 1;
@@ -394,10 +385,10 @@ end
 
 always @(*)
 begin
-	scanline_rd_addr[0]  = 10'd0;
- 	scanline_rd_addr[1]  = 10'd0;
- 	scanline_rd_addr[2]  = 10'd0;
- 	scanline_rd_addr[3]  = 10'd0;
+	scanline_rd_addr[0]  = 8'd0;
+ 	scanline_rd_addr[1]  = 8'd0;
+ 	scanline_rd_addr[2]  = 8'd0;
+ 	scanline_rd_addr[3]  = 8'd0;
   	
   	scanline_rd_addr[display_buffer_idx1] = display_x1[9:2];
   	scanline_rd_addr[display_buffer_idx2] = display_x2[9:2];
@@ -512,7 +503,7 @@ begin
 		tile_set_address2 <= 16'h0000;	
 		pal_hi2 			 <= 4'd0;
 		active_buffer 	 <= 1'b0;
-		tilemap_index_r  <= 21'd0;
+		tilemap_index_r  <= 17'd0;
 		memory_address_r <= 16'd0;
 		f_state_r 		 <= f_idle;
 		cur_render_x 	 <= 10'd0;

@@ -274,8 +274,9 @@ always @(*) begin
 		end
 		s_grant_bg0: begin
 			b1_addr_r = bg0_memory_address[13:0];				
-			if (bg0_rvalid == 1'b0)
+			if (bg0_rvalid == 1'b0) begin
 				state_r_0_next = s_idle;
+			end
 			bg0_memory_data_r = B1_DOUT;
 			bg0_rready_r = 1'b1;
 		end
@@ -334,24 +335,26 @@ always @(*) begin
 			if (bg0_rvalid == 1'b1 && bg0_memory_address[15:14] == 2'b01) begin
 				b2_addr_r = bg0_memory_address[13:0];				
 				state_r_1_next = s_grant_bg0;
-			end else
-			if (bg1_rvalid == 1'b1 && bg1_memory_address[15:14] == 2'b01) begin
+			end 
+			//else if (bg1_rvalid == 1'b1 && bg1_memory_address[15:14] == 2'b01) begin
 				//b2_addr_r = bg1_memory_address;				
 				//state_r_1_next = s_grant_bg1;	
-			end
-			if (ov_rvalid == 1'b1 && ov_memory_address[15:14] == 2'b01) begin
+			//end
+			//else if (ov_rvalid == 1'b1 && ov_memory_address[15:14] == 2'b01) begin
 				//b2_addr_r = ov_memory_address;				
 				//state_r_1_next = s_grant_ov;	
-			end
-			if (fl_wvalid == 1'b1 && fl_memory_address[15:14] == 2'b01) begin
+			//end
+			else if (fl_wvalid == 1'b1 && fl_memory_address[15:14] == 2'b01) begin
 				b2_addr_r = fl_memory_address[13:0];				
 				b2_data_r = fl_memory_data;				
 				b2_wr_r = 1'b1;
 				state_r_1_next = s_grant_fl;	
-			end else if (au_rvalid == 1'b1 && au_memory_address[15:14] == 2'b01) begin
+			end
+			//else if (au_rvalid == 1'b1 && au_memory_address[15:14] == 2'b01) begin
 				//b2_addr_r = au_memory_address;				
 				//state_r_1_next = s_grant_au;	
-			end else if (cpu_valid == 1'b1 && cpu_memory_address[15:14] == 2'b01) begin
+			//end
+		   	else if (cpu_valid == 1'b1 && cpu_memory_address[15:14] == 2'b01) begin
 				b2_addr_r = cpu_memory_address[13:0];				
 				b2_data_r = cpu_memory_data;				
 				b2_wr_r = cpu_wr;
@@ -368,10 +371,11 @@ always @(*) begin
 		end
 		s_grant_bg0: begin
 			b2_addr_r = bg0_memory_address[13:0];				
-			if (bg0_rvalid == 1'b0)
-				state_r_1_next = s_idle;
-			bg0_memory_data_r = B2_DOUT;
 			bg0_rready_r = 1'b1;
+			if (bg0_rvalid == 1'b0) begin
+				state_r_1_next = s_idle;
+			end
+			bg0_memory_data_r = B2_DOUT;
 		end
 		s_grant_bg1: begin
 			b2_addr_r = bg1_memory_address[13:0];				

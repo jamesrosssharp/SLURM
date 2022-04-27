@@ -75,6 +75,12 @@ boot_memory.v: rom_image.mem
 $(PROJ).json: $(SOURCE) rom_image.mem
 	yosys -p 'debug synth_ice40 -top top -json $@' $(SOURCE)
 
+.PHONY: SCC
+SCC:	$(SOURCE) rom_image.mem
+	yosys -p 'synth_ice40 -top top -json $(PROJ).json; scc' $(SOURCE)
+
+
+
 %.asc: $(PIN_DEF) %.json
 	nextpnr-ice40 --freq 25.125 --up5k --json $(PROJ).json --pcf $(PROJ).pcf --asc $@
 

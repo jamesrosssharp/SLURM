@@ -336,7 +336,10 @@ begin
 			if ((interrupt_flag_r == 1'b1) && (interrupt == 1'b1) && 
 				((pipeline_stage1_r[15:12] != 4'd4) && (pipeline_stage2_r[15:12] != 4'd4) &&
 				 (pipeline_stage0_r[15:12] != 4'd4) && (pipeline_stage3_r[15:12] != 4'd4) &&
-				 (pipeline_stage4_r[15:12] != 4'd4)) /* not branch */
+				 (pipeline_stage4_r[15:12] != 4'd4) && (pipeline_stage0_r[15:8] != 8'h01) &&
+				 (pipeline_stage1_r[15:8] != 8'h01) && (pipeline_stage2_r[15:8] != 8'h01) &&
+			 	 (pipeline_stage3_r[15:12] != 8'h01) && (pipeline_stage4_r[15:12] != 8'h01)
+			 		) /* not branch and not ret*/
 				) begin	// Interrupt?
 				pipeline_stage0_r_next = {16'h050, irq}; // Inject INT Instruction
 				pipeline_clear_interrupt = 1'b1;

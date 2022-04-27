@@ -8,8 +8,6 @@ $(SRCDIR)/baudgen.v					\
 $(SRCDIR)/bram_mask.v				\
 $(SRCDIR)/bram.v					\
 $(SRCDIR)/copper.v					\
-$(SRCDIR)/fb_doubler.v				\
-$(SRCDIR)/fb_scale.v				\
 $(SRCDIR)/gfx.v				\
 $(SRCDIR)/gpio.v					\
 $(SRCDIR)/memory_arbiter.v			\

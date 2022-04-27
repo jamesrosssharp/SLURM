@@ -222,7 +222,7 @@ int main()
 {
 
 
-	puts(str);
+//	puts(str);
 	
 	load_copper_list(copperList, COUNT_OF(copperList));
 	__out(0x5d20, 1);
@@ -240,7 +240,7 @@ int main()
 
 	while(1)
 	{
-		//frame = __in(0x5f00);
+		frame = __in(0x5f00);
 		copperList[0] = 0x7000 | (frame++ & 31);
 		load_copper_list(copperList, COUNT_OF(copperList));
 		update_background();

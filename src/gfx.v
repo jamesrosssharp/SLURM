@@ -75,7 +75,7 @@ assign HS = (hcount >= (H_PIXELS + H_BACK_PORCH + H_FRONT_PORCH)) ? 1'b0 : 1'b1;
 assign VS = (vcount >= (V_LINES - V_SYNC_PULSE)) ? 1'b0 : 1'b1;
 
 assign irq_hsync = (hcount == (H_PIXELS + H_BACK_PORCH + H_FRONT_PORCH)) ? 1'b1 : 1'b0; 
-assign irq_vsync = (vcount == (V_LINES - V_SYNC_PULSE)) ? 1'b1 : 1'b0; 
+assign irq_vsync = (vcount == (V_LINES - V_SYNC_PULSE) && hcount == 10'd0) ? 1'b1 : 1'b0; 
 
 wire frameTick = (hcount == 10'd0 && vcount == 10'd0) ? 1'b1 : 1'b0;
 
@@ -207,7 +207,7 @@ sprite_controller spcon0
 	spcon_collision_data
 );
 
-background_controller2 #(48, 369, 33, 513) bgcon0
+background_controller2 bgcon0
 (
 	CLK,
 	RSTb,

@@ -523,8 +523,6 @@ main:
 	st [r13, 24], r7
 	st [r13, 26], r8
 	st [r13, 28], r9
-	ld r4,[str]
-	bl puts
 	mov r4,r0
 	add r4, copperList
 	mov r5,r0
@@ -571,6 +569,10 @@ main:
 	bl enable_interrupts
 	ba L.34
 L.33:
+	mov r4,r0
+	add r4, 24320
+	bl __in
+	st [frame], r2
 	ld r9,[frame]
 	mov r8, r9
 	add r8,1
