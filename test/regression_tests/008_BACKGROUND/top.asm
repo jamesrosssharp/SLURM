@@ -17,6 +17,20 @@ VECTORS:
 	.times 20 dw 0x0000
 
 start:
+	// Zero regs (makes it easier to debug waveforms)
+	mov r1, r0
+	mov r2, r0
+	mov r3, r0
+	mov r4, r0
+	mov r5, r0
+	mov r6, r0
+	mov r7, r0
+	mov r8, r0
+	mov r9, r0
+	mov r10, r0
+	mov r11, r0
+	mov r12, r0
+
 	// Copy vectors
 	mov r1, r0
 	mov r2, my_vector_table

@@ -100,8 +100,8 @@ end
 
 initial begin
     $dumpvars(0, tb);
-	# 100000000 $finish;
-	
+//	# 100000000 $finish;
+	# 1000000 $finish;	
 end
 
 genvar j;

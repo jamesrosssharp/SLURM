@@ -295,6 +295,7 @@ end
 //
 
 reg reading_alt_pipeline;
+reg clear_imm;
 
 always @(*) 
 begin
@@ -323,6 +324,8 @@ begin
 	modifies_flags3_r_next = modifies_flags3_r;
 	
 	pipeline_clear_interrupt = 1'b0;
+
+	clear_imm = 1'b0;
 
 	// Else if executing, advance pipeline
 
@@ -423,6 +426,8 @@ begin
 
 			modifies_flags2_r_next = modifies_flags1_r; // Insert bubble
 			modifies_flags1_r_next = 1'b0;
+
+			clear_imm = 1'b1;
 		end
 	end
 
@@ -453,7 +458,7 @@ begin
 	if ((pipeline_stage1_r == NOP_INSTRUCTION) && !load_pc) 
 		imm_r_next = imm_r;
 
-	if (!is_executing || stall && !load_pc)
+	if ((!is_executing || stall) && !load_pc && !(clear_imm && pipeline_stage1_r != NOP_INSTRUCTION))
 		 imm_r_next = imm_r;
 
 	imm_stage2_r_next = imm_stage2_r;

@@ -12,7 +12,7 @@ void puts(char* str)
 
 short copperList[] = {
 		0x6000,
-		0x6f00,
+/*		0x6f00,
 		0x7007,
 		0x60f0,
 		0x7007,
@@ -21,7 +21,7 @@ short copperList[] = {
 		0x60ff,
 		0x7007,
 		0x4200,
-		0x1001,
+		0x1001,*/
 		0x2fff		 
 };
 
@@ -29,16 +29,16 @@ extern void load_copper_list(short* list, int len);
 
 struct Sprite {
 	short enabled;
-	short i; /* sprite index */
-	short x;
-	short y;
-	short width;
-	short height;
+	unsigned short i; /* sprite index */
+	unsigned short x;
+	unsigned short y;
+	unsigned short width;
+	unsigned short height;
 	short vx;
 	short vy;
-	short frame;
-	short orientation;
-	short frames_in_cycle;
+	unsigned short frame;
+	unsigned short orientation;
+	unsigned short frames_in_cycle;
 	unsigned short frames_up[4];
 	unsigned short frames_down[4];
 	unsigned short frames_left[4];
@@ -75,10 +75,10 @@ extern short pacman_tileset_palette;
 #define ORIENTATION_DIE	  32
 
 struct Sprite pocman_start = 	{	
+		0,
 		1,
-		1,
-		320 ,
-		256,
+		160,
+		120,
 		16,
 		16,
 		0,
@@ -115,7 +115,7 @@ extern short pacman_tileset_palette;
 
 void update_sprite(struct Sprite* sp)
 {
-	short x, y, h, a;
+	unsigned short x, y, h, a;
    	unsigned short	frame;
 	
 	
@@ -155,7 +155,7 @@ void update_sprite(struct Sprite* sp)
 	load_sprite_h(sp->i, h);
 	load_sprite_a(sp->i, a);
 
-	if (sp->frames_in_cycle)
+/*	if (sp->frames_in_cycle)
 	{
 		sp->x += sp->vx;
 		sp->y += sp->vy;
@@ -174,7 +174,7 @@ void update_sprite(struct Sprite* sp)
 		sp->vx = 0;
 		sp->vy = 0;
 		sp->frame = 0;
-	}
+	}*/
 }
 
 void enable_interrupts()
@@ -246,20 +246,21 @@ int main()
 
 	load_palette(&pacman_spritesheet_palette, 0, 16);
 	load_palette(&pacman_tileset_palette, 16, 16);
-//	update_sprite(&pocman_start);
 
-	__out(0x5000, 320 | 1<<10 | 1<<15);
-	__out(0x5100, 15<<10 | 240);
-	__out(0x5200, 256);
-	__out(0x5300, 0x4000);
+	__out(0x5000, 160 | 1<<10 | 1<<15);
+	__out(0x5100, 15<<10 | 120);
+	__out(0x5200, 136);
+	__out(0x5300, ((unsigned short)&pacman_sprite_sheet) >> 1);
 
 	enable_interrupts();
 
 	while(1)
 	{
+
+		update_sprite(&pocman_start);
 		//frame = __in(0x5f00);
-		copperList[0] = 0x7000 | (frame++ & 31);
-		load_copper_list(copperList, COUNT_OF(copperList));
+		//copperList[0] = 0x7000 | (frame++ & 31);
+		//load_copper_list(copperList, COUNT_OF(copperList));
 		update_background();
 		__sleep();			
 	}

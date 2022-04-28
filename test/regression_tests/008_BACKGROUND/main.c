@@ -12,7 +12,7 @@ void puts(char* str)
 
 short copperList[] = {
 		0x6000,
-		0x6f00,
+/*		0x6f00,
 		0x7007,
 		0x60f0,
 		0x7007,
@@ -21,7 +21,7 @@ short copperList[] = {
 		0x60ff,
 		0x7007,
 		0x4200,
-		0x1001,
+		0x1001,*/
 		0x2fff		 
 };
 
@@ -77,8 +77,8 @@ extern short pacman_tileset_palette;
 struct Sprite pocman_start = 	{	
 		1,
 		1,
-		320 ,
-		256,
+		160,
+		120,
 		16,
 		16,
 		0,
@@ -183,7 +183,7 @@ void enable_interrupts()
 	global_interrupt_enable();
 }
 
-short bg_x = 0;
+short bg_x = 89;
 short bg_y = 0; //10;
 short vx = 0;
 short vy = 0;
@@ -213,6 +213,23 @@ void update_background()
 	
 	__out(0x5d04, (unsigned short)&pacman_tileset >> 1);
 
+	bg_x += vx;
+	bg_y += vy;
+
+	if (bg_x > 150)
+	{
+		bg_x = 149;
+		vx = 0-vx;
+		vy = 0-vy;
+	}
+	else if (bg_x < 0)
+	{
+		vx = 0-vx;
+		vy = 0-vy;
+		bg_x = 0;
+	}
+
+
 }
 
 
@@ -229,20 +246,21 @@ int main()
 
 	load_palette(&pacman_spritesheet_palette, 0, 16);
 	load_palette(&pacman_tileset_palette, 16, 16);
-//	update_sprite(&pocman_start);
 
-	__out(0x5000, 320 | 1<<10 | 1<<15);
+/*	__out(0x5000, 320 | 1<<10 | 1<<15);
 	__out(0x5100, 15<<10 | 240);
 	__out(0x5200, 256);
 	__out(0x5300, 0x4000);
-
+*/
 	enable_interrupts();
 
 	while(1)
 	{
-		frame = __in(0x5f00);
-		copperList[0] = 0x7000 | (frame++ & 31);
-		load_copper_list(copperList, COUNT_OF(copperList));
+
+		update_sprite(&pocman_start);
+		//frame = __in(0x5f00);
+		//copperList[0] = 0x7000 | (frame++ & 31);
+		//load_copper_list(copperList, COUNT_OF(copperList));
 		update_background();
 		__sleep();			
 	}

@@ -44,24 +44,14 @@ L.2:
 .data
 copperList:
 dw 0x6000
-dw 0x6f00
-dw 0x7007
-dw 0x60f0
-dw 0x7007
-dw 0x600f
-dw 0x7007
-dw 0x60ff
-dw 0x7007
-dw 0x4200
-dw 0x1001
 dw 0x2fff
 .global pocman_start
 .data
 pocman_start:
+dw 0x0
 dw 0x1
-dw 0x1
-dw 0x140
-dw 0x100
+dw 0xa0
+dw 0x78
 dw 0x10
 dw 0x10
 dw 0x0
@@ -146,7 +136,8 @@ update_sprite:
 	ld r7,[r7]
 	add r8,r7
 	and r8,r9
-	st [r13, (-8) + 48], r8 // dodgy
+	mov r9,r8
+	st [r13, (-8) + 48], r9 // dodgy
 	mov r9, r12
 	add r9,16
 	ld r8,[r9]
@@ -157,16 +148,16 @@ update_sprite:
 	mov r9, r12
 	add r9,18
 	ld r11,[r9]
-	mov r9,r0
-	add r9, 16
-	cmp r11,r9
+	mov r8,r0
+	add r8, 16
+	cmp r11,r8
 	beq L.17
-	cmp r11,r9
+	cmp r11,r8
 	bgt L.21
 L.20:
-	mov r9,r0
-	add r9, 1
-	cmp r11,r9
+	mov r8,r0
+	add r8, 1
+	cmp r11,r8
 	blt L.7
 	cmp r11,8
 	bgt L.7
@@ -189,7 +180,8 @@ L.22:
 	dw L.13
 .text
 L.21:
-	cmp r11,32
+	mov r9,r11
+	cmp r9,32
 	beq L.14
 	ba L.7
 L.10:
@@ -274,7 +266,7 @@ L.15:
 	mov r8, r12
 	add r8,16
 	ld r8,[r8]
-	.times 1 asr r8 
+	.times 1 lsr r8 
 	.times 1 lsl r8 
 	mov r7, r12
 	add r7,54
@@ -307,97 +299,40 @@ L.7:
 L.8:
 	mov r9, r12
 	add r9,2
-	ld r4,[r9]
+	ld r9,[r9]
+	mov r4,r9
 	mov r9, r13
 	add r9, (-4) + 48
-	ld r5,[r9]
+	ld r9,[r9]
+	mov r5,r9
 	bl load_sprite_x
 	mov r9, r12
 	add r9,2
-	ld r4,[r9]
+	ld r9,[r9]
+	mov r4,r9
 	mov r9, r13
 	add r9, (-6) + 48
-	ld r5,[r9]
+	ld r9,[r9]
+	mov r5,r9
 	bl load_sprite_y
 	mov r9, r12
 	add r9,2
-	ld r4,[r9]
+	ld r9,[r9]
+	mov r4,r9
 	mov r9, r13
 	add r9, (-8) + 48
-	ld r5,[r9]
+	ld r9,[r9]
+	mov r5,r9
 	bl load_sprite_h
 	mov r9, r12
 	add r9,2
-	ld r4,[r9]
+	ld r9,[r9]
+	mov r4,r9
 	mov r9, r13
 	add r9, (-10) + 48
-	ld r5,[r9]
+	ld r9,[r9]
+	mov r5,r9
 	bl load_sprite_a
-	mov r9, r12
-	add r9,20
-	ld r9,[r9]
-	cmp r9,r0
-	beq L.24
-	mov r9, r12
-	add r9,4
-	ld r8,[r9]
-	mov r7, r12
-	add r7,12
-	ld r7,[r7]
-	add r8,r7
-	st [r9], r8
-	mov r9, r12
-	add r9,6
-	ld r8,[r9]
-	mov r7, r12
-	add r7,14
-	ld r7,[r7]
-	add r8,r7
-	st [r9], r8
-	mov r9, r12
-	add r9,20
-	ld r8,[r9]
-	sub r8,1
-	st [r9], r8
-	mov r9, r12
-	add r9,4
-	ld r9,[r9]
-	cmp r9,380
-	ble L.26
-	mov r9, r12
-	add r9,4
-	mov r8,r0
-	add r8, 8
-	st [r9], r8
-L.26:
-	mov r9, r12
-	add r9,4
-	ld r9,[r9]
-	cmp r9,8
-	bge L.28
-	mov r9, r12
-	add r9,4
-	mov r8,r0
-	add r8, 380
-	st [r9], r8
-L.28:
-	mov r9, r12
-	add r9,16
-	ld r8,[r9]
-	add r8,1
-	st [r9], r8
-	ba L.25
-L.24:
-	mov r9, r12
-	add r9,12
-	st [r9], r0
-	mov r9, r12
-	add r9,14
-	st [r9], r0
-	mov r9, r12
-	add r9,16
-	st [r9], r0
-L.25:
 L.6:
 	ld r15, [r13, 16]
 	ld r4, [r13, 18]
@@ -427,7 +362,7 @@ enable_interrupts:
 	add r5, 2
 	bl __out
 	bl global_interrupt_enable
-L.30:
+L.24:
 	ld r15, [r13, 16]
 	ld r4, [r13, 18]
 	ld r5, [r13, 20]
@@ -507,7 +442,7 @@ update_background:
 	st [bg_y], r9
 	ld r9,[bg_x]
 	cmp r9,150
-	ble L.32
+	ble L.26
 	mov r9,r0
 	add r9, 149
 	st [bg_x], r9
@@ -519,11 +454,11 @@ update_background:
 	mov r9,r0
 	sub r9,r8
 	st [vy], r9
-	ba L.33
-L.32:
+	ba L.27
+L.26:
 	ld r9,[bg_x]
 	cmp r9,r0
-	bge L.34
+	bge L.28
 	ld r8,[vx]
 	mov r7,r0
 	sub r7,r8
@@ -533,9 +468,9 @@ L.32:
 	sub r9,r8
 	st [vy], r9
 	st [bg_x], r0
-L.34:
-L.33:
-L.31:
+L.28:
+L.27:
+L.25:
 	ld r15, [r13, 16]
 	ld r4, [r13, 18]
 	ld r5, [r13, 20]
@@ -566,7 +501,7 @@ main:
 	mov r4,r0
 	add r4, copperList
 	mov r5,r0
-	add r5, 12
+	add r5, 2
 	bl load_copper_list
 	mov r4,r0
 	add r4, 23840
@@ -589,45 +524,37 @@ main:
 	mov r4,r0
 	add r4, 20480
 	mov r5,r0
-	add r5, 34112
+	add r5, 33952
 	bl __out
 	mov r4,r0
 	add r4, 20736
 	mov r5,r0
-	add r5, 15600
+	add r5, 15480
 	bl __out
 	mov r4,r0
 	add r4, 20992
 	mov r5,r0
-	add r5, 256
+	add r5, 136
 	bl __out
 	mov r4,r0
 	add r4, 21248
-	mov r5,r0
-	add r5, 16384
+	mov r9,r0
+	add r9, pacman_sprite_sheet
+	mov r5, r9
+	.times 1 lsr r5 
 	bl __out
 	bl enable_interrupts
-	ba L.38
-L.37:
-	ld r9,[frame]
-	mov r8, r9
-	add r8,1
-	st [frame], r8
-	mov r8,r0
-	add r8, copperList
-	and r9,31
-	or r9,28672
-	st [copperList], r9
-	mov r4,r8
-	mov r5,r0
-	add r5, 12
-	bl load_copper_list
+	ba L.32
+L.31:
+	mov r4,r0
+	add r4, pocman_start
+	bl update_sprite
 	bl update_background
 	bl __sleep
-L.38:
-	ba L.37
+L.32:
+	ba L.31
 	mov r2,r0
-L.36:
+L.30:
 	ld r15, [r13, 16]
 	ld r4, [r13, 18]
 	ld r5, [r13, 20]
