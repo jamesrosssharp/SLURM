@@ -587,7 +587,7 @@ dw 0x0
 .global vx
 .data
 vx:
-dw 0x1
+dw 0x0
 .global vy
 .data
 vy:

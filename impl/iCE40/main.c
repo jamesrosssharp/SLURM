@@ -185,7 +185,7 @@ void enable_interrupts()
 
 short bg_x = 89;
 short bg_y = 0; //10;
-short vx = 1;
+short vx = 0;
 short vy = 0;
 
 void update_background()

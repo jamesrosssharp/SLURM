@@ -85,7 +85,7 @@ reg [3:0] pal_hi2_next;
 reg layer;
 reg layer_next;
 
-wire [9:0] display_x1 = display_x_ + {6'd0, tile_map_x[3:0]};
+wire [9:0] display_x1 = (bg_tile_size == 1'b0) ?  display_x_ + {6'd0, tile_map_x[3:0]} : display_x_ + {7'd0, tile_map_x[2:0]};
 wire [9:0] display_x2 = display_x_ + {6'd0, tile_map_x2[3:0]};
 
 // Scanline buffers
