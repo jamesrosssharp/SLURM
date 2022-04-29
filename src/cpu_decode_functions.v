@@ -46,7 +46,7 @@ endfunction
 function [3:0] reg_idx_from_ins;
 input [15:0] ins;
 begin
-	reg_idx_from_ins = ins[12:9];
+	reg_idx_from_ins = ins[11:8];
 end
 endfunction
 
@@ -59,12 +59,12 @@ endfunction
 
 function is_load_store_from_ins;
 input [15:0] p0;
-    is_load_store_from_ins = p0[8]; // 0 = load, 1 = store
+    is_load_store_from_ins = p0[12]; // 0 = load, 1 = store
 endfunction
 
 function is_io_poke_from_ins;
 input [15:0] p0;
-    is_io_poke_from_ins = p0[8]; // 1 = poke, 0 = peek
+    is_io_poke_from_ins = p0[12]; // 1 = poke, 0 = peek
 endfunction
 
 

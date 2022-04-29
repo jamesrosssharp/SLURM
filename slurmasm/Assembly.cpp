@@ -383,7 +383,7 @@ void Assembly::makeLoadStore(OpCode opcode, uint32_t lineNum, std::vector<uint16
 		}
 	}
 
-	uint16_t op = (isByte ? SLRM_IMMEDIATE_PLUS_REG_MEMORY_BYTE_INSTRUCTION : SLRM_IMMEDIATE_PLUS_REG_MEMORY_INSTRUCTION) | (LS << 8) | ((uint16_t)regDest << 4) |  (uint16_t)regInd << 9;
+	uint16_t op = (isByte ? SLRM_IMMEDIATE_PLUS_REG_MEMORY_BYTE_INSTRUCTION : SLRM_IMMEDIATE_PLUS_REG_MEMORY_INSTRUCTION) | (LS << 12) | ((uint16_t)regDest << 4) |  (uint16_t)regInd << 8;
 	assembledWords[0] = op;
 }
 
@@ -411,7 +411,7 @@ void Assembly::makeLoadStoreWithExpression(OpCode opcode, uint32_t lineNum, std:
             throw std::runtime_error(ss.str());  
 		}
 	}
-	uint16_t op = (isByte? SLRM_IMMEDIATE_PLUS_REG_MEMORY_BYTE_INSTRUCTION : SLRM_IMMEDIATE_PLUS_REG_MEMORY_INSTRUCTION) | (LS << 8) | ((uint16_t)regDest << 4) | ((uint16_t)value & 0xf) | 0<<9 /* r0 */;
+	uint16_t op = (isByte? SLRM_IMMEDIATE_PLUS_REG_MEMORY_BYTE_INSTRUCTION : SLRM_IMMEDIATE_PLUS_REG_MEMORY_INSTRUCTION) | (LS << 12) | ((uint16_t)regDest << 4) | ((uint16_t)value & 0xf) | 0<<8 /* r0 */;
 	
 	if (value >= 0 && value < 16)
     {
@@ -463,7 +463,7 @@ void Assembly::makeLoadStoreWithIndexAndExpression(OpCode opcode, uint32_t lineN
 	}
 
 	uint16_t op = (isByte? SLRM_IMMEDIATE_PLUS_REG_MEMORY_BYTE_INSTRUCTION : SLRM_IMMEDIATE_PLUS_REG_MEMORY_INSTRUCTION) 
-		| (LS << 8) | ((uint16_t)regDest << 4) | ((uint16_t)value & 0xf) | ((uint16_t)regInd << 9); 	
+		| (LS << 12) | ((uint16_t)regDest << 4) | ((uint16_t)value & 0xf) | ((uint16_t)regInd << 8); 	
 	
 	if (value >= 0 && value < 16)
     {
@@ -510,7 +510,7 @@ void Assembly::makePortIO(OpCode opcode, uint32_t lineNum, std::vector<uint16_t>
 		}
 	}
 
-	uint16_t op = SLRM_PORT_INSTRUCTION | (LS << 8) | ((uint16_t)regDest << 4) | ((uint16_t)value & 0xf) | ((uint16_t)regInd << 9); 	
+	uint16_t op = SLRM_PORT_INSTRUCTION | (LS << 12) | ((uint16_t)regDest << 4) | ((uint16_t)value & 0xf) | ((uint16_t)regInd << 8); 	
 	
 	if (value >= 0 && value < 16)
     {

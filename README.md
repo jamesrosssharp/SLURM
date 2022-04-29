@@ -248,12 +248,12 @@ Reserved
 
 Class 8/9: Reserved
 
-Class 10/11: immediate + register byte memory operation
+Class A/B: immediate + register byte memory operation
 -------------------------------------------------------
 
-|15 | 14 | 13 | 12 - 9  | 8  | 7  - 4 | 3 - 0 |
-|---|----|----|---------|----|--------|-------|
-| 1 | 0  | 1  |   IDX   | LS |  REG   | IMM   |
+|15 | 14 | 13 | 12  | 11 - 8  | 7  - 4 | 3 - 0 |
+|---|----|----|-----|---------|--------|-------|
+| 1 | 0  | 1  | LS  |   IDX   |  REG   | IMM   |
 
 	Provides bytewise access. Lowest byte of a register is loaded or stored. Lowest bit of address
 	indicates either lower or upper byte in memory.
@@ -265,25 +265,25 @@ Class 10/11: immediate + register byte memory operation
 
 
 
-Class 12/13: immediate + register memory operation
+Class C/D: immediate + register memory operation
 -----------------------------------------------
 
-|15 | 14 | 13 | 12 - 9  | 8  | 7  - 4 | 3 - 0 |
-|---|----|----|---------|----|--------|-------|
-| 1 | 1  | 0  |   IDX   | LS |  REG   | IMM   |
+|15 | 14 | 13 | 12 | 11 - 8  | 7  - 4 | 3 - 0 |
+|---|----|----|----|---------|--------|-------|
+| 1 | 1  | 0  | LS |  IDX    |  REG   | IMM   |
 
     LS: 0 = load, 1 = store
     IDX: index register, holds address of memory location
     REG: source for store, destination for load
     IMM: immediate address of memory location, effective address = [IDX] + IMM
 
-Classes 14/15: Port IO
+Classes E/F: Port IO
 -------------------
 
 
-|15 | 14 | 13 | 12 - 9  |    8   | 7 - 4 | 3 - 0 |
-|---|----|----|---------|--------|-------|-------|
-|1  | 1  | 1  | REGP    | RDb/WR | REGV  | IMM   |
+|15 | 14 | 13 |   12   | 11 - 8 | 7 - 4 | 3 - 0 |
+|---|----|----|--------|--------|-------|-------|
+|1  | 1  | 1  | RDb/WR |  REGP  | REGV  | IMM   |
 
     IMM: immediate value
     REGP: port address = IMM + REGP

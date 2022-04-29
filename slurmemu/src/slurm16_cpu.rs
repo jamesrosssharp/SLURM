@@ -727,7 +727,7 @@ impl Slurm16CPU {
 
     pub fn port_op(&mut self, instruction : u16, portcon:  & mut PortController) {
 
-        let reg_p = ((instruction & 0x1e00) >> 9) as usize;
+        let reg_p = ((instruction & 0xf00) >> 8) as usize;
         let reg_addr : u16 = self.get_register(reg_p);
 
         let imm : u16 = self.imm_hi | (instruction & 0xf);
@@ -737,7 +737,7 @@ impl Slurm16CPU {
         let reg_src = ((instruction & 0xf0) >> 4) as usize;
         let val : u16 = self.get_register(reg_src);
 
-        let write = (instruction & 0x100) == 0x100;
+        let write = (instruction & 0x1000) == 0x1000;
 
         //println!("Port op: {:#01x} {:#01x} {}", port, val, write );
 
@@ -752,7 +752,7 @@ impl Slurm16CPU {
     
     pub fn mem_op(&mut self, instruction : u16, mem:  & mut Vec<u16>) {
 
-        let reg_p = ((instruction & 0x1e00) >> 9) as usize;
+        let reg_p = ((instruction & 0x0f00) >> 8) as usize;
         let reg_addr : u16 = self.get_register(reg_p);
 
         let imm : u16 = self.imm_hi | (instruction & 0xf);
@@ -762,7 +762,7 @@ impl Slurm16CPU {
         let reg_src = ((instruction & 0xf0) >> 4) as usize;
         let val : u16 = self.get_register(reg_src);
 
-        let write = (instruction & 0x100) == 0x100;
+        let write = (instruction & 0x1000) == 0x1000;
 
         //if addr >= (0x7f00 as usize) {
         //    println!("Mem op: {:#01x} {:#01x} {} {:#01x} {:#01x}", addr, val, write, mem[addr], self.pc);
@@ -780,7 +780,7 @@ impl Slurm16CPU {
 
     pub fn byte_mem_op(&mut self, instruction : u16, mem:  & mut Vec<u16>) {
 
-        let reg_p = ((instruction & 0x1e00) >> 9) as usize;
+        let reg_p = ((instruction & 0xf00) >> 8) as usize;
         let reg_addr : u16 = self.get_register(reg_p);
 
         let imm : u16 = self.imm_hi | (instruction & 0xf);
@@ -790,7 +790,7 @@ impl Slurm16CPU {
         let reg_src = ((instruction & 0xf0) >> 4) as usize;
         let val : u16 = self.get_register(reg_src);
 
-        let write = (instruction & 0x100) == 0x100;
+        let write = (instruction & 0x1000) == 0x1000;
 
         //println!("Mem op: {:#01x} {:#01x} {} {:#01x}", addr, val, write, mem[addr]);
        

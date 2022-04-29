@@ -1,6 +1,8 @@
 dump.vcd 
-load_store_design
+background_design
 rom_image*
 mem_init*
 !mem_init*.asm
 *.txt
+main.asm
+main.c1
