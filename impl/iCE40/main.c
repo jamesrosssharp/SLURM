@@ -75,8 +75,8 @@ extern short pacman_tileset_palette;
 #define ORIENTATION_DIE	  32
 
 struct Sprite pocman_start = 	{	
-		0,
 		1,
+		0,
 		160,
 		120,
 		16,
@@ -120,8 +120,8 @@ void update_sprite(struct Sprite* sp)
 	
 	
 	x = MAKE_SPRITE_X(sp->x, sp->enabled, 0, 1);
-	y = MAKE_SPRITE_Y(sp->y, sp->width);
-	h = MAKE_SPRITE_H(sp->y + sp->height);
+	y = MAKE_SPRITE_Y(sp->y, sp->width - 1);
+	h = MAKE_SPRITE_H(sp->y + sp->height - 1);
 	frame = sp->frame;
 	frame = (sp->frame) & 15;
 	
@@ -165,9 +165,9 @@ void update_sprite(struct Sprite* sp)
 			sp->x = 8;
 		if (sp->x < 8)
 			sp->x = 320 + 60;
-
+*/
 		sp->frame ++;
-
+/*
 	}
 	else
 	{
@@ -247,11 +247,11 @@ int main()
 	load_palette(&pacman_spritesheet_palette, 0, 16);
 	load_palette(&pacman_tileset_palette, 16, 16);
 
-	__out(0x5000, 160 | 1<<10 | 1<<15);
+/*	__out(0x5000, 160 | 1<<10 | 1<<15);
 	__out(0x5100, 15<<10 | 120);
 	__out(0x5200, 136);
 	__out(0x5300, ((unsigned short)&pacman_sprite_sheet) >> 1);
-
+*/
 	enable_interrupts();
 
 	while(1)

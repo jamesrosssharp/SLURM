@@ -48,8 +48,8 @@ dw 0x2fff
 .global pocman_start
 .data
 pocman_start:
-dw 0x0
 dw 0x1
+dw 0x0
 dw 0xa0
 dw 0x78
 dw 0x10
@@ -109,34 +109,42 @@ update_sprite:
 	mov r12,r4
 	mov r9,r0
 	add r9, 1023
-	mov r8, r12
-	add r8,4
-	ld r8,[r8]
-	and r8,r9
-	ld r7,[r12]
-	and r7,1
-	.times 10 lsl r7 
-	or r8,r7
-	or r8,32768
-	st [r13, (-4) + 48], r8 // dodgy
-	mov r8, r12
-	add r8,6
-	ld r7,[r8]
+	st [r13, (-12) + 48], r9 // dodgy
+	mov r8,r0
+	add r8, 1
+	mov r7, r12
+	add r7,4
+	ld r7,[r7]
 	and r7,r9
-	mov r6, r12
-	add r6,8
-	ld r6,[r6]
-	and r6,63
+	ld r6,[r12]
+	and r6,r8
 	.times 10 lsl r6 
 	or r7,r6
-	st [r13, (-6) + 48], r7 // dodgy
-	ld r8,[r8]
+	or r7,32768
+	st [r13, (-4) + 48], r7 // dodgy
+	mov r7, r12
+	add r7,6
+	ld r6,[r7]
+	and r6,r9
+	mov r9, r12
+	add r9,8
+	ld r9,[r9]
+	sub r9,r8
+	and r9,63
+	.times 10 lsl r9 
+	or r6,r9
+	mov r9,r6
+	st [r13, (-6) + 48], r9 // dodgy
+	ld r9,[r7]
 	mov r7, r12
 	add r7,10
 	ld r7,[r7]
-	add r8,r7
-	and r8,r9
-	mov r9,r8
+	add r9,r7
+	sub r9,r8
+	mov r8, r13
+	add r8, (-12) + 48
+	ld r8,[r8]
+	and r9,r8
 	st [r13, (-8) + 48], r9 // dodgy
 	mov r9, r12
 	add r9,16
@@ -333,6 +341,11 @@ L.8:
 	ld r9,[r9]
 	mov r5,r9
 	bl load_sprite_a
+	mov r9, r12
+	add r9,16
+	ld r8,[r9]
+	add r8,1
+	st [r9], r8
 L.6:
 	ld r15, [r13, 16]
 	ld r4, [r13, 18]
@@ -521,28 +534,6 @@ main:
 	mov r5,r9
 	mov r6,r9
 	bl load_palette
-	mov r4,r0
-	add r4, 20480
-	mov r5,r0
-	add r5, 33952
-	bl __out
-	mov r4,r0
-	add r4, 20736
-	mov r5,r0
-	add r5, 15480
-	bl __out
-	mov r4,r0
-	add r4, 20992
-	mov r5,r0
-	add r5, 136
-	bl __out
-	mov r4,r0
-	add r4, 21248
-	mov r9,r0
-	add r9, pacman_sprite_sheet
-	mov r5, r9
-	.times 1 lsr r5 
-	bl __out
 	bl enable_interrupts
 	ba L.32
 L.31:

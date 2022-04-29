@@ -122,7 +122,6 @@ void update_sprite(struct Sprite* sp)
 	x = MAKE_SPRITE_X(sp->x, sp->enabled, 0, 1);
 	y = MAKE_SPRITE_Y(sp->y, sp->width);
 	h = MAKE_SPRITE_H(sp->y + sp->height);
-	frame = sp->frame;
 	frame = (sp->frame) & 15;
 	
 	switch(sp->orientation)
@@ -155,26 +154,26 @@ void update_sprite(struct Sprite* sp)
 	load_sprite_h(sp->i, h);
 	load_sprite_a(sp->i, a);
 
-	if (sp->frames_in_cycle)
-	{
-		sp->x += sp->vx;
-		sp->y += sp->vy;
-		sp->frames_in_cycle--;
-
-		if (sp->x > 320 + 60)
-			sp->x = 8;
-		if (sp->x < 8)
-			sp->x = 320 + 60;
+//	if (sp->frames_in_cycle)
+//	{
+//		sp->x += sp->vx;
+//		sp->y += sp->vy;
+//		sp->frames_in_cycle--;
+//
+//		if (sp->x > 320 + 60)
+//			sp->x = 8;
+//		if (sp->x < 8)
+//			sp->x = 320 + 60;
 
 		sp->frame ++;
 
-	}
-	else
-	{
-		sp->vx = 0;
-		sp->vy = 0;
-		sp->frame = 0;
-	}
+//	}
+//	else
+//	{
+//		sp->vx = 0;
+//		sp->vy = 0;
+//		sp->frame = 0;
+//	}
 }
 
 void enable_interrupts()

@@ -3,8 +3,8 @@
   
 #include <SDL2/SDL_image.h>
 
-#define SCREEN_WIDTH    800
-#define SCREEN_HEIGHT   525
+#define SCREEN_WIDTH    640
+#define SCREEN_HEIGHT   480
 
 SDL_Window*     window   = NULL;
 SDL_Renderer*   renderer = NULL;
@@ -90,7 +90,8 @@ int main(int argc, char** argv, char** env) {
 			prev_hsync = top->vid_hsync;
 			prev_vsync = top->vid_vsync;
 
-			drawPoint(x, y, top->vid_r*16, top->vid_g*16, top->vid_b*16);
+			if (x > (96+48) && y > (33+2))
+				drawPoint(x - (96+48), y - (33+2), top->vid_r*16, top->vid_g*16, top->vid_b*16);
 			//drawPoint(x, y, 255, 0, 0);
 			flipBuffer(0);
 		}

@@ -1,6 +1,5 @@
 	.org 200h
 
-my_vector_table:
 RESET_VEC:
 	ba start
 HSYNC_VEC:
@@ -17,18 +16,6 @@ VECTORS:
 	.times 20 dw 0x0000
 
 start:
-	// Copy vectors
-	mov r1, r0
-	mov r2, my_vector_table
-	mov r3, 32
-copy_loop:
-	ld r4,[r2, 0]
-	st [r1, 0], r4
-	add r1, 2
-	add r2, 2
-	sub r3, 1
-	bnz copy_loop
-
 	// Set up stack
 	mov r13, 0x7ffe
 	bl main
@@ -38,9 +25,6 @@ die:
 
 putc:
 	out [r0, 0], r4
-	nop
-	nop
-	nop
 putc.loop:
 	in r4, [r0, 1]
 	or r4,r4
@@ -71,6 +55,16 @@ __in:
 	in r2, [r4, 0]
 	ret
 
+__sleep:
+	sleep
+	ret	
+
+dummy_handler:
+	mov r1, 0xffff
+	out [r0, 0x7001], r1
+	iret
+
+
 /* r4 = Copper list address
  * r5 = Copper list length */
 load_copper_list:
@@ -83,6 +77,32 @@ load_copper_list.loop:
 	sub r5, 1
 	bnz load_copper_list.loop
 	ret
+
+
+
+
+global_interrupt_enable:
+	sti
+	ret
+
+global_interrupt_disable:
+	cli
+	ret
+
+/* r4 = Palette
+ * r5 = Offset
+ * r6 = Number of entries */
+load_palette:
+load_palette.loop:
+	ld r1, [r4, 0]
+	out [r5, 0x5e00], r1 // Palette memory
+	add r5, 1
+	add r4, 2
+	sub r6, 1
+	bnz load_palette.loop
+	ret
+
+
 
 //extern void load_sprite_x(short sprite, short x);
 
@@ -106,79 +126,6 @@ load_sprite_a:
 	ret
 
 
-/* r4 = Palette
- * r5 = Offset
- * r6 = Number of entries */
-load_palette:
-load_palette.loop:
-	ld r1, [r4, 0]
-	out [r5, 0x5e00], r1 // Palette memory
-	add r5, 1
-	add r4, 2
-	sub r6, 1
-	bnz load_palette.loop
-	ret
-
-__sleep:
-	sleep
-	ret	
-
-global_interrupt_enable:
-	sti
-	ret
-
-global_interrupt_disable:
-	cli
-	ret
-
-dummy_handler:
-	mov r1, 0xffff
-	out [r0, 0x7001], r1
-	
-	iret
-
-.global str
-.data
-str:
-	dw L.1
-.global puts
-.text
-.text
-puts:
-	sub r13,32
-	st [r13, 16], r15
-	st [r13, 18], r4
-	st [r13, 20], r6
-	st [r13, 22], r7
-	st [r13, 24], r8
-	st [r13, 26], r9
-	st [r13, 28], r11
-	st [r13, 30], r12
-	mov r12,r4
-	ba L.4
-L.3:
-	mov r4,r11
-	bl putc
-L.4:
-	mov r9,r12
-	mov r12, r9
-	add r12,1
-	ldb r9,[r9]
-	mov r11,r9
-	mov r9,r9
-	cmp r9,r0
-	bne L.3
-L.2:
-	ld r15, [r13, 16]
-	ld r4, [r13, 18]
-	ld r6, [r13, 20]
-	ld r7, [r13, 22]
-	ld r8, [r13, 24]
-	ld r9, [r13, 26]
-	ld r11, [r13, 28]
-	ld r12, [r13, 30]
-	add r13,32
-	ret
 .global copperList
 .data
 copperList:
@@ -187,16 +134,16 @@ dw 0x2fff
 .global pocman_start
 .data
 pocman_start:
-dw 0x0
 dw 0x1
-dw 0xa0
-dw 0x78
+dw 0x0
+dw 0xb4
+dw 0xb5
 dw 0x10
 dw 0x10
 dw 0x0
 dw 0x0
 dw 0x0
-dw 0x1
+dw 0x10
 dw 0x1a
 dw 0x800
 dw 0x804
@@ -231,6 +178,157 @@ dw 0x0
 .times 6 db 0
 dw 0x0
 .times 2 db 0
+.global ghosts_start
+.data
+ghosts_start:
+dw 0x1
+dw 0x10
+dw 0xb0
+dw 0x8b
+dw 0x10
+dw 0x10
+dw 0x0
+dw 0xffff
+dw 0x0
+dw 0x1
+dw 0x8
+dw 0x1410
+dw 0x1414
+dw 0x1410
+dw 0x1414
+dw 0x1418
+dw 0x141c
+dw 0x1418
+dw 0x141c
+dw 0x1408
+dw 0x140c
+dw 0x1408
+dw 0x140c
+dw 0x1400
+dw 0x1404
+dw 0x1400
+dw 0x1404
+dw 0x0
+.times 24 db 0
+dw 0x0
+.times 6 db 0
+dw 0x0
+.times 2 db 0
+dw 0x0
+dw 0x64
+dw 0xb
+dw 0x5
+dw 0x1
+dw 0x11
+dw 0xc0
+dw 0x8b
+dw 0x10
+dw 0x10
+dw 0x0
+dw 0xffff
+dw 0x0
+dw 0x1
+dw 0x8
+dw 0x1010
+dw 0x1014
+dw 0x1010
+dw 0x1014
+dw 0x1018
+dw 0x101c
+dw 0x1018
+dw 0x101c
+dw 0x1008
+dw 0x100c
+dw 0x1008
+dw 0x100c
+dw 0x1000
+dw 0x1004
+dw 0x1000
+dw 0x1004
+dw 0x0
+.times 24 db 0
+dw 0x0
+.times 6 db 0
+dw 0x0
+.times 2 db 0
+dw 0x0
+dw 0x3e8
+dw 0x24
+dw 0x5
+dw 0x1
+dw 0x12
+dw 0xa0
+dw 0x8b
+dw 0x10
+dw 0x10
+dw 0x0
+dw 0xffff
+dw 0x0
+dw 0x1
+dw 0x8
+dw 0x1810
+dw 0x1814
+dw 0x1810
+dw 0x1814
+dw 0x1818
+dw 0x181c
+dw 0x1818
+dw 0x181c
+dw 0x1808
+dw 0x180c
+dw 0x1808
+dw 0x180c
+dw 0x1800
+dw 0x1804
+dw 0x1800
+dw 0x1804
+dw 0x0
+.times 24 db 0
+dw 0x0
+.times 6 db 0
+dw 0x0
+.times 2 db 0
+dw 0x0
+dw 0x7d0
+dw 0x24
+dw 0x1d
+dw 0x1
+dw 0x13
+dw 0xb0
+dw 0x7b
+dw 0x10
+dw 0x10
+dw 0x0
+dw 0xffff
+dw 0x0
+dw 0x1
+dw 0x8
+dw 0x1c10
+dw 0x1c14
+dw 0x1c10
+dw 0x1c14
+dw 0x1c18
+dw 0x1c1c
+dw 0x1c18
+dw 0x1c1c
+dw 0x1c08
+dw 0x1c0c
+dw 0x1c08
+dw 0x1c0c
+dw 0x1c00
+dw 0x1c04
+dw 0x1c00
+dw 0x1c04
+dw 0x0
+.times 24 db 0
+dw 0x0
+.times 6 db 0
+dw 0x0
+.times 2 db 0
+dw 0x2
+dw 0x7d0
+dw 0xb
+dw 0x1d
 .global update_sprite
 .text
 .text
@@ -275,8 +373,7 @@ update_sprite:
 	ld r7,[r7]
 	add r8,r7
 	and r8,r9
-	mov r9,r8
-	st [r13, (-8) + 48], r9 // dodgy
+	st [r13, (-8) + 48], r8 // dodgy
 	mov r9, r12
 	add r9,16
 	ld r8,[r9]
@@ -287,50 +384,49 @@ update_sprite:
 	mov r9, r12
 	add r9,18
 	ld r11,[r9]
-	mov r8,r0
-	add r8, 16
-	cmp r11,r8
-	beq L.17
-	cmp r11,r8
-	bgt L.21
-L.20:
-	mov r8,r0
-	add r8, 1
-	cmp r11,r8
-	blt L.7
+	mov r9,r0
+	add r9, 16
+	cmp r11,r9
+	beq L.12
+	cmp r11,r9
+	bgt L.16
+L.15:
+	mov r9,r0
+	add r9, 1
+	cmp r11,r9
+	blt L.2
 	cmp r11,8
-	bgt L.7
+	bgt L.2
 	mov r9, r11
 	.times 1 lsl r9 
 	mov r8,r0
-	add r8, L.22-2
+	add r8, L.17-2
 	add r9,r8
 	ld r9,[r9]
 	ba [r9]
 .data
-L.22:
-	dw L.10
-	dw L.11
+L.17:
+	dw L.5
+	dw L.6
+	dw L.2
 	dw L.7
-	dw L.12
-	dw L.7
-	dw L.7
-	dw L.7
-	dw L.13
+	dw L.2
+	dw L.2
+	dw L.2
+	dw L.8
 .text
-L.21:
-	mov r9,r11
-	cmp r9,32
-	beq L.14
-	ba L.7
-L.10:
+L.16:
+	cmp r11,32
+	beq L.9
+	ba L.2
+L.5:
 	mov r9,r0
 	add r9, pacman_sprite_sheet
 	.times 1 lsr r9 
 	mov r8, r13
 	add r8, (-2) + 48
 	ld r8,[r8]
-	.times 2 lsr r8 
+	.times 2 asr r8 
 	.times 1 lsl r8 
 	mov r7, r12
 	add r7,22
@@ -338,15 +434,15 @@ L.10:
 	ld r8,[r8]
 	add r9,r8
 	st [r13, (-10) + 48], r9 // dodgy
-	ba L.8
-L.11:
+	ba L.3
+L.6:
 	mov r9,r0
 	add r9, pacman_sprite_sheet
 	.times 1 lsr r9 
 	mov r8, r13
 	add r8, (-2) + 48
 	ld r8,[r8]
-	.times 2 lsr r8 
+	.times 2 asr r8 
 	.times 1 lsl r8 
 	mov r7, r12
 	add r7,30
@@ -354,15 +450,15 @@ L.11:
 	ld r8,[r8]
 	add r9,r8
 	st [r13, (-10) + 48], r9 // dodgy
-	ba L.8
-L.12:
+	ba L.3
+L.7:
 	mov r9,r0
 	add r9, pacman_sprite_sheet
 	.times 1 lsr r9 
 	mov r8, r13
 	add r8, (-2) + 48
 	ld r8,[r8]
-	.times 2 lsr r8 
+	.times 2 asr r8 
 	.times 1 lsl r8 
 	mov r7, r12
 	add r7,38
@@ -370,15 +466,15 @@ L.12:
 	ld r8,[r8]
 	add r9,r8
 	st [r13, (-10) + 48], r9 // dodgy
-	ba L.8
-L.13:
+	ba L.3
+L.8:
 	mov r9,r0
 	add r9, pacman_sprite_sheet
 	.times 1 lsr r9 
 	mov r8, r13
 	add r8, (-2) + 48
 	ld r8,[r8]
-	.times 2 lsr r8 
+	.times 2 asr r8 
 	.times 1 lsl r8 
 	mov r7, r12
 	add r7,46
@@ -386,26 +482,26 @@ L.13:
 	ld r8,[r8]
 	add r9,r8
 	st [r13, (-10) + 48], r9 // dodgy
-	ba L.8
-L.14:
+	ba L.3
+L.9:
 	mov r9, r12
 	add r9,16
 	ld r9,[r9]
 	cmp r9,26
-	ble L.15
+	ble L.10
 	mov r9, r12
 	add r9,16
 	mov r8,r0
 	add r8, 26
 	st [r9], r8
-L.15:
+L.10:
 	mov r9,r0
 	add r9, pacman_sprite_sheet
 	.times 1 lsr r9 
 	mov r8, r12
 	add r8,16
 	ld r8,[r8]
-	.times 1 lsr r8 
+	.times 1 asr r8 
 	.times 1 lsl r8 
 	mov r7, r12
 	add r7,54
@@ -413,19 +509,19 @@ L.15:
 	ld r8,[r8]
 	add r9,r8
 	st [r13, (-10) + 48], r9 // dodgy
-	ba L.8
-L.17:
+	ba L.3
+L.12:
 	mov r9, r12
 	add r9,16
 	ld r9,[r9]
 	cmp r9,26
-	ble L.18
+	ble L.13
 	mov r9, r12
 	add r9,16
 	mov r8,r0
 	add r8, 26
 	st [r9], r8
-L.18:
+L.13:
 	mov r9,r0
 	add r9, pacman_sprite_sheet
 	.times 1 lsr r9 
@@ -434,45 +530,109 @@ L.18:
 	ld r8,[r8]
 	add r9,r8
 	st [r13, (-10) + 48], r9 // dodgy
-L.7:
-L.8:
+L.2:
+L.3:
 	mov r9, r12
 	add r9,2
-	ld r9,[r9]
-	mov r4,r9
+	ld r4,[r9]
 	mov r9, r13
 	add r9, (-4) + 48
-	ld r9,[r9]
-	mov r5,r9
+	ld r5,[r9]
 	bl load_sprite_x
 	mov r9, r12
 	add r9,2
-	ld r9,[r9]
-	mov r4,r9
+	ld r4,[r9]
 	mov r9, r13
 	add r9, (-6) + 48
-	ld r9,[r9]
-	mov r5,r9
+	ld r5,[r9]
 	bl load_sprite_y
 	mov r9, r12
 	add r9,2
-	ld r9,[r9]
-	mov r4,r9
+	ld r4,[r9]
 	mov r9, r13
 	add r9, (-8) + 48
-	ld r9,[r9]
-	mov r5,r9
+	ld r5,[r9]
 	bl load_sprite_h
 	mov r9, r12
 	add r9,2
-	ld r9,[r9]
-	mov r4,r9
+	ld r4,[r9]
 	mov r9, r13
 	add r9, (-10) + 48
-	ld r9,[r9]
-	mov r5,r9
+	ld r5,[r9]
 	bl load_sprite_a
-L.6:
+	mov r9, r12
+	add r9,20
+	ld r9,[r9]
+	cmp r9,r0
+	beq L.19
+	mov r9, r12
+	add r9,4
+	ld r8,[r9]
+	mov r7, r12
+	add r7,12
+	ld r7,[r7]
+	add r8,r7
+	st [r9], r8
+	mov r9, r12
+	add r9,6
+	ld r8,[r9]
+	mov r7, r12
+	add r7,14
+	ld r7,[r7]
+	add r8,r7
+	st [r9], r8
+	mov r9, r12
+	add r9,20
+	ld r8,[r9]
+	sub r8,1
+	st [r9], r8
+	mov r9, r12
+	add r9,4
+	ld r9,[r9]
+	cmp r9,380
+	ble L.21
+	mov r9, r12
+	add r9,4
+	mov r8,r0
+	add r8, 8
+	st [r9], r8
+L.21:
+	mov r9, r12
+	add r9,4
+	ld r9,[r9]
+	cmp r9,8
+	bge L.23
+	mov r9, r12
+	add r9,4
+	mov r8,r0
+	add r8, 380
+	st [r9], r8
+L.23:
+	mov r9, r12
+	add r9,16
+	ld r8,[r9]
+	add r8,1
+	st [r9], r8
+	ba L.20
+L.19:
+	mov r9, r12
+	add r9,18
+	ld r9,[r9]
+	cmp r9,32
+	bne L.25
+	bl start_game
+L.25:
+	mov r9, r12
+	add r9,12
+	st [r9], r0
+	mov r9, r12
+	add r9,14
+	st [r9], r0
+	mov r9, r12
+	add r9,16
+	st [r9], r0
+L.20:
+L.1:
 	ld r15, [r13, 16]
 	ld r4, [r13, 18]
 	ld r5, [r13, 20]
@@ -484,37 +644,10 @@ L.6:
 	ld r12, [r13, 32]
 	add r13,48
 	ret
-.global enable_interrupts
-.text
-enable_interrupts:
-	sub r13,32
-	st [r13, 16], r15
-	st [r13, 18], r4
-	st [r13, 20], r5
-	st [r13, 22], r6
-	st [r13, 24], r7
-	st [r13, 26], r8
-	st [r13, 28], r9
-	mov r4,r0
-	add r4, 28672
-	mov r5,r0
-	add r5, 2
-	bl __out
-	bl global_interrupt_enable
-L.24:
-	ld r15, [r13, 16]
-	ld r4, [r13, 18]
-	ld r5, [r13, 20]
-	ld r6, [r13, 22]
-	ld r7, [r13, 24]
-	ld r8, [r13, 26]
-	ld r9, [r13, 28]
-	add r13,32
-	ret
 .global bg_x
 .data
 bg_x:
-dw 0x59
+dw 0x49
 .global bg_y
 .data
 bg_y:
@@ -581,7 +714,7 @@ update_background:
 	st [bg_y], r9
 	ld r9,[bg_x]
 	cmp r9,150
-	ble L.26
+	ble L.28
 	mov r9,r0
 	add r9, 149
 	st [bg_x], r9
@@ -593,11 +726,11 @@ update_background:
 	mov r9,r0
 	sub r9,r8
 	st [vy], r9
-	ba L.27
-L.26:
+	ba L.29
+L.28:
 	ld r9,[bg_x]
 	cmp r9,r0
-	bge L.28
+	bge L.30
 	ld r8,[vx]
 	mov r7,r0
 	sub r7,r8
@@ -607,9 +740,9 @@ L.26:
 	sub r9,r8
 	st [vy], r9
 	st [bg_x], r0
-L.28:
+L.30:
+L.29:
 L.27:
-L.25:
 	ld r15, [r13, 16]
 	ld r4, [r13, 18]
 	ld r5, [r13, 20]
@@ -619,12 +752,1525 @@ L.25:
 	ld r9, [r13, 28]
 	add r13,32
 	ret
+.global enable_interrupts
+.text
+enable_interrupts:
+	sub r13,32
+	st [r13, 16], r15
+	st [r13, 18], r4
+	st [r13, 20], r5
+	st [r13, 22], r6
+	st [r13, 24], r7
+	st [r13, 26], r8
+	st [r13, 28], r9
+	mov r4,r0
+	add r4, 28672
+	mov r5,r0
+	add r5, 2
+	bl __out
+	bl global_interrupt_enable
+L.32:
+	ld r15, [r13, 16]
+	ld r4, [r13, 18]
+	ld r5, [r13, 20]
+	ld r6, [r13, 22]
+	ld r7, [r13, 24]
+	ld r8, [r13, 26]
+	ld r9, [r13, 28]
+	add r13,32
+	ret
+.global keys
+.data
+keys:
+dw 0x0
+.data
+L.34:
+dw 0x4
+dw 0x1
+dw 0x7
+.global collision_detect
+.text
+.text
+collision_detect:
+	sub r13,48
+	st [r13, 0], r15
+	st [r13, 2], r4
+	st [r13, 4], r5
+	st [r13, 6], r7
+	st [r13, 8], r8
+	st [r13, 10], r9
+	st [r13, 12], r10
+	st [r13, 14], r11
+	st [r13, 16], r12
+	mov r11,r0
+	mov r9,r0
+	add r9, 3
+	ld r8,[bg_x]
+	mov r7, r4
+	add r7,r8
+	mov r8, r7
+	add r8,r9
+	mov r9, r8
+	add r9,4
+	.times 3 asr r9 
+	st [r13, (-8) + 48], r9 // dodgy
+	mov r9,r0
+	add r9, 3
+	ld r8,[bg_y]
+	mov r7, r5
+	add r7,r8
+	mov r8, r7
+	add r8,r9
+	mov r9, r8
+	add r9,4
+	.times 3 asr r9 
+	st [r13, (-10) + 48], r9 // dodgy
+	mov r9, r13
+	add r9, (-6) + 48
+	mov r8, r13
+	add r8, (-12) + 48
+	st [r8], r9
+	mov r8,r0
+	add r8, L.34
+	mov r7, r13
+	add r7, (-12) + 48
+	ld r7,[r7]
+	ld r3,[r8, 0] // blkfetch
+	ld r9,[r8, 2] // blkfetch
+	st [r7, 0], r3 // blkstore 
+	st [r7, 2], r9 // blkstore 
+	ld r3,[r8, 4] // blkfetch
+	st [r7, 4], r3 // blkstore 
+	mov r11,r0
+	add r11, 15
+	mov r12,r0
+L.35:
+	mov r9,r0
+	add r9, 3
+	ld r8,[bg_x]
+	mov r7, r4
+	add r7,r8
+	mov r8, r7
+	add r8,r9
+	mov r9, r12
+	.times 1 lsl r9 
+	mov r7, r13
+	add r7, (-6) + 48
+	add r9,r7
+	ld r9,[r9]
+	add r8,r9
+	mov r9, r8
+	.times 3 asr r9 
+	st [r13, (-14) + 48], r9 // dodgy
+	mov r9,r0
+	add r9, 3
+	ld r8,[bg_y]
+	mov r7, r5
+	add r7,r8
+	mov r8, r7
+	add r8,r9
+	mov r9, r8
+	add r9,4
+	sub r9,8
+	.times 3 asr r9 
+	st [r13, (-16) + 48], r9 // dodgy
+	mov r9, r13
+	add r9, (-18) + 48
+	mov r8, r13
+	add r8, (-14) + 48
+	ld r8,[r8]
+	mov r7, r13
+	add r7, (-16) + 48
+	ld r7,[r7]
+	.times 6 lsl r7 
+	add r8,r7
+	mov r7,r0
+	add r7, pacman_tilemap
+	add r8,r7
+	st [r9], r8
+	mov r9, r13
+	add r9, (-18) + 48
+	ld r9,[r9]
+	ldb r10,[r9]
+	mov r9,r10
+	cmp r9,42
+	blt L.41
+	cmp r9,87
+	bne L.39
+L.41:
+	and r11,-2
+L.39:
+L.36:
+	add r12,1
+	cmp r12,1
+	blt L.35
+	mov r12,r0
+L.42:
+	mov r9,r0
+	add r9, 3
+	ld r8,[bg_x]
+	mov r7, r4
+	add r7,r8
+	mov r8, r7
+	add r8,r9
+	mov r9, r12
+	.times 1 lsl r9 
+	mov r7, r13
+	add r7, (-6) + 48
+	add r9,r7
+	ld r9,[r9]
+	add r8,r9
+	mov r9, r8
+	.times 3 asr r9 
+	st [r13, (-14) + 48], r9 // dodgy
+	mov r9,r0
+	add r9, 3
+	ld r8,[bg_y]
+	mov r7, r5
+	add r7,r8
+	mov r8, r7
+	add r8,r9
+	mov r9, r8
+	add r9,4
+	add r9,8
+	.times 3 asr r9 
+	st [r13, (-16) + 48], r9 // dodgy
+	mov r9, r13
+	add r9, (-18) + 48
+	mov r8, r13
+	add r8, (-14) + 48
+	ld r8,[r8]
+	mov r7, r13
+	add r7, (-16) + 48
+	ld r7,[r7]
+	.times 6 lsl r7 
+	add r8,r7
+	mov r7,r0
+	add r7, pacman_tilemap
+	add r8,r7
+	st [r9], r8
+	mov r9, r13
+	add r9, (-18) + 48
+	ld r9,[r9]
+	ldb r10,[r9]
+	mov r9,r10
+	cmp r9,42
+	blt L.48
+	cmp r9,87
+	bne L.46
+L.48:
+	and r11,-3
+L.46:
+L.43:
+	add r12,1
+	cmp r12,1
+	blt L.42
+	mov r12,r0
+L.49:
+	mov r9,r0
+	add r9, 3
+	ld r8,[bg_x]
+	mov r7, r4
+	add r7,r8
+	mov r8, r7
+	add r8,r9
+	mov r9, r8
+	add r9,4
+	sub r9,8
+	.times 3 asr r9 
+	st [r13, (-14) + 48], r9 // dodgy
+	mov r9,r0
+	add r9, 3
+	ld r8,[bg_y]
+	mov r7, r5
+	add r7,r8
+	mov r8, r7
+	add r8,r9
+	mov r9, r12
+	.times 1 lsl r9 
+	mov r7, r13
+	add r7, (-6) + 48
+	add r9,r7
+	ld r9,[r9]
+	add r8,r9
+	mov r9, r8
+	.times 3 asr r9 
+	st [r13, (-16) + 48], r9 // dodgy
+	mov r9, r13
+	add r9, (-18) + 48
+	mov r8, r13
+	add r8, (-14) + 48
+	ld r8,[r8]
+	mov r7, r13
+	add r7, (-16) + 48
+	ld r7,[r7]
+	.times 6 lsl r7 
+	add r8,r7
+	mov r7,r0
+	add r7, pacman_tilemap
+	add r8,r7
+	st [r9], r8
+	mov r9, r13
+	add r9, (-18) + 48
+	ld r9,[r9]
+	ldb r10,[r9]
+	mov r9,r10
+	cmp r9,42
+	blt L.55
+	cmp r9,87
+	bne L.53
+L.55:
+	and r11,-5
+L.53:
+L.50:
+	add r12,1
+	cmp r12,1
+	blt L.49
+	mov r12,r0
+L.56:
+	mov r9,r0
+	add r9, 3
+	ld r8,[bg_x]
+	mov r7, r4
+	add r7,r8
+	mov r8, r7
+	add r8,r9
+	mov r9, r8
+	add r9,4
+	add r9,8
+	.times 3 asr r9 
+	st [r13, (-14) + 48], r9 // dodgy
+	mov r9,r0
+	add r9, 3
+	ld r8,[bg_y]
+	mov r7, r5
+	add r7,r8
+	mov r8, r7
+	add r8,r9
+	mov r9, r12
+	.times 1 lsl r9 
+	mov r7, r13
+	add r7, (-6) + 48
+	add r9,r7
+	ld r9,[r9]
+	add r8,r9
+	mov r9, r8
+	.times 3 asr r9 
+	st [r13, (-16) + 48], r9 // dodgy
+	mov r9, r13
+	add r9, (-18) + 48
+	mov r8, r13
+	add r8, (-14) + 48
+	ld r8,[r8]
+	mov r7, r13
+	add r7, (-16) + 48
+	ld r7,[r7]
+	.times 6 lsl r7 
+	add r8,r7
+	mov r7,r0
+	add r7, pacman_tilemap
+	add r8,r7
+	st [r9], r8
+	mov r9, r13
+	add r9, (-18) + 48
+	ld r9,[r9]
+	ldb r10,[r9]
+	mov r9,r10
+	cmp r9,42
+	blt L.62
+	cmp r9,87
+	bne L.60
+L.62:
+	and r11,-9
+L.60:
+L.57:
+	add r12,1
+	cmp r12,1
+	blt L.56
+	mov r2,r11
+L.33:
+	ld r15, [r13, 0]
+	ld r4, [r13, 2]
+	ld r5, [r13, 4]
+	ld r7, [r13, 6]
+	ld r8, [r13, 8]
+	ld r9, [r13, 10]
+	ld r10, [r13, 12]
+	ld r11, [r13, 14]
+	ld r12, [r13, 16]
+	add r13,48
+	ret
+.global scatter_ghosts
+.text
+scatter_ghosts:
+	sub r13,32
+	st [r13, 16], r15
+	st [r13, 18], r4
+	st [r13, 20], r6
+	st [r13, 22], r7
+	st [r13, 24], r8
+	st [r13, 26], r9
+	st [r13, 28], r12
+	mov r12,r0
+	ba L.67
+L.64:
+	mov r9,r0
+	add r9, 100
+	mul r9,r12
+	mov r8,r0
+	add r8, ghosts+92
+	add r9,r8
+	ld r9,[r9]
+	cmp r9,2
+	bne L.68
+	mov r9,r0
+	add r9, 100
+	mul r9,r12
+	mov r8,r0
+	add r8, ghosts+94
+	add r9,r8
+	mov r8,r0
+	add r8, 100
+	st [r9], r8
+	mov r9,r0
+	add r9, 100
+	mul r9,r12
+	mov r8,r0
+	add r8, ghosts+92
+	add r9,r8
+	mov r8,r0
+	add r8, 3
+	st [r9], r8
+	mov r9,r0
+	add r9, 100
+	mul r9,r12
+	st [r13, (-2) + 32], r9 // dodgy
+	mov r8,r0
+	add r8, ghosts+18
+	mov r7, r9
+	add r7,r8
+	ld r4,[r7]
+	bl complement_orientation
+	mov r8,r0
+	add r8, ghosts+18
+	mov r7, r13
+	add r7, (-2) + 32
+	ld r7,[r7]
+	add r7,r8
+	st [r7], r2
+L.68:
+L.65:
+	add r12,1
+L.67:
+	mov r9,r12
+	cmp r9,4
+	blt L.64
+L.63:
+	ld r15, [r13, 16]
+	ld r4, [r13, 18]
+	ld r6, [r13, 20]
+	ld r7, [r13, 22]
+	ld r8, [r13, 24]
+	ld r9, [r13, 26]
+	ld r12, [r13, 28]
+	add r13,32
+	ret
+.global eat
+.text
+eat:
+	sub r13,48
+	st [r13, 16], r15
+	st [r13, 18], r6
+	st [r13, 20], r7
+	st [r13, 22], r8
+	st [r13, 24], r9
+	st [r13, 26], r11
+	st [r13, 28], r12
+	st [r13, 48], r4
+	st [r13, 52], r5
+	mov r9,r0
+	add r9, 3
+	mov r8, r13
+	add r8, (0) + 48
+	ld r8,[r8]
+	ld r7,[bg_x]
+	add r8,r7
+	add r8,r9
+	mov r9, r8
+	add r9,4
+	.times 3 asr r9 
+	st [r13, (-2) + 48], r9 // dodgy
+	mov r9,r0
+	add r9, 3
+	mov r8, r13
+	add r8, (4) + 48
+	ld r8,[r8]
+	ld r7,[bg_y]
+	add r8,r7
+	add r8,r9
+	mov r9, r8
+	add r9,4
+	.times 3 asr r9 
+	st [r13, (-4) + 48], r9 // dodgy
+	mov r9, r13
+	add r9, (-4) + 48
+	ld r9,[r9]
+	.times 6 lsl r9 
+	mov r8, r13
+	add r8, (-2) + 48
+	ld r8,[r8]
+	mov r7,r0
+	add r7, pacman_tilemap
+	add r8,r7
+	mov r12, r9
+	add r12,r8
+	ldb r11,[r12]
+	mov r9,r11
+	cmp r9,83
+	bne L.76
+	mov r9,r0
+	add r9, 255
+	stb [r12], r9
+L.76:
+	mov r9,r11
+	cmp r9,85
+	bne L.78
+	mov r9,r0
+	add r9, 255
+	stb [r12], r9
+	bl scatter_ghosts
+L.78:
+L.75:
+	ld r15, [r13, 16]
+	ld r6, [r13, 18]
+	ld r7, [r13, 20]
+	ld r8, [r13, 22]
+	ld r9, [r13, 24]
+	ld r11, [r13, 26]
+	ld r12, [r13, 28]
+	add r13,48
+	ret
+.global process_keys
+.text
+process_keys:
+	sub r13,48
+	st [r13, 16], r15
+	st [r13, 18], r4
+	st [r13, 20], r5
+	st [r13, 22], r6
+	st [r13, 24], r7
+	st [r13, 26], r8
+	st [r13, 28], r9
+	st [r13, 30], r11
+	st [r13, 32], r12
+	ld r9,[keys]
+	st [r13, (-8) + 48], r9 // dodgy
+	st [r13, (-2) + 48], r0 // dodgy
+	mov r11,r0
+	mov r12,r0
+	add r12, pocman
+	mov r9, r12
+	add r9,4
+	ld r4,[r9]
+	mov r9, r12
+	add r9,6
+	ld r5,[r9]
+	bl collision_detect
+	st [r13, (-4) + 48], r2 // dodgy
+	mov r4,r0
+	add r4, 4097
+	bl __in
+	st [keys], r2
+	ld r9,[keys]
+	mov r8, r13
+	add r8, (-4) + 48
+	ld r8,[r8]
+	and r9,r8
+	st [keys], r9
+	ld r9,[keys]
+	and r9,1
+	cmp r9,r0
+	beq L.81
+	mov r11,r0
+	add r11, -1
+	mov r9,r0
+	add r9, 1
+	st [r13, (-6) + 48], r9 // dodgy
+	ba L.82
+L.81:
+	ld r9,[keys]
+	and r9,2
+	cmp r9,r0
+	beq L.83
+	mov r11,r0
+	add r11, 1
+	mov r9,r0
+	add r9, 2
+	st [r13, (-6) + 48], r9 // dodgy
+	ba L.84
+L.83:
+	ld r9,[keys]
+	and r9,4
+	cmp r9,r0
+	beq L.85
+	mov r9,r0
+	add r9, -1
+	st [r13, (-2) + 48], r9 // dodgy
+	mov r9,r0
+	add r9, 4
+	st [r13, (-6) + 48], r9 // dodgy
+	ba L.86
+L.85:
+	ld r9,[keys]
+	and r9,8
+	cmp r9,r0
+	beq L.87
+	mov r9,r0
+	add r9, 1
+	st [r13, (-2) + 48], r9 // dodgy
+	mov r9,r0
+	add r9, 8
+	st [r13, (-6) + 48], r9 // dodgy
+L.87:
+L.86:
+L.84:
+L.82:
+	mov r9,r0
+	mov r8, r12
+	add r8,20
+	ld r8,[r8]
+	cmp r8,r9
+	bne L.89
+	mov r8, r13
+	add r8, (-2) + 48
+	ld r8,[r8]
+	cmp r8,r9
+	bne L.91
+	cmp r11,r9
+	beq L.89
+L.91:
+	mov r9, r12
+	add r9,18
+	ld r9,[r9]
+	cmp r9,32
+	beq L.89
+	mov r9, r12
+	add r9,20
+	mov r8,r0
+	add r8, 8
+	st [r9], r8
+	mov r9, r12
+	add r9,12
+	mov r8, r13
+	add r8, (-2) + 48
+	ld r8,[r8]
+	st [r9], r8
+	mov r9, r12
+	add r9,14
+	st [r9], r11
+	mov r9, r12
+	add r9,18
+	mov r8, r13
+	add r8, (-6) + 48
+	ld r8,[r8]
+	st [r9], r8
+L.89:
+	mov r9, r12
+	add r9,4
+	ld r4,[r9]
+	mov r9, r12
+	add r9,6
+	ld r5,[r9]
+	bl eat
+	mov r4,r12
+	bl update_sprite
+L.80:
+	ld r15, [r13, 16]
+	ld r4, [r13, 18]
+	ld r5, [r13, 20]
+	ld r6, [r13, 22]
+	ld r7, [r13, 24]
+	ld r8, [r13, 26]
+	ld r9, [r13, 28]
+	ld r11, [r13, 30]
+	ld r12, [r13, 32]
+	add r13,48
+	ret
+.global rand
+.data
+rand:
+dw 0x1a1
+.global run
+.data
+run:
+dw 0xa
+.global complement_orientation
+.text
+.text
+complement_orientation:
+	sub r13,16
+	st [r13, 0], r15
+	st [r13, 2], r4
+	st [r13, 4], r8
+	st [r13, 6], r9
+	mov r9,r0
+	add r9, 1
+	cmp r4,r9
+	blt L.93
+	cmp r4,8
+	bgt L.93
+	mov r9, r4
+	.times 1 lsl r9 
+	mov r8,r0
+	add r8, L.99-2
+	add r9,r8
+	ld r9,[r9]
+	ba [r9]
+.data
+L.99:
+	dw L.97
+	dw L.98
+	dw L.93
+	dw L.95
+	dw L.93
+	dw L.93
+	dw L.93
+	dw L.96
+.text
+L.95:
+	mov r2,r0
+	add r2, 8
+	ba L.92
+L.96:
+	mov r2,r0
+	add r2, 4
+	ba L.92
+L.97:
+	mov r2,r0
+	add r2, 2
+	ba L.92
+L.98:
+	mov r2,r0
+	add r2, 1
+	ba L.92
+L.93:
+	mov r2,r0
+	add r2, 1
+L.92:
+	ld r15, [r13, 0]
+	ld r4, [r13, 2]
+	ld r8, [r13, 4]
+	ld r9, [r13, 6]
+	add r13,16
+	ret
+.global update_ghosts
+.text
+update_ghosts:
+	sub r13,80
+	st [r13, 16], r15
+	st [r13, 18], r4
+	st [r13, 20], r5
+	st [r13, 22], r6
+	st [r13, 24], r7
+	st [r13, 26], r8
+	st [r13, 28], r9
+	st [r13, 30], r10
+	st [r13, 32], r11
+	st [r13, 34], r12
+	mov r12,r0
+	ba L.105
+L.102:
+	mov r9,r0
+	add r9, 100
+	mul r9,r12
+	mov r8,r0
+	add r8, ghosts
+	mov r10, r9
+	add r10,r8
+	mov r11,r10
+	mov r9, r10
+	add r9,92
+	ld r9,[r9]
+	cmp r9,2
+	beq L.108
+	cmp r9,3
+	bne L.106
+L.108:
+	mov r9, r13
+	add r9, (-32) + 80
+	mov r8,r0
+	add r8, pocman
+	st [r9], r8
+	mov r9, r11
+	add r9,4
+	ld r4,[r9]
+	mov r9, r11
+	add r9,6
+	ld r5,[r9]
+	bl collision_detect
+	st [r13, (-16) + 80], r2 // dodgy
+	mov r9, r11
+	add r9,18
+	ld r9,[r9]
+	st [r13, (-30) + 80], r9 // dodgy
+	mov r9, r11
+	add r9,18
+	ld r4,[r9]
+	bl complement_orientation
+	st [r13, (-34) + 80], r2 // dodgy
+	mov r9, r13
+	add r9, (-16) + 80
+	ld r9,[r9]
+	mov r8, r13
+	add r8, (-34) + 80
+	ld r8,[r8]
+	xor r8,0xffff
+	and r9,r8
+	st [r13, (-12) + 80], r9 // dodgy
+	mov r9, r13
+	add r9, (-12) + 80
+	ld r9,[r9]
+	cmp r9,1
+	beq L.110
+	cmp r9,2
+	beq L.110
+	cmp r9,4
+	beq L.110
+	cmp r9,8
+	beq L.110
+	mov r9,r0
+	add r9, 1
+	st [r13, (-36) + 80], r9 // dodgy
+	ba L.111
+L.110:
+	st [r13, (-36) + 80], r0 // dodgy
+L.111:
+	mov r9, r13
+	add r9, (-36) + 80
+	ld r9,[r9]
+	st [r13, (-28) + 80], r9 // dodgy
+	mov r9, r11
+	add r9,4
+	ld r9,[r9]
+	.times 3 asr r9 
+	st [r13, (-2) + 80], r9 // dodgy
+	mov r9, r11
+	add r9,6
+	ld r9,[r9]
+	.times 3 asr r9 
+	st [r13, (-4) + 80], r9 // dodgy
+	mov r9, r10
+	add r9,92
+	ld r9,[r9]
+	cmp r9,2
+	bne L.112
+	mov r9, r13
+	add r9, (-32) + 80
+	ld r9,[r9]
+	mov r8, r9
+	add r8,4
+	ld r8,[r8]
+	.times 3 asr r8 
+	st [r13, (-6) + 80], r8 // dodgy
+	add r9,6
+	ld r9,[r9]
+	.times 3 asr r9 
+	st [r13, (-8) + 80], r9 // dodgy
+	ba L.113
+L.112:
+	mov r9, r10
+	add r9,96
+	ld r9,[r9]
+	st [r13, (-6) + 80], r9 // dodgy
+	mov r9, r10
+	add r9,98
+	ld r9,[r9]
+	st [r13, (-8) + 80], r9 // dodgy
+L.113:
+	mov r9, r13
+	add r9, (-2) + 80
+	ld r9,[r9]
+	st [r13, (-40) + 80], r9 // dodgy
+	mov r8, r13
+	add r8, (-6) + 80
+	ld r8,[r8]
+	st [r13, (-38) + 80], r8 // dodgy
+	mov r7,r9
+	sub r7,r8
+	mov r6, r7
+	mul r6,r7
+	st [r13, (-42) + 80], r6 // dodgy
+	mov r7, r13
+	add r7, (-4) + 80
+	ld r7,[r7]
+	mov r8,r0
+	add r8, 1
+	mov r9, r13
+	add r9, (-8) + 80
+	ld r9,[r9]
+	st [r13, (-44) + 80], r9 // dodgy
+	mov r6,r7
+	sub r6,r8
+	sub r6,r9
+	mov r9, r6
+	mul r9,r6
+	mov r6, r13
+	add r6, (-42) + 80
+	ld r6,[r6]
+	add r6,r9
+	mov r9,r6
+	st [r13, (-14) + 80], r9 // dodgy
+	mov r9, r7
+	add r9,r8
+	mov r6, r13
+	add r6, (-44) + 80
+	ld r6,[r6]
+	sub r9,r6
+	mov r6, r9
+	mul r6,r9
+	mov r9, r13
+	add r9, (-42) + 80
+	ld r9,[r9]
+	add r9,r6
+	st [r13, (-26) + 80], r9 // dodgy
+	mov r9, r13
+	add r9, (-40) + 80
+	ld r9,[r9]
+	sub r9,r8
+	mov r6, r13
+	add r6, (-38) + 80
+	ld r6,[r6]
+	sub r9,r6
+	mov r6, r9
+	mul r6,r9
+	mov r9, r13
+	add r9, (-44) + 80
+	ld r9,[r9]
+	sub r7,r9
+	mov r9, r7
+	mul r9,r7
+	mov r7, r6
+	add r7,r9
+	st [r13, (-20) + 80], r7 // dodgy
+	mov r7, r13
+	add r7, (-40) + 80
+	ld r7,[r7]
+	add r7,r8
+	mov r8, r13
+	add r8, (-38) + 80
+	ld r8,[r8]
+	sub r7,r8
+	mov r8, r7
+	mul r8,r7
+	add r8,r9
+	mov r9,r8
+	st [r13, (-24) + 80], r9 // dodgy
+	mov r9,r0
+	add r9, 32767
+	st [r13, (-10) + 80], r9 // dodgy
+	mov r9,r0
+	st [r13, (-22) + 80], r9 // dodgy
+	st [r13, (-18) + 80], r9 // dodgy
+	mov r4,r11
+	bl update_sprite
+	mov r9, r13
+	add r9, (-14) + 80
+	ld r9,[r9]
+	mov r8, r13
+	add r8, (-10) + 80
+	ld r8,[r8]
+	cmp r9,r8
+	bge L.114
+	mov r9, r13
+	add r9, (-12) + 80
+	ld r9,[r9]
+	and r9,1
+	cmp r9,r0
+	beq L.114
+	mov r9, r13
+	add r9, (-14) + 80
+	ld r9,[r9]
+	st [r13, (-10) + 80], r9 // dodgy
+L.114:
+	mov r9, r13
+	add r9, (-26) + 80
+	ld r9,[r9]
+	mov r8, r13
+	add r8, (-10) + 80
+	ld r8,[r8]
+	cmp r9,r8
+	bge L.116
+	mov r9, r13
+	add r9, (-12) + 80
+	ld r9,[r9]
+	and r9,2
+	cmp r9,r0
+	beq L.116
+	mov r9, r13
+	add r9, (-26) + 80
+	ld r9,[r9]
+	st [r13, (-10) + 80], r9 // dodgy
+L.116:
+	mov r9, r13
+	add r9, (-20) + 80
+	ld r9,[r9]
+	mov r8, r13
+	add r8, (-10) + 80
+	ld r8,[r8]
+	cmp r9,r8
+	bge L.118
+	mov r9, r13
+	add r9, (-12) + 80
+	ld r9,[r9]
+	and r9,4
+	cmp r9,r0
+	beq L.118
+	mov r9, r13
+	add r9, (-20) + 80
+	ld r9,[r9]
+	st [r13, (-10) + 80], r9 // dodgy
+L.118:
+	mov r9, r13
+	add r9, (-24) + 80
+	ld r9,[r9]
+	mov r8, r13
+	add r8, (-10) + 80
+	ld r8,[r8]
+	cmp r9,r8
+	bge L.120
+	mov r9, r13
+	add r9, (-12) + 80
+	ld r9,[r9]
+	and r9,8
+	cmp r9,r0
+	beq L.120
+	mov r9, r13
+	add r9, (-24) + 80
+	ld r9,[r9]
+	st [r13, (-10) + 80], r9 // dodgy
+L.120:
+	mov r8, r13
+	add r8, (-16) + 80
+	ld r8,[r8]
+	and r8,1
+	cmp r8,r0
+	beq L.122
+	mov r8, r11
+	add r8,18
+	ld r8,[r8]
+	cmp r8,2
+	beq L.122
+	mov r8, r13
+	add r8, (-28) + 80
+	ld r8,[r8]
+	cmp r8,r0
+	beq L.124
+	mov r9, r13
+	add r9, (-14) + 80
+	ld r9,[r9]
+	mov r8, r13
+	add r8, (-10) + 80
+	ld r8,[r8]
+	cmp r9,r8
+	bne L.122
+L.124:
+	mov r9,r0
+	add r9, 1
+	st [r13, (-30) + 80], r9 // dodgy
+	mov r9,r0
+	add r9, -1
+	st [r13, (-18) + 80], r9 // dodgy
+	ba L.123
+L.122:
+	mov r8, r13
+	add r8, (-16) + 80
+	ld r8,[r8]
+	and r8,4
+	cmp r8,r0
+	beq L.125
+	mov r8, r11
+	add r8,18
+	ld r8,[r8]
+	cmp r8,8
+	beq L.125
+	mov r8, r13
+	add r8, (-28) + 80
+	ld r8,[r8]
+	cmp r8,r0
+	beq L.127
+	mov r9, r13
+	add r9, (-20) + 80
+	ld r9,[r9]
+	mov r8, r13
+	add r8, (-10) + 80
+	ld r8,[r8]
+	cmp r9,r8
+	bne L.125
+L.127:
+	mov r9,r0
+	add r9, -1
+	st [r13, (-22) + 80], r9 // dodgy
+	mov r9,r0
+	add r9, 4
+	st [r13, (-30) + 80], r9 // dodgy
+	ba L.126
+L.125:
+	mov r8, r13
+	add r8, (-16) + 80
+	ld r8,[r8]
+	and r8,8
+	cmp r8,r0
+	beq L.128
+	mov r8, r11
+	add r8,18
+	ld r8,[r8]
+	cmp r8,4
+	beq L.128
+	mov r8, r13
+	add r8, (-28) + 80
+	ld r8,[r8]
+	cmp r8,r0
+	beq L.130
+	mov r9, r13
+	add r9, (-24) + 80
+	ld r9,[r9]
+	mov r8, r13
+	add r8, (-10) + 80
+	ld r8,[r8]
+	cmp r9,r8
+	bne L.128
+L.130:
+	mov r9,r0
+	add r9, 8
+	st [r13, (-30) + 80], r9 // dodgy
+	mov r9,r0
+	add r9, 1
+	st [r13, (-22) + 80], r9 // dodgy
+	ba L.129
+L.128:
+	mov r8, r13
+	add r8, (-16) + 80
+	ld r8,[r8]
+	and r8,2
+	cmp r8,r0
+	beq L.131
+	mov r8, r11
+	add r8,18
+	ld r8,[r8]
+	cmp r8,1
+	beq L.131
+	mov r8, r13
+	add r8, (-28) + 80
+	ld r8,[r8]
+	cmp r8,r0
+	beq L.133
+	mov r9, r13
+	add r9, (-26) + 80
+	ld r9,[r9]
+	mov r8, r13
+	add r8, (-10) + 80
+	ld r8,[r8]
+	cmp r9,r8
+	bne L.131
+L.133:
+	mov r9,r0
+	add r9, 1
+	st [r13, (-18) + 80], r9 // dodgy
+	mov r9,r0
+	add r9, 2
+	st [r13, (-30) + 80], r9 // dodgy
+L.131:
+L.129:
+L.126:
+L.123:
+	mov r8, r11
+	add r8,20
+	ld r8,[r8]
+	cmp r8,r0
+	bne L.134
+	mov r8, r13
+	add r8, (-22) + 80
+	ld r8,[r8]
+	cmp r8,r0
+	bne L.136
+	mov r8, r13
+	add r8, (-18) + 80
+	ld r8,[r8]
+	cmp r8,r0
+	beq L.134
+L.136:
+	mov r9, r11
+	add r9,20
+	mov r8,r0
+	add r8, 8
+	st [r9], r8
+	mov r9, r11
+	add r9,12
+	mov r8, r13
+	add r8, (-22) + 80
+	ld r8,[r8]
+	st [r9], r8
+	mov r9, r11
+	add r9,14
+	mov r8, r13
+	add r8, (-18) + 80
+	ld r8,[r8]
+	st [r9], r8
+	mov r9, r11
+	add r9,18
+	mov r8, r13
+	add r8, (-30) + 80
+	ld r8,[r8]
+	st [r9], r8
+L.134:
+	mov r9, r10
+	add r9,92
+	ld r9,[r9]
+	cmp r9,3
+	bne L.107
+	mov r9, r10
+	add r9,94
+	ld r8,[r9]
+	mov r7,r8
+	sub r7,1
+	st [r9], r7
+	cmp r8,r0
+	bne L.107
+	mov r9, r10
+	add r9,92
+	mov r8,r0
+	add r8, 2
+	st [r9], r8
+	ba L.107
+L.106:
+	mov r9, r10
+	add r9,92
+	ld r9,[r9]
+	cmp r9,1
+	bne L.141
+	mov r9, r11
+	add r9,4
+	ld r9,[r9]
+	cmp r9,172
+	beq L.143
+	mov r9, r11
+	add r9,4
+	ld r9,[r9]
+	cmp r9,172
+	ble L.145
+	mov r9, r11
+	add r9,20
+	mov r8, r11
+	add r8,4
+	ld r8,[r8]
+	sub r8,172
+	st [r9], r8
+	mov r9, r11
+	add r9,12
+	mov r8,r0
+	add r8, -1
+	st [r9], r8
+	mov r9, r11
+	add r9,18
+	mov r8,r0
+	add r8, 4
+	st [r9], r8
+	ba L.144
+L.145:
+	mov r9, r11
+	add r9,20
+	mov r8,r0
+	add r8, 172
+	mov r7, r11
+	add r7,4
+	ld r7,[r7]
+	sub r8,r7
+	st [r9], r8
+	mov r9, r11
+	add r9,12
+	mov r8,r0
+	add r8, 1
+	st [r9], r8
+	mov r9, r11
+	add r9,18
+	mov r8,r0
+	add r8, 8
+	st [r9], r8
+	ba L.144
+L.143:
+	mov r9, r11
+	add r9,20
+	ld r9,[r9]
+	cmp r9,r0
+	bne L.147
+	mov r9, r11
+	add r9,20
+	mov r8,r0
+	add r8, 16
+	st [r9], r8
+	mov r9, r11
+	add r9,12
+	st [r9], r0
+	mov r9, r11
+	add r9,14
+	mov r8,r0
+	add r8, -1
+	st [r9], r8
+	mov r9, r11
+	add r9,18
+	mov r8,r0
+	add r8, 1
+	st [r9], r8
+L.147:
+L.144:
+	mov r9, r11
+	add r9,6
+	ld r9,[r9]
+	cmp r9,112
+	bne L.149
+	mov r9, r10
+	add r9,92
+	mov r8,r0
+	add r8, 2
+	st [r9], r8
+L.149:
+	mov r4,r11
+	bl update_sprite
+	ba L.142
+L.141:
+	mov r9, r10
+	add r9,92
+	ld r9,[r9]
+	cmp r9,r0
+	bne L.151
+	mov r9, r10
+	add r9,94
+	ld r8,[r9]
+	mov r7,r8
+	sub r7,1
+	st [r9], r7
+	cmp r8,r0
+	bne L.153
+	mov r9, r10
+	add r9,92
+	mov r8,r0
+	add r8, 1
+	st [r9], r8
+L.153:
+	mov r9, r11
+	add r9,20
+	ld r9,[r9]
+	cmp r9,r0
+	bne L.155
+	mov r9, r11
+	add r9,20
+	mov r8,r0
+	add r8, 16
+	st [r9], r8
+	mov r9, r11
+	add r9,12
+	st [r9], r0
+	mov r9, r11
+	add r9,14
+	st [r9], r0
+	mov r9, r11
+	add r9,18
+	mov r8,r0
+	add r8, 1
+	st [r9], r8
+L.155:
+	mov r4,r11
+	bl update_sprite
+L.151:
+L.142:
+L.107:
+L.103:
+	add r12,1
+L.105:
+	mov r9,r12
+	cmp r9,4
+	blt L.102
+L.101:
+	ld r15, [r13, 16]
+	ld r4, [r13, 18]
+	ld r5, [r13, 20]
+	ld r6, [r13, 22]
+	ld r7, [r13, 24]
+	ld r8, [r13, 26]
+	ld r9, [r13, 28]
+	ld r10, [r13, 30]
+	ld r11, [r13, 32]
+	ld r12, [r13, 34]
+	add r13,80
+	ret
+.global check_ghost_player_collisions
+.text
+check_ghost_player_collisions:
+	sub r13,48
+	st [r13, 16], r15
+	st [r13, 18], r4
+	st [r13, 20], r6
+	st [r13, 22], r7
+	st [r13, 24], r8
+	st [r13, 26], r9
+	st [r13, 28], r10
+	st [r13, 30], r11
+	st [r13, 32], r12
+	mov r11,r0
+	mov r12,r0
+L.158:
+	mov r4, r12
+	add r4,22288
+	bl __in
+	mov r10,r2
+	mov r9,r10
+	and r9,1
+	or r11,r9
+L.159:
+	add r12,1
+	cmp r12,4
+	blt L.158
+	mov r9,r11
+	and r9,1
+	cmp r9,r0
+	beq L.162
+	ld r9,[pocman+18]
+	cmp r9,32
+	beq L.164
+	st [pocman+16], r0
+	mov r9,r0
+	add r9, 32
+	st [pocman+18], r9
+	mov r9,r0
+	add r9, 26
+	st [pocman+20], r9
+	st [pocman+12], r0
+	st [pocman+14], r0
+	mov r10,r0
+L.172:
+	mov r9,r0
+	add r9, 100
+	mul r9,r10
+	mov r8,r0
+	add r8, ghosts
+	add r9,r8
+	st [r9], r0
+L.173:
+	add r10,1
+	cmp r10,4
+	blt L.172
+L.164:
+L.162:
+L.157:
+	ld r15, [r13, 16]
+	ld r4, [r13, 18]
+	ld r6, [r13, 20]
+	ld r7, [r13, 22]
+	ld r8, [r13, 24]
+	ld r9, [r13, 26]
+	ld r10, [r13, 28]
+	ld r11, [r13, 30]
+	ld r12, [r13, 32]
+	add r13,48
+	ret
 .global frame
 .data
 frame:
 dw 0x0
-.global main
+.global start_game
 .text
+.text
+start_game:
+	sub r13,32
+	st [r13, 0], r15
+	st [r13, 2], r6
+	st [r13, 4], r7
+	st [r13, 6], r8
+	st [r13, 8], r9
+	st [r13, 10], r10
+	st [r13, 12], r11
+	st [r13, 14], r12
+	mov r11,r0
+	add r11, pocman_start
+	mov r10,r0
+	add r10, pocman
+	mov r9, r13
+	add r9, (-2) + 32
+	mov r8,r0
+	add r8, ghosts_start
+	st [r9], r8
+	mov r9, r13
+	add r9, (-4) + 32
+	mov r8,r0
+	add r8, ghosts
+	st [r9], r8
+	mov r12,r0
+	ba L.180
+L.177:
+	mov r9,r10
+	mov r8,r0
+	add r8, 2
+	mov r10, r9
+	add r10,r8
+	mov r7,r11
+	mov r11, r7
+	add r11,r8
+	ld r8,[r7]
+	st [r9], r8
+L.178:
+	add r12,1
+L.180:
+	mov r9,r12
+	cmp r9,46
+	blt L.177
+	mov r12,r0
+	ba L.184
+L.181:
+	mov r9, r13
+	add r9, (-4) + 32
+	ld r9,[r9]
+	mov r8, r13
+	add r8, (-6) + 32
+	st [r8], r9
+	mov r8,r0
+	add r8, 2
+	mov r7, r13
+	add r7, (-4) + 32
+	mov r6, r9
+	add r6,r8
+	st [r7], r6
+	mov r7, r13
+	add r7, (-2) + 32
+	ld r7,[r7]
+	mov r6, r13
+	add r6, (-2) + 32
+	mov r9, r7
+	add r9,r8
+	st [r6], r9
+	ld r9,[r7]
+	mov r8, r13
+	add r8, (-6) + 32
+	ld r8,[r8]
+	st [r8], r9
+L.182:
+	add r12,1
+L.184:
+	mov r9,r12
+	cmp r9,200
+	blt L.181
+	st [frame], r0
+L.176:
+	ld r15, [r13, 0]
+	ld r6, [r13, 2]
+	ld r7, [r13, 4]
+	ld r8, [r13, 6]
+	ld r9, [r13, 8]
+	ld r10, [r13, 10]
+	ld r11, [r13, 12]
+	ld r12, [r13, 14]
+	add r13,32
+	ret
+.global main
 .text
 main:
 	sub r13,32
@@ -635,18 +2281,11 @@ main:
 	st [r13, 24], r7
 	st [r13, 26], r8
 	st [r13, 28], r9
-	ld r4,[str]
-	bl puts
 	mov r4,r0
 	add r4, copperList
 	mov r5,r0
 	add r5, 2
 	bl load_copper_list
-	mov r4,r0
-	add r4, 23840
-	mov r5,r0
-	add r5, 1
-	bl __out
 	mov r4,r0
 	add r4, pacman_spritesheet_palette
 	mov r5,r0
@@ -660,40 +2299,31 @@ main:
 	mov r5,r9
 	mov r6,r9
 	bl load_palette
-	mov r4,r0
-	add r4, 20480
-	mov r5,r0
-	add r5, 33952
-	bl __out
-	mov r4,r0
-	add r4, 20736
-	mov r5,r0
-	add r5, 15480
-	bl __out
-	mov r4,r0
-	add r4, 20992
-	mov r5,r0
-	add r5, 136
-	bl __out
-	mov r4,r0
-	add r4, 21248
-	mov r9,r0
-	add r9, pacman_sprite_sheet
-	mov r5, r9
-	.times 1 lsr r5 
-	bl __out
+	bl start_game
 	bl enable_interrupts
-	ba L.32
-L.31:
-	mov r4,r0
-	add r4, pocman_start
-	bl update_sprite
+	ba L.187
+L.186:
+	ld r9,[frame]
+	add r9,1
+	st [frame], r9
+	bl check_ghost_player_collisions
+	bl update_ghosts
+	bl process_keys
 	bl update_background
+	mov r4,r0
+	add r4, copperList
+	mov r5,r0
+	add r5, 2
+	bl load_copper_list
 	bl __sleep
-L.32:
-	ba L.31
+L.187:
+	ba L.186
+	mov r4,r0
+	add r4, 33
+	bl putc
+	bl exit
 	mov r2,r0
-L.30:
+L.185:
 	ld r15, [r13, 16]
 	ld r4, [r13, 18]
 	ld r5, [r13, 20]
@@ -703,304 +2333,266 @@ L.30:
 	ld r9, [r13, 28]
 	add r13,32
 	ret
-.data
-L.1:
-	db 0x48
-	db 0x65
-	db 0x6c
-	db 0x6c
-	db 0x6f
-	db 0x20
-	db 0x77
-	db 0x6f
-	db 0x72
-	db 0x6c
-	db 0x64
-	db 0x21
-	db 0xa
-	db 0x0
-.align 2
-	
-pacman_spritesheet_palette:
-	dw 0x0
-	dw 0xff0
-	dw 0x0ff
-	dw 0x0f0
-	dw 0xedf
-	dw 0xfb5
-	dw 0xfb9
-	dw 0x8ce
-	dw 0xfbf
-	dw 0xfb5
-	dw 0x4be
-	dw 0xd95
-	dw 0x22f
-	dw 0xf00
-	dw 0xf00
-	dw 0x000
-
-pacman_tileset_palette:
-	dw 0x0
-	dw 0xfff
-	dw 0xddf
-	dw 0x22f
-	dw 0xf00
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-	dw 0x000
-
-
-	
-	.padto 0x8000
+.global old_map_y
+old_map_y:
+	dw 0
+.global old_map_x
+old_map_x:
+	dw 0
+.global old_map_tile
+old_map_tile:
+	dw 0
+.global ghosts
+ghosts:
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+.global pocman
+pocman:
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	dw 0
+	.padto 0x8000 // pad to 32kB
 pacman_sprite_sheet:
 	dw 0x0
 	dw 0x0
@@ -11242,7 +12834,265 @@ pacman_sprite_sheet:
 	dw 0x0
 	dw 0x0
 	dw 0x0
-pacman_tileset:
+pacman_spritesheet_palette:
+	dw 0x0
+	dw 0xff0
+	dw 0x0ff
+	dw 0x0f0
+	dw 0xedf
+	dw 0xfb5
+	dw 0xfb9
+	dw 0x8ce
+	dw 0xfbf
+	dw 0xfb5
+	dw 0x4be
+	dw 0xd95
+	dw 0x22f
+	dw 0xf00
+	dw 0xf00
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	pacman_tileset:
 	dw 0x6666
 	dw 0x6666
 	dw 0x6666
@@ -13291,6 +15141,264 @@ pacman_tileset:
 	dw 0x1111
 	dw 0x1111
 	dw 0x1111
+pacman_tileset_palette:
+	dw 0x0
+	dw 0xfff
+	dw 0xddf
+	dw 0x22f
+	dw 0xf00
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
+	dw 0x000
 pacman_tilemap:
 	dw 0xffff
 	dw 0xffff
@@ -14572,4 +16680,6 @@ pacman_tilemap:
 	dw 0xffff
 	dw 0xffff
 	dw 0xffff
+
+
 	.end

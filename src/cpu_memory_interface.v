@@ -171,6 +171,8 @@ begin
 			end
 			else if (load_memory == 1'b0)
 				cpu_state_r_next = cpust_execute;
+			if (store_memory == 1'b1)
+				cpu_state_r_next = cpust_execute_store;
 			memory_is_instruction_r_next = 1'b0;
 		end 
 		cpust_wait_mem_load1:
@@ -186,6 +188,8 @@ begin
 			end
 			else if (store_memory == 1'b0)
 				cpu_state_r_next = cpust_execute;
+			if (load_memory == 1'b1)
+				cpu_state_r_next = cpust_execute_load;
 			memory_is_instruction_r_next = 1'b0;
 		end
 		cpust_wait_mem_store1:

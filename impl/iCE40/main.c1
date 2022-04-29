@@ -65,8 +65,8 @@ extern short pacman_tileset;
 extern short pacman_tileset_palette;
 # 77 "main.c"
 struct Sprite pocman_start = {
-  0,
   1,
+  0,
   160,
   120,
   16,
@@ -110,8 +110,8 @@ void update_sprite(struct Sprite* sp)
 
 
  x = ((sp->x & 0x3ff) | ((sp->enabled & 0x1) << 10) | ((0 & 0xf) << 11) | ((1 & 1) << 15));
- y = ((sp->y & 0x3ff) | ((sp->width & 0x3f) << 10));
- h = ((sp->y + sp->height & 0x3ff));
+ y = ((sp->y & 0x3ff) | ((sp->width - 1 & 0x3f) << 10));
+ h = ((sp->y + sp->height - 1 & 0x3ff));
  frame = sp->frame;
  frame = (sp->frame) & 15;
 
@@ -144,6 +144,8 @@ void update_sprite(struct Sprite* sp)
  load_sprite_y(sp->i, y);
  load_sprite_h(sp->i, h);
  load_sprite_a(sp->i, a);
+# 169 "main.c"
+  sp->frame ++;
 # 178 "main.c"
 }
 
@@ -217,10 +219,10 @@ int main()
  load_palette(&pacman_spritesheet_palette, 0, 16);
  load_palette(&pacman_tileset_palette, 16, 16);
 
- __out(0x5000, 160 | 1<<10 | 1<<15);
- __out(0x5100, 15<<10 | 120);
- __out(0x5200, 136);
- __out(0x5300, ((unsigned short)&pacman_sprite_sheet) >> 1);
+
+
+
+
 
  enable_interrupts();
 
