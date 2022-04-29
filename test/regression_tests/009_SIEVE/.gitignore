@@ -1,0 +1,7 @@
+dump.vcd 
+sieve_design
+rom_image*
+mem_init*
+*.txt
+main.asm
+main.c1

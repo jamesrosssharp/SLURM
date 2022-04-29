@@ -75,9 +75,9 @@ boot_memory.v: rom_image.mem
 $(PROJ).json: $(SOURCE) rom_image.mem
 	yosys -p 'debug synth_ice40 -top top -json $@' $(SOURCE)
 
-.PHONY: SCC
-SCC:	$(SOURCE) rom_image.mem
-	yosys -p 'synth_ice40 -top top -json $(PROJ).json; scc' $(SOURCE)
+#.PHONY: SCC
+#SCC:	$(SOURCE) rom_image.mem
+#	yosys -p 'synth_ice40 -top top -json $(PROJ).json; scc' $(SOURCE)
 
 
 
@@ -99,7 +99,7 @@ sudo-prog: $(PROJ).bin
 	sudo $(ICEPROG) -S $<
 
 clean:
-	rm -f $(PROJ).json $(PROJ).asc $(PROJ).rpt $(PROJ).bin $(PROJ).h rom_image* app_image* App.asm main.asm
+	rm -f $(PROJ).json $(PROJ).asc $(PROJ).rpt $(PROJ).bin $(PROJ).h rom_image* app_image* App.asm main.asm main.c1
 
 .SECONDARY:
 .PHONY: all prog clean

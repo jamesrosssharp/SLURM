@@ -3,3 +3,8 @@
 *.bin
 Asm
 OldAsm
+main.asm
+main.c1
+App.asm
+rom_image
+rom_image.mem
