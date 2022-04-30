@@ -376,7 +376,8 @@ begin
 		12'hf00:; 	/* frame count register */ 
 		12'hf01:;   /* display y register */
 		12'hf02:
-			video_mode_r_next = DATA_IN[0];
+			if (WR == 1'b1)
+				video_mode_r_next = DATA_IN[0];
 		12'hexx:    /* palette regiser */
 			WR_pal = WR_sig;
 		12'hd0x:    /* bg0 */

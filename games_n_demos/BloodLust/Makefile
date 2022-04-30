@@ -28,7 +28,7 @@ $(TARGET): $(PREPROCESSED) $(ASM_SRCS) $(ASSETS_ASM) $(ASSETS_BIN) src/top.s
 	# Generate bundle
 	dd if=/dev/zero of=$@ bs=1M count=3
 	dd if=build/all_complete.bin of=$@ 
-	dd if=$(ASSETS_BIN) of=$@ bs=65536 seek=1	
+	dd if=$(ASSETS_BIN) of=$@ bs=65024 seek=1	
 
 
 build/%.c1: %.c

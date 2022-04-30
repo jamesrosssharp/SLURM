@@ -52,6 +52,10 @@ ICEPROG = iceprog
 
 all: $(PROJ).h
 
+GAME_BIN=../../games_n_demos/BloodLust/build/bloodlust.bin
+#GAME_BIN=../../games_n_demos/PoCman/build/pocman.bin
+#GAME_BIN=../../games_n_demos/Sieve/build/sieve.bin
+
 rom_image.mem: Bootloader.asm
 	$(AS) Bootloader.asm -o rom_image
 	python3 ../../scripts/genmem.py rom_image rom_image.mem
@@ -62,9 +66,12 @@ App.asm: main.c top.asm bottom.asm
 	cat top.asm main.asm bottom.asm > App.asm
 
 
-app_image: App.asm
-	$(AS) App.asm -o app_image
-	
+#app_image: App.asm
+#	$(AS) App.asm -o app_image
+
+app_image: $(GAME_BIN)
+	cp $(GAME_BIN) app_image
+
 
 boot_memory.v: rom_image.mem
 	python3 ../../scripts/genrom.py

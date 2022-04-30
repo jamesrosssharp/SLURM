@@ -205,6 +205,9 @@ int main()
 	// Set y flip
 	__out(0x5d21, 0x8000 | 150);
 
+	// Enable copper
+	__out(0x5d20, 1);
+
 
 	load_bl_copper_list();
 	load_palette(&bloodlust_sprites_palette, 0, 16);

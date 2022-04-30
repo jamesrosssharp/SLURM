@@ -3,15 +3,16 @@
 //
 
 enum CopperState {
-    Begin   = 0,
-    Execute = 1,
-    WaitV  = 2,
-    WaitH  = 3,
-    WriteReg = 4,
+    Idle,
+    Begin,
+    Execute,
+    WaitV,
+    WaitH,
+    WriteReg,
 }
 
 pub struct Copper {
-
+    enable : bool,
     copper_list: [u16; 512],
     copper_pc: u16,
     copper_state: CopperState,
@@ -29,9 +30,10 @@ impl Copper {
 
    pub fn new() -> Self {
         Copper { 
+            enable : false,
             copper_list: [0 as u16; 512],
             copper_pc: 0 as u16,
-            copper_state: CopperState::Begin,
+            copper_state: CopperState::Idle,
             r : 255,
             g : 0,
             b : 0,
@@ -58,7 +60,7 @@ impl Copper {
     {
         if write {
             match port & 0xf {
-                0 => /* copper control */ {},
+                0 => /* copper control */ { self.enable = val & 1 == 1; },
                 1 => /* copper Y flip */ {
                     self.y_flip = val & 0x1ff;
                     self.y_flip_en = (val & 0x8000) == 0x8000;
@@ -183,7 +185,8 @@ impl Copper {
 
 
         if vs {
-            self.copper_state = CopperState::Begin;
+
+            if self.enable { self.copper_state = CopperState::Begin;}
             self.copper_pc = 0;
         }
         else
@@ -191,6 +194,7 @@ impl Copper {
 
             match self.copper_state
             {
+                CopperState::Idle => {}, 
                 CopperState::Begin => self.begin(),
                 CopperState::Execute => self.execute(x, y),
                 CopperState::WaitV => self.wait_hv(y),
