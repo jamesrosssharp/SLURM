@@ -52,9 +52,11 @@ ICEPROG = iceprog
 
 all: $(PROJ).h
 
-GAME_BIN=../../games_n_demos/BloodLust/build/bloodlust.bin
-#GAME_BIN=../../games_n_demos/PoCman/build/pocman.bin
-#GAME_BIN=../../games_n_demos/Sieve/build/sieve.bin
+BLOODLUST_BIN=../../games_n_demos/BloodLust/build/bloodlust.bin
+POCMAN_BIN=../../games_n_demos/PoCman/build/pocman.bin
+SIEVE_BIN=../../games_n_demos/Sieve/build/sieve.bin
+
+GAME_BIN=$(BLOODLIST_BIN)
 
 rom_image.mem: Bootloader.asm
 	$(AS) Bootloader.asm -o rom_image
@@ -96,6 +98,21 @@ $(PROJ).json: $(SOURCE) rom_image.mem
 
 %.rpt: %.asc
 	$(ICETIME) -d $(DEVICE) -mtr $@ $<
+
+.PHONY: bloodlust
+bloodlust: $(PROJ).bin
+	$(ICEPROG) $(PROJ).bin
+	$(ICEPROG) -o 1M  $(BLOODLUST_BIN) 
+
+.PHONY: pocman
+pocman: $(PROJ).bin
+	$(ICEPROG) $(PROJ).bin
+	$(ICEPROG) -o 1M  $(POCMAN_BIN) 
+
+.PHONY: sieve
+sieve: $(PROJ).bin
+	$(ICEPROG) $(PROJ).bin
+	$(ICEPROG) -o 1M  $(SIEVE_BIN) 
 
 prog: $(PROJ).bin app_image
 	$(ICEPROG) $(PROJ).bin

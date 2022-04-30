@@ -62,7 +62,7 @@ end
 reg [15:0] dout_r;
 assign DATA_OUT = dout_r;
 
-always @(*)
+always @(CLK)
 begin
 	irq_enabled_next = irq_enabled;
 	dout_r = 16'h0000;

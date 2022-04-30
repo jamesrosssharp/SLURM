@@ -158,11 +158,16 @@ begin
 					cpu_state_r_next = cpust_wait_mem_ready1;
 			end
 		end 
-		cpust_wait_mem_ready1:
+		cpust_wait_mem_ready1: begin
 			cpu_state_r_next = cpust_wait_mem_ready2;
-		cpust_wait_mem_ready2:
+			memory_is_instruction_r_next = 1'b0;
+		end
+		cpust_wait_mem_ready2: begin
 			if (memory_ready == 1'b1)
 				cpu_state_r_next = cpust_execute;
+
+			memory_is_instruction_r_next = 1'b0;
+		end
 		/* load instructions (access data memory) */
 		cpust_execute_load: begin
 			if (has_bank_switch(addr_r, prev_addr_r)) begin
@@ -221,8 +226,9 @@ end
 always @(*) begin
 	is_fetching_r = 1'b0;
 
-	if (cpu_state_r_next == cpust_execute)
-			is_fetching_r = 1'b1;
+	if (cpu_state_r_next == cpust_execute && !has_bank_switch(addr_r, pc))
+//	if (cpu_state_r == cpust_execute && !has_bank_switch(addr_r, prev_addr_r))
+		is_fetching_r = 1'b1;
 	
 end
 

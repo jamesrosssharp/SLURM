@@ -3,28 +3,28 @@ SRCDIR=../../../src
 
 include ../../common/slurmsrc.mk
 
-PROJECT=sieve
+PROJECT=bloodlust
 
 include ../../common/test.mk
 
 CC=../../../slurmcc/lcc/lcc/build/rcc
 
-SIEVE_BIN=../../../games_n_demos/Sieve/build/sieve.bin
+GAME_BIN=../../../games_n_demos/BloodLust/build/bloodlust.bin
 
-mem_init1.mem: $(SIEVE_BIN)
-	dd if=$(SIEVE_BIN) of=mem_init1 bs=1 count=32256 seek=512
+mem_init1.mem: $(GAME_BIN)
+	dd if=$(GAME_BIN) of=mem_init1 bs=1 count=32256 seek=512
 	python3 ../../../scripts/genmem.py mem_init1 mem_init1.mem
 
-mem_init2.mem: $(SIEVE_BIN)
-	dd if=$(SIEVE_BIN) of=mem_init2 bs=1 count=32768 skip=32256
+mem_init2.mem: $(GAME_BIN)
+	dd if=$(GAME_BIN) of=mem_init2 bs=1 count=32768 skip=32256
 	python3 ../../../scripts/genmem.py mem_init2 mem_init2.mem
 
-mem_init3.mem: $(SIEVE_BIN)
-	dd if=$(SIEVE_BIN) of=mem_init3 bs=1 count=32768 skip=65024
+mem_init3.mem: $(GAME_BIN)
+	dd if=$(GAME_BIN) of=mem_init3 bs=1 count=32768 skip=65024
 	python3 ../../../scripts/genmem.py mem_init3 mem_init3.mem
 
-mem_init4.mem: $(SIEVE_BIN)
-	dd if=$(SIEVE_BIN) of=mem_init4 bs=1 count=32768 skip=97792
+mem_init4.mem: $(GAME_BIN)
+	dd if=$(GAME_BIN) of=mem_init4 bs=1 count=32768 skip=97792
 	python3 ../../../scripts/genmem.py mem_init4 mem_init4.mem
 
 clean:
@@ -42,3 +42,5 @@ clean:
 	rm -f mem_init4
 	rm -f dump.vcd
 	rm -f rom_image.meminit
+	rm -f rom_image.mem
+

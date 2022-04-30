@@ -157,7 +157,7 @@ end
 // the other peripherals
 assign DATA_OUT = DATA_OUT_REG; 
 
-always @(*)
+always @(CLK)
 begin
 	WR_UART  = 1'b0;
 	WR_GPIO  = 1'b0;

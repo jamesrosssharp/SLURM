@@ -282,7 +282,7 @@ end
 reg [3:0] stall_count2_r;
 always @(posedge CLK)
 begin
-	if (stall_start == 1'b1)
+	if (stall_start == 1'b1 || stall == 1'b0)
 		stall_count2_r <= 4'd0;
 	else if (stall == 1'b1)
 		stall_count2_r <= stall_count2_r + 1;
