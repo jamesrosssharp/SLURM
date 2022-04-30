@@ -134,7 +134,7 @@ impl BackgroundCore {
     pub fn render_line(&mut self, mem: & mut Vec<u16>,  _x : u16, y : u16, render_buffer : usize, layer : usize, 
                         tilemap_x : u16, tilemap_y : u16, tilemap_address : u16, tilemap_stride : u16, tileset_address : u16, tile_size : u16, palette_hi : u16)
     {
-        let mut xcoord = 0;
+        let mut xcoord = 16;
 
         let mut addr : usize = match tile_size {
             SIZE16X16  => /* 16x16 */ ((tilemap_address as usize) << 1) + ((tilemap_x as usize)>>4) + (((tilemap_y + y)>>4)* self.stride_val(tilemap_stride)) as usize, 

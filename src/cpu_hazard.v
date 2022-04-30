@@ -180,7 +180,7 @@ begin
 	end
 	else if (hazard && is_executing)
 		stall_r <= 1'b1;
-	else if (stall_r == 1'b1 && !hazard && is_executing)
+	else if ((stall_r == 1'b1) && !hazard && is_executing)
 		stall_r <= 1'b0;
 end
 

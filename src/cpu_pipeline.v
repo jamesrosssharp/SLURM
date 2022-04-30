@@ -79,6 +79,7 @@ reg [REGISTER_BITS - 1:0] hazard_reg3_r, hazard_reg3_r_next;
 
 reg [BITS - 1:0] instruction_fifo [7:0];
 reg [ADDRESS_BITS - 1:0] pc_fifo  [7:0];
+reg valid_fifo  [7:0];
 
 
 assign hazard_reg1 = hazard_reg1_r;
@@ -307,7 +308,8 @@ begin
 	pipeline_stage1_r_next = pipeline_stage1_r;
 	pipeline_stage2_r_next = pipeline_stage2_r;
 	pipeline_stage3_r_next = pipeline_stage3_r;
-	pipeline_stage4_r_next = NOP_INSTRUCTION;
+	pipeline_stage4_r_next = (pipeline_stage4_r[15:12] == 4'ha || pipeline_stage4_r[15:12] == 4'hb ||
+   							  pipeline_stage4_r[15:12] == 4'hc || pipeline_stage4_r[15:12] == 4'hd) ? pipeline_stage4_r : NOP_INSTRUCTION; // Hold memory operations
 
 	pc_stage0_r_next = pc_stage0_r;
 	pc_stage1_r_next = pc_stage1_r;
@@ -358,8 +360,14 @@ begin
 
 		end else if (stall_mask_count_r > 2'd0) begin	// Else stall mask, take alt pipeline
 			reading_alt_pipeline = 1'b1;
-			pipeline_stage0_r_next = instruction_fifo[stall_read_count_r];
-			pc_stage0_r_next = pc_fifo[stall_read_count_r];
+
+			// The commented code below is a "fix" for an issue where if
+			// a memory operation occurs on the second cycle of a stall, we
+			// will miss an instruction. However, this "fix" breaks stuff
+			// (e.g. Bloodlust, Sieve demos) so I've commented it out for now,
+			// to investigate further.
+			pipeline_stage0_r_next = /*stall_read_count_r != 2'd1 || valid_fifo[stall_read_count_r] ?*/ instruction_fifo[stall_read_count_r] /*: memory_in */;
+			pc_stage0_r_next = /*stall_read_count_r != 2'd1 || valid_fifo[stall_read_count_r] ?*/ pc_fifo[stall_read_count_r] /*: memory_address*/;
 		end else begin
 			pipeline_stage0_r_next = NOP_INSTRUCTION;
 			pc_stage0_r_next = branch_target; // We set this to branch target because if we are interrupted we need to come back to fetch this address
@@ -388,7 +396,7 @@ begin
 	// Else if pipeline stall, keep instructions in fetch and decode stages,
 	// advance execute, memory, and write back stages
 	
-	if (stall == 1'b1 && is_executing) begin
+	if ((stall == 1'b1) && is_executing) begin
 		pipeline_stage0_r_next = pipeline_stage0_r;
 		pipeline_stage1_r_next = pipeline_stage1_r;
 		pipeline_stage2_r_next = NOP_INSTRUCTION;	// Insert bubble
@@ -478,11 +486,15 @@ end
 // Alt pipeline: due to inertia reading from PC, to memory address register, instructions will bank up during a stall.
 // So we fill an alternative pipeline all the time.
 
+reg prev_mem_not_ins;
+
+
 always @(posedge CLK)
 begin
-	if ((stall_start || alt_pip_ld_count_r > 2'd0) && !load_pc && (stall_mask_count_r == 2'd0)) begin
+	if ((stall_start || alt_pip_ld_count_r > 2'd0 || prev_mem_not_ins) && !load_pc && (stall_mask_count_r == 2'd0)) begin
 		instruction_fifo[stall_count_r] <= memory_is_instruction ? memory_in : NOP_INSTRUCTION;
 		pc_fifo[stall_count_r] <= memory_is_instruction ? memory_address : {ADDRESS_BITS{1'b0}};
+		valid_fifo[stall_count_r] <= memory_is_instruction;
 	end
 end
 

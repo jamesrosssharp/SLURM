@@ -105,8 +105,8 @@ begin
 			if (is_executing_r) begin
 				memory_out_r <= store_memory_data;
 				memory_wr_mask_r <= store_memory_wr_mask;
-				memory_wr_mask_del_r <= memory_wr_mask_r;
 			end
+			memory_wr_mask_del_r <= memory_wr_mask_r;
 		end
 		
 		memory_is_instruction_r <= memory_is_instruction_r_next;
@@ -174,8 +174,12 @@ begin
 				cpu_state_r_next = cpust_wait_mem_load1;
 				preserve_addr_r = 1'b1;
 			end
-			else if (load_memory == 1'b0)
-				cpu_state_r_next = cpust_execute;
+			else if (load_memory == 1'b0) begin
+				if (has_bank_switch(addr_r, pc))
+					cpu_state_r_next = cpust_wait_mem_ready1;
+				else
+					cpu_state_r_next = cpust_execute;
+			end
 			if (store_memory == 1'b1)
 				cpu_state_r_next = cpust_execute_store;
 			memory_is_instruction_r_next = 1'b0;
@@ -191,8 +195,12 @@ begin
 				cpu_state_r_next = cpust_wait_mem_store1;
 				preserve_addr_r = 1'b1;
 			end
-			else if (store_memory == 1'b0)
-				cpu_state_r_next = cpust_execute;
+			else if (store_memory == 1'b0) begin
+				if (has_bank_switch(addr_r, pc))
+					cpu_state_r_next = cpust_wait_mem_ready1;
+				else	
+					cpu_state_r_next = cpust_execute;
+			end
 			if (load_memory == 1'b1)
 				cpu_state_r_next = cpust_execute_load;
 			memory_is_instruction_r_next = 1'b0;
@@ -227,7 +235,6 @@ always @(*) begin
 	is_fetching_r = 1'b0;
 
 	if (cpu_state_r_next == cpust_execute && !has_bank_switch(addr_r, pc))
-//	if (cpu_state_r == cpust_execute && !has_bank_switch(addr_r, prev_addr_r))
 		is_fetching_r = 1'b1;
 	
 end

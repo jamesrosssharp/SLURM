@@ -35,18 +35,18 @@ view: dump.vcd config.gtkw
 	gtkwave   dump.vcd config.gtkw 
 
 clean: 
-	rm $(PROJECT)_design
-	rm dump.vcd
-	rm rom_image
-	rm rom_image.meminit
-	rm rom_image.mem
-	rm mem_init1
-	rm mem_init1.mem
-	rm mem_init2
-	rm mem_init2.mem
-	rm mem_init3
-	rm mem_init3.mem
-	rm mem_init4
-	rm mem_init4.mem
-	rm simout.txt
-	rm sim_wrn.txt
+	rm -f $(PROJECT)_design
+	rm -f dump.vcd
+	rm -f rom_image
+	rm -f rom_image.meminit
+	rm -f rom_image.mem
+	rm -f mem_init1
+	rm -f mem_init1.mem
+	rm -f mem_init2
+	rm -f mem_init2.mem
+	rm -f mem_init3
+	rm -f mem_init3.mem
+	rm -f mem_init4
+	rm -f mem_init4.mem
+	rm -f simout.txt
+	rm -f sim_wrn.txt
