@@ -11,3 +11,4 @@ pub mod sprite;
 pub mod interrupt_controller;
 pub mod background;
 pub mod gpio;
+pub mod flash;

@@ -2,6 +2,7 @@ use super::uart::Uart;
 use super::gfx::Gfx;
 use super::interrupt_controller::InterruptController;
 use super::gpio::GpioCore;
+use super::flash::FlashDMA;
 
 use std::io::{self, Write};
 
@@ -11,6 +12,7 @@ pub struct PortController {
     pub gfx: Gfx,
     pub interrupt_controller: InterruptController,
     pub gpio: GpioCore,
+    pub flash: FlashDMA,
 }
 
 ///     The PortController simply implements the port address map
@@ -24,6 +26,7 @@ impl PortController {
             exit: false,
             interrupt_controller: InterruptController::new(),
             gpio: GpioCore::new(),
+            flash: FlashDMA::new(),
         }
     }
 
@@ -61,6 +64,7 @@ impl PortController {
             // 2 - PWM
             // 3 - Audio
             // 4 - SPI
+            4 => return self.flash.port_op(port, val, write),
             // 5 - GFX
             5 => return self.gfx.port_op(port, val, write),
             // 6 - Trace port

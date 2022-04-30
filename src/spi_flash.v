@@ -172,9 +172,13 @@ begin
 		4'h4: /* Status bits reg */
 			dout_r = {15'd0, done_r};
 		4'h5:  /* DMA memory address */
-			dma_memory_address_r_next = DATA_IN;
+			if (WR == 1'b1) begin
+				dma_memory_address_r_next = DATA_IN;
+			end
 		4'h6:  /* DMA transfer count (16-bit words) */
-			dma_count_r_next = DATA_IN;
+			if (WR == 1'b1) begin 
+				dma_count_r_next = DATA_IN;
+			end
 		default:;
 	endcase
 end

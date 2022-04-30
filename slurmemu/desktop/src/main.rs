@@ -11,6 +11,7 @@ extern crate image as im;
 
 use fps_counter::*;
 
+
 #[allow(dead_code)]
 fn main() {
 
@@ -20,9 +21,9 @@ fn main() {
 
     let args: Vec<String> = env::args().collect();
 
-    if args.len() != 2
+    if args.len() != 3
     {
-        println!("Usage: {} <rom file>\n", args[0]);
+        println!("Usage: {} <boot rom> <flash file>\n", args[0]);
         process::exit(1);
     }
 
@@ -35,7 +36,17 @@ fn main() {
         //println!("{:x}", short);
         rom_data.push(short);
     }
-    soc.set_memory(&rom_data, 0, rom_data.len());  
+    soc.set_memory(&rom_data, 0, std::cmp::min(rom_data.len(), 256));  
+
+    let bytes = std::fs::read(&args[2]).unwrap();
+    
+    let mut flash_data : Vec<u16> = Vec::new();
+
+    for byte_pair in bytes.chunks_exact(2) {
+        let short : u16 = u16::from_le_bytes([byte_pair[0], byte_pair[1]]);
+        flash_data.push(short);
+    }
+    soc.set_flash(&flash_data);  
 
     let scale = 1.0;
 

@@ -61,52 +61,17 @@ impl Slurm16SoC
         }
     }
 
-    ///
-    /// Run the SoC. This will step instructions and hardware operations one at a time, locked to
-    /// 25 MHz clock (done by sleeping to perform exactly 416,667 operations per gfx buffer flip @ 60
-    /// Hz)
-    ///
-    /// DEPRECATED - SINCE WE NOW USE TIMING FROM PISTON_WINDOW EVENTS IN DESKTOP
-    ///
-  /*
-    pub fn run(& mut self)
+    pub fn set_flash(& mut self, flash : &Vec<u16>)
     {
-        let target_ft = time::Duration::from_micros(1000000 / TARGET_HZ);
-    
-        while ! self.exit_run_loop {
-            
-            let frame_time = time::Instant::now();
-
-            for _j in 0..416_667 {
-                self.cpu.execute_one_instruction(&mut self.mem, &mut self.port_controller);
-                if self.port_controller.exit { self.exit_run_loop = true; break; }
-            }
-
-            if let Some(i) = (target_ft).checked_sub(frame_time.elapsed()) {
-                thread::sleep(i)
-            }
-        }
-        println!("Emulation finished");
+        self.port_controller.flash.set_flash(flash);
     }
-*/
-    /*
-    // Single step the CPU with debug
-    pub fn single_step(& mut self)
-    {
-        loop {
-            self.cpu.print_pc();     
-            self.cpu.execute_one_instruction(&mut self.mem, &mut self.port_controller);
-            self.cpu.print_regs();
-            if self.port_controller.exit { break; }
-            stdin().read(&mut [0]).unwrap();
-        }
-    }
-*/
+
     pub fn step(& mut self, fb : &mut [[[u8; NUM_OF_COLOR]; VISIBLE_SCREEN_WIDTH]; VISIBLE_SCREEN_HEIGHT]) -> bool
     {
         let (hs_int, vs_int) = self.port_controller.gfx.step_render(&mut self.mem, fb);
         let gpio_int = self.port_controller.gpio.step();
-        let irq = self.port_controller.interrupt_controller.process_irq(hs_int, vs_int, false, false, gpio_int);
+        let flash_int = self.port_controller.flash.step(&mut self.mem);
+        let irq = self.port_controller.interrupt_controller.process_irq(hs_int, vs_int, false, flash_int, gpio_int);
    
         self.cpu.execute_one_instruction(&mut self.mem, &mut self.port_controller, irq);
         vs_int

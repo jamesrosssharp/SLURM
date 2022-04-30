@@ -1,5 +1,6 @@
-	.org 0h
+	.org 200h
 
+my_vector_table:
 RESET_VEC:
 	ba start
 HSYNC_VEC:
@@ -16,15 +17,45 @@ VECTORS:
 	.times 20 dw 0x0000
 
 start:
+	// Zero regs (makes it easier to debug waveforms)
+	mov r1, r0
+	mov r2, r0
+	mov r3, r0
+	mov r4, r0
+	mov r5, r0
+	mov r6, r0
+	mov r7, r0
+	mov r8, r0
+	mov r9, r0
+	mov r10, r0
+	mov r11, r0
+	mov r12, r0
+
+	// Copy vectors
+	mov r1, r0
+	mov r2, my_vector_table
+	mov r3, 32
+copy_loop:
+	ld r4,[r2, 0]
+	st [r1, 0], r4
+	add r1, 2
+	add r2, 2
+	sub r3, 1
+	bnz copy_loop
+
 	// Set up stack
 	mov r13, 0x7ffe
 	bl main
 	bl exit
 die:
+	sleep
 	ba die
 
 putc:
 	out [r0, 0], r4
+	nop
+	nop
+	nop
 putc.loop:
 	in r4, [r0, 1]
 	or r4,r4
