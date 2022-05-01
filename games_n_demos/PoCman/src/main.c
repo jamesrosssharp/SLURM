@@ -293,7 +293,7 @@ void update_background()
 
 	// Set X
 	
-	__out(0x5d01, bg_x);
+	__out(0x5d01, bg_x + 16);
 
 	// Set Y
 	
@@ -357,7 +357,7 @@ short collision_detect(short x, short y)
 	int i;
 	int j;
 
-	short g_cur_map_x = (x + bg_x - 16 + 3 + 4) >> 3;
+	short g_cur_map_x = (x + bg_x + 3 + 4) >> 3;
 	short g_cur_map_y = (y + bg_y + 3 + 4) >> 3;
 
 	short offsets[3] = {4,1,7};
@@ -368,7 +368,7 @@ short collision_detect(short x, short y)
 	
 	for (i = 0; i < iter; i++)
 	{
-			short cur_map_x = (x + bg_x - 16 + 3  + offsets[i]) >> 3;
+			short cur_map_x = (x + bg_x + 3  + offsets[i]) >> 3;
 			short cur_map_y = (y + bg_y + 3 + 4 - 8) >> 3;
 	
 			unsigned char* cur_map_tile_p = (unsigned char*)&pacman_tilemap + ((cur_map_x) + ((cur_map_y) << 6));
@@ -380,7 +380,7 @@ short collision_detect(short x, short y)
 
 	for (i = 0; i < iter; i++)
 	{
-			short cur_map_x = (x + bg_x - 16 + 3 + offsets[i]) >> 3;
+			short cur_map_x = (x + bg_x + 3 + offsets[i]) >> 3;
 			short cur_map_y = (y + bg_y + 3 + 4 + 8) >> 3;
 	
 			unsigned char* cur_map_tile_p = (unsigned char*)&pacman_tilemap + ((cur_map_x) + ((cur_map_y) << 6));
@@ -392,7 +392,7 @@ short collision_detect(short x, short y)
 
 	for (i = 0; i < iter; i++)
 	{
-			short cur_map_x = (x + bg_x -16 + 3 + 4 - 8) >> 3;
+			short cur_map_x = (x + bg_x + 3 + 4 - 8) >> 3;
 			short cur_map_y = (y + bg_y + 3 + offsets[i]) >> 3;
 	
 			unsigned char* cur_map_tile_p = (unsigned char*)&pacman_tilemap + ((cur_map_x) + ((cur_map_y) << 6));
@@ -404,7 +404,7 @@ short collision_detect(short x, short y)
 
 	for (i = 0; i < iter; i++)
 	{
-			short cur_map_x = (x + bg_x - 16 + 3 + 4 + 8) >> 3;
+			short cur_map_x = (x + bg_x + 3 + 4 + 8) >> 3;
 			short cur_map_y = (y + bg_y + 3 + offsets[i]) >> 3;
 	
 			unsigned char* cur_map_tile_p = (unsigned char*)&pacman_tilemap + ((cur_map_x) + ((cur_map_y) << 6));
@@ -437,7 +437,7 @@ void scatter_ghosts()
 
 void eat(short x, short y)
 {
-	short cur_map_x = (x + bg_x - 16 + 3 + 4) >> 3;
+	short cur_map_x = (x + bg_x + 3 + 4) >> 3;
 	short cur_map_y = (y + bg_y + 3 + 4) >> 3;
 	
 	unsigned char* cur_map_tile_p = ((unsigned char*)&pacman_tilemap + (cur_map_x) + ((cur_map_y) << 6));

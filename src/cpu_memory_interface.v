@@ -50,7 +50,10 @@ localparam cpust_wait_mem_load2  = 4'b0110; // 6 CPU is waiting for memory grant
 localparam cpust_execute_store   = 4'b0111; // 7 CPU is executing store instruction
 localparam cpust_wait_mem_store1 = 4'b1000; // 8 Wait state when switching banks to store to memory
 localparam cpust_wait_mem_store2 = 4'b1001; // 9 CPU is waiting for memory grant to store to
- 
+localparam cpust_pre_execute 	 = 4'b1010; // 1 CPU is executing non-memory instructions
+localparam cpust_wait_mem_ready1_2 = 4'b1011; // 2 Wait state when switching banks
+localparam cpust_wait_mem_ready2_2 = 4'b1100; // 3 CPU is waiting to access a new memory bank for fetching non-memory instructions
+
 /* addresses */
 
 reg [ADDRESS_BITS - 1:0] next_addr_r;
@@ -168,6 +171,18 @@ begin
 
 			memory_is_instruction_r_next = 1'b0;
 		end
+		cpust_wait_mem_ready1_2: begin
+			cpu_state_r_next = cpust_wait_mem_ready2_2;
+			memory_is_instruction_r_next = 1'b0;
+		end
+		cpust_wait_mem_ready2_2: begin
+			if (memory_ready == 1'b1)
+				cpu_state_r_next = cpust_pre_execute;
+		//	memory_is_instruction_r_next = 1'b0;
+		end
+		cpust_pre_execute: begin
+			cpu_state_r_next = cpust_execute;
+		end
 		/* load instructions (access data memory) */
 		cpust_execute_load: begin
 			if (has_bank_switch(addr_r, prev_addr_r)) begin
@@ -176,7 +191,7 @@ begin
 			end
 			else if (load_memory == 1'b0) begin
 				if (has_bank_switch(addr_r, pc))
-					cpu_state_r_next = cpust_wait_mem_ready1;
+					cpu_state_r_next = cpust_wait_mem_ready1_2;
 				else
 					cpu_state_r_next = cpust_execute;
 			end
@@ -197,7 +212,7 @@ begin
 			end
 			else if (store_memory == 1'b0) begin
 				if (has_bank_switch(addr_r, pc))
-					cpu_state_r_next = cpust_wait_mem_ready1;
+					cpu_state_r_next = cpust_wait_mem_ready1_2;
 				else	
 					cpu_state_r_next = cpust_execute;
 			end
@@ -222,6 +237,7 @@ always @(*) begin
 
 	case (cpu_state_r)
 		cpust_execute,
+		cpust_pre_execute,
 		cpust_execute_load,
 		cpust_execute_store:
 			is_executing_r = 1'b1;
@@ -263,7 +279,9 @@ begin
 
 	case (cpu_state_r)
 		cpust_execute,
-		cpust_wait_mem_ready2: begin
+		cpust_wait_mem_ready2,
+		cpust_wait_mem_ready2_2,
+		cpust_pre_execute: begin
 			valid_r 	 = 1'b1;
 		end
 		cpust_execute_load,
