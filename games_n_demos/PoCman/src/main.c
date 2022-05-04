@@ -743,12 +743,17 @@ void start_game()
 
 int main()
 {
-	
+	int i;
 	
 	load_copper_list(copperList, COUNT_OF(copperList));
 	// Enable copper
 	__out(0x5d20, 1);
 
+	// Make a sawtooth audio wave
+
+	for (i = 0; i < 512; i++)
+		__out(0x3000 | i, i  * (32768 / 512));
+	__out(0x3400, 1);
 
 	load_palette(&pacman_spritesheet_palette, 0, 16);
 	load_palette(&pacman_tileset_palette, 16, 16);

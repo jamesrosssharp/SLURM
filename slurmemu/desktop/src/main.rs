@@ -11,9 +11,13 @@ extern crate image as im;
 
 use fps_counter::*;
 
+extern crate sdl2;
+
+use sdl2::audio::AudioSpecDesired;
+
 
 #[allow(dead_code)]
-fn main() {
+fn main() -> Result<(), String> {
 
     let mut soc = Slurm16SoC::new();
 
@@ -70,6 +74,24 @@ fn main() {
     let mut texture: G2dTexture =
         Texture::from_image(&mut texture_context, &canvas, &TextureSettings::new()).unwrap();
 
+    /* set up audio device */
+
+    let sdl_context = sdl2::init()?;
+    let audio_subsystem = sdl_context.audio()?;
+
+    let desired_spec = AudioSpecDesired {
+        freq: Some(48_000),
+        channels: Some(2),
+        // mono  -
+        samples: None, // default sample size
+    };
+
+    let audio_device = audio_subsystem.open_queue::<i16, _>(None, &desired_spec)?;
+
+    const AUDIO_BUF_SIZE : usize = 4096;
+
+    let mut audio_buf : Vec<i16> = vec![];
+
     let mut fps_counter = FPSCounter::default();
     while let Some(e) = window.next() {
         if let Some(_) = e.render_args() {
@@ -79,7 +101,11 @@ fn main() {
                 
              while cycles < 25125000 / 60 {
 
-                if soc.step(& mut fb) && !fired
+                let mut audio : [i16; 2] = [0 ; 2];
+
+                let (vs_int, emit_audio) = soc.step(& mut fb, &mut audio);  
+
+                if vs_int && !fired
                 {
                     fired = true;
                     for j in 0..VISIBLE_SCREEN_HEIGHT {
@@ -91,6 +117,18 @@ fn main() {
                                 }
                             }
                            
+                }
+
+                if emit_audio
+                {
+                    audio_buf.push(audio[0]);
+                    audio_buf.push(audio[1]);
+                    if audio_buf.len() == AUDIO_BUF_SIZE {
+                    
+                        audio_device.queue_audio(&audio_buf)?;
+                        audio_device.resume();
+                        audio_buf.clear();
+                    }
                 }
 
                 cycles += 1;
@@ -132,4 +170,5 @@ fn main() {
         }
     }
 
+    Ok(())
 }

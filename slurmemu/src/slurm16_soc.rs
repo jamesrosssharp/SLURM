@@ -21,7 +21,6 @@ pub const NUM_OF_COLOR : usize = 3;
 pub const VISIBLE_SCREEN_WIDTH: usize = 640;
 pub const VISIBLE_SCREEN_HEIGHT: usize = 480;
 
-
 pub enum SlurmButton {
     A,
     B,
@@ -66,15 +65,17 @@ impl Slurm16SoC
         self.port_controller.flash.set_flash(flash);
     }
 
-    pub fn step(& mut self, fb : &mut [[[u8; NUM_OF_COLOR]; VISIBLE_SCREEN_WIDTH]; VISIBLE_SCREEN_HEIGHT]) -> bool
+    pub fn step(& mut self, fb : &mut [[[u8; NUM_OF_COLOR]; VISIBLE_SCREEN_WIDTH]; VISIBLE_SCREEN_HEIGHT], audio_out: &mut [i16; 2]) -> 
+            (bool /* vs int - tell caller to buffer flip */, bool /* emit audio - tell caller to emit an audio buffer */)
     {
         let (hs_int, vs_int) = self.port_controller.gfx.step_render(&mut self.mem, fb);
         let gpio_int = self.port_controller.gpio.step();
         let flash_int = self.port_controller.flash.step(&mut self.mem);
-        let irq = self.port_controller.interrupt_controller.process_irq(hs_int, vs_int, false, flash_int, gpio_int);
-   
+        let (emit_audio, audio_int) = self.port_controller.audio.step(audio_out);
+        let irq = self.port_controller.interrupt_controller.process_irq(hs_int, vs_int, audio_int, flash_int, gpio_int);
+
         self.cpu.execute_one_instruction(&mut self.mem, &mut self.port_controller, irq);
-        vs_int
+        (vs_int, emit_audio)
     }
 
     pub fn push_button(& mut self, button : SlurmButton)
