@@ -326,7 +326,7 @@ void update_background()
 
 void enable_interrupts()
 {
-	__out(0x7000, 0x2);
+	__out(0x7000, 0x2 | 0x4); // Audio and video interrupts
 	global_interrupt_enable();
 }
 
@@ -741,6 +741,15 @@ void start_game()
 	frame = 0;
 }
 
+#include "pocman_sound.c"
+
+volatile short g_vsync = 0;
+
+void handle_vsync()
+{
+	g_vsync = 1;
+}
+
 int main()
 {
 	int i;
@@ -749,14 +758,10 @@ int main()
 	// Enable copper
 	__out(0x5d20, 1);
 
-	// Make a sawtooth audio wave
-
-	for (i = 0; i < 512; i++)
-		__out(0x3000 | i, i  * (32768 / 512));
-	__out(0x3400, 1);
-
 	load_palette(&pacman_spritesheet_palette, 0, 16);
 	load_palette(&pacman_tileset_palette, 16, 16);
+
+	init_sound();
 
 	start_game();
 
@@ -764,11 +769,15 @@ int main()
 
 	while (1)
 	{
-		frame++;
-		check_ghost_player_collisions();
-		update_ghosts();
-		process_keys();
-		update_background();
+		if (g_vsync)
+		{
+			g_vsync = 0;
+			check_ghost_player_collisions();
+			update_ghosts();
+			process_keys();
+			update_background();
+			update_sound();
+		}
 //		copperList[0] = 0x7000 | (frame++ & 31);
 //		load_copper_list(copperList, COUNT_OF(copperList));
 		__sleep();

@@ -79,12 +79,13 @@ impl AudioCore {
         }
         else {
 
-            match (port & 0xf00) >> 8 {
-                1 => return self.left_read_pointer as u16,
-                2 => return self.right_read_pointer as u16,
-                _ => {},
+            if (port & 0xf00) == 0x400 {
+              match port & 0xf {
+                    1 => return self.left_read_pointer as u16,
+                    2 => return self.right_read_pointer as u16,
+                    _ => {},
+              }
             }
-
         }
 
         0

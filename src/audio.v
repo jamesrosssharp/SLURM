@@ -33,7 +33,6 @@ localparam MCLK_FREQ  = CLK_FREQ / 2;
 localparam LRCLK_FREQ = MCLK_FREQ / 256;
 localparam SCLK_FREQ  = LRCLK_FREQ * 64;
 
-assign DATA_OUT = {BITS{1'b0}};
 
 assign mclk = CLK;
 
@@ -47,8 +46,8 @@ reg sclk_r_next;
 
 assign sclk = sclk_r;
 
-reg [7:0] lr_clk_count_r; // CLK / 256
-reg [1:0] sclk_count_r;   // CLK / 8
+reg [7:0] lr_clk_count_r = 0; // CLK / 256
+reg [1:0] sclk_count_r = 0;   // CLK / 8
 
 reg [63:0] serial_data_r = {64{1'b0}};
 reg [63:0] serial_data_r_next;

@@ -6,9 +6,9 @@ RESET_VEC:
 HSYNC_VEC:
 	ba dummy_handler
 VSYNC_VEC:
-	ba dummy_handler
+	ba vsync_handler
 AUDIO_VEC:
-	ba dummy_handler
+	ba audio_handler
 SPI_FLASH:
 	ba dummy_handler
 GPIO_VEC:
@@ -94,4 +94,73 @@ dummy_handler:
 	mov r1, 0xffff
 	out [r0, 0x7001], r1
 	iret
+
+vsync_handler:
+	stf r1
+
+	sub r13, 32
+	st [r13, 16], r1
+	st [r13, 18], r2
+	st [r13, 20], r3
+	st [r13, 22], r4
+	st [r13, 24], r5
+	st [r13, 26], r6
+	st [r13, 28], r7
+	st [r13, 30], r15
+	
+
+
+	mov r1, 0x2
+	out [r0, 0x7001], r1
+	bl	handle_vsync
+	
+	ld r1, [r13, 16]
+	ld r2, [r13, 18]
+	ld r3, [r13, 20]
+	ld r4, [r13, 22]
+	ld r5, [r13, 24]
+	ld r6, [r13, 26]
+	ld r7, [r13, 28]
+	ld r15,[r13, 30]
+	
+
+	add r13, 32
+	rsf r1
+
+	iret
+
+audio_handler:
+	stf r1
+
+	sub r13, 32
+
+	st [r13, 16], r1
+	st [r13, 18], r2
+	st [r13, 20], r3
+	st [r13, 22], r4
+	st [r13, 24], r5
+	st [r13, 26], r6
+	st [r13, 28], r7
+	st [r13, 30], r15
+	
+	mov r1, 0x4
+	out [r0, 0x7001], r1
+	bl	mix_audio
+
+	ld r1, [r13, 16]
+	ld r2, [r13, 18]
+	ld r3, [r13, 20]
+	ld r4, [r13, 22]
+	ld r5, [r13, 24]
+	ld r6, [r13, 26]
+	ld r7, [r13, 28]
+	ld r15,[r13, 30]
+	
+	add r13, 32
+
+	rsf r1
+
+	iret
+
+
 
