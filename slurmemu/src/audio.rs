@@ -13,6 +13,8 @@ pub struct AudioCore {
     right_read_pointer : usize,
     ticks : u32,
     prev_left_read_high : bool,
+    left_accu : i16,
+    right_accu : i16
 }
 
 impl AudioCore {
@@ -26,6 +28,8 @@ impl AudioCore {
             right_read_pointer : 0,
             ticks : 0,
             prev_left_read_high : false,
+            left_accu : 0,
+            right_accu : 0,
         }
     }
 
@@ -43,8 +47,15 @@ impl AudioCore {
          
                 self.ticks = 0;
                 emit_audio  = true;
-                audio_out[0] = self.left_ram[self.left_read_pointer];
-                audio_out[1] = self.right_ram[self.right_read_pointer];
+
+                self.left_accu += self.left_ram[self.left_read_pointer]; 
+                self.right_accu += self.right_ram[self.right_read_pointer];
+
+                self.left_accu /= 2;
+                self.right_accu /= 2;
+
+                audio_out[0] = self.left_accu; 
+                audio_out[1] = self.right_accu; 
                 self.left_read_pointer  += 1;
                 self.right_read_pointer += 1;
                

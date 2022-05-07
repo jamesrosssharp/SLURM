@@ -101,7 +101,7 @@ end
 
 initial begin
     $dumpvars(0, tb);
-	# 200000000 $finish;
+	# 100000000 $finish;
 //	# 1000000 $finish;	
 end
 

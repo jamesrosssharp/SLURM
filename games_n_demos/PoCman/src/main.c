@@ -330,6 +330,12 @@ void enable_interrupts()
 	global_interrupt_enable();
 }
 
+void disable_interrupts()
+{
+	global_interrupt_disable();
+}
+
+
 short keys = 0;
 
 #define UP_KEY 1
@@ -743,12 +749,9 @@ void start_game()
 
 #include "pocman_sound.c"
 
-volatile short g_vsync = 0;
+extern volatile short g_vsync;
+extern volatile short g_audio;
 
-void handle_vsync()
-{
-	g_vsync = 1;
-}
 
 int main()
 {
@@ -765,21 +768,29 @@ int main()
 
 	start_game();
 
-	enable_interrupts();
 
 	while (1)
 	{
+		disable_interrupts();
 		if (g_vsync)
 		{
-			g_vsync = 0;
 			check_ghost_player_collisions();
 			update_ghosts();
 			process_keys();
 			update_background();
 			update_sound();
+			g_vsync = 0;
+		}
+
+		if (g_audio)
+		{
+			mix_audio();
+			g_audio = 0;
 		}
 //		copperList[0] = 0x7000 | (frame++ & 31);
 //		load_copper_list(copperList, COUNT_OF(copperList));
+
+		enable_interrupts();
 		__sleep();
 	}
 	putc('!');

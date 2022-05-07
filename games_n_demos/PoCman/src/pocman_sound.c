@@ -260,8 +260,8 @@ struct MusicLine music[G_NOTES] = {
 	{{{Note_C, 4, 1}, {Note_C, 2, 1}}}, // 2
 	{{{Note_C, 5, 1}, {Note_C, 2, 1}}}, // 3
 	{{{Note_C, 5, 1}, {Note_C, 2, 1}}}, // 4
-	{{{Note_G, 4, 1}, {Note_C, 2, 1}}}, // 5
-	{{{Note_G, 4, 1}, {Note_C, 2, 1}}}, // 6
+	{{{Note_G, 4, 1}, {Note_C, 2, 0}}}, // 5
+	{{{Note_G, 4, 1}, {Note_C, 2, 0}}}, // 6
 	{{{Note_E, 4, 1}, {Note_C, 3, 1}}}, // 7
 	{{{Note_E, 4, 1}, {Note_C, 3, 1}}}, // 8
 
@@ -269,17 +269,17 @@ struct MusicLine music[G_NOTES] = {
 	{{{Note_G, 5, 1}, {Note_C, 2, 1}}}, // 2
 	{{{Note_G, 4, 1}, {Note_C, 2, 1}}}, // 3
 	{{{Note_G, 4, 1}, {Note_C, 2, 1}}}, // 4
-	{{{Note_E, 4, 1}, {Note_C, 2, 1}}}, // 5
-	{{{Note_E, 4, 1}, {Note_C, 2, 1}}},	// 6
-	{{{Note_E, 4, 1}, {Note_C, 3, 1}}}, // 7
-	{{{Note_E, 4, 1}, {Note_C, 3, 1}}}, // 8
+	{{{Note_E, 4, 1}, {Note_C, 2, 0}}}, // 5
+	{{{Note_E, 4, 1}, {Note_C, 2, 0}}},	// 6
+	{{{Note_E, 4, 0}, {Note_C, 3, 1}}}, // 7
+	{{{Note_E, 4, 0}, {Note_C, 3, 1}}}, // 8
 
 	{{{Note_Csharp, 4, 1}, {Note_Csharp, 2, 1}}}, // 1 - Beat 3
 	{{{Note_Csharp, 4, 1}, {Note_Csharp, 2, 1}}}, // 2
 	{{{Note_Csharp, 5, 1}, {Note_Csharp, 2, 1}}}, // 3
 	{{{Note_Csharp, 5, 1}, {Note_Csharp, 2, 1}}}, // 4
-	{{{Note_Gsharp, 4, 1}, {Note_Csharp, 2, 1}}}, // 5
-	{{{Note_Gsharp, 4, 1}, {Note_Csharp, 2, 1}}}, // 6
+	{{{Note_Gsharp, 4, 1}, {Note_Csharp, 2, 0}}}, // 5
+	{{{Note_Gsharp, 4, 1}, {Note_Csharp, 2, 0}}}, // 6
 	{{{Note_F, 4, 1}, {Note_Csharp, 3, 1}}}, // 7
 	{{{Note_F, 4, 1}, {Note_Csharp, 3, 1}}}, // 8
 
@@ -287,18 +287,18 @@ struct MusicLine music[G_NOTES] = {
 	{{{Note_Gsharp, 5, 1}, {Note_Csharp, 2, 1}}}, // 2
 	{{{Note_Gsharp, 4, 1}, {Note_Csharp, 2, 1}}}, // 3
 	{{{Note_Gsharp, 4, 1}, {Note_Csharp, 2, 1}}}, // 4
-	{{{Note_F, 4, 1}, {Note_Csharp, 2, 1}}}, // 5
-	{{{Note_F, 4, 1}, {Note_Csharp, 2, 1}}},	// 6
-	{{{Note_F, 4, 1}, {Note_Csharp, 3, 1}}}, // 7
-	{{{Note_F, 4, 1}, {Note_Csharp, 3, 1}}}, // 8
+	{{{Note_F, 4, 1}, {Note_Csharp, 2, 0}}}, // 5
+	{{{Note_F, 4, 1}, {Note_Csharp, 2, 0}}},	// 6
+	{{{Note_F, 4, 0}, {Note_Csharp, 3, 1}}}, // 7
+	{{{Note_F, 4, 0}, {Note_Csharp, 3, 1}}}, // 8
 
 
 	{{{Note_C, 4, 1}, {Note_C, 2, 1}}}, // 1 - Beat 5
 	{{{Note_C, 4, 1}, {Note_C, 2, 1}}}, // 2
 	{{{Note_C, 5, 1}, {Note_C, 2, 1}}}, // 3
 	{{{Note_C, 5, 1}, {Note_C, 2, 1}}}, // 4
-	{{{Note_G, 4, 1}, {Note_C, 2, 1}}}, // 5
-	{{{Note_G, 4, 1}, {Note_C, 2, 1}}}, // 6
+	{{{Note_G, 4, 1}, {Note_C, 2, 0}}}, // 5
+	{{{Note_G, 4, 1}, {Note_C, 2, 0}}}, // 6
 	{{{Note_E, 4, 1}, {Note_C, 3, 1}}}, // 7
 	{{{Note_E, 4, 1}, {Note_C, 3, 1}}}, // 8
 
@@ -306,10 +306,10 @@ struct MusicLine music[G_NOTES] = {
 	{{{Note_G, 5, 1}, {Note_C, 2, 1}}}, // 2
 	{{{Note_G, 4, 1}, {Note_C, 2, 1}}}, // 3
 	{{{Note_G, 4, 1}, {Note_C, 2, 1}}}, // 4
-	{{{Note_E, 4, 1}, {Note_C, 2, 1}}}, // 5
-	{{{Note_E, 4, 1}, {Note_C, 2, 1}}},	// 6
-	{{{Note_E, 4, 1}, {Note_C, 3, 1}}}, // 7
-	{{{Note_E, 4, 1}, {Note_C, 3, 1}}}, // 8
+	{{{Note_E, 4, 1}, {Note_C, 2, 0}}}, // 5
+	{{{Note_E, 4, 1}, {Note_C, 2, 0}}},	// 6
+	{{{Note_E, 4, 0}, {Note_C, 3, 1}}}, // 7
+	{{{Note_E, 4, 0}, {Note_C, 3, 1}}}, // 8
 
 	{{{Note_E, 4, 1}, {Note_G, 2, 1}}}, // 1 - Beat 7
 	{{{Note_F, 4, 1}, {Note_G, 2, 1}}}, // 2
@@ -322,12 +322,12 @@ struct MusicLine music[G_NOTES] = {
 
 	{{{Note_Gsharp, 4, 1}, {Note_B, 2, 1}}}, // 1 - Beat 8
 	{{{Note_A, 4, 1}, {Note_B, 2, 1}}}, // 2
-	{{{Note_B, 4, 1}, {Note_B, 2, 1}}}, // 3
-	{{{Note_B, 4, 0}, {Note_B, 2, 1}}}, // 4
+	{{{Note_B, 4, 1}, {Note_B, 2, 0}}}, // 3
+	{{{Note_B, 4, 0}, {Note_B, 2, 0}}}, // 4
 	{{{Note_C, 5, 1}, {Note_C, 3, 1}}}, // 5
 	{{{Note_C, 5, 1}, {Note_C, 3, 1}}},	// 6
-	{{{Note_C, 5, 1}, {Note_C, 3, 1}}}, // 7
-	{{{Note_C, 5, 1}, {Note_C, 3, 1}}}, // 8
+	{{{Note_C, 5, 0}, {Note_C, 3, 0}}}, // 7
+	{{{Note_C, 5, 0}, {Note_C, 3, 0}}}, // 8
 
 };
 
@@ -336,6 +336,7 @@ struct Wave {
 	short ampl;
 	short phase;
 	short state;
+	short decay;
 };
 
 struct Wave waves[2];
@@ -371,37 +372,48 @@ void update_sound()
 
 	g_ticks += 1;
 
-	if (g_ticks == 3)
+	if (g_ticks == 4)
 	{
 		g_ticks = 0;
+		
 		g_note += 1;
 		if (g_note >= G_NOTES)
 			g_note = 0;
+	
 	}
-
-	for (i = 0; i < 2; i++)
+	else if (g_ticks == 1)
 	{
-		struct Note *note = &music[g_note].note[i];
+		for (i = 0; i < 2; i++)
+		{
+			struct Note *note = &music[g_note].note[i];
 
-		short freq = frequencies[note->note + 12*note->octave];
+			short freq = frequencies[note->note + 12*note->octave];
 
-		waves[i].freq = freq;
-		waves[i].ampl = note->note_on ? 16000 : 0;
+			waves[i].freq = freq;
+			if (note->note_on) {
+				//waves[i].ampl = 0;
+				if (waves[i].ampl == 0)
+					waves[i].decay = -5;
+			}
+			else {
+				waves[i].decay = 5;
+			}
+		}
+	
 	}
-
-}
-
-short gen_wave(short wave)
-{
-	waves[wave].phase += waves[wave].freq;
-
-	if (waves[wave].phase > AUDIO_RATE)
+	else if (g_ticks == 2)
 	{
-		waves[wave].phase -= AUDIO_RATE;
-		waves[wave].state = !waves[wave].state;
-	}
+		for (i = 0; i < 2; i++)
+		{
+			struct Note *note = &music[g_note].note[i];
 
-	return ((waves[wave].state * 2) - 1) * waves[wave].ampl;
+			if (note->note_on) 
+			{
+				//waves[i].ampl = 16000;
+				waves[i].decay = 0;
+			}
+		}
+	}
 
 }
 
@@ -412,20 +424,12 @@ void mix_audio()
 	//trace_hex(left_read);
 
 	if (left_read & 0x100) {
-		int i;
-		for (i = 0; i < 256; i++)
-		{
-			__out(0x3000 | i, gen_wave(0));
-			__out(0x3200 | i, gen_wave(1));
-		}
+		__asm_mix_audio(0x3000, &waves[0]);
+		__asm_mix_audio(0x3200, &waves[1]);
 	}
 	else {
-		int i;
-		for (i = 256; i < 512; i++)
-		{
-			__out(0x3000 | i, gen_wave(0));
-			__out(0x3200 | i, gen_wave(1));
-		}
+		__asm_mix_audio(0x3100, &waves[0]);
+		__asm_mix_audio(0x3300, &waves[1]);
 	}
 	//trace_char('!');
 }
