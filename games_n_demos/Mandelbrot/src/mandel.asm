@@ -32,8 +32,11 @@ mandel_loop.loop:
 	mul r8,r8	
 	mul r9,r9
 	mul r10, r7
+	nop	
 	nop
 	sub r8,r9
+	nop
+	nop
 	nop
 	// r8: Re{Z^2} r9: Im{Z^2}, 2:14 fixed point
 	// convert to 1:7 fixed point
@@ -41,27 +44,35 @@ mandel_loop.loop:
 	asr r8
 	asr r10
 	nop
-	asr r8
-	asr r10
 	nop
 	asr r8
 	asr r10
 	nop
-	asr r8
-	asr r10
 	nop
 	asr r8
 	asr r10
 	nop
+	nop
 	asr r8
 	asr r10
 	nop
+	nop
 	asr r8
+	asr r10
+	nop
+	nop
+	asr r8
+	asr r10
+	nop
+	nop
+	asr r8
+	nop
 
 	// Z <- Z^2 + C 
 	add r10, r5
 	nop	
 	add r8, r4
+	nop
 	nop
 
 	// Store Z
@@ -71,6 +82,7 @@ mandel_loop.loop:
 	// Compute length
 	asr r8
 	asr r10
+	nop
 	nop
 	mul r8, r8
 	mul r10, r10

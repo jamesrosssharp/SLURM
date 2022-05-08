@@ -77,7 +77,7 @@ void render_mandelbrot()
 	int i;
 
 	//trace_hex(0x666);
-	for (i = 0; i < 256; i++)
+	for (i = 0; i < 240; i++)
 	{
 		int r;
 		short rr = r1;
@@ -131,6 +131,7 @@ void cycle_palette()
 
 int main()
 {
+	int i;
 
  	// set 320x240 mode
     __out(0x5f02, 1);
@@ -141,10 +142,16 @@ int main()
 	load_palette(&mandelbrot_palette, 0, 16);
 
 	set_up_sprites();
-	//clear_screen();
+	enable_interrupts();
+	
+	clear_screen();
+	
+	for (i = 0; i < 250; i++)
+	{
+		__sleep();
+	}
 
 	render_mandelbrot();
-	enable_interrupts();
 
 	while (1)
 	{
