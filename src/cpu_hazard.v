@@ -106,17 +106,17 @@ begin
 	if (regA_sel0 != R0) begin
 		if (regA_sel0 == hazard_reg2)
 			hazard_23 = 1'b1;
-// We don't need register hazards from stage 3??
-//		if (regA_sel0 == hazard_reg3)
-//			hazard_23 = 1'b1;
+// We *do* need register hazards from stage 3
+		if (regA_sel0 == hazard_reg3)
+			hazard_23 = 1'b1;
 	end
 
 	if (regB_sel0 != R0) begin
 
 		if (regB_sel0 == hazard_reg2)
 			hazard_23 = 1'b1;
-//		if (regB_sel0 == hazard_reg3)
-//			hazard_23 = 1'b1;
+		if (regB_sel0 == hazard_reg3)
+			hazard_23 = 1'b1;
 	end
 
 	casex(instruction)

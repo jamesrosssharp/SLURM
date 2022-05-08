@@ -65,7 +65,11 @@ impl Copper {
                     self.y_flip = val & 0x1ff;
                     self.y_flip_en = (val & 0x8000) == 0x8000;
                 },
-                2 => /* background color */ {},
+                2 => /* background color */ {
+                    self.r = ((val & 0xf00) >> 4) as u8;
+                    self.g = (val & 0x0f0) as u8;
+                    self.b = ((val & 0x00f) << 4) as u8;
+                },
                 3 => /* x pan */ {
                     self.x_pan = val;
                 },

@@ -291,7 +291,8 @@ begin
 		cpust_execute_store,
 		cpust_wait_mem_store2: begin
 			valid_r = 1'b1; 
-			wr_r = 1'b1;
+			if (!has_bank_switch(addr_r, prev_addr_r))
+				wr_r = 1'b1;
 		end
 		default: ;
 	endcase

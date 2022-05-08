@@ -55,6 +55,7 @@ all: $(PROJ).h
 BLOODLUST_BIN=../../games_n_demos/BloodLust/build/bloodlust.bin
 POCMAN_BIN=../../games_n_demos/PoCman/build/pocman.bin
 SIEVE_BIN=../../games_n_demos/Sieve/build/sieve.bin
+MANDEL_BIN=../../games_n_demos/Mandelbrot/build/mandelbrot.bin
 
 GAME_BIN=$(BLOODLIST_BIN)
 
@@ -113,6 +114,13 @@ pocman: $(PROJ).bin
 sieve: $(PROJ).bin
 	$(ICEPROG) $(PROJ).bin
 	$(ICEPROG) -o 1M  $(SIEVE_BIN) 
+
+.PHONY: mandel
+mandel: $(PROJ).bin
+	$(ICEPROG) $(PROJ).bin
+	$(ICEPROG) -o 1M  $(MANDEL_BIN) 
+
+
 
 prog: $(PROJ).bin app_image
 	$(ICEPROG) $(PROJ).bin
