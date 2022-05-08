@@ -1,11 +1,13 @@
 SLURM16 SoC - SLightly Useful RISC Machine, 16 bit, system-on-chip
 ==================================================================
 
-![ScreenShot](ScreenShot.png)
+![ScreenShot3](Screenshots/ScreenShot4.gif)
 
-![ScreenShot2](ScreenShot2.png)
+![ScreenShot](Screenshots/ScreenShot.png)
 
-![ScreenShot3](ScreenShot3.png)
+![ScreenShot2](Screenshots/ScreenShot2.png)
+
+![ScreenShot3](Screenshots/ScreenShot3.png)
 
 Video console system-on-chip made for the iCE40 UP5K FPGA.
 
