@@ -372,7 +372,7 @@ void update_sound()
 
 	g_ticks += 1;
 
-	if (g_ticks == 4)
+	if (g_ticks == 12)
 	{
 		g_ticks = 0;
 		
@@ -401,7 +401,7 @@ void update_sound()
 		}
 	
 	}
-	else if (g_ticks == 2)
+	else if (g_ticks == 5)
 	{
 		for (i = 0; i < 2; i++)
 		{
@@ -419,10 +419,13 @@ void update_sound()
 
 void mix_audio()
 {
+
 	// Find out which half of the block ram we are currently reading
-	short left_read	= __in(0x3401);
+	short left_read	= __in(0x3402);
 	//trace_hex(left_read);
 
+	update_sound();
+	
 	if (left_read & 0x100) {
 		__asm_mix_audio(0x3000, &waves[0]);
 		__asm_mix_audio(0x3200, &waves[1]);

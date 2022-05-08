@@ -66,8 +66,14 @@ __asm_mix_audio.no_decay_wrap:
 	mov r9, r0
 __asm_mix_audio.no_decay_wrap2:
 	lsl r12
+	nop
+	nop
 	sub r12, 1
+	nop
+	nop
 	mul r12, r10
+	nop
+	nop
 	out [r4, 0], r12 	
 	add r4, 1
 	sub r6, 1

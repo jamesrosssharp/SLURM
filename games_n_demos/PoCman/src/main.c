@@ -772,21 +772,23 @@ int main()
 	while (1)
 	{
 		disable_interrupts();
-		if (g_vsync)
-		{
-			check_ghost_player_collisions();
-			update_ghosts();
-			process_keys();
-			update_background();
-			update_sound();
-			g_vsync = 0;
-		}
 
 		if (g_audio)
 		{
 			mix_audio();
 			g_audio = 0;
 		}
+
+		if (g_vsync)
+		{
+			check_ghost_player_collisions();
+			update_ghosts();
+			process_keys();
+			update_background();
+			//update_sound();
+			g_vsync = 0;
+		}
+
 //		copperList[0] = 0x7000 | (frame++ & 31);
 //		load_copper_list(copperList, COUNT_OF(copperList));
 
