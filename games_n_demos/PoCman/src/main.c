@@ -769,6 +769,7 @@ int main()
 	start_game();
 
 
+	enable_interrupts();
 	while (1)
 	{
 		disable_interrupts();
@@ -792,7 +793,7 @@ int main()
 //		copperList[0] = 0x7000 | (frame++ & 31);
 //		load_copper_list(copperList, COUNT_OF(copperList));
 
-		enable_interrupts();
+	//	enable_interrupts();
 		__sleep();
 	}
 	putc('!');

@@ -358,11 +358,11 @@ void init_sound()
 		waves[i].phase = 0;
 	}
 
-	for (i = 0; i < 512; i++)
-	{		__out(0x3000 | i, i * (32767 / 512));
-			__out(0x3000 | i, i * 2 * (32767 / 512));
+	for (i = 0; i < 1024; i++)
+	{		__out(0x3000 + i, 0);
+			__out(0x3400 + i, 0);
 	}
-	__out(0x3400, 1);
+	__out(0x3800, 1);
 
 }
 
@@ -372,7 +372,7 @@ void update_sound()
 
 	g_ticks += 1;
 
-	if (g_ticks == 12)
+	if (g_ticks == 6)
 	{
 		g_ticks = 0;
 		
@@ -393,15 +393,15 @@ void update_sound()
 			if (note->note_on) {
 				//waves[i].ampl = 0;
 				if (waves[i].ampl == 0)
-					waves[i].decay = -5;
+					waves[i].decay = -1;
 			}
 			else {
-				waves[i].decay = 5;
+				waves[i].decay = 1;
 			}
 		}
 	
 	}
-	else if (g_ticks == 5)
+	else if (g_ticks == 2)
 	{
 		for (i = 0; i < 2; i++)
 		{
@@ -421,18 +421,18 @@ void mix_audio()
 {
 
 	// Find out which half of the block ram we are currently reading
-	short left_read	= __in(0x3402);
+	short left_read	= __in(0x3802);
 	//trace_hex(left_read);
 
 	update_sound();
 	
-	if (left_read & 0x100) {
+	if (left_read & 0x200) {
 		__asm_mix_audio(0x3000, &waves[0]);
-		__asm_mix_audio(0x3200, &waves[1]);
+		__asm_mix_audio(0x3400, &waves[1]);
 	}
 	else {
-		__asm_mix_audio(0x3100, &waves[0]);
-		__asm_mix_audio(0x3300, &waves[1]);
+		__asm_mix_audio(0x3200, &waves[0]);
+		__asm_mix_audio(0x3600, &waves[1]);
 	}
 	//trace_char('!');
 }

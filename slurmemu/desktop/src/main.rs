@@ -88,7 +88,7 @@ fn main() -> Result<(), String> {
 
     let audio_device = audio_subsystem.open_queue::<i16, _>(None, &desired_spec)?;
 
-    const AUDIO_BUF_SIZE : usize = 8192;
+    const AUDIO_BUF_SIZE : usize = 1024;
 
     let mut audio_buf : Vec<i16> = vec![];
 

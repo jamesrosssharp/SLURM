@@ -34,7 +34,7 @@ __asm_mix_audio:
 
 
 	// r6 : loop counter
-	mov r6, 256
+	mov r6, 512
 
 	// r7 <- freq
 	ld r7, [r5, 0]
@@ -60,9 +60,9 @@ __asm_mix_audio.no_state_change:
 	mov r10, r0
 	mov r9, r0
 __asm_mix_audio.no_decay_wrap:
-	cmp r10, 16000
+	cmp r10, 127
 	blt __asm_mix_audio.no_decay_wrap2
-	mov r10, 16000
+	mov r10, 127
 	mov r9, r0
 __asm_mix_audio.no_decay_wrap2:
 	lsl r12

@@ -54,45 +54,45 @@ reg [63:0] serial_data_r_next;
 
 assign sdat = serial_data_r[63]; // serial data out
 
-reg [8:0] left_rd_addr, left_rd_addr_next;
-wire [15:0] left_rd_data;
+reg [9:0] left_rd_addr, left_rd_addr_next;
+wire [7:0] left_rd_data;
 
 reg left_wr;
 
-bram #(.BITS(16), .ADDRESS_BITS(9)) left_bram
+bram #(.BITS(8), .ADDRESS_BITS(10)) left_bram
 (
 	CLK,
 	left_rd_addr,
 	left_rd_data,
-	ADDRESS[8:0],
-	DATA_IN,
+	ADDRESS[9:0],
+	DATA_IN[7:0],
 	left_wr
 );
 
-reg [8:0] right_rd_addr, right_rd_addr_next;
-wire [15:0] right_rd_data;
+reg [9:0] right_rd_addr, right_rd_addr_next;
+wire [7:0] right_rd_data;
 
 reg right_wr;
 
-bram #(.BITS(16), .ADDRESS_BITS(9)) right_bram
+bram #(.BITS(8), .ADDRESS_BITS(10)) right_bram
 (
 	CLK,
 	right_rd_addr,
 	right_rd_data,
-	ADDRESS[8:0],
-	DATA_IN,
+	ADDRESS[9:0],
+	DATA_IN[7:0],
 	right_wr
 );
 
-assign irq = right_rd_addr[8] ^ right_rd_addr_next[8];
+assign irq = right_rd_addr[9] ^ right_rd_addr_next[9];
 
 reg control_run, control_run_next;
 
 always @(posedge CLK)
 begin
 	if (RSTb == 1'b0) begin
-		left_rd_addr  <= 9'd0;
-		right_rd_addr <= 9'd0;
+		left_rd_addr  <= 10'd0;
+		right_rd_addr <= 10'd0;
 		control_run <= 1'b0;
 	end else begin
 		lr_clk_count_r 	<= lr_clk_count_r + 1;	
@@ -130,10 +130,10 @@ begin
 
 		if (control_run == 1'b1) begin
 			if (lr_clk_r == 1'b0) begin // Left channel going to right channel
-				serial_data_r_next[62:47] = right_rd_data;
+				serial_data_r_next[62:55] = right_rd_data;
 				right_rd_addr_next = right_rd_addr + 1;	
 			end else begin
-				serial_data_r_next[62:47] = left_rd_data;
+				serial_data_r_next[62:55] = left_rd_data;
 				left_rd_addr_next = left_rd_addr + 1;	
 			end
 		end else
@@ -157,18 +157,18 @@ begin
 	dout = 16'd0;
 // verilator lint_off CASEX
 	casex (ADDRESS)
-		12'b000xxxxxxxxx:	/* left BRAM : 512 words */
+		12'b00xxxxxxxxxx:	/* left BRAM : 1024 words */
 			left_wr = WR;
-		12'b001xxxxxxxxx:	/* right BRAM : 512 */
+		12'b01xxxxxxxxxx:	/* right BRAM : 1024 */
 			right_wr = WR;
-		12'h400:	/* Control reg */
+		12'h800:	/* Control reg */
 			if (WR == 1'b1) begin
 				control_run_next = DATA_IN[0];
 			end
-		12'h401: /* Left read pointer */
-			dout = {7'd0, left_rd_addr};
-		12'h402: /* Right read pointer */
-			dout = {7'd0, right_rd_addr};
+		12'h801: /* Left read pointer */
+			dout = {6'd0, left_rd_addr};
+		12'h802: /* Right read pointer */
+			dout = {6'd0, right_rd_addr};
 		default:;
 	endcase
 end

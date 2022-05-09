@@ -2,19 +2,17 @@
 //  Emulate Audio core
 //
 
-pub const AUDIO_RAM_SIZE : usize = 512;
+pub const AUDIO_RAM_SIZE : usize = 1024;
 
 pub struct AudioCore {
 
-    left_ram  : [i16; AUDIO_RAM_SIZE],
-    right_ram : [i16; AUDIO_RAM_SIZE],
+    left_ram  : [i8; AUDIO_RAM_SIZE],
+    right_ram : [i8; AUDIO_RAM_SIZE],
     run       : bool,
     left_read_pointer : usize,
     right_read_pointer : usize,
     ticks : u32,
     prev_left_read_high : bool,
-    left_accu : i16,
-    right_accu : i16
 }
 
 impl AudioCore {
@@ -28,8 +26,6 @@ impl AudioCore {
             right_read_pointer : 0,
             ticks : 0,
             prev_left_read_high : false,
-            left_accu : 0,
-            right_accu : 0,
         }
     }
 
@@ -48,14 +44,9 @@ impl AudioCore {
                 self.ticks = 0;
                 emit_audio  = true;
 
-                self.left_accu += self.left_ram[self.left_read_pointer]; 
-                self.right_accu += self.right_ram[self.right_read_pointer];
+                audio_out[0] = (self.left_ram[self.left_read_pointer] as i16) << 8; 
+                audio_out[1] = (self.right_ram[self.right_read_pointer] as i16) << 8;
 
-                self.left_accu /= 2;
-                self.right_accu /= 2;
-
-                audio_out[0] = self.left_accu; 
-                audio_out[1] = self.right_accu; 
                 self.left_read_pointer  += 1;
                 self.right_read_pointer += 1;
                
@@ -77,20 +68,20 @@ impl AudioCore {
     {
         if write {
 
-            if (port & 0xfff) == 0x400 {
+            if (port & 0xfff) == 0x800 {
                 self.run = val & 1 == 1;
             }
-            else if (port & 0xe00) == 0x000 {
-                self.left_ram[(port & 0x1ff) as usize] = val as i16;
+            else if (port & 0xc00) == 0x000 {
+                self.left_ram[(port & 0x3ff) as usize] = val as i8;
             }
-            else if (port & 0xe00) == 0x200 {
-                self.right_ram[(port & 0x1ff) as usize] = val as i16;
+            else if (port & 0xc00) == 0x400 {
+                self.right_ram[(port & 0x3ff) as usize] = val as i8;
             }
 
         }
         else {
 
-            if (port & 0xf00) == 0x400 {
+            if (port & 0xf00) == 0x800 {
               match port & 0xf {
                     1 => return self.left_read_pointer as u16,
                     2 => return self.right_read_pointer as u16,

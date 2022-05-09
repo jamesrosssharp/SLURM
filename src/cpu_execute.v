@@ -261,6 +261,9 @@ begin
 			if (is_ret_or_iret(instruction) == 1'b1)
 				interrupt_flag_set_r = 1'b1; // set on iret
 		end
+		INSTRUCTION_CASEX_SLEEP: begin
+			interrupt_flag_set_r = 1'b1;
+		end
 		default: ;
 	endcase
 end

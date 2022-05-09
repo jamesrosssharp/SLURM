@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Sat May  7 03:00:48 2022
+[*] Mon May  9 09:08:53 2022
 [*]
 [dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/011_POCMAN/dump.vcd"
-[dumpfile_mtime] "Sat May  7 02:56:12 2022"
-[dumpfile_size] 1674709305
+[dumpfile_mtime] "Mon May  9 09:08:23 2022"
+[dumpfile_size] 1038944927
 [savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/011_POCMAN/config.gtkw"
-[timestart] 0
+[timestart] 31500000000
 [size] 1920 996
 [pos] -1 -1
-*-35.194408 41769000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-30.194408 35192900000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tb.
 [treeopen] tb.cpu0.
 [treeopen] tb.cpu0.cpu0.
@@ -190,14 +190,9 @@ tb.cpu0.pc0.gfx0.bgcon0.memory_data[15:0]
 tb.cpu0.pc0.irq0.irq_enabled[4:0]
 @28
 tb.cpu0.pc0.irq0.irq_audio
-@22
-tb.cpu0.pc0.aud0.left_rd_addr[8:0]
-tb.cpu0.pc0.aud0.right_rd_addr[8:0]
-tb.cpu0.pc0.aud0.right_rd_addr_next[8:0]
-@28
 tb.cpu0.pc0.aud0.sclk
 tb.cpu0.pc0.aud0.CLK
-@23
+@22
 tb.cpu0.pc0.aud0.lr_clk_count_r[7:0]
 @28
 tb.cpu0.pc0.aud0.sclk_count_r[1:0]
@@ -210,5 +205,19 @@ tb.cpu0.pc0.aud0.control_run
 tb.cpu0.mem0.ma0.state_r_1[2:0]
 tb.cpu0.mem0.ma0.state_r_1_next[2:0]
 tb.cpu0.mem0.ma0.bg0_rready_r
+@200
+-
+@22
+tb.cpu0.pc0.aud0.left_rd_addr[9:0]
+tb.cpu0.pc0.aud0.ADDRESS[11:0]
+@28
+tb.cpu0.pc0.aud0.left_wr
+tb.cpu0.pc0.aud0.right_wr
+tb.cpu0.pc0.aud0.WR
+tb.cpu0.pc0.WR_AUDIO
+@29
+tb.cpu0.pc0.memWR
+@200
+-
 [pattern_trace] 1
 [pattern_trace] 0

@@ -374,6 +374,7 @@ impl Slurm16CPU {
     }
 
     pub fn sleep(&mut self) {
+        self.int_flag = true;
         self.halt = true;
         self.imm_hi = 0;
     }
