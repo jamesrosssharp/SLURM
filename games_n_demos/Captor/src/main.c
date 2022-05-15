@@ -11,7 +11,7 @@ extern short bloodlust_tiles_palette;
 extern short bg1_tilemap;
 extern short bg2_tilemap;
 
-#define MAKE_SPRITE_X(x, en, pal, stride) ((x & 0x3ff) | ((en & 0x1) << 10) | ((pal & 0xf) << 11) | ((stride & 1) << 15))
+#define MAKE_SPRITE_X(x, en, pal, stride) (((x) & 0x3ff) | ((en & 0x1) << 10) | ((pal & 0xf) << 11) | ((stride & 1) << 15))
 #define MAKE_SPRITE_Y(y, width) ((y & 0x3ff) | ((width & 0x3f) << 10)) 
 #define MAKE_SPRITE_H(y) ((y & 0x3ff))
 #define MAKE_SPRITE_A(a) (a)
@@ -44,7 +44,7 @@ struct Sprite sprites[] =  {
 		0,
 		0,
 		0,
-		{6, 6, 6, 6},
+		{6, 47, 6, 47},
 		{34,34,34,34},
 		{36,36,36,36},
 		{0,0,0,0},
@@ -55,15 +55,104 @@ struct Sprite sprites[] =  {
 		320,
 		40,
 		0,
+		1,
 		0,
-		0,
-		{14 + 37*64, 14 + 37*64, 14 + 37*64, 14 + 37*64},
+		{14 + 37*64, 38 + 77*64, 14 + 37*64, 38 + 77*64},
 		{34,34,34,34},
 		{40,40,40,40},
 		{0,0,0,0},
 	},
-
-
+	{ /* Health bar below 1 */
+		1,
+		2,
+		400 + 100,
+		33,
+		0,
+		0,
+		0,
+		{118*64, 118*64, 118*64, 118*64},
+		{64,64,64,64},
+		{27,27,27,27},
+		{0,0,0,0},
+	},
+	{ /* Health bar below 2 */
+		1,
+		3,
+		464 + 100,
+		33,
+		0,
+		0,
+		0,
+		{118*64 + 16, 118*64 + 16, 118*64 + 16, 118*64 + 16},
+		{64,64,64,64},
+		{27,27,27,27},
+		{0,0,0,0},
+	},
+	{ /* Health bar below 3 */
+		1,
+		4,
+		528 + 100,
+		33,
+		0,
+		0,
+		0,
+		{118*64 + 32, 118*64 + 32, 118*64 + 32, 118*64 + 32},
+		{34,34,34,34},
+		{27,27,27,27},
+		{0,0,0,0},
+	},
+	{ /* Health bar above 1 */
+		1,
+		5,
+		400 + 100,
+		33,
+		0,
+		0,
+		0,
+		{145*64, 145*64, 145*64, 145*64},
+		{64,64,64,64},
+		{27,27,27,27},
+		{0,0,0,0},
+	},
+	{ /* Health bar above 2 */
+		1,
+		6,
+		464 + 100,
+		33,
+		0,
+		0,
+		0,
+		{145*64 + 16, 145*64 + 16, 145*64 + 16, 145*64 + 16},
+		{64,64,64,64},
+		{27,27,27,27},
+		{0,0,0,0},
+	},
+	{ /* Health bar above 3 */
+		1,
+		7,
+		528 + 100,
+		33,
+		0,
+		0,
+		0,
+		{145*64 + 32, 145*64 + 32, 145*64 + 32, 145*64 + 32},
+		{1,8,16,31},
+		{27,27,27,27},
+		{0,0,0,0},
+	},
+	{ /* little man */
+		1,
+		8,
+		100,
+		33,
+		0,
+		1,
+		0,
+		{60 + 152*64, 60 + 166*64, 60 + 159*64, 60 + 166*64},
+		{7, 9, 7, 9},
+		{7, 3, 7, 3},
+		{0, -1, 0, -1},
+	}
 };
 
 void update_sprite(struct Sprite* sp)
@@ -73,8 +162,8 @@ void update_sprite(struct Sprite* sp)
 	frame = ((sp->frame) & 63) >> 4;
 	
 	x = MAKE_SPRITE_X(sp->x + sp->xofs[frame], sp->enabled, 0, 1);
-	y = MAKE_SPRITE_Y(sp->y, sp->width[frame]);
-	h = MAKE_SPRITE_H(sp->y + sp->height[frame]);
+	y = MAKE_SPRITE_Y(sp->y, sp->width[frame] - 1);
+	h = MAKE_SPRITE_H(sp->y + sp->height[frame] - 1);
 
 	a = MAKE_SPRITE_A(0x8000 + (sp->frames[frame]));
 
@@ -86,10 +175,10 @@ void update_sprite(struct Sprite* sp)
 	sp->x += sp->vx;
 	sp->y += sp->vy;
 
-	if (sp->x > 320 + 60)
+	if (sp->x > 640 + 60)
 		sp->x = 8;
 	if (sp->x < 8)
-		sp->x = 320 + 60;
+		sp->x = 640 + 60;
 
 	sp->frame ++;
 

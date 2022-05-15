@@ -56,6 +56,7 @@ BLOODLUST_BIN=../../games_n_demos/BloodLust/build/bloodlust.bin
 POCMAN_BIN=../../games_n_demos/PoCman/build/pocman.bin
 SIEVE_BIN=../../games_n_demos/Sieve/build/sieve.bin
 MANDEL_BIN=../../games_n_demos/Mandelbrot/build/mandelbrot.bin
+CAPTOR_BIN=../../games_n_demos/Captor/build/captor.bin
 
 GAME_BIN=$(BLOODLIST_BIN)
 
@@ -119,6 +120,11 @@ sieve: $(PROJ).bin
 mandel: $(PROJ).bin
 	$(ICEPROG) $(PROJ).bin
 	$(ICEPROG) -o 1M  $(MANDEL_BIN) 
+
+.PHONY: captor
+captor: $(PROJ).bin
+	$(ICEPROG) $(PROJ).bin
+	$(ICEPROG) -o 1M  $(CAPTOR_BIN) 
 
 
 
