@@ -4,6 +4,7 @@
         "width": 2
     },
     "activeFile": "/home/jrsharp/home_mnt/code/FPGA/SLURM/games_n_demos/Captor/assets/Background.tmx",
+    "automapping.whileDrawing": false,
     "expandedProjectPaths": [
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
@@ -29,11 +30,11 @@
             "scaleInEditor": 1
         },
         "/home/jrsharp/home_mnt/code/FPGA/SLURM/games_n_demos/Captor/assets/Background.tmx": {
-            "scale": 0.5,
+            "scale": 1,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 542,
-                "y": 15923
+                "x": 629,
+                "y": 16094.5
             }
         },
         "/home/jrsharp/home_mnt/code/FPGA/SLURM/games_n_demos/Captor/assets/bg_tiles.tsx": {

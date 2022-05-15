@@ -6,11 +6,11 @@ RESET_VEC:
 HSYNC_VEC:
 	ba dummy_handler
 VSYNC_VEC:
-	ba dummy_handler
+	ba vsync_handler
 AUDIO_VEC:
 	ba dummy_handler
 SPI_FLASH:
-	ba dummy_handler
+	ba flash_handler
 GPIO_VEC:
 	ba dummy_handler
 VECTORS:
@@ -94,4 +94,48 @@ dummy_handler:
 	mov r1, 0xffff
 	out [r0, 0x7001], r1
 	iret
+
+flash_handler:
+	mov r1, 1
+	st [flash_complete], r1
+	mov r1, 8
+	out [r0, 0x7001], r1
+	iret
+
+vsync_handler:
+	mov r1, 1
+	st [vsync], r1
+	mov r1, 2
+	out [r0, 0x7001], r1
+	iret
+
+
+
+
+__subtract32:
+	sub r13, 32
+	st [r13, 16], r10
+	st [r13, 18], r11
+
+	ld r10, [r4, 0]
+	ld r11, [r5, 0]
+
+	sub r11, r6
+	bnc __subtract32.done
+
+	sub r10, 1
+
+__subtract32.done:
+
+	st [r4], r10
+	st [r5], r11
+
+	ld r10, [r13, 16]
+	ld r11, [r13, 18]
+
+	add r13, 32
+	ret
+
+
+
 

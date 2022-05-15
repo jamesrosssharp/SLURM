@@ -186,80 +186,133 @@ void update_sprite(struct Sprite* sp)
 
 void enable_interrupts()
 {
-	__out(0x7000, 0x2);
+	__out(0x7000, 0x2 | 0x8 );
 	global_interrupt_enable();
 }
 
-unsigned short bg_x = 220*16*4;
+unsigned short bg_x = 0;
 short bg_y = 0; //10;
-short vx = -1;
-short vy = 0;
-unsigned short bg2_x = 220*16*2;
-short bg2_y = 10; //10;
+short vx = 0;
+short vy = -1;
+
+extern char tilemap_buf1;
+extern char tilemap_buf2;
+
+short cur_buf = 0;
+
+short bg_lo = 0x7b00;
+short bg_hi = 0x9;
+
+#define SPI_FLASH_BASE 		0x4000
+#define SPI_FLASH_ADDR_LO 	(SPI_FLASH_BASE + 0)
+#define SPI_FLASH_ADDR_HI 	(SPI_FLASH_BASE + 1)
+#define SPI_FLASH_CMD		(SPI_FLASH_BASE + 2)
+#define SPI_FLASH_DATA		(SPI_FLASH_BASE + 3)
+#define SPI_FLASH_STATUS	(SPI_FLASH_BASE + 4)
+#define SPI_FLASH_DMA_ADDR  (SPI_FLASH_BASE + 5)
+#define SPI_FLASH_DMA_COUNT (SPI_FLASH_BASE + 6)
+
+
+volatile short flash_complete;
+
+short first = 1;
 
 void update_background()
 {
-	// Set BG enable and pal hi
-	
-	__out(0x5d00, 0x1 | (1<<4) | (0<<8) | (0<<15));
-
-	// Set X
-	
-	__out(0x5d01, bg2_x >> 1);
-
-	// Set Y
-	
-	__out(0x5d02, bg2_y);
-
-	// Set map address
-
-	//__out(0x5d03, (unsigned short)&bg2_tilemap >> 1);
-
-	// Set tile set address
-	
-	__out(0x5d04, (unsigned short)0xc000);
-
-	// Set BG enable and pal hi
-	
-	__out(0x5d05, 0x1 | (1<<4) | (0<<8) | (0<<15));
-
-	// Set X
-	
-	__out(0x5d06, bg_x >> 2);
-
-	// Set Y
-	
-	__out(0x5d07, bg_y);
-
-	// Set map address
-
-	//__out(0x5d08, (unsigned short)&bg1_tilemap >> 1);
-
-	// Set tile set address
-	
-	__out(0x5d09, (unsigned short)0xc000);
-
-
 	bg_x += vx;
 	bg_y += vy;
-	bg2_x += vx;
-	bg2_y += vy;
 
-
-	if (bg_x < 16)
+	if (bg_y == -16*4)
 	{
-		bg_x = 220*16*4;
+		bg_y = 0;
+
+		if (cur_buf == 0)
+		{
+			__out(0x5d03, (unsigned short)&tilemap_buf2 >> 1);
+
+			__subtract32(&bg_hi, &bg_lo, 32);
+
+			__out(SPI_FLASH_ADDR_LO, bg_lo);
+			__out(SPI_FLASH_ADDR_HI, bg_hi);
+			__out(SPI_FLASH_DMA_ADDR, ((unsigned short)&tilemap_buf1) >> 1);
+			__out(SPI_FLASH_DMA_COUNT, 1024);
+
+			flash_complete = 0;
+			__out(SPI_FLASH_CMD, 1);
+
+			cur_buf = 1;
+		}
+		else {
+			__subtract32(&bg_hi, &bg_lo, 32);
+
+			__out(SPI_FLASH_ADDR_LO, bg_lo);
+			__out(SPI_FLASH_ADDR_HI, bg_hi);
+			__out(SPI_FLASH_DMA_ADDR, ((unsigned short)&tilemap_buf2) >> 1);
+			__out(SPI_FLASH_DMA_COUNT, 1024);
+
+			flash_complete = 0;
+			__out(SPI_FLASH_CMD, 1);
+
+			__out(0x5d03, (unsigned short)&tilemap_buf1 >> 1);
+			cur_buf = 0;
+		}
 	}
 
-	if (bg2_x < 16)
-	{
-		bg2_x = 220*16*2;
-	}
 
+
+	// Set X
+	
+	__out(0x5d01, bg_x);
+
+	// Set Y
+	
+	__out(0x5d02, bg_y >> 2);
+
+
+	if (first) 
+	{
+		// Set BG enable and pal hi
+		__out(0x5d00, 0x1 | (1<<4) | (2<<8) | (0<<15));
+
+		// Set map address
+		__out(0x5d03, (unsigned short)&tilemap_buf1 >> 1);
+
+		// Set tile set address
+		__out(0x5d04, (unsigned short)0xc000);
+		first = 0;
+	}	
 
 }
 
 
+void load_background()
+{
+	// Load the background 
+
+	__out(SPI_FLASH_ADDR_LO, bg_lo);
+	__out(SPI_FLASH_ADDR_HI, bg_hi);
+	__out(SPI_FLASH_DMA_ADDR, ((unsigned short)&tilemap_buf1) >> 1);
+	__out(SPI_FLASH_DMA_COUNT, 1024);
+	
+	flash_complete = 0;
+	__out(SPI_FLASH_CMD, 1);
+
+	while (!flash_complete)
+		__sleep();
+
+	__subtract32(&bg_hi, &bg_lo, 32);
+
+	__out(SPI_FLASH_ADDR_LO, bg_lo);
+	__out(SPI_FLASH_ADDR_HI, bg_hi);
+	__out(SPI_FLASH_DMA_ADDR, ((unsigned short)&tilemap_buf2) >> 1);
+	__out(SPI_FLASH_DMA_COUNT, 1024);
+	
+	flash_complete = 0;
+	__out(SPI_FLASH_CMD, 1);
+
+}
+
+volatile short vsync;
 
 int main()
 {
@@ -270,19 +323,26 @@ int main()
 	// Enable copper
 	__out(0x5d20, 1);
 
+	__out(0x5d22, 0);
 
 	//load_bl_copper_list();
 	load_palette(&bloodlust_sprites_palette, 0, 16);
 	load_palette(&bloodlust_tiles_palette, 16, 16);
 	enable_interrupts();
 
+	load_background();
+
 	while (1)
 	{
 		int i;
-		//update_background();
-		//update_bl_copper_list();
-		for (i = 0; i < COUNT_OF(sprites); i++)
-			update_sprite(&sprites[i]);
+		if (vsync)
+		{
+			vsync = 0;
+			update_background();
+			//update_bl_copper_list();
+			for (i = 0; i < COUNT_OF(sprites); i++)
+				update_sprite(&sprites[i]);
+		}
 		__sleep();
 	}
 	putc('!');

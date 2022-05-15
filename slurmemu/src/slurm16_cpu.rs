@@ -554,7 +554,7 @@ impl Slurm16CPU {
 
         let target : u16 = reg_addr + self.imm_hi + (instruction & 0xf) - 2; // PC will be incremented after we return 
 
-        if ! self.c
+        if self.c
         {
             self.pc = target;
         }
@@ -567,7 +567,7 @@ impl Slurm16CPU {
 
         let target : u16 = reg_addr + self.imm_hi + (instruction & 0xf) - 2; // PC will be incremented after we return 
 
-        if  self.c
+        if  !self.c
         {
             self.pc = target;
         }
