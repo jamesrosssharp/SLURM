@@ -376,6 +376,7 @@ impl Slurm16CPU {
     pub fn sleep(&mut self) {
         self.halt = true;
         self.imm_hi = 0;
+        self.int_flag = true;
     }
 
     pub fn alu_op_reg_imm(&mut self, instruction : u16) {

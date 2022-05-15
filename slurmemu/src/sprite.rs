@@ -101,7 +101,7 @@ impl SpriteCore {
                 if y >= sprite_y && y <= sprite_end_y && sprite_enable {
 
                     let mut xcoord = sprite_x;
-                    let mut addr = sprite_address + if stride == 0 { (y - sprite_y) * 128 / 4 } else { (y - sprite_y) * 256 / 4 };
+                    let mut addr = sprite_address + if stride == 0 { (y - sprite_y) * 320 / 4 } else { (y - sprite_y) * 256 / 4 };
 
 
                     while (xcoord <= sprite_x + sprite_width) && ((xcoord as usize) < LINEBUFFER_SIZE)  {

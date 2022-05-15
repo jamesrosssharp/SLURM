@@ -1,43 +1,47 @@
-from PIL import Image
+#
+#
+#   Create the assets for the ROM cartridge for Bloodlust, and assets.asm which contains palettes etc,
+#   and assets.h, which contains cartridge offsets for loading content from cartridge ROM.
+#
+#
 
-def convertImage(im, theAsmFile, name, w, h): 
+
+from PIL import Image
+import struct
+import os
+
+def convertImage(im, theAsmFile, theBinFile, name, w, h): 
 
     for y in range(0, h):
         word = 0
         for x in range(0, w):
             word >>= 4
-            col = im.getpixel((x, y)) + 1
-            if (col == 0xf):
-                col = 0
+            col = im.getpixel((x, y)) 
             word = (word & 0xfff) | ((col & 0xf) << 12)
             if ((x & 3) == 3):
-                theAsmFile.write("\tdw 0x%x\n" % word)
+                theBinFile.write(struct.pack('H', word))
                 word = 0
     theAsmFile.write("{}_palette:\n".format(name))
 
     palette = im.getpalette()
-    print (im.getpalette())
 
-    theAsmFile.write("\tdw 0x0\n")
-    for i in range(0, int(len(palette)/3)):
+    for i in range(0, 16):
         theAsmFile.write("\tdw 0x%01x%01x%01x\n" % (int(palette[i*3] / 16), int(palette[i*3+1] / 16), int(palette[i*3+2] / 16)))
 
 
 with open("assets.asm", "w") as theAsmFile:  
-    im = Image.open("sprites.png")
+    theAsmFile.write("\t.padto 0x8000\n\n")
 
-    imP = im.convert('RGB').convert('P', palette=Image.ADAPTIVE, colors=15)
+    with open("sprites.bin", "wb") as theBinFile:
+        im = Image.open("sprites_16.png")
+        convertImage(im, theAsmFile, theBinFile, "pacman_spritesheet", im.width, im.height)
+    with open("tiles.bin", "wb") as theBinFile:
+        im = Image.open("bg_tiles_4.png")
+        convertImage(im, theAsmFile, theBinFile, "pacman_tileset", im.width, im.height)
+    with open("title.bin", "wb") as theBinFile:
+        im = Image.open("title_16.png")
+        convertImage(im, theAsmFile, theBinFile, "pacman_title", im.width, im.height)
 
-    theAsmFile.write("\t.padto 0x8000 // pad to 32kB\n")
-    theAsmFile.write("pacman_sprite_sheet:\n")
-   
-    convertImage(imP, theAsmFile, "pacman_spritesheet", 256, 160)
-
-    im = Image.open("bg_tiles.png")
-    imP = im.convert('RGB').convert('P', palette=Image.ADAPTIVE, colors=15)
-    
-    theAsmFile.write("\tpacman_tileset:\n")
-    convertImage(imP, theAsmFile, "pacman_tileset", 256, 32)
 
     import xml.etree.ElementTree as ET
     tree = ET.parse('background.tmx')
@@ -58,6 +62,28 @@ with open("assets.asm", "w") as theAsmFile:
                 theAsmFile.write("\tdw 0x%x\n" % word)
                 word = 0
             i += 1
+
+
+bundle_start = 65536
+bundle_files = [("title.bin","titlepic", 32768), ("sprites.bin", "spritesheet", 0), ("tiles.bin", "tileset", 0)]
+bundle_load_address = 1024*1024 + bundle_start
+
+offset = bundle_load_address
+with open("bundle.h", "w") as header:
+    with open("bundle.bin", "wb") as outbundle:
+        for (bfile, bname, pad) in bundle_files:
+            size = os.path.getsize(bfile)
+            with open(bfile, "rb") as infile:
+                filebytes = infile.read(size)
+                outbundle.write(filebytes)
+                header.write("#define %s_rom_offset = %d\n" % (bname, offset)) 
+                offset += size
+            if pad:
+                print("Padding %d bytes" % (pad - size))
+                while size < pad:
+                    outbundle.write(b'\x00')
+                    size += 1
+                    offset += 1
 
 
 

@@ -385,7 +385,7 @@ begin
 			r_load_mem_addr: begin
 
 				if (xram_out[15] == 1'b0)
-					sprite_addr_r_next = {10'd0, cur_sprite_u} + {3'd0, cur_sprite_v, 7'd0} + {aram_out, 2'b00};
+					sprite_addr_r_next = {10'd0, cur_sprite_u} + {2'd0, cur_sprite_v, 8'd0} + {4'd0, cur_sprite_v, 6'd0}  + {aram_out, 2'b00};
 				else
 					sprite_addr_r_next = {10'd0, cur_sprite_u} + {2'd0, cur_sprite_v, 8'd0} + {aram_out, 2'b00};
 

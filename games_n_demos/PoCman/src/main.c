@@ -51,10 +51,9 @@ struct Ghost {
 	short scatter_y;
 };
 
-extern short pacman_sprite_sheet;
 extern short pacman_spritesheet_palette;
 extern short pacman_tilemap;
-extern short pacman_tileset;
+extern short pacman_title_palette;
 extern short pacman_tileset_palette;
 
 #define ORIENTATION_UP 1
@@ -209,6 +208,8 @@ extern void load_sprite_a(short sprite, short a);
 
 void start_game();
 
+#define PACMAN_SPRITE_ADDRESS 0xc000
+
 void update_sprite(struct Sprite* sp)
 {
 	short x, y, h, a, frame;
@@ -223,25 +224,25 @@ void update_sprite(struct Sprite* sp)
 	switch(sp->orientation)
 	{
 		case ORIENTATION_UP:
-			a = MAKE_SPRITE_A(((unsigned short)&pacman_sprite_sheet >> 1) + (sp->frames_up[frame >> 2]));
+			a = MAKE_SPRITE_A((PACMAN_SPRITE_ADDRESS) + (sp->frames_up[frame >> 2]));
 			break;
 		case ORIENTATION_DOWN:
-			a = MAKE_SPRITE_A(((unsigned short)&pacman_sprite_sheet >> 1) + (sp->frames_down[frame >> 2]));
+			a = MAKE_SPRITE_A((PACMAN_SPRITE_ADDRESS) + (sp->frames_down[frame >> 2]));
 			break;
 		case ORIENTATION_LEFT:
-			a = MAKE_SPRITE_A(((unsigned short)&pacman_sprite_sheet >> 1) + (sp->frames_left[frame >> 2]));
+			a = MAKE_SPRITE_A((PACMAN_SPRITE_ADDRESS) + (sp->frames_left[frame >> 2]));
 			break;
 		case ORIENTATION_RIGHT:
-			a = MAKE_SPRITE_A(((unsigned short)&pacman_sprite_sheet >> 1) + (sp->frames_right[frame >> 2]));
+			a = MAKE_SPRITE_A((PACMAN_SPRITE_ADDRESS) + (sp->frames_right[frame >> 2]));
 			break;
 		case ORIENTATION_DIE:
 			if (sp -> frame > 26) sp->frame = 26;
-			a = MAKE_SPRITE_A(((unsigned short)&pacman_sprite_sheet >> 1) + (sp->frames_die_spawn[sp->frame>>1]));
+			a = MAKE_SPRITE_A((PACMAN_SPRITE_ADDRESS) + (sp->frames_die_spawn[sp->frame>>1]));
 			break;
 		case ORIENTATION_SPAWN:
 			if (sp -> frame > 26) sp->frame = 26;
 			//a = MAKE_SPRITE_A(((unsigned short)&pacman_sprite_sheet >> 1) + (sp->frames_die_spawn[13 - (sp->frame>>1)]));
-			a = MAKE_SPRITE_A(((unsigned short)&pacman_sprite_sheet >> 1) + (sp->frames_left[2]));
+			a = MAKE_SPRITE_A((PACMAN_SPRITE_ADDRESS) + (sp->frames_left[2]));
 			break;
 	}
 
@@ -282,11 +283,10 @@ short bg_y = 0; //10;
 short vx = 0;
 short vy = 0;
 
+#define PACMAN_TILESET_ADDRESS (PACMAN_SPRITE_ADDRESS + 10240)
+
 void update_background()
 {
-	// set 320x240 mode
-	__out(0x5f02, 1);
-
 	// Set BG enable and pal hi
 	
 	__out(0x5d00, 0x1 | (1<<4) | (2<<8) | (1<<15));
@@ -305,7 +305,7 @@ void update_background()
 
 	// Set tile set address
 	
-	__out(0x5d04, (unsigned short)&pacman_tileset >> 1);
+	__out(0x5d04, PACMAN_TILESET_ADDRESS);
 
 	bg_x += vx;
 	bg_y += vy;
@@ -748,6 +748,7 @@ void start_game()
 }
 
 #include "pocman_sound.c"
+#include "pocman_title.c"
 
 extern volatile short g_vsync;
 extern volatile short g_audio;
@@ -757,12 +758,22 @@ int main()
 {
 	int i;
 	
+	// set 320x240 mode
+	__out(0x5f02, 1);
+
+
 	load_copper_list(copperList, COUNT_OF(copperList));
 	// Enable copper
 	__out(0x5d20, 1);
 
 	load_palette(&pacman_spritesheet_palette, 0, 16);
 	load_palette(&pacman_tileset_palette, 16, 16);
+	load_palette(&pacman_title_palette, 32, 16);
+	
+
+	do_title_pic();
+
+
 
 	init_sound();
 
