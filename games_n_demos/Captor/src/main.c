@@ -314,6 +314,120 @@ void load_background()
 
 volatile short vsync;
 
+#define TITLE_OFFSET 0x8000
+#define TITLE_OFFSET2 (0xc000 - 384)
+
+void do_title()
+{
+	__out(SPI_FLASH_ADDR_LO, 0x7f00);
+	__out(SPI_FLASH_ADDR_HI, 0x9);
+	__out(SPI_FLASH_DMA_ADDR, 0x8000);
+	__out(SPI_FLASH_DMA_COUNT, 320*100);
+	
+	flash_complete = 0;
+	__out(SPI_FLASH_CMD, 1);
+
+	while (!flash_complete)
+		__sleep();
+
+	#define TITLE_PAL 2
+
+	{
+	short x = MAKE_SPRITE_X(24, 1, TITLE_PAL, 0);
+	short y = MAKE_SPRITE_Y(16+20, 63);
+	short h = MAKE_SPRITE_H(16+20+200);
+	short a = MAKE_SPRITE_A(TITLE_OFFSET);
+
+	load_sprite_x(0, x);
+	load_sprite_y(0, y);
+	load_sprite_h(0, h);
+	load_sprite_a(0, a);
+
+	x = MAKE_SPRITE_X(24 + 64, 1, TITLE_PAL, 0);
+	a = MAKE_SPRITE_A(TITLE_OFFSET + 16);
+
+	load_sprite_x(1, x);
+	load_sprite_y(1, y);
+	load_sprite_h(1, h);
+	load_sprite_a(1, a);
+
+	x = MAKE_SPRITE_X(24 + 128, 1, TITLE_PAL, 0);
+	a = MAKE_SPRITE_A(TITLE_OFFSET + 32);
+
+	load_sprite_x(2, x);
+	load_sprite_y(2, y);
+	load_sprite_h(2, h);
+	load_sprite_a(2, a);
+
+
+	x = MAKE_SPRITE_X(24 + 192, 1, TITLE_PAL, 0);
+	a = MAKE_SPRITE_A(TITLE_OFFSET + 48);
+
+	load_sprite_x(3, x);
+	load_sprite_y(3, y);
+	load_sprite_h(3, h);
+	load_sprite_a(3, a);
+
+	x = MAKE_SPRITE_X(24 + 256, 1, TITLE_PAL, 0);
+	a = MAKE_SPRITE_A(TITLE_OFFSET + 64);
+
+	load_sprite_x(4, x);
+	load_sprite_y(4, y);
+	load_sprite_h(4, h);
+	load_sprite_a(4, a);
+
+	x = MAKE_SPRITE_X(24, 1, TITLE_PAL, 0);
+	y = MAKE_SPRITE_Y(16+20+200, 63);
+	h = MAKE_SPRITE_H(16+20+200+200);
+	a = MAKE_SPRITE_A(TITLE_OFFSET2);
+
+	load_sprite_x(5, x);
+	load_sprite_y(5, y);
+	load_sprite_h(5, h);
+	load_sprite_a(5, a);
+
+	x = MAKE_SPRITE_X(24 + 64, 1, TITLE_PAL, 0);
+	a = MAKE_SPRITE_A(TITLE_OFFSET2 + 16);
+
+	load_sprite_x(6, x);
+	load_sprite_y(6, y);
+	load_sprite_h(6, h);
+	load_sprite_a(6, a);
+
+	x = MAKE_SPRITE_X(24 + 128, 1, TITLE_PAL, 0);
+	a = MAKE_SPRITE_A(TITLE_OFFSET2 + 32);
+
+	load_sprite_x(7, x);
+	load_sprite_y(7, y);
+	load_sprite_h(7, h);
+	load_sprite_a(7, a);
+
+
+	x = MAKE_SPRITE_X(24 + 192, 1, TITLE_PAL, 0);
+	a = MAKE_SPRITE_A(TITLE_OFFSET2 + 48);
+
+	load_sprite_x(8, x);
+	load_sprite_y(8, y);
+	load_sprite_h(8, h);
+	load_sprite_a(8, a);
+
+	x = MAKE_SPRITE_X(24 + 256, 1, TITLE_PAL, 0);
+	a = MAKE_SPRITE_A(TITLE_OFFSET2 + 64);
+
+	load_sprite_x(9, x);
+	load_sprite_y(9, y);
+	load_sprite_h(9, h);
+	load_sprite_a(9, a);
+
+
+
+	}
+
+	while(1);
+}
+
+extern short magnus_palette;
+
 int main()
 {
 
@@ -325,11 +439,15 @@ int main()
 
 	__out(0x5d22, 0);
 
+
 	//load_bl_copper_list();
 	load_palette(&bloodlust_sprites_palette, 0, 16);
 	load_palette(&bloodlust_tiles_palette, 16, 16);
+	load_palette(&magnus_palette, 32, 16);
 	enable_interrupts();
 
+	do_title();
+	
 	load_background();
 
 	while (1)

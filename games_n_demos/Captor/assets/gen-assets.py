@@ -38,10 +38,15 @@ with open("assets.asm", "w") as theAsmFile:
     with open("tiles.bin", "wb") as theBinFile:
         im = Image.open("bg_tiles_256x256x16.png")
         convertImage(im, theAsmFile, theBinFile, "bloodlust_tiles", im.width, im.height)
+    with open("magnus.bin", "wb") as theBinFile:
+        im = Image.open("magnus.png")
+        convertImage(im, theAsmFile, theBinFile, "magnus", im.width, im.height)
+
+
 
     theAsmFile.write("\t.padto 0x8000\n\n")
-    theAsmFile.write("tilemap_buf1: .times 64*32 db 0\n")
-    theAsmFile.write("tilemap_buf2: .times 64*32 db 0\n")
+    theAsmFile.write("tilemap_buf1:\n\t.times 64*32 db 0\n")
+    theAsmFile.write("tilemap_buf2:\n\t.times 64*32 db 0\n")
     
     import xml.etree.ElementTree as ET
     tree = ET.parse('Background.tmx')
@@ -65,7 +70,7 @@ with open("assets.asm", "w") as theAsmFile:
 
 
 bundle_start = 65536
-bundle_files = [("sprites.bin", "spritesheet"), ("tiles.bin", "tileset"), ("map1.map", "level1")]
+bundle_files = [("sprites.bin", "spritesheet"), ("tiles.bin", "tileset"), ("map1.map", "level1"), ("magnus.bin", "magnus")]
 bundle_load_address = 1024*1024 + bundle_start
 
 offset = bundle_load_address
