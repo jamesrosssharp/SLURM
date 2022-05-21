@@ -83,12 +83,136 @@ def load_sample(filep, offset):
 
 class pattern:
 
-    def __init__(self):
-        pass
+    def __init__(self, rows):
+
+        self.rows = rows
+
+        # IT supports 64 channels
+
+        self.last_note   = [0] * 64
+        self.last_sample = [0] * 64
+        self.last_volume = [0] * 64
+        self.last_effect = [0] * 64
+        self.last_param  = [0] * 64
+        self.last_mask   = [0] * 64
+
+        self.note   = [[0 for r in range(rows)] for i in range(64)]
+        self.sample = [[0 for r in range(rows)] for i in range(64)]
+        self.volume = [[0 for r in range(rows)] for i in range(64)]
+        self.effect = [[0 for r in range(rows)] for i in range(64)]
+        self.param  = [[0 for r in range(rows)] for i in range(64)]
+
+
+    def print_pat(self):
+
+        for r in range(0, self.rows):
+            for i in range(0, 8):
+                print (("%d " % self.note[i][r]), end = '')
+            print()
+            
+
+    def __str__(self):
+
+        _str = ""
+
+        for r in range(0, self.rows):
+            for i in range(0, 8):
+                _str += ("%d " % self.note[r][i])
+            _str += "\n"
+
+        return _str
+
+ITNOTE_NOTE = 1
+ITNOTE_SAMPLE = 2
+ITNOTE_VOLUME = 4
+ITNOTE_EFFECT = 8
+ITNOTE_SAME_NOTE = 16
+ITNOTE_SAME_SAMPLE = 32
+ITNOTE_SAME_VOLUME = 64
+ITNOTE_SAME_EFFECT = 128
+
 
 def load_pattern(filep, offset):
-    pass
 
+    filep.seek(offset)
+
+    # Read number of bytes
+
+    _bytes = struct.unpack('H', binf.read(2))[0]
+
+    # Read number of rows
+
+    _rows = struct.unpack('H', binf.read(2))[0]
+
+    print("Bytes: %d Rows: %d" % (_bytes, _rows))
+
+    # Read padding
+
+    binf.read(4)
+
+    cur_row = 0
+
+    patt = pattern(_rows)
+
+    while cur_row < _rows:
+        
+        chanvar = struct.unpack('b', binf.read(1))[0]
+
+        if chanvar == 0:
+            cur_row += 1
+            print("Channel break!")
+            continue
+
+        chan = (chanvar - 1) & 63
+
+        print("Chan: %d" % chan)
+
+        if chanvar & 0x80:
+            maskvar = struct.unpack('b', binf.read(1))[0]
+            patt.last_mask[chan] = maskvar
+        else:
+            maskvar = patt.last_mask[chan]
+
+        if maskvar & ITNOTE_NOTE:
+            note = struct.unpack('b', binf.read(1))[0]
+            patt.note[chan][cur_row] = note
+            patt.last_note[chan] = note
+
+        if maskvar & ITNOTE_SAMPLE:
+            sample = struct.unpack('b', binf.read(1))[0]
+            patt.sample[chan][cur_row] = sample
+            patt.last_sample[chan] = sample
+
+        if maskvar & ITNOTE_VOLUME:
+            volume = struct.unpack('b', binf.read(1))[0]
+            patt.volume[chan][cur_row] = volume
+            patt.last_volume[chan] = volume
+
+        if maskvar & ITNOTE_EFFECT:
+            effect = struct.unpack('b', binf.read(1))[0] & 0x1f
+            param = struct.unpack('b', binf.read(1))[0]
+
+            patt.effect[chan][cur_row] = effect
+            patt.param[chan][cur_row] = param
+
+            patt.last_effect[chan] = effect
+            patt.last_param[chan] = param
+
+        if maskvar & ITNOTE_SAME_NOTE:
+            patt.note[chan][cur_row] = patt.last_note[chan]
+        if maskvar & ITNOTE_SAME_SAMPLE:
+            patt.sample[chan][cur_row] = patt.last_sample[chan]
+        if maskvar & ITNOTE_SAME_VOLUME:
+            patt.volume[chan][cur_row] = patt.last_volume[chan]
+        if maskvar & ITNOTE_SAME_EFFECT:
+            patt.effect[chan][cur_row] = patt.last_effect[chan]
+            patt.param[chan][cur_row] = patt.last_param[chan]
+
+    print("Bytes: %d" % (filep.tell() - offset))
+
+    #print(patt)
+
+    patt.print_pat()
 
 
 if len(sys.argv) != 3:
@@ -198,7 +322,5 @@ with open(itFile, "rb") as binf:
         _patt = load_pattern(binf, patt)
         patterns.append(_patt)
     
-    print(patterns)
-
 
 
