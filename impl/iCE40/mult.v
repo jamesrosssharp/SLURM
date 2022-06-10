@@ -41,8 +41,8 @@ SB_MAC16 my_16x16_mult (
     .SIGNEXTOUT()     
 );
 
-defparam my_16x16_mult.B_SIGNED                            = 1'b0 ;
-defparam my_16x16_mult.A_SIGNED                            = 1'b0 ;
+defparam my_16x16_mult.B_SIGNED                            = 1'b1 ;
+defparam my_16x16_mult.A_SIGNED                            = 1'b1 ;
 defparam my_16x16_mult.BOTOUTPUT_SELECT                    = 2'b11 ;
 defparam my_16x16_mult.TOPOUTPUT_SELECT                    = 2'b11 ;
 

@@ -200,8 +200,8 @@ impl Slurm16CPU {
     pub fn alu_mulu(&mut self, instruction : u16, src : u16) {
         let reg_dest    = ((instruction & 0xf0) >> 4) as usize;
         
-        let a = src as i32;
-        let b = self.get_register(reg_dest) as i32;
+        let a = (src as i16) as i32;
+        let b = (self.get_register(reg_dest) as i16) as i32;
         let mul = ((b * a) >> 16) & 0xffff;
 
         self.registers[reg_dest] = mul as u16;
@@ -835,10 +835,22 @@ impl Slurm16CPU {
 
         // Interrupt?
         if (irq != 0) && self.int_flag {
-            self.registers[14] = self.pc;
+       
+            // If the previous instruction is an imm, we need to make this two instruction
+            // unit atomic on interrupts, so we set return address back an instruction.
+            let ins_minus_1 = mem[((self.pc - 2)>>1) as usize];
+            if (ins_minus_1 & 0xf000 == 0x1000)
+            {
+                self.registers[14] = self.pc - 2;
+            }
+            else
+            {
+                self.registers[14] = self.pc;
+            }
+
+
             self.int_flag = false;
             self.pc = (irq as u16) * 4;
-           // println!("Interrupt: Jumping to {:#01x}", self.pc);
             self.halt = false;
         }
 
@@ -871,187 +883,15 @@ impl Slurm16CPU {
         self.pc += 2;
     }
 
- /* DEPRECATED
-    pub fn execute_n_instructions(&mut self, mem: &mut Vec<u16>, portcon:  & mut PortController, n : usize) {
-        for _i in 0..n {
-            self.execute_one_instruction(mem, portcon);
-        }
-    }
-*/
     pub fn get_register(& self, reg : usize) -> u16 {
         if reg == 0 {
             return 0;
         }
         self.registers[reg]
     }
-}
 
-/*#[cfg(test)]
-mod tests {
-    use super::Slurm16CPU;
-
-    #[test]
-    fn test_imm() {
-        let mut cpu = Slurm16CPU::new();
-        let mem : Vec<u16> = vec![0x1123];
-        cpu.execute_one_instruction(&mem);
-        assert_eq!(cpu.imm_hi, 0x123 << 4);
-    }
-
-    #[test]
-    fn test_mov_imm_reg() {
-        let mut cpu = Slurm16CPU::new();
-        let mem : Vec<u16> = vec![0x1123, 0x3014];
-        cpu.execute_n_instructions(&mem, mem.len());
-        assert_eq!(cpu.get_register(1) , 0x1234);
-    }
-
-    #[test]
-    fn test_add_imm_reg() {
-        let mut cpu = Slurm16CPU::new();
-        let mem : Vec<u16> = vec![0x1001, 0x3010, 0x3115];
-        cpu.execute_n_instructions(&mem, mem.len());
-        assert_eq!(cpu.get_register(1) , 0x15);
-    }
-
-    #[test]
-    fn test_sub_imm_reg() {
-        let mut cpu = Slurm16CPU::new();
-        let mem : Vec<u16> = vec![0x1001, 0x3010, 0x3317];
-        cpu.execute_n_instructions(&mem, mem.len());
-        assert_eq!(cpu.get_register(1) , 0x9);
-    }
-
-    #[test]
-    fn test_and_imm_reg() {
-        let mut cpu = Slurm16CPU::new();
-        let mem : Vec<u16> = vec![0x1a5a, 0x3015, 0x10f0, 0x351f];
-        cpu.execute_n_instructions(&mem, mem.len());
-        assert_eq!(cpu.get_register(1) , 0x505);
-    }
-
-    #[test]
-    fn test_or_imm_reg() {
-        let mut cpu = Slurm16CPU::new();
-        let mem : Vec<u16> = vec![0x1a0a, 0x3010, 0x1050, 0x3615];
-        cpu.execute_n_instructions(&mem, mem.len());
-        assert_eq!(cpu.get_register(1) , 0xa5a5);
-    }
-
-    #[test]
-    fn test_xor_imm_reg() {
-        let mut cpu = Slurm16CPU::new();
-        let mem : Vec<u16> = vec![0x1a5a, 0x3015, 0x1fff, 0x371f];
-        cpu.execute_n_instructions(&mem, mem.len());
-        assert_eq!(cpu.get_register(1) , 0x5a5a);
-    }
-
-    #[test]
-    fn test_mul_imm_reg() {
-        let mut cpu = Slurm16CPU::new();
-        let mem : Vec<u16> = vec![0x1a5a, 0x3015, 0x1001, 0x3810];
-        cpu.execute_n_instructions(&mem, mem.len());
-        assert_eq!(cpu.get_register(1) , 0x5a50);
-    }
-
-    #[test]
-    fn test_mulu_imm_reg() {
-        let mut cpu = Slurm16CPU::new();
-        let mem : Vec<u16> = vec![0x1a5a, 0x3015, 0x1001, 0x3910];
-        cpu.execute_n_instructions(&mem, mem.len());
-        assert_eq!(cpu.get_register(1) , 0x000a);
-    }
-
-    #[test]
-    fn test_add_reg_reg() {
-        let mut cpu = Slurm16CPU::new();
-        let mem : Vec<u16> = vec![0x1001, 0x3010, 0x3025, 0x2112];
-        cpu.execute_n_instructions(&mem, mem.len());
-        assert_eq!(cpu.get_register(1) , 0x15);
-    }
-
-    #[test]
-    fn test_asr_reg() {
-        let mut cpu = Slurm16CPU::new();
-        let mem : Vec<u16> = vec![0x1fff, 0x3018, 0x0401];
-        cpu.execute_n_instructions(&mem, mem.len());
-        assert_eq!(cpu.get_register(1) , 0xfffc);
-    }
-
-    #[test]
-    fn test_lsr_reg() {
-        let mut cpu = Slurm16CPU::new();
-        let mem : Vec<u16> = vec![0x1fff, 0x3018, 0x0411];
-        cpu.execute_n_instructions(&mem, mem.len());
-        assert_eq!(cpu.get_register(1) , 0x7ffc);
-    }
-
-    #[test]
-    fn test_lsl_reg() {
-        let mut cpu = Slurm16CPU::new();
-        let mem : Vec<u16> = vec![0x1fff, 0x3018, 0x0421];
-        cpu.execute_n_instructions(&mem, mem.len());
-        assert_eq!(cpu.get_register(1) , 0xfff0);
-    }
-
-    #[test]
-    fn test_rolc_reg() {
-        let mut cpu = Slurm16CPU::new();
-        let mem : Vec<u16> = vec![0x1fff, 0x3018, 0x0431];
-        cpu.execute_n_instructions(&mem, mem.len());
-        assert_eq!(cpu.get_register(1), 0xfff0);
-        assert_eq!(cpu.c, true);
-    }
-
-    #[test]
-    fn test_rorc_reg() {
-        let mut cpu = Slurm16CPU::new();
-        let mem : Vec<u16> = vec![0x1fff, 0x3019, 0x0441];
-        cpu.execute_n_instructions(&mem, mem.len());
-        assert_eq!(cpu.get_register(1), 0x7ffc);
-        assert_eq!(cpu.c, true);
-    }
-
-    #[test]
-    fn test_rol_reg() {
-        let mut cpu = Slurm16CPU::new();
-        let mem : Vec<u16> = vec![0x1fff, 0x3018, 0x0451];
-        cpu.execute_n_instructions(&mem, mem.len());
-        assert_eq!(cpu.get_register(1), 0xfff1);
-        assert_eq!(cpu.c, false);
-    }
-
-    #[test]
-    fn test_ror_reg() {
-        let mut cpu = Slurm16CPU::new();
-        let mem : Vec<u16> = vec![0x1fff, 0x3019, 0x0461];
-        cpu.execute_n_instructions(&mem, mem.len());
-        assert_eq!(cpu.get_register(1), 0xfffc);
-        assert_eq!(cpu.c, false);
-    }
-
-    #[test]
-    fn test_stf() {
-        let mut cpu = Slurm16CPU::new();
-        let mem : Vec<u16> = vec![0x0480, 0x04a0, 0x04b0, 0x04d1];
-        cpu.execute_n_instructions(&mem, mem.len());
-        assert_eq!(cpu.get_register(1), 0x0003);
-    }
-
-    #[test]
-    fn test_branch() {
-        let mut cpu = Slurm16CPU::new();
-        let mem : Vec<u16> = vec![0x3013, 0x2020, 0x3121, 0x3311, 0x4102];
-        cpu.execute_n_instructions(&mem, 9);
-        assert_eq!(cpu.get_register(2), 3);
-    }
-
-    #[test]
-    fn test_uart() {
-        let mut cpu = Slurm16CPU::new();
-        let mem : Vec<u16> = vec![0x1004, 0x3011, 0xe110, 0x4602];
-        cpu.execute_n_instructions(&mem, 20);
-        assert_eq!(cpu.get_register(1), 0x41);
+    pub fn get_pc(& self) -> u16 {
+        self.pc
     }
 }
-*/
+

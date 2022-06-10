@@ -447,7 +447,7 @@ int main()
 	load_palette(&ace2_palette, 48, 16);
 	enable_interrupts();
 
-	do_title();
+	//do_title();
 	
 	load_background();
 

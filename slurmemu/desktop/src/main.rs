@@ -144,7 +144,7 @@ fn main() -> Result<(), String> {
                 image(&texture, c.transform.scale(scale as f64, scale as f64), g);
             });
 
-            window.set_title(format!("[slurm-emulator] fps:{}", fps_counter.tick()));
+            window.set_title(format!("[slurm-emulator] fps:{} pc:{:#01x}", fps_counter.tick(), soc.get_pc()));
         }
          if let Some(Button::Keyboard(key)) = e.release_args() {
             match key {

@@ -21,7 +21,7 @@ module alpha (
 	output [3:0] bout
 );
 
-wire [3:0] one_minus_alpha = 4'b1111 - alpha;
+/*wire [3:0] one_minus_alpha = 4'b1111 - alpha;
 
 wire [15:0] m1a = {r0, 8'd0, g0};
 wire [15:0] m1b = {one_minus_alpha, 8'd0, one_minus_alpha};
@@ -43,5 +43,11 @@ mult m2 (m3a, m3b, out3);
 assign rout = out1[31:28] + out2[7:4] + 1;
 assign gout = out1[7:4]   + out3[31:28] + 1;
 assign bout = out2[31:28] + out3[7:4] + 1;
+*/
+
+assign rout = r0;
+assign gout = g0;
+assign bout = b0;
+
 
 endmodule

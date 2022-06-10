@@ -142,9 +142,9 @@ int main()
 	load_palette(&mandelbrot_palette, 0, 16);
 
 	set_up_sprites();
-	enable_interrupts();
 	
 	clear_screen();
+	enable_interrupts();
 	
 	for (i = 0; i < 250; i++)
 	{
@@ -152,7 +152,7 @@ int main()
 	}
 
 	render_mandelbrot();
-
+	
 	while (1)
 	{
 		cycle_palette();

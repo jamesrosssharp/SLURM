@@ -90,4 +90,9 @@ impl Slurm16SoC
         self.port_controller.gpio.release_button(button);
     }
 
+    pub fn get_pc(&mut self) -> u16
+    {
+        self.cpu.get_pc()
+    }
+
 }
