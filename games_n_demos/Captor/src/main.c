@@ -8,6 +8,9 @@ extern void load_palette(short* palette, int offset, int len);
 extern short bloodlust_copper_list;
 extern short bloodlust_sprites_palette;
 extern short bloodlust_tiles_palette;
+extern short ace1_palette;
+extern short ace2_palette;
+
 extern short bg1_tilemap;
 extern short bg2_tilemap;
 
@@ -315,14 +318,14 @@ void load_background()
 volatile short vsync;
 
 #define TITLE_OFFSET 0x8000
-#define TITLE_OFFSET2 (0xc000 - 384)
+#define TITLE_OFFSET2 0xc000 
 
 void do_title()
 {
 	__out(SPI_FLASH_ADDR_LO, 0x7f00);
 	__out(SPI_FLASH_ADDR_HI, 0x9);
 	__out(SPI_FLASH_DMA_ADDR, 0x8000);
-	__out(SPI_FLASH_DMA_COUNT, 320*100);
+	__out(SPI_FLASH_DMA_COUNT, 256*128);
 	
 	flash_complete = 0;
 	__out(SPI_FLASH_CMD, 1);
@@ -376,9 +379,7 @@ void do_title()
 	load_sprite_h(4, h);
 	load_sprite_a(4, a);
 
-	x = MAKE_SPRITE_X(24, 1, TITLE_PAL, 0);
-	y = MAKE_SPRITE_Y(16+20+200, 63);
-	h = MAKE_SPRITE_H(16+20+200+200);
+	x = MAKE_SPRITE_X(24 + 256 + 64, 1, TITLE_PAL, 0);
 	a = MAKE_SPRITE_A(TITLE_OFFSET2);
 
 	load_sprite_x(5, x);
@@ -386,7 +387,7 @@ void do_title()
 	load_sprite_h(5, h);
 	load_sprite_a(5, a);
 
-	x = MAKE_SPRITE_X(24 + 64, 1, TITLE_PAL, 0);
+	x = MAKE_SPRITE_X(24 + 256 + 128, 1, TITLE_PAL, 0);
 	a = MAKE_SPRITE_A(TITLE_OFFSET2 + 16);
 
 	load_sprite_x(6, x);
@@ -394,7 +395,7 @@ void do_title()
 	load_sprite_h(6, h);
 	load_sprite_a(6, a);
 
-	x = MAKE_SPRITE_X(24 + 128, 1, TITLE_PAL, 0);
+	x = MAKE_SPRITE_X(24 + 256 + 192, 1, TITLE_PAL, 0);
 	a = MAKE_SPRITE_A(TITLE_OFFSET2 + 32);
 
 	load_sprite_x(7, x);
@@ -403,7 +404,7 @@ void do_title()
 	load_sprite_a(7, a);
 
 
-	x = MAKE_SPRITE_X(24 + 192, 1, TITLE_PAL, 0);
+	x = MAKE_SPRITE_X(24 + 512, 1, TITLE_PAL, 0);
 	a = MAKE_SPRITE_A(TITLE_OFFSET2 + 48);
 
 	load_sprite_x(8, x);
@@ -411,14 +412,13 @@ void do_title()
 	load_sprite_h(8, h);
 	load_sprite_a(8, a);
 
-	x = MAKE_SPRITE_X(24 + 256, 1, TITLE_PAL, 0);
+	x = MAKE_SPRITE_X(24 + 512 + 64, 1, TITLE_PAL, 0);
 	a = MAKE_SPRITE_A(TITLE_OFFSET2 + 64);
 
 	load_sprite_x(9, x);
 	load_sprite_y(9, y);
 	load_sprite_h(9, h);
 	load_sprite_a(9, a);
-
 
 
 	}
@@ -443,7 +443,8 @@ int main()
 	//load_bl_copper_list();
 	load_palette(&bloodlust_sprites_palette, 0, 16);
 	load_palette(&bloodlust_tiles_palette, 16, 16);
-	load_palette(&magnus_palette, 32, 16);
+	load_palette(&ace1_palette, 32, 16);
+	load_palette(&ace2_palette, 48, 16);
 	enable_interrupts();
 
 	do_title();

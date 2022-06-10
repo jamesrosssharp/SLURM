@@ -1,9 +1,9 @@
 SLURMSNG
 ========
 
-"SLURMSNG" is a simple format for tracked music. The idea is to convert Impulse tracker format modules, resample the audio samples to
-8kHz, 8bit, and extract pattern and playlist data to embed. Patterns are stored with a kind of mask compression in IT, so these
-will be properly unpacked. They will occupy more flash space, but won't incur any run time overhead to decompress them and they
+"SLURMSNG" is a simple format for tracked music. The idea is to convert Impulse tracker format modules and extract pattern and playlist data to embed. 
+Patterns are stored with a kind of mask compression in IT, so these
+will be properly unpacked. They will occupy more flash space, but won't incur any run time overhead to decode them and they
 can simply be DMA'd into some double-buffers.
 
 Patterns are always 8 channels.
@@ -23,7 +23,7 @@ Header
 Samples
 -------
 
-Samples occupy max 20kB. For "Num samples" entries, each entry has the following header:
+Samples should occupy max 20kB. For "Num samples" entries, each entry has the following header:
 
 1. Magic "SA" - 2 bytes
 2. Bit depth - 1 byte (0 = 8 bit, 1 = 16 bit)
@@ -42,13 +42,18 @@ Playlist
 2. Chunk len - 2 bytes
 
 Followed by "Chunk len" bytes of which the first "Playlist size" bytes are the playlist entries.
- 
+
+
 Pattern Data
 ------------
 
+1. Magic "PATT" - 4 bytes
+
+Followed by:-
+
 "Num patterns" pattern entries. Each pattern consists of 8 channel x 64 entries of the following format, 2048 bytes in total:
 
-1. Hi nibble: 4 bit note, Lo nibble: 4 bit octave - 1 byte
+1. 8 bit unsigned note - 1 based, 0 = no note - 1 byte
 2. Hi: 4 bit volume high, Lo: volume low - 1 byte
 3. Hi: 4 bit sample, Lo: 4 bit effect - 1 byte
 4. Effect param - 1 byte

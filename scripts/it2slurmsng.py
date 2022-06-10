@@ -103,6 +103,12 @@ class pattern:
         self.param  = [[0 for r in range(rows)] for i in range(64)]
 
 
+        self.slm_volume = [[0 for r in range(rows)] for i in range(64)]
+        self.slm_effect = [[0 for r in range(rows)] for i in range(64)]
+        self.slm_param  = [[0 for r in range(rows)] for i in range(64)]
+        self.slm_sample = [[0 for r in range(rows)] for i in range(64)]
+
+
     def print_pat(self):
 
         for r in range(0, self.rows):
@@ -121,6 +127,22 @@ class pattern:
             _str += "\n"
 
         return _str
+
+    def convert_pattern(self):
+
+        # Convert to slurm formats
+    
+        # Check an convert sample
+
+        for i in range(0, len(self.sample)):
+            if self.sample[i] > 15:
+                print("Greater than 16 samples used")
+                sys.exit(1)
+
+            self.slm_sample[i] = self.sample[i]
+
+
+
 
 ITNOTE_NOTE = 1
 ITNOTE_SAMPLE = 2
@@ -145,6 +167,10 @@ def load_pattern(filep, offset):
     _rows = struct.unpack('H', binf.read(2))[0]
 
     print("Bytes: %d Rows: %d" % (_bytes, _rows))
+
+    if _rows != 64:
+        print("Rows not 64! Cannot convert to slurmsng")
+        sys.exit(1)
 
     # Read padding
 
@@ -322,5 +348,5 @@ with open(itFile, "rb") as binf:
         _patt = load_pattern(binf, patt)
         patterns.append(_patt)
     
-
+    
 

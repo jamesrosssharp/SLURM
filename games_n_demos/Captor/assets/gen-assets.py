@@ -41,8 +41,12 @@ with open("assets.asm", "w") as theAsmFile:
     with open("magnus.bin", "wb") as theBinFile:
         im = Image.open("magnus.png")
         convertImage(im, theAsmFile, theBinFile, "magnus", im.width, im.height)
-
-
+    with open("ace1.bin", "wb") as theBinFile:
+        im = Image.open("Ace1.png")
+        convertImage(im, theAsmFile, theBinFile, "ace1", im.width, im.height)
+    with open("ace2.bin", "wb") as theBinFile:
+        im = Image.open("Ace2.png")
+        convertImage(im, theAsmFile, theBinFile, "ace2", im.width, im.height)
 
     theAsmFile.write("\t.padto 0x8000\n\n")
     theAsmFile.write("tilemap_buf1:\n\t.times 64*32 db 0\n")
@@ -70,16 +74,23 @@ with open("assets.asm", "w") as theAsmFile:
 
 
 bundle_start = 65536
-bundle_files = [("sprites.bin", "spritesheet"), ("tiles.bin", "tileset"), ("map1.map", "level1"), ("magnus.bin", "magnus")]
+bundle_files = [("sprites.bin", "spritesheet", 32768), ("tiles.bin", "tileset", 32768), ("map1.map", "level1", 0), ("ace1.bin", "ace1", 32768), ("ace2.bin", "ace2", 32768)]
 bundle_load_address = 1024*1024 + bundle_start
 
 offset = bundle_load_address
 with open("bundle.h", "w") as header:
     with open("bundle.bin", "wb") as outbundle:
-        for (bfile, bname) in bundle_files:
+        for (bfile, bname, pad) in bundle_files:
             size = os.path.getsize(bfile)
+            off_total = offset + pad
             with open(bfile, "rb") as infile:
                 filebytes = infile.read(size)
                 outbundle.write(filebytes)
                 header.write("#define %s_rom_offset = %d\n" % (bname, offset)) 
                 offset += size
+            if pad:
+                while offset < off_total:
+                    outbundle.write(b'\x00')
+                    offset += 1
+
+
