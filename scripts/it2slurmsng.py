@@ -27,6 +27,45 @@ class sample(object):
     def __repr__(self):
         return self.name
 
+    def write_to_file(self, file):
+       
+        #   1. Magic "SA" - 2 bytes
+        #   2. Bit depth - 1 byte (0 = 8 bit, 1 = 16 bit)
+        #   3. Loop - 1 byte (0 = no loop, 1 = loop)
+        #   4. Speed (c5) - 2 bytes
+        #   5. loop start - 2 bytes
+        #   6. loop end - 2 bytes
+        #   7. Sample len - 2 bytes
+        slmsngfile.write(b'SA')
+        slmsngfile.write(struct.pack('b', self.depth))
+        slmsngfile.write(struct.pack('b', self.loop))
+        slmsngfile.write(struct.pack('H', self.c5speed))
+        slmsngfile.write(struct.pack('H', self.loop_start))
+        slmsngfile.write(struct.pack('H', self.loop_end))
+        
+        if self.depth == 0: # 8 bit
+
+            smplen = ((len(self.samples) + 1) // 2) * 2
+            slmsngfile.write(struct.pack('H', smplen))
+
+            extra = smplen - len(self.samples)
+
+            for s in self.samples:
+                slmsngfile.write(struct.pack('b', s))
+
+            if extra:
+                slmsngfile.write(b'\x00')
+
+        else: # 16 bit
+
+            smplen = len(self.samples)*2 
+            slmsngfile.write(struct.pack('H', smplen))
+
+            for s in self.samples:
+                slmsngfile.write(struct.pack('h', s))
+
+
+
 def load_sample(filep, offset):
    
     filep.seek(offset)
@@ -71,11 +110,19 @@ def load_sample(filep, offset):
         for i in range(0, smp.length // 2):
             _samp = struct.unpack('h', binf.read(2))[0]
             smp.samples.append(_samp)
+        smp.depth = 1
     else:
         # 8 bit
         for i in range(0, smp.length):
             _samp = struct.unpack('b', binf.read(1))[0]
             smp.samples.append(_samp)
+        smp.depth = 0
+
+    if (smp.flag & 0x10) == 0x10:
+        smp.loop = 1
+    else:
+        smp.loop = 0
+
     print("Loading: %s" % smp.name)
     #print(smp.samples)
 
@@ -102,11 +149,13 @@ class pattern:
         self.effect = [[0 for r in range(rows)] for i in range(64)]
         self.param  = [[0 for r in range(rows)] for i in range(64)]
 
+        # Slurmsng patterns are always 64 rows x 8 channels
 
-        self.slm_volume = [[0 for r in range(rows)] for i in range(64)]
-        self.slm_effect = [[0 for r in range(rows)] for i in range(64)]
-        self.slm_param  = [[0 for r in range(rows)] for i in range(64)]
-        self.slm_sample = [[0 for r in range(rows)] for i in range(64)]
+        self.slm_note   = [[0 for r in range(64)] for i in range(8)]
+        self.slm_volume = [[0 for r in range(64)] for i in range(8)]
+        self.slm_effect = [[0 for r in range(64)] for i in range(8)]
+        self.slm_param  = [[0 for r in range(64)] for i in range(8)]
+        self.slm_sample = [[0 for r in range(64)] for i in range(8)]
 
 
     def print_pat(self):
@@ -131,16 +180,77 @@ class pattern:
     def convert_pattern(self):
 
         # Convert to slurm formats
+        
+        # Convert note
+
+        for i in range(0, 64):
+            for j in range(0, 8):
+                self.slm_note[j][i] = self.note[j][i] 
     
-        # Check an convert sample
+        # Check and convert sample
 
-        for i in range(0, len(self.sample)):
-            if self.sample[i] > 15:
-                print("Greater than 16 samples used")
-                sys.exit(1)
+        for i in range(0, 64):
+            for j in range(0, 8):
+                if self.sample[j][i] > 15:
+                    print("Greater than 16 samples used")
+                    sys.exit(1)
 
-            self.slm_sample[i] = self.sample[i]
+                self.slm_sample[j][i] = self.sample[j][i]
 
+        # convert volume 
+
+        for i in range(0, 64):
+            for j in range(0, 8):
+                self.slm_note[j][i] = self.note[j][i] 
+    
+        # Convert effect
+
+        for i in range(0, 64):
+            for j in range(0, 8):
+                eff = self.effect[j][i] 
+
+                if eff == 0xff or eff == 0:
+                    self.slm_effect[j][i] = 0
+                    continue
+
+                eff += 0x40
+
+                if eff == ord('H'): # vibrato
+                    self.slm_effect[j][i] = 1 
+
+                elif eff == ord('J'): # arpeggio
+                    self.slm_effect[j][i] = 2
+
+                elif eff == ord('E'): # port. down
+                    self.slm_effect[j][i] = 3
+
+                elif eff == ord('F'): # port. up
+                    self.slm_effect[j][i] = 4
+                
+                else:
+
+                    print("Unsupported effect '%c' (%x) used" % (eff, eff - 0x40))
+                    sys.exit(1)
+
+        for i in range(0, 64):
+            for j in range(0, 8):
+                self.slm_param[j][i] = self.param[j][i] 
+    
+
+    def write_to_file(self, theFile):
+
+        #1. 8 bit unsigned note - 1 based, 0 = no note - 1 byte
+        #2. volume - impulse tracker format  - 1 byte
+        #3. Hi: 4 bit sample, Lo: 4 bit effect - 1 byte
+        #4. Effect param - 1 byte
+
+         for i in range(0, 64):
+            for j in range(0, 8):
+        
+                slmsngfile.write(struct.pack('b', self.slm_note[j][i]))
+                slmsngfile.write(struct.pack('b', self.slm_volume[j][i]))
+                slmsngfile.write(struct.pack('b', self.slm_sample[j][i] << 4 | self.slm_effect[j][i]))
+                slmsngfile.write(struct.pack('b', self.slm_param[j][i]))
 
 
 
@@ -186,13 +296,12 @@ def load_pattern(filep, offset):
 
         if chanvar == 0:
             cur_row += 1
-            print("Channel break!")
             continue
 
         chan = (chanvar - 1) & 63
 
-        print("Chan: %d" % chan)
-
+        patt.effect[chan][cur_row] = 0xff
+        
         if chanvar & 0x80:
             maskvar = struct.unpack('b', binf.read(1))[0]
             patt.last_mask[chan] = maskvar
@@ -236,9 +345,7 @@ def load_pattern(filep, offset):
 
     print("Bytes: %d" % (filep.tell() - offset))
 
-    #print(patt)
-
-    patt.print_pat()
+    return patt
 
 
 if len(sys.argv) != 3:
@@ -346,7 +453,56 @@ with open(itFile, "rb") as binf:
     patterns = []
     for patt in para_patt:
         _patt = load_pattern(binf, patt)
+        _patt.convert_pattern()
         patterns.append(_patt)
-    
-    
+         
+    # Write out slurm song
+
+    with open(slmsngFile, "wb") as slmsngfile:
+
+        # Write out header
+
+        slmsngfile.write(b'SLURMSNG')
+        slmsngfile.write(struct.pack('b', ordnum))
+        slmsngfile.write(struct.pack('b', smpnum))
+        slmsngfile.write(struct.pack('b', pattnum))
+        # Pad
+        slmsngfile.write(b'\x00')
+        # Place holders for offsets (we'll fill them in later)
+        slmsngfile.write(b'\x00' * 12)
+
+        # Write out playlist 
+
+        ploff = slmsngfile.tell()
+
+        slmsngfile.write(b'PL')
+        pllen = ((len(ordlist) + 1) // 2) * 2
+        extra = pllen - len(ordlist)
+
+        slmsngfile.write(struct.pack('h', pllen))
+
+        for p in ordlist:
+            slmsngfile.write(struct.pack('b', p))
+
+        if extra:
+            slmsngfile.write(b'\x00')
+
+        # Write out samples
+
+        sampoff = slmsngfile.tell()
+
+        for sample in samples:
+            sample.write_to_file(slmsngfile)
+
+        pattoff = slmsngfile.tell()
+
+        # Write out patterns
+        slmsngfile.write(b'PATT')
+
+        for patt in patterns:
+            patt.write_to_file(slmsngfile)
+
+        print("PLOFF: %x" % ploff)
+        print("SMPOFF: %x" % sampoff)
+        print("PATOFF: %x" % pattoff)
 
