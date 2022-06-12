@@ -48,3 +48,33 @@ calculate_flash_offset_lo:
 	mov r2, r4
 	ret
 
+
+/*
+ *	add_offset
+ *
+ * 	r4: address of base lo
+ *	r5: address of base hi
+ *	r6: offset to add lo
+ *	r7: offset to add hi
+ *
+ */
+
+add_offset:
+	sub r13, 16
+	st [r13], r8
+	st [r13,2], r9
+	
+	ld r8, [r4]
+	ld r9, [r5]
+
+	add r8, r6
+	adc r9, r7
+
+	st [r4], r8
+	st [r5], r9
+
+	ld r8, [r13]
+	ld r9, [r13,2]
+	add r13, 16
+	ret
+

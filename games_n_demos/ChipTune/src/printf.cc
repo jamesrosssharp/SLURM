@@ -52,6 +52,12 @@ void print_dec_num(int n)
 		n = -n;
 	}
 
+	if (n == 0)
+	{
+		putc('0');
+		return;
+	}
+
 	div = 10000;
 	nlz = 0;
 

@@ -463,11 +463,11 @@ impl Slurm16CPU {
         //1 - add : DEST <- DEST + IMM
             1 => self.alu_add(instruction, src_val),
         //2 - adc : DEST <- DEST + IMM + Carry
-            2 => self.alu_add(instruction, src_val), // Hardware doesn't implement adc properly yet
+            2 => self.alu_adc(instruction, src_val), 
         //3 - sub : DEST <- DEST - IMM 
             3 => self.alu_sub(instruction, src_val),
         //4 - sbb : DEST <- DEST - IMM - Carry
-            4 => self.alu_sub(instruction, src_val), // Hardware doesn't properly implement sbb yet
+            4 => self.alu_sbb(instruction, src_val), 
         //5 - and : DEST <- DEST & IMM
             5 => self.alu_and(instruction, src_val),
         //6 - or  : DEST <- DEST | IMM

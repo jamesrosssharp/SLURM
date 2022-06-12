@@ -20,3 +20,19 @@ struct slurmsng_header {
 	unsigned short pattern_offset_lo;
 	unsigned short pattern_offset_hi;
 };
+
+struct slurmsng_playlist {
+	char magic[2];
+	short chunklen;
+};
+
+struct slurmsng_sample {
+	char magic[2];
+	char bit_depth;
+	char loop;
+	unsigned short speed;
+	unsigned short loop_start;
+	unsigned short loop_end;
+	unsigned short sample_len;
+};
+
