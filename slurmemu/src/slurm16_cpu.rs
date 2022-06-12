@@ -79,12 +79,50 @@ impl Slurm16CPU {
 
     }
 
+   pub fn alu_adc(&mut self, instruction : u16, src : u16) {
+        let reg_dest    = ((instruction & 0xf0) >> 4) as usize;
+        
+        let a = src as u32;
+        let b = self.get_register(reg_dest) as u32;
+        let c : u32 = if self.c { 1 } else { 0 };
+
+        let sum = a.wrapping_add(b).wrapping_add(c);
+
+        self.registers[reg_dest] = sum as u16;
+        self.z = sum & 65535 == 0;
+        match sum & 0x8000 {
+            0x8000 => self.s = true,
+            _ => self.s = false
+        }
+        self.c = sum > 65535;
+
+    }
+
     pub fn alu_sub(&mut self, instruction : u16, src : u16) {
         let reg_dest    = ((instruction & 0xf0) >> 4) as usize;
         
         let a = src as u32;
         let b = self.get_register(reg_dest) as u32;
         let sum = b.wrapping_sub(a);
+
+        //println!("Subtract: {} {} {}", a, b, sum);
+
+        self.registers[reg_dest] = sum as u16;
+        self.z = sum & 65535 == 0;
+        match sum & 0x8000 {
+            0x8000 => self.s = true,
+            _ => self.s = false
+        }
+        self.c = sum > 65535;
+    }
+
+    pub fn alu_sbb(&mut self, instruction : u16, src : u16) {
+        let reg_dest    = ((instruction & 0xf0) >> 4) as usize;
+        
+        let a = src as u32;
+        let b = self.get_register(reg_dest) as u32;
+        let c = if self.c { 1 } else { 0 };
+        let sum = b.wrapping_sub(a).wrapping_sub(c);
 
         //println!("Subtract: {} {} {}", a, b, sum);
 
@@ -388,11 +426,11 @@ impl Slurm16CPU {
         //1 - add : DEST <- DEST + IMM
             1 => self.alu_add(instruction, imm),
         //2 - adc : DEST <- DEST + IMM + Carry
-            2 => self.alu_add(instruction, imm), // Hardware doesn't implement adc properly yet
+            2 => self.alu_adc(instruction, imm), 
         //3 - sub : DEST <- DEST - IMM 
             3 => self.alu_sub(instruction, imm),
         //4 - sbb : DEST <- DEST - IMM - Carry
-            4 => self.alu_sub(instruction, imm), // Hardware doesn't properly implement sbb yet
+            4 => self.alu_sbb(instruction, imm), 
         //5 - and : DEST <- DEST & IMM
             5 => self.alu_and(instruction, imm),
         //6 - or  : DEST <- DEST | IMM
@@ -839,7 +877,7 @@ impl Slurm16CPU {
             // If the previous instruction is an imm, we need to make this two instruction
             // unit atomic on interrupts, so we set return address back an instruction.
             let ins_minus_1 = mem[((self.pc - 2)>>1) as usize];
-            if (ins_minus_1 & 0xf000 == 0x1000)
+            if (ins_minus_1 & 0xf000) == 0x1000
             {
                 self.registers[14] = self.pc - 2;
             }
