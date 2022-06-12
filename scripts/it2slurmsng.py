@@ -416,6 +416,10 @@ with open(itFile, "rb") as binf:
     sep = struct.unpack('b', binf.read(1))[0]
     pwd = struct.unpack('b', binf.read(1))[0]
 
+    print("Initial speed: %d" % _is)
+    print("Initial tempo: %d" % it)
+
+
     msg_length = struct.unpack('h', binf.read(2))[0]
     msg_offset = struct.unpack('I', binf.read(4))[0]
     binf.read(4)
@@ -468,6 +472,11 @@ with open(itFile, "rb") as binf:
         slmsngfile.write(struct.pack('b', pattnum))
         # Pad
         slmsngfile.write(b'\x00')
+
+        slmsngfile.write(struct.pack('b', _is))
+        slmsngfile.write(struct.pack('b', it))
+        slmsngfile.write(b'\x00\x00')
+
         # Place holders for offsets (we'll fill them in later)
         slmsngfile.write(b'\x00' * 12)
 
@@ -505,4 +514,11 @@ with open(itFile, "rb") as binf:
         print("PLOFF: %x" % ploff)
         print("SMPOFF: %x" % sampoff)
         print("PATOFF: %x" % pattoff)
+
+        slmsngfile.seek(16)
+        slmsngfile.write(struct.pack('I', ploff))
+        slmsngfile.write(struct.pack('I', sampoff))
+        slmsngfile.write(struct.pack('I', pattoff))
+
+
 

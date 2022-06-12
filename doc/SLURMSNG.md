@@ -16,9 +16,12 @@ Header
 3. Num samples - 1 byte
 4. Num patterns - 1 byte
 5. Pad - 1 byte
-6. Playlist offset - 4 bytes
-7. Samples offset - 4 bytes
-8. Pattern data offset - 4 bytes
+6. Initial speed - 1 byte
+7. Initial tempo - 1 byte
+8. Pad - 2 bytes
+9. Playlist offset - 4 bytes
+10. Samples offset - 4 bytes
+11. Pattern data offset - 4 bytes
 
 Playlist
 --------
