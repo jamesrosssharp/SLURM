@@ -282,10 +282,10 @@ reg: MULI4(reg,reg)  "\tbl _muli4\n"   1
 reg: MULU2(reg,reg)  "?\tmov r%c, r%0\n\tmul r%c,r%1\n"   1
 reg: MULU4(reg,reg)  "\tbl _mulu4\n"   1
 
-reg: ADDI2(reg,reg)   "?\tmov r%c, r%0\n\tadd r%c,r%1\n"  1
-reg: ADDI4(reg,reg)   "?\tmov r%c, r%0\n\tadd r%c,r%1\n"  1
-reg: ADDP2(reg,reg)   "?\tmov r%c, r%0\n\tadd r%c,r%1\n"  1
-reg: ADDU2(reg,reg)   "?\tmov r%c, r%0\n\tadd r%c,r%1\n"  1
+reg: ADDI2(reg,reg)   "?\tmov r%c, r%0 // ADDI2\n\tadd r%c,r%1 //  ADDI2\n"  1
+reg: ADDI4(reg,reg)   "?\tmov r%c, r%0 // ADDI4 \n\tadd r%c,r%1 // ADDI4\n"  1
+reg: ADDP2(reg,reg)   "?\tmov r%c, r%0 // ADDP2 \n\tadd r%c,r%1// ADDP2\n"  1
+reg: ADDU2(reg,reg)   "?\tmov r%c, r%0 // ADDU2 \n\tadd r%c,r%1 // ADDU2\n"  1
 reg: ADDU4(reg,reg)   "?\tmov r%c, r%0\n\tadd r%c,r%1\n"  1
 reg: BANDI2(reg,reg)  "?\tmov r%c,r%0\n\tand r%c,r%1\n"   1
 reg: BANDI4(reg,reg)  "?\tmov r%c,r%0\n\tand r%c,r%1\n"   1

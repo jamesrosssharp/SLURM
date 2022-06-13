@@ -24,14 +24,14 @@ typedef void *__gnuc_va_list;
 
 void divmodu(unsigned int a, unsigned int b, unsigned int* quotient, unsigned int* rem);
 
-void print_hex_num(unsigned int n)
+void print_hex_num(unsigned short n)
 {
 	static char convertBuffer[] = "0123456789abcdef";
 
 	short i = 0;
 
 	while (i < 4) {
-		unsigned int a = (n & 0xf000U) >> 12;
+		unsigned short a = (n & 0xf000U) >> 12;
 		putc(convertBuffer[a]);
 
 		n <<= 4;

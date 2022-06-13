@@ -36,6 +36,9 @@ assign S = S_flag_reg;
 wire [BITS : 0] addOp = {1'b0,A} + {1'b0,B}; 
 wire [BITS : 0] subOp = {1'b0,A} - {1'b0,B}; 
 
+wire [BITS : 0] adcOp = {1'b0,A} + {1'b0,B} + {15'b0,C}; 
+wire [BITS : 0] sbbOp = {1'b0,A} - {1'b0,B} - {15'b0,C}; 
+
 wire [BITS - 1 : 0] orOp = A | B;
 wire [BITS - 1 : 0] andOp = A & B; 
 wire [BITS - 1 : 0] xorOp = A ^ B;
@@ -93,10 +96,10 @@ begin
 			S_flag_reg_next = addOp[BITS - 1] ? 1'b1 : 1'b0;
 		end
 		5'd2: begin /* adc */
-			out = addOp[BITS - 1:0];
-			C_flag_reg_next = addOp[BITS];
-			Z_flag_reg_next = (addOp[BITS - 1:0] == 16'h0000 /*{BITS{1'b0}}*/) ? 1'b1 : 1'b0;
-			S_flag_reg_next = addOp[BITS - 1] ? 1'b1 : 1'b0;
+			out = adcOp[BITS - 1:0];
+			C_flag_reg_next = adcOp[BITS];
+			Z_flag_reg_next = (adcOp[BITS - 1:0] == 16'h0000 /*{BITS{1'b0}}*/) ? 1'b1 : 1'b0;
+			S_flag_reg_next = adcOp[BITS - 1] ? 1'b1 : 1'b0;
 		end
 		5'd3: begin /* sub */ 
 			out = subOp[BITS - 1:0];
@@ -105,10 +108,10 @@ begin
 			S_flag_reg_next = subOp[BITS - 1] ? 1'b1 : 1'b0;
 		end
 		5'd4: begin /* sbb */ 
-			out = subOp[BITS - 1:0];
-			C_flag_reg_next = subOp[BITS];
-			Z_flag_reg_next = (subOp[BITS - 1:0] == {BITS{1'b0}}) ? 1'b1 : 1'b0;
-			S_flag_reg_next = subOp[BITS - 1] ? 1'b1 : 1'b0;
+			out = sbbOp[BITS - 1:0];
+			C_flag_reg_next = sbbOp[BITS];
+			Z_flag_reg_next = (sbbOp[BITS - 1:0] == {BITS{1'b0}}) ? 1'b1 : 1'b0;
+			S_flag_reg_next = sbbOp[BITS - 1] ? 1'b1 : 1'b0;
 		end
 		5'd5: begin /* and */
 			out = andOp;

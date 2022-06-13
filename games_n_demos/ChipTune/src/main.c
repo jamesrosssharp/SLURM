@@ -16,8 +16,6 @@ void enable_interrupts()
 volatile short flash_complete = 0;
 volatile short vsync = 0;
 
-
-
 struct slurmsng_header sng_hdr;
 struct slurmsng_playlist pl_hdr;
 
@@ -45,9 +43,9 @@ void do_flash_dma(short base_lo, short base_hi, short offset_lo, short offset_hi
 	short lo = calculate_flash_offset_lo(base_lo, base_hi, offset_lo, offset_hi);
 	short hi = calculate_flash_offset_hi(base_lo, base_hi, offset_lo, offset_hi);
 
-	my_printf("Offset hi: %x\n", hi);
-	my_printf("Offset lo: %x\n", lo);
-	my_printf("address: %x count: %d\n", address, count);
+	my_printf("Offset hi: %x\r\n", hi);
+	my_printf("Offset lo: %x\r\n", lo);
+	my_printf("address: %x count: %d\r\n", address, count);
 
 	__out(SPI_FLASH_ADDR_LO, lo);
 	__out(SPI_FLASH_ADDR_HI, hi);
@@ -61,42 +59,53 @@ void do_flash_dma(short base_lo, short base_hi, short offset_lo, short offset_hi
 		__sleep();
 }
 
-void load_slurm_sng()
+short my_add(short a, short b)
+{
+	return a + b;
+}
+
+int load_slurm_sng()
 {
 	char *data;
 	char *heap = &music_heap;
+	char *heap_end = &music_heap + MUSIC_HEAP_SIZE_BYTES;
 	int i;
 	int heap_offset = 0;
 	short offset_lo = 0;
 	short offset_hi = 0;
 
-	my_printf("Hello world! %d\n", 22);		
+	my_printf("Hello world! %d\r\n", 22);		
 
 	do_flash_dma(chiptune_rom_offset_lo, chiptune_rom_offset_hi, 0, 0, (void*)&sng_hdr, sizeof(sng_hdr) / sizeof(short));
 
-	my_printf("Playlist len: %d\n", sng_hdr.playlist_size);
+	my_printf("Playlist offset lo: %x hi: %x\r\n", sng_hdr.pl_offset_lo, sng_hdr.pl_offset_hi);
+	my_printf("Playlist len: %d\r\n", sng_hdr.playlist_size);
 
 	offset_lo = sng_hdr.pl_offset_lo;
 	offset_hi = sng_hdr.pl_offset_hi;
 
 	do_flash_dma(chiptune_rom_offset_lo, chiptune_rom_offset_hi, offset_lo, offset_hi, (void*)&pl_hdr, sizeof(pl_hdr) / sizeof(short));
 
-	my_printf("Playlist chunk len: %d\n", pl_hdr.chunklen);
+	my_printf("Playlist chunk len: %d\r\n", pl_hdr.chunklen);
 
 	add_offset(&offset_lo, &offset_hi, 4, 0);
-		
+
+	my_printf("Heap: %x\n", heap);
+
 	do_flash_dma(chiptune_rom_offset_lo, chiptune_rom_offset_hi, offset_lo, offset_hi, heap, pl_hdr.chunklen >> 1);
 
 	for (i = 0; i < sng_hdr.playlist_size; i++)
-		my_printf("Pl %d: %d\n", i, heap[i]);
+		my_printf("Pl %d: %d\r\n", i, heap[i]);
 
 
 	pl.pl_len = sng_hdr.playlist_size;
 	pl.pl = (char*) heap; 
 
-	heap += pl_hdr.chunklen;
+	// This hack is to work around lcc getting kids in wrong order
+	// such that the addition is corrupted
+	heap = (char*)my_add((short)pl_hdr.chunklen,(short)heap);
 
-	my_printf("Num samples: %d\n", sng_hdr.num_samples);
+	my_printf("Num samples: %d\r\n", sng_hdr.num_samples);
 
 	offset_lo = sng_hdr.sample_offset_lo;
 	offset_hi = sng_hdr.sample_offset_hi;
@@ -105,18 +114,39 @@ void load_slurm_sng()
 	{
 		struct slurmsng_sample samp;
 		do_flash_dma(chiptune_rom_offset_lo, chiptune_rom_offset_hi, offset_lo, offset_hi, (void*)&samp, sizeof(struct slurmsng_sample) / sizeof(short));
-		my_printf("Magic: %c%c Sample: %d len: %d\n", samp.magic[0], samp.magic[1], i, samp.sample_len);
+		my_printf("Magic: %c%c Sample: %d len: %d\r\n", samp.magic[0], samp.magic[1], i, samp.sample_len);
 
-		add_offset(&offset_lo, &offset_hi, samp.sample_len + sizeof(struct slurmsng_sample), 0);
-		
+		add_offset(&offset_lo, &offset_hi, sizeof(struct slurmsng_sample), 0);
+	
+		if ((unsigned short)(heap + samp.sample_len) > (unsigned short)heap_end)
+		{
+			my_printf("Samples too large! %x %x %x\r\n", heap, (heap + samp.sample_len), heap_end);
+			return -1;
+		}
+
+		sample_offsets[i] = heap;
+
+		do_flash_dma(chiptune_rom_offset_lo, chiptune_rom_offset_hi, offset_lo, offset_hi, (void*)heap, samp.sample_len >> 1);
+
+		heap = (char*)my_add((short)heap, (short)samp.sample_len);
+
+		add_offset(&offset_lo, &offset_hi, samp.sample_len, 0);
 	}
+
+	my_printf("Loaded %d bytes of samples. \r\n", heap - &music_heap);
+
+	return 0;
 
 }
 
 int main()
 {
-//	enable_interrupts();
+	enable_interrupts();
 	load_slurm_sng();
 	
-	while(1);
+	while(1)
+	{
+		__sleep();
+	//	my_printf("Interrupt!");
+	}
 }

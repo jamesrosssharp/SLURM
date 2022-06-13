@@ -1,4 +1,4 @@
-
+/* SLURMSNG format */
 
 struct slurmsng_header {
 	char magic[8];

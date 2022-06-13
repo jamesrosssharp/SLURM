@@ -69,8 +69,11 @@ do_it:
 	out [r0, SPI_FLASH_CMD], r3
 	
 	sleep
-
+	nop
+	nop
+	nop
 	cli	// Clear interrupts
+	out [r0, INTERRUPT_ENABLE_PORT], r0
 	ba 0x200	// Jump to app
 
 

@@ -13,11 +13,11 @@
 
 // Pattern buffer A
 pattern_A: 
-	.times 64*8*4 dw 0
+	.times 64*8*4 db 0
 
 // Pattern buffer B
 pattern_B:
-	.times 64*8*4 dw 0
+	.times 64*8*4 db 0
 
 // Buffer for samples
 music_heap:
