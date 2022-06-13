@@ -36,6 +36,25 @@ extern char music_heap;
 extern char pattern_A;
 extern char pattern_B;
 
+struct channel_t {
+	char* sample_start;
+	char* sample_end;
+
+	char* loop_start;
+	char* loop_end;
+
+	char* sample_pos;
+	short frequency;	// 0 = channel off
+
+	short phase;
+
+	char  volume;
+	char  loop;	// 1 = loop, 0 = no loop
+	char  bits;	// 1 = 16 bit, 0 = 8 bit
+	char  pad;
+};
+
+
 #define MUSIC_HEAP_SIZE_BYTES 24*1024
 
 void do_flash_dma(short base_lo, short base_hi, short offset_lo, short offset_hi, void* address, short count)
