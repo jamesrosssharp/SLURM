@@ -8,7 +8,7 @@ HSYNC_VEC:
 VSYNC_VEC:
 	ba vsync_handler
 AUDIO_VEC:
-	ba dummy_handler
+	ba audio_handler
 SPI_FLASH:
 	ba flash_handler
 GPIO_VEC:
@@ -108,4 +108,22 @@ vsync_handler:
 	mov r1, 2
 	out [r0, 0x7001], r1
 	iret
+
+audio_handler:
+	// Store flags
+	stf r1
+	sub r13, 2
+	st [r13, 0], r1	
+
+	mov r1, 4
+	out [r0, 0x7001], r1
+
+	bl mix_audio
+	
+	// Restore flags
+	ld r1, [r13, 0]
+	add r13, 2
+	rsf r1
+	iret
+
 

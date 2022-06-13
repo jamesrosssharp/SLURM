@@ -20,27 +20,45 @@ music_heap:
 
 /*
 struct channel_t {
-	char* sample_start;
-	char* sample_end;
+	char* sample_start;	// 0
 
-	char* loop_start;
-	char* loop_end;
+	char* sample_end;	// 2
 
-	char* sample_pos;
-	short frequency;	// 0 = channel off
+	char* loop_start;	// 4
 	
-	char  volume;
-	char  loop;	// 1 = loop, 0 = no loop
+	char* loop_end;		// 6
 
-	char  bits;	// 1 = 16 bit, 0 = 8 bit
-	char  pad;
+	char* sample_pos;	// 8
+
+	short frequency;	// 10, 0 = channel off
+	
+	short phase;		// 12
+	
+	char  volume;		// 14
+	char  loop;		// 15, 1 = loop, 0 = no loop
+
+	char  bits;		// 16, 1 = 16 bit, 0 = 8 bit
+	char  pad;		// 17
 };
 
 We store 8 channels worth of channel_t here to tell us what to mix.
 */
 
+CHANNEL_STRUCT_SIZE equ 9
+
+CHANNEL_STRUCT_SAMPLE_START equ 0
+CHANNEL_STRUCT_SAMPLE_END   equ 2
+CHANNEL_STRUCT_LOOP_START   equ 4
+CHANNEL_STRUCT_LOOP_END	    equ 6
+CHANNEL_STRUCT_SAMPLE_POS   equ 8
+CHANNEL_STRUCT_FREQUENCY    equ 10
+CHANNEL_STRUCT_PHASE	    equ 12	
+CHANNEL_STRUCT_VOLUME	    equ 14
+CHANNEL_STRUCT_LOOP	    equ 15
+CHANNEL_STRUCT_BITS	    equ 16
+
 channel_info:
-	.times 8*8 dw 0 
+	.times 8*9 dw 0 
 old_stack:	// We save the previous stack here, and substitute to our own stack
 	dw 0
 
@@ -62,6 +80,12 @@ AUDIO_CONTROL		equ (AUDIO_BASE + 0x400)
 AUDIO_LEFT_PTR		equ (AUDIO_BASE + 0x401)
 AUDIO_RIGHT_PTR		equ (AUDIO_BASE + 0x402)	
 
+AUDIO_FREQ equ (25125000 / 512)
+
+audio_buffer_table:
+	dw 0
+	dw AUDIO_RIGHT_CHANNEL_BRAM_LO
+	dw AUDIO_LEFT_CHANNEL_BRAM_LO
 
 // Should be called in interrupt context. Will mix audio from the 8 channels 
 mix_audio:
@@ -85,31 +109,105 @@ mix_audio:
 	// Find out which half of the buffer the audio read pointer is in
 	// And set mix address
 
-	in r2, [AUDIO_LEFT_PTR]
+	in r2, [r0, AUDIO_LEFT_PTR]
 	and r2, 0x100
-	xor r2, 0x100 ; r2: mix index into buffer
+	xor r2, 0x100 // r2: mix index into buffer
 	
 	// Outer Loop - for 256 blockram words...
 
-	mov r3, 256	; r3: outer loop count
+	mov r3, 256	// r3: outer loop count
 mix_audio.outer_loop:
 
 	// Middle loop - for each of two stereo channels
-	mov r4, 2	; r4: middle loop count
+	mov r4, 2		// r4: middle loop count
+	mov r6, channel_info 	// r6: channel info struct
+
 mix_audio.middle_loop:
 
+	mov r11, 0 // r11 : the mix variable
 	// Inner loop - for each of the 4 channels, mix data
-	mov r5, 4	; r5: inner loop count 
+	mov r5, 4	// r5: inner loop count 
 mix_audio.inner_loop:
 
+	ld r9, [r6, CHANNEL_STRUCT_SAMPLE_POS]
+	ld r8, [r6, CHANNEL_STRUCT_FREQUENCY]
+	or r8, r8
+	bz mix_audio.skip_channel
+	
 
+	ldb r10, [r6, CHANNEL_STRUCT_BITS]
+	cmp r10, 1
+	beq mix_audio.mix_8_bit
 
+	// 16 bit	
+	ld r7, [r9]
+
+	ba mix_audio.do_mix
+mix_audio.mix_8_bit:
+	// 8 bit
+
+	ldb r7, [r9]
+
+mix_audio.do_mix:
+
+	ldb r12, [r6, CHANNEL_STRUCT_VOLUME]
+	mul r12, 256
+
+	mulu r7, r12
+	add  r11, r7
+
+	// Update
+
+	ld r7, [r6, CHANNEL_STRUCT_PHASE] 
+	add r7, r8	// r7 : PHASE + delta
+	cmp r7, AUDIO_FREQ
+	bnc mix_audio.no_sample_inc
+
+	sub r7, AUDIO_FREQ
+	st [r6, CHANNEL_STRUCT_PHASE], r7
+
+	add r9, r10
+	
+	ldb r7, [r6, CHANNEL_STRUCT_LOOP] // r7: loop flag
+	or  r7, r7
+	bz  mix_audio.no_loop
+
+	ld  r8, [r6, CHANNEL_STRUCT_LOOP_END]
+	cmp r9, r8
+	bnc mix_audio.done_sample_pos
+
+	ld  r9, [r6, CHANNEL_STRUCT_LOOP_START]
+	ba  mix_audio.done_sample_pos	
+
+mix_audio.no_loop:
+
+	ld  r8, [r6, CHANNEL_STRUCT_SAMPLE_END]
+	cmp r9, r8
+	bnc mix_audio.done_sample_pos
+
+	st [r6, CHANNEL_STRUCT_FREQUENCY], r0
+	ba mix_audio.skip_channel	
+		
+
+mix_audio.done_sample_pos:
+
+	st [r6, CHANNEL_STRUCT_SAMPLE_POS], r9
+
+mix_audio.no_sample_inc:  
+mix_audio.skip_channel:
+
+	add r6, CHANNEL_STRUCT_SIZE * 2
 	sub r5, 1
 	bnz mix_audio.inner_loop
+
+	ld  r7, [r4, audio_buffer_table]
+	add r7, r2
+	out [r7, 0], r11
 
 	sub r4, 1
 	bnz mix_audio.middle_loop
 
+	add r2, 1
 	sub r3, 1
 	bnz mix_audio.outer_loop
 

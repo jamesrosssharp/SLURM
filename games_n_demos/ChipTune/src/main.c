@@ -9,7 +9,7 @@
 
 void enable_interrupts()
 {
-	__out(0x7000, SLURM_INTERRUPT_VSYNC | SLURM_INTERRUPT_FLASH_DMA);
+	__out(0x7000, SLURM_INTERRUPT_VSYNC | SLURM_INTERRUPT_FLASH_DMA | SLURM_INTERRUPT_AUDIO);
 	global_interrupt_enable();
 }
 
@@ -26,7 +26,18 @@ struct playlist {
 
 struct playlist pl;
 
-char* sample_offsets[16];
+// This struct shadows struct slurmsng_sample 
+struct sample {
+	char* offset;
+	char bit_depth;
+	char loop;
+	unsigned short speed;
+	unsigned short loop_start;
+	unsigned short loop_end;
+	unsigned short sample_len;
+};
+
+struct sample g_samples[16];
 
 extern short calculate_flash_offset_hi(short base_lo, short base_hi, short offset_lo, short offset_hi);
 extern short calculate_flash_offset_lo(short base_lo, short base_hi, short offset_lo, short offset_hi);
@@ -54,6 +65,8 @@ struct channel_t {
 	char  pad;
 };
 
+
+extern struct channel_t channel_info[]; 
 
 #define MUSIC_HEAP_SIZE_BYTES 24*1024
 
@@ -131,25 +144,25 @@ int load_slurm_sng()
 
 	for (i = 0; i < sng_hdr.num_samples; i++)
 	{
-		struct slurmsng_sample samp;
-		do_flash_dma(chiptune_rom_offset_lo, chiptune_rom_offset_hi, offset_lo, offset_hi, (void*)&samp, sizeof(struct slurmsng_sample) / sizeof(short));
-		my_printf("Magic: %c%c Sample: %d len: %d\r\n", samp.magic[0], samp.magic[1], i, samp.sample_len);
+		struct sample* samp = (struct sample*)&g_samples[i];
+		do_flash_dma(chiptune_rom_offset_lo, chiptune_rom_offset_hi, offset_lo, offset_hi, (void*)samp, sizeof(struct slurmsng_sample) / sizeof(short));
+		my_printf("Sample: %d len: %d\r\n", i, samp->sample_len);
 
 		add_offset(&offset_lo, &offset_hi, sizeof(struct slurmsng_sample), 0);
 	
-		if ((unsigned short)(heap + samp.sample_len) > (unsigned short)heap_end)
+		if ((unsigned short)(heap + samp->sample_len) > (unsigned short)heap_end)
 		{
-			my_printf("Samples too large! %x %x %x\r\n", heap, (heap + samp.sample_len), heap_end);
+			my_printf("Samples too large! %x %x %x\r\n", heap, (heap + samp->sample_len), heap_end);
 			return -1;
 		}
 
-		sample_offsets[i] = heap;
+		samp->offset = heap;
 
-		do_flash_dma(chiptune_rom_offset_lo, chiptune_rom_offset_hi, offset_lo, offset_hi, (void*)heap, samp.sample_len >> 1);
+		do_flash_dma(chiptune_rom_offset_lo, chiptune_rom_offset_hi, offset_lo, offset_hi, (void*)heap, samp->sample_len >> 1);
 
-		heap = (char*)my_add((short)heap, (short)samp.sample_len);
+		heap = (char*)my_add((short)heap, (short)samp->sample_len);
 
-		add_offset(&offset_lo, &offset_hi, samp.sample_len, 0);
+		add_offset(&offset_lo, &offset_hi, samp->sample_len, 0);
 	}
 
 	my_printf("Loaded %d bytes of samples. \r\n", heap - &music_heap);
@@ -158,14 +171,67 @@ int load_slurm_sng()
 
 }
 
+void play_sample()
+{
+
+	#define SAMPLE 1
+
+	channel_info[0].sample_start = g_samples[SAMPLE].offset;
+	channel_info[0].sample_end   = g_samples[SAMPLE].offset + g_samples[SAMPLE].sample_len;
+
+	channel_info[0].loop_start = g_samples[SAMPLE].offset + g_samples[SAMPLE].loop_start;
+	channel_info[0].loop_end   = g_samples[SAMPLE].offset + g_samples[SAMPLE].loop_end;
+
+	channel_info[0].sample_pos = g_samples[SAMPLE].offset;
+	channel_info[0].frequency = g_samples[SAMPLE].speed;	
+
+	channel_info[0].phase = 0;
+
+	channel_info[0].volume = 64;
+	channel_info[0].loop   = g_samples[SAMPLE].loop;	
+	channel_info[0].bits   = g_samples[SAMPLE].bit_depth + 1; // 1 = 8 bit, 2 = 16 bit
+
+}
+
+void init_audio()
+{
+	int i;
+
+	// Clear audio buffer and enable
+
+	play_sample();
+
+	for (i = 0; i < 512; i++)
+	{		__out(0x3000 | i, 0);
+			__out(0x3200 | i, 0);
+	}
+	__out(0x3400, 1);
+
+}
+
 int main()
 {
+	int count = 0;
+	
 	enable_interrupts();
 	load_slurm_sng();
-	
+
+	init_audio();
+
 	while(1)
 	{
+		if (vsync)
+		{
+			vsync = 0;
+			count += 1;
+			if (count == 50)
+			{
+				play_sample();
+				count = 0;
+			}
+		}
+
 		__sleep();
-	//	my_printf("Interrupt!");
+		my_printf("Interrupt!");
 	}
 }
