@@ -28,7 +28,7 @@ sim: $(SOURCE) tb.v rom_image.meminit $(MEM_INIT)
 	@diff -q	simout.txt simout.correct || (echo "\n\n==============\nTEST FAILED :(\n==============\n\n"; exit 1)
 	@echo "==============\nTEST PASSED!\n==============\n" 
 	
-dump.vcd: $(SOURCE) tb.v rom_image.mem $(MEM_INIT)
+dump.vcd: $(SOURCE) tb.v rom_image.meminit $(MEM_INIT)
 	$(IVERILOG_RUN)
 
 view: dump.vcd config.gtkw

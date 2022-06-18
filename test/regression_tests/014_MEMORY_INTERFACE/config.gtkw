@@ -1,0 +1,132 @@
+[*]
+[*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
+[*] Sat Jun 18 05:43:39 2022
+[*]
+[dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/014_MEMORY_INTERFACE/dump.vcd"
+[dumpfile_mtime] "Sat Jun 18 05:40:30 2022"
+[dumpfile_size] 5748762
+[savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/014_MEMORY_INTERFACE/config.gtkw"
+[timestart] 1078000
+[size] 1920 996
+[pos] -1 -1
+*-19.194408 2900000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] tb.
+[treeopen] tb.cpu0.
+[treeopen] tb.cpu0.cpu0.
+[treeopen] tb.cpu0.pc0.
+[sst_width] 290
+[signals_width] 383
+[sst_expanded] 1
+[sst_vpaned_height] 281
+@28
+tb.cpu0.cpu0.CLK
+tb.cpu0.cpu0.RSTb
+@200
+-
+@22
+tb.cpu0.cpu0.cpu_pc0.pc[15:0]
+@200
+-
+@22
+tb.cpu0.cpu0.memory_address[15:0]
+tb.cpu0.cpu0.memory_in[15:0]
+tb.cpu0.cpu0.memory_out[15:0]
+@28
+tb.cpu0.cpu0.memory_wr
+tb.cpu0.cpu0.memory_valid
+tb.cpu0.cpu0.memory_ready
+tb.cpu0.cpu0.cpu_mem0.memory_is_instruction
+tb.cpu0.cpu0.cpu_mem0.preserve_addr_r
+@23
+tb.cpu0.cpu0.cpu_mem0.load_store_address[15:0]
+@200
+-
+@22
+tb.cpu0.cpu0.cpu_mem0.cpu_state_r[3:0]
+@28
+tb.cpu0.cpu0.cpu_mem0.is_executing
+tb.cpu0.cpu0.cpu_mem0.is_fetching
+@200
+-
+@28
+tb.cpu0.cpu0.cpu_haz0.load_pc
+tb.cpu0.cpu0.cpu_haz0.hazard
+tb.cpu0.cpu0.cpu_haz0.hazard1
+tb.cpu0.cpu0.cpu_haz0.hazard_23
+@200
+-
+@28
+tb.cpu0.cpu0.cpu_haz0.stall
+tb.cpu0.cpu0.cpu_haz0.stall_end
+tb.cpu0.cpu0.cpu_haz0.stall_start
+tb.cpu0.cpu0.cpu_pip0.stall_mask_count_r[1:0]
+tb.cpu0.cpu0.cpu_pip0.alt_pip_ld_count_r[1:0]
+tb.cpu0.cpu0.cpu_pip0.reading_alt_pipeline
+tb.cpu0.cpu0.cpu_pip0.stall_count_r[2:0]
+tb.cpu0.cpu0.cpu_pip0.stall_read_count_r[2:0]
+@200
+-
+-
+@820
+tb.cpu0.pc0.tr0.traceChar_r[7:0]
+@22
+tb.cpu0.pc0.tr0.traceHex_r[15:0]
+tb.cpu0.pc0.tr0.traceVal_r[15:0]
+@200
+-
+@22
+tb.cpu0.cpu0.cpu_pip0.pipeline_stage0[15:0]
+tb.cpu0.cpu0.cpu_pip0.pipeline_stage1[15:0]
+tb.cpu0.cpu0.cpu_pip0.pipeline_stage2[15:0]
+tb.cpu0.cpu0.cpu_pip0.pipeline_stage3[15:0]
+tb.cpu0.cpu0.cpu_pip0.pipeline_stage4[15:0]
+@200
+-
+@22
+tb.cpu0.cpu0.port_address[15:0]
+tb.cpu0.cpu0.port_in[15:0]
+tb.cpu0.cpu0.port_out[15:0]
+@28
+tb.cpu0.cpu0.port_rd
+tb.cpu0.cpu0.port_wr
+@200
+-
+@22
+tb.cpu0.pc0.ADDRESS[15:0]
+tb.cpu0.pc0.DATA_IN[15:0]
+tb.cpu0.pc0.DATA_OUT[15:0]
+@28
+tb.cpu0.pc0.memRD
+tb.cpu0.pc0.memWR
+@200
+-
+@22
+tb.cpu0.cpu0.cpu_pip0.imm_reg[15:0]
+tb.cpu0.cpu0.reg0.\regFileA[1][15:0]
+tb.cpu0.cpu0.reg0.\regFileA[2][15:0]
+tb.cpu0.cpu0.reg0.\regFileA[3][15:0]
+tb.cpu0.cpu0.reg0.\regFileA[4][15:0]
+tb.cpu0.cpu0.reg0.\regFileA[5][15:0]
+tb.cpu0.cpu0.reg0.\regFileA[6][15:0]
+tb.cpu0.cpu0.reg0.\regFileA[7][15:0]
+tb.cpu0.cpu0.reg0.\regFileA[8][15:0]
+tb.cpu0.cpu0.reg0.\regFileA[9][15:0]
+tb.cpu0.cpu0.reg0.\regFileA[10][15:0]
+tb.cpu0.cpu0.reg0.\regFileA[11][15:0]
+tb.cpu0.cpu0.reg0.\regFileA[12][15:0]
+tb.cpu0.cpu0.reg0.\regFileA[13][15:0]
+tb.cpu0.cpu0.reg0.\regFileA[14][15:0]
+tb.cpu0.cpu0.reg0.\regFileA[15][15:0]
+@200
+-
+@22
+tb.cpu0.cpu0.cpu_exec0.regA[15:0]
+tb.cpu0.cpu0.cpu_exec0.regB[15:0]
+@200
+-
+@22
+tb.cpu0.cpu0.cpu_exec0.load_store_address[15:0]
+@200
+-
+[pattern_trace] 1
+[pattern_trace] 0
