@@ -55,7 +55,9 @@ module slurm16_cpu_pipeline #(parameter REGISTER_BITS = 4, BITS = 16, ADDRESS_BI
 
 	input [ADDRESS_BITS - 1:0] pc_in,
 
-	output wake
+	output wake,
+
+	input stall_memory_pipeline_stage3
 );
 
 `include "cpu_decode_functions.v"
@@ -437,6 +439,30 @@ begin
 
 			clear_imm = 1'b1;
 		end
+	end
+
+
+	if (stall_memory_pipeline_stage3) begin
+
+		pipeline_stage0_r_next = pipeline_stage0_r;
+		pipeline_stage1_r_next = pipeline_stage1_r;
+		pipeline_stage2_r_next = pipeline_stage2_r;	// Insert bubble
+		pipeline_stage3_r_next = NOP_INSTRUCTION;
+		pipeline_stage4_r_next = pipeline_stage3_r;
+
+		pipeline_clear_interrupt = 1'b0; // If we previously set this flag, we need to clear it, otherwise interrupts will be permanently disabled
+										 // without executing the interrupt
+
+		pc_stage0_r_next = pc_stage0_r;
+		pc_stage1_r_next = pc_stage1_r;
+		pc_stage2_r_next = pc_stage2_r;
+
+		hazard_reg3_r_next	= R0; // Insert bubble
+		hazard_reg2_r_next	= hazard_reg2_r;
+
+		modifies_flags3_r_next = 1'b0; // Insert bubble
+		modifies_flags2_r_next = modifies_flags2_r;
+
 	end
 
 	// If pc is being loaded due to branch or return, flush pipeline up to execute stage, 

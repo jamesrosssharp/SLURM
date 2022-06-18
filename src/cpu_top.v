@@ -55,6 +55,8 @@ wire interrupt_flag_clear;
 
 wire [1:0] memory_wr_mask_delayed;
 
+wire stall_memory_pipeline_stage3;
+
 slurm16_cpu_memory_interface #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_mem0  (
 	CLK,
 	RSTb,
@@ -82,7 +84,10 @@ slurm16_cpu_memory_interface #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_mem
 
 	memory_is_instruction,				/* current value of memory in is an instruction */
 	memory_address_prev_plus_two,		/* points to return address */
-	memory_wr_mask_delayed				/* delayed memory write mask - for writeback */
+	memory_wr_mask_delayed,				/* delayed memory write mask - for writeback */
+
+	stall_memory_pipeline_stage3
+
 );
 
 wire stall;
@@ -158,7 +163,9 @@ slurm16_cpu_pipeline #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_pip0
 
 	pc_in,
 
-	wake
+	wake,
+
+	stall_memory_pipeline_stage3
 
 );
 

@@ -147,6 +147,7 @@ mix_audio.mix_8_bit:
 	// 8 bit
 
 	ldb r7, [r9]
+	mul r7, 256
 
 mix_audio.do_mix:
 

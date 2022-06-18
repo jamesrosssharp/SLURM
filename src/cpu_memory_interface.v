@@ -32,7 +32,10 @@ module slurm16_cpu_memory_interface #(parameter BITS = 16, ADDRESS_BITS = 16)  (
 
 	output [ADDRESS_BITS - 1:0] memory_address_prev_plus_two,
 
-	output [1:0] memory_wr_mask_delayed 		/* delayed memory write mask - used in write back to select correct byte from memory */
+	output [1:0] memory_wr_mask_delayed, 		/* delayed memory write mask - used in write back to select correct byte from memory */
+
+	output stall_memory_pipeline_stage3
+
 );
 
 
@@ -88,6 +91,8 @@ assign memory_wr_mask = memory_wr_mask_r;
 assign memory_wr_mask_delayed = memory_wr_mask_del_r;
 
 reg preserve_addr_r;
+
+assign stall_memory_pipeline_stage3 = preserve_addr_r;
 
 /* sequential logic */
 
@@ -189,14 +194,17 @@ begin
 				cpu_state_r_next = cpust_wait_mem_load1;
 				preserve_addr_r = 1'b1;
 			end
+			else if (store_memory == 1'b1)
+				if (has_bank_switch(pc, prev_addr_r)) 
+					cpu_state_r_next = cpust_wait_mem_store1;
+				else
+					cpu_state_r_next = cpust_execute_store;
 			else if (load_memory == 1'b0) begin
 				if (has_bank_switch(addr_r, pc))
 					cpu_state_r_next = cpust_wait_mem_ready1_2;
 				else
 					cpu_state_r_next = cpust_execute;
 			end
-			if (store_memory == 1'b1)
-				cpu_state_r_next = cpust_execute_store;
 			memory_is_instruction_r_next = 1'b0;
 		end 
 		cpust_wait_mem_load1:
@@ -210,14 +218,17 @@ begin
 				cpu_state_r_next = cpust_wait_mem_store1;
 				preserve_addr_r = 1'b1;
 			end
+			else if (load_memory == 1'b1)
+				if (has_bank_switch(pc, prev_addr_r)) 
+					cpu_state_r_next = cpust_wait_mem_load1;
+				else
+					cpu_state_r_next = cpust_execute_load;	
 			else if (store_memory == 1'b0) begin
 				if (has_bank_switch(addr_r, pc))
 					cpu_state_r_next = cpust_wait_mem_ready1_2;
 				else	
 					cpu_state_r_next = cpust_execute;
 			end
-			if (load_memory == 1'b1)
-				cpu_state_r_next = cpust_execute_load;
 			memory_is_instruction_r_next = 1'b0;
 		end
 		cpust_wait_mem_store1:
