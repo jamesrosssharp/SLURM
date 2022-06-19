@@ -1,18 +1,19 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Sat Jun 18 05:43:39 2022
+[*] Sun Jun 19 05:47:01 2022
 [*]
 [dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/014_MEMORY_INTERFACE/dump.vcd"
-[dumpfile_mtime] "Sat Jun 18 05:40:30 2022"
-[dumpfile_size] 5748762
+[dumpfile_mtime] "Sun Jun 19 05:43:07 2022"
+[dumpfile_size] 6067639
 [savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/014_MEMORY_INTERFACE/config.gtkw"
-[timestart] 1078000
+[timestart] 1301000
 [size] 1920 996
 [pos] -1 -1
-*-19.194408 2900000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-19.194408 3100000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tb.
 [treeopen] tb.cpu0.
 [treeopen] tb.cpu0.cpu0.
+[treeopen] tb.cpu0.cpu0.cpu_pip0.
 [treeopen] tb.cpu0.pc0.
 [sst_width] 290
 [signals_width] 383
@@ -37,8 +38,10 @@ tb.cpu0.cpu0.memory_valid
 tb.cpu0.cpu0.memory_ready
 tb.cpu0.cpu0.cpu_mem0.memory_is_instruction
 tb.cpu0.cpu0.cpu_mem0.preserve_addr_r
-@23
+@22
 tb.cpu0.cpu0.cpu_mem0.load_store_address[15:0]
+@28
+tb.cpu0.cpu0.cpu_mem0.halt
 @200
 -
 @22
@@ -53,19 +56,31 @@ tb.cpu0.cpu0.cpu_haz0.load_pc
 tb.cpu0.cpu0.cpu_haz0.hazard
 tb.cpu0.cpu0.cpu_haz0.hazard1
 tb.cpu0.cpu0.cpu_haz0.hazard_23
+@22
+tb.cpu0.cpu0.cpu_haz0.hazard_reg0[3:0]
+tb.cpu0.cpu0.cpu_haz0.hazard_reg1[3:0]
+tb.cpu0.cpu0.cpu_haz0.hazard_reg2[3:0]
+@23
+tb.cpu0.cpu0.cpu_haz0.hazard_reg3[3:0]
 @200
 -
 @28
 tb.cpu0.cpu0.cpu_haz0.stall
 tb.cpu0.cpu0.cpu_haz0.stall_end
 tb.cpu0.cpu0.cpu_haz0.stall_start
-tb.cpu0.cpu0.cpu_pip0.stall_mask_count_r[1:0]
-tb.cpu0.cpu0.cpu_pip0.alt_pip_ld_count_r[1:0]
-tb.cpu0.cpu0.cpu_pip0.reading_alt_pipeline
-tb.cpu0.cpu0.cpu_pip0.stall_count_r[2:0]
-tb.cpu0.cpu0.cpu_pip0.stall_read_count_r[2:0]
 @200
 -
+@22
+tb.cpu0.cpu0.cpu_pip0.cache0.fifo_rd_ptr[3:0]
+tb.cpu0.cpu0.cpu_pip0.cache0.fifo_wr_ptr[3:0]
+@28
+tb.cpu0.cpu0.cpu_pip0.cache0.RSTb
+@22
+tb.cpu0.cpu0.cpu_pip0.cache0.fifo_in[31:0]
+@28
+tb.cpu0.cpu0.cpu_pip0.cache0.wr_fifo
+tb.cpu0.cpu0.cpu_pip0.cache0.rd_fifo
+@200
 -
 @820
 tb.cpu0.pc0.tr0.traceChar_r[7:0]

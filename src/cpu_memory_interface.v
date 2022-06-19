@@ -43,19 +43,19 @@ module slurm16_cpu_memory_interface #(parameter BITS = 16, ADDRESS_BITS = 16)  (
 
 reg [3:0] cpu_state_r, cpu_state_r_next;
 
-localparam cpust_halt 	 	     = 4'b0000; // 0 CPU is halted; instructions not fetched
-localparam cpust_execute 	     = 4'b0001; // 1 CPU is executing non-memory instructions
-localparam cpust_wait_mem_ready1 = 4'b0010; // 2 Wait state when switching banks
-localparam cpust_wait_mem_ready2 = 4'b0011; // 3 CPU is waiting to access a new memory bank for fetching non-memory instructions
-localparam cpust_execute_load    = 4'b0100; // 4 CPU is executing load instruction
-localparam cpust_wait_mem_load1  = 4'b0101; // 5 Wait state when switching banks to load memory from
-localparam cpust_wait_mem_load2  = 4'b0110; // 6 CPU is waiting for memory grant to load from
-localparam cpust_execute_store   = 4'b0111; // 7 CPU is executing store instruction
-localparam cpust_wait_mem_store1 = 4'b1000; // 8 Wait state when switching banks to store to memory
-localparam cpust_wait_mem_store2 = 4'b1001; // 9 CPU is waiting for memory grant to store to
-localparam cpust_pre_execute 	 = 4'b1010; // 1 CPU is executing non-memory instructions
-localparam cpust_wait_mem_ready1_2 = 4'b1011; // 2 Wait state when switching banks
-localparam cpust_wait_mem_ready2_2 = 4'b1100; // 3 CPU is waiting to access a new memory bank for fetching non-memory instructions
+localparam cpust_halt 	 	     = 4'd0; // 0 CPU is halted; instructions not fetched
+localparam cpust_execute 	     = 4'd1; // 1 CPU is executing non-memory instructions
+localparam cpust_wait_mem_ready1 = 4'd2; // 2 Wait state when switching banks
+localparam cpust_wait_mem_ready2 = 4'd3; // 3 CPU is waiting to access a new memory bank for fetching non-memory instructions
+localparam cpust_execute_load    = 4'd4; // 4 CPU is executing load instruction
+localparam cpust_wait_mem_load1  = 4'd5; // 5 Wait state when switching banks to load memory from
+localparam cpust_wait_mem_load2  = 4'd6; // 6 CPU is waiting for memory grant to load from
+localparam cpust_execute_store   = 4'd7; // 7 CPU is executing store instruction
+localparam cpust_wait_mem_store1 = 4'd8; // 8 Wait state when switching banks to store to memory
+localparam cpust_wait_mem_store2 = 4'd9; // 9 CPU is waiting for memory grant to store to
+localparam cpust_pre_execute 	 = 4'd10; // 1 CPU is executing non-memory instructions
+localparam cpust_wait_mem_ready1_2 = 4'd11; // 2 Wait state when switching banks
+localparam cpust_wait_mem_ready2_2 = 4'd12; // 3 CPU is waiting to access a new memory bank for fetching non-memory instructions
 
 /* addresses */
 
@@ -207,11 +207,15 @@ begin
 			end
 			memory_is_instruction_r_next = 1'b0;
 		end 
-		cpust_wait_mem_load1:
+		cpust_wait_mem_load1: begin
+			memory_is_instruction_r_next = 1'b0;
 			cpu_state_r_next = cpust_wait_mem_load2;
-		cpust_wait_mem_load2:
+		end
+		cpust_wait_mem_load2: begin
 			if (memory_ready == 1'b1)
 				cpu_state_r_next = cpust_execute_load;
+			memory_is_instruction_r_next = 1'b0;
+		end
 		/* store instructions (write to data memory) */
 		cpust_execute_store: begin
 			if (has_bank_switch(addr_r, prev_addr_r)) begin
@@ -231,11 +235,15 @@ begin
 			end
 			memory_is_instruction_r_next = 1'b0;
 		end
-		cpust_wait_mem_store1:
+		cpust_wait_mem_store1: begin
 			cpu_state_r_next = cpust_wait_mem_store2;
-		cpust_wait_mem_store2:
+			memory_is_instruction_r_next = 1'b0;
+		end
+		cpust_wait_mem_store2: begin
 			if (memory_ready == 1'b1)
 				cpu_state_r_next = cpust_execute_store;
+			memory_is_instruction_r_next = 1'b0;
+		end
 		default:
 			cpu_state_r_next = cpust_halt;
 	endcase

@@ -117,7 +117,7 @@ wire modifies_flags3;
 
 wire hazard1;
 
-slurm16_cpu_pipeline #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_pip0
+cpu_pipeline #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_pip0
 (
 	CLK,
 	RSTb,

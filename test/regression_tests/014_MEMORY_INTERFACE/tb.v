@@ -80,6 +80,7 @@ end
 genvar j;
 for (j = 0; j < 16; j = j + 1) begin
     initial $dumpvars(0, cpu0.cpu0.reg0.regFileA[j]);
+    initial $dumpvars(0, cpu0.cpu0.cpu_pip0.cache0.mem0.RAM[j]);
 end
 
 endmodule

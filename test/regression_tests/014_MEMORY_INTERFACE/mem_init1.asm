@@ -11,9 +11,11 @@ TRACE_HEX_PORT  equ 0x6002
 		mov r3, 0x3456
 		mov r4, 0x4567
 	
-		mov r6, 0x8000
-	
 		st [r0, 0x2000], r4
+		mov r6, 0x8000
+	//	nop
+	//	nop
+	
 		st [r6, 0x0], r1
 		st [r6, 0x2], r2
 		st [r6, 0x4], r3

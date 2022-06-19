@@ -19,9 +19,14 @@ assign DATA_OUT = dout;
 
 always @(posedge CLK)
 begin
-	if (WR == 1'b1)
+	if (WR == 1'b1) begin
 		RAM[WR_ADDRESS] <= DATA_IN;
-	dout <= RAM[RD_ADDRESS];
+	end
+
+	if ((WR_ADDRESS == RD_ADDRESS) && (WR == 1'b1))
+		dout <= DATA_IN;
+	else
+		dout <= RAM[RD_ADDRESS];
 end
 
 endmodule
