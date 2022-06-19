@@ -17,14 +17,15 @@ module slurm16_cpu_program_counter #(parameter ADDRESS_BITS = 16)
 
 	input is_fetching,	/* CPU is fetching instructions - increment PC */
 
-	input stall,		/* pipeline is stalled */
-	input stall_start,  /* pipeline has started to stall */
-	input stall_end	/* pipeline is about to end stall */
+	input stall		/* pipeline is stalled */
+
 );
 
 reg [ADDRESS_BITS - 1 : 0] pc_r;
 
 assign pc = pc_r;
+
+assign fetch_instruction = is_fetching && !stall;
 
 always @(posedge CLK)
 begin

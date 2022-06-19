@@ -27,6 +27,8 @@ module slurm16_cpu_memory_interface #(parameter BITS = 16, ADDRESS_BITS = 16)  (
 
 	output is_executing,						/* CPU is currently executing */
 	output is_fetching,							/* CPU is currently fetching */
+	output will_execute_next_cycle,				/* CPU will be executing on next cycle */
+
 
 	output memory_is_instruction,				/* current value of memory in is an instruction (i.e. previous memory operation was instruction read) */
 
@@ -34,7 +36,9 @@ module slurm16_cpu_memory_interface #(parameter BITS = 16, ADDRESS_BITS = 16)  (
 
 	output [1:0] memory_wr_mask_delayed, 		/* delayed memory write mask - used in write back to select correct byte from memory */
 
-	output stall_memory_pipeline_stage3
+	output stall_memory_pipeline_stage3,
+
+	input stall
 
 );
 
@@ -83,7 +87,6 @@ reg [BITS - 1:0] memory_out_r;
 assign memory_out = memory_out_r;
 
 reg 	memory_is_instruction_r, memory_is_instruction_r_next;
-assign  memory_is_instruction = memory_is_instruction_r;
 
 reg [1:0] memory_wr_mask_r;
 reg [1:0] memory_wr_mask_del_r;
@@ -93,6 +96,24 @@ assign memory_wr_mask_delayed = memory_wr_mask_del_r;
 reg preserve_addr_r;
 
 assign stall_memory_pipeline_stage3 = preserve_addr_r;
+
+/* is fetching? */
+
+reg is_fetching_del_r;
+reg is_fetching_deldel_r;
+
+always @(posedge CLK)
+begin
+	is_fetching_deldel_r <= is_fetching_del_r;
+	is_fetching_del_r <= is_fetching && !stall;
+end
+
+
+assign  memory_is_instruction = memory_is_instruction_r && is_fetching_deldel_r || (cpu_state_r == cpust_pre_execute);
+
+reg will_execute_next_cycle_r;
+
+assign will_execute_next_cycle = will_execute_next_cycle_r;
 
 /* sequential logic */
 
@@ -137,11 +158,14 @@ begin
 	cpu_state_r_next = cpu_state_r;
 	memory_is_instruction_r_next = memory_is_instruction_r;
 	preserve_addr_r = 1'b0;
+	will_execute_next_cycle_r = 1'b0;
 
 	case (cpu_state_r)
 		cpust_halt: 
-			if (wake == 1'b1)
+			if (wake == 1'b1) begin
 				cpu_state_r_next = cpust_wait_mem_ready1;	
+				will_execute_next_cycle_r = 1'b1;
+			end
 		/* non-memory instructions (access program memory) */
 		cpust_execute: begin
 			memory_is_instruction_r_next = 1'b1;
@@ -151,19 +175,23 @@ begin
 				cpu_state_r_next = cpust_halt;
 			else if (load_memory == 1'b1) begin 
 				// If in same bank, short circuit 
-				if (! has_bank_switch(addr_r, prev_addr_r))
+				if (! has_bank_switch(addr_r, prev_addr_r)) begin
 					cpu_state_r_next = cpust_execute_load;
-				else 
+					will_execute_next_cycle_r = 1'b1;	
+				end else 
 					cpu_state_r_next = cpust_wait_mem_load1;
 			end
 			else if (store_memory == 1'b1) begin
-				if (! has_bank_switch(addr_r, prev_addr_r))
+				if (! has_bank_switch(addr_r, prev_addr_r)) begin
 					cpu_state_r_next = cpust_execute_store;
-				else
+					will_execute_next_cycle_r = 1'b1;
+				end else
 					cpu_state_r_next = cpust_wait_mem_store1;
 			end else begin
 				if (has_bank_switch(addr_r, prev_addr_r))
 					cpu_state_r_next = cpust_wait_mem_ready1;
+				else
+					will_execute_next_cycle_r = 1'b1;
 			end
 		end 
 		cpust_wait_mem_ready1: begin
@@ -171,8 +199,10 @@ begin
 			memory_is_instruction_r_next = 1'b0;
 		end
 		cpust_wait_mem_ready2: begin
-			if (memory_ready == 1'b1)
+			if (memory_ready == 1'b1) begin
+				will_execute_next_cycle_r = 1'b1;
 				cpu_state_r_next = cpust_execute;
+			end
 
 			memory_is_instruction_r_next = 1'b0;
 		end
@@ -183,10 +213,11 @@ begin
 		cpust_wait_mem_ready2_2: begin
 			if (memory_ready == 1'b1)
 				cpu_state_r_next = cpust_pre_execute;
-		//	memory_is_instruction_r_next = 1'b0;
+			memory_is_instruction_r_next = 1'b1;
 		end
 		cpust_pre_execute: begin
 			cpu_state_r_next = cpust_execute;
+			will_execute_next_cycle_r = 1'b1;
 		end
 		/* load instructions (access data memory) */
 		cpust_execute_load: begin
@@ -197,13 +228,17 @@ begin
 			else if (store_memory == 1'b1)
 				if (has_bank_switch(pc, prev_addr_r)) 
 					cpu_state_r_next = cpust_wait_mem_store1;
-				else
+				else begin
 					cpu_state_r_next = cpust_execute_store;
+					will_execute_next_cycle_r = 1'b1;
+				end
 			else if (load_memory == 1'b0) begin
 				if (has_bank_switch(addr_r, pc))
 					cpu_state_r_next = cpust_wait_mem_ready1_2;
-				else
+				else begin
 					cpu_state_r_next = cpust_execute;
+					will_execute_next_cycle_r = 1'b1;
+				end
 			end
 			memory_is_instruction_r_next = 1'b0;
 		end 
@@ -212,8 +247,10 @@ begin
 			cpu_state_r_next = cpust_wait_mem_load2;
 		end
 		cpust_wait_mem_load2: begin
-			if (memory_ready == 1'b1)
+			if (memory_ready == 1'b1) begin
+				will_execute_next_cycle_r = 1'b1;
 				cpu_state_r_next = cpust_execute_load;
+			end
 			memory_is_instruction_r_next = 1'b0;
 		end
 		/* store instructions (write to data memory) */
@@ -225,13 +262,17 @@ begin
 			else if (load_memory == 1'b1)
 				if (has_bank_switch(pc, prev_addr_r)) 
 					cpu_state_r_next = cpust_wait_mem_load1;
-				else
+				else begin
 					cpu_state_r_next = cpust_execute_load;	
+					will_execute_next_cycle_r = 1'b1;
+				end
 			else if (store_memory == 1'b0) begin
 				if (has_bank_switch(addr_r, pc))
 					cpu_state_r_next = cpust_wait_mem_ready1_2;
-				else	
+				else begin	
 					cpu_state_r_next = cpust_execute;
+					will_execute_next_cycle_r = 1'b1;
+				end
 			end
 			memory_is_instruction_r_next = 1'b0;
 		end
@@ -240,8 +281,10 @@ begin
 			memory_is_instruction_r_next = 1'b0;
 		end
 		cpust_wait_mem_store2: begin
-			if (memory_ready == 1'b1)
+			if (memory_ready == 1'b1) begin
 				cpu_state_r_next = cpust_execute_store;
+				will_execute_next_cycle_r = 1'b1;
+			end
 			memory_is_instruction_r_next = 1'b0;
 		end
 		default:

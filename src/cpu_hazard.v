@@ -29,9 +29,8 @@ module slurm_cpu_hazard #(parameter BITS = 16, REGISTER_BITS = 4, ADDRESS_BITS =
 	input modifies_flags3,
 
 	output stall,
-	output stall_start,
-	output stall_end,
 
+	output hazard,
 	output hazard1_but_23_clear
 );
 
@@ -157,27 +156,23 @@ begin
 	endcase
 end
 
-wire hazard = hazard1 || hazard_23;
+assign hazard = hazard1 || hazard_23;
 
 assign hazard1_but_23_clear = hazard1 && !hazard_23;
 
 // Stall flag
 
-reg stall_r, prev_stall_r;
+reg stall_r;
 
-assign stall 		= stall_r || prev_stall_r;
-assign stall_start 	= stall_r == 1'b1 && prev_stall_r == 1'b0;
-assign stall_end 	= stall_r == 1'b0 && prev_stall_r == 1'b1;
+assign stall 		= stall_r;
 
 always @(posedge CLK)
 begin
-	prev_stall_r <= stall_r;
 	if (RSTb == 1'b0) begin
 		stall_r <= 1'b0;	
 	end
 	if (load_pc) begin
 		stall_r <= 1'b0;
-		prev_stall_r <= 1'b0;
 	end
 	else if (hazard && is_executing)
 		stall_r <= 1'b1;

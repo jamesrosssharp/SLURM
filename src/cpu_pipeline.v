@@ -15,12 +15,9 @@ module cpu_pipeline #(parameter REGISTER_BITS = 4, BITS = 16, ADDRESS_BITS = 16)
 	input [BITS - 1:0] memory_in,
 	input [ADDRESS_BITS - 1:0] memory_address, /* this will point to PC + 1, which we will progress 
 												  through the pipeline so we can store it for bl (branch and link) instructions */
-
 	input is_executing, /* CPU is executing */
-
 	input stall,		/* pipeline is stalled */
-	input stall_start,  /* pipeline has started to stall */
-	input stall_end,	/* pipeline is about to end stall */
+	input hazard,
 
 	output [BITS - 1:0] pipeline_stage0,
 	output [BITS - 1:0] pipeline_stage1,
@@ -57,7 +54,9 @@ module cpu_pipeline #(parameter REGISTER_BITS = 4, BITS = 16, ADDRESS_BITS = 16)
 
 	output wake,
 
-	input stall_memory_pipeline_stage3
+	input stall_memory_pipeline_stage3,
+
+	input will_execute_next_cycle
 );
 
 `include "cpu_decode_functions.v"
@@ -118,9 +117,12 @@ wire [31:0] fifo_in = {memory_address, memory_in};
 wire [31:0] fifo_out;
 wire fifo_empty;
 wire fifo_full;
+wire fifo_almost_empty;
 
 wire wr_fifo = memory_is_instruction;
-wire rd_fifo = is_executing && !stall && !fifo_empty;
+wire rd_fifo = will_execute_next_cycle && !hazard && !fifo_empty;
+
+
 
 cpu_instruction_cache_fifo #(
 	.FIFO_DEPTH_BITS(4),
@@ -135,6 +137,8 @@ cpu_instruction_cache_fifo #(
 
 	fifo_empty,	
 	fifo_full,	
+
+	fifo_almost_empty,
 
 	wr_fifo,
 	rd_fifo	
@@ -256,25 +260,59 @@ end
 //	Actual pipeline logic
 //
 
-reg clear_imm;
+reg clear_imm = 1'b0;
 
 always @(*) 
 begin
-	pipeline_stage1_r_next = pipeline_stage0_r;
-	pipeline_stage2_r_next = pipeline_stage1_r;
-	pipeline_stage3_r_next = pipeline_stage2_r;
-	pipeline_stage4_r_next = pipeline_stage3_r;
+	pipeline_stage1_r_next = pipeline_stage1_r;
+	pipeline_stage2_r_next = pipeline_stage2_r;
+	pipeline_stage3_r_next = pipeline_stage3_r;
+	pipeline_stage4_r_next = pipeline_stage4_r;
 
-	pc_stage1_r_next = pc_stage0_r;
-	pc_stage2_r_next = pc_stage1_r;
-	pc_stage3_r_next = pc_stage2_r;
-	pc_stage4_r_next = pc_stage3_r;
+	pc_stage1_r_next = pc_stage1_r;
+	pc_stage2_r_next = pc_stage2_r;
+	pc_stage3_r_next = pc_stage3_r;
+	pc_stage4_r_next = pc_stage4_r;
 
-	hazard_reg1_r_next = hazard_reg0;
-	hazard_reg2_r_next = hazard_reg1_r;
-	hazard_reg3_r_next = hazard_reg2_r;
+	hazard_reg1_r_next = hazard_reg1_r;
+	hazard_reg2_r_next = hazard_reg2_r;
+	hazard_reg3_r_next = hazard_reg3_r;
+
+	if (is_executing == 1'b1) begin	
+		pipeline_stage1_r_next = pipeline_stage0_r;
+		pipeline_stage2_r_next = pipeline_stage1_r;
+		pipeline_stage3_r_next = pipeline_stage2_r;
+		pipeline_stage4_r_next = pipeline_stage3_r;
+
+		pc_stage1_r_next = pc_stage0_r;
+		pc_stage2_r_next = pc_stage1_r;
+		pc_stage3_r_next = pc_stage2_r;
+		pc_stage4_r_next = pc_stage3_r;
+
+		hazard_reg1_r_next = hazard_reg0;
+		hazard_reg2_r_next = hazard_reg1_r;
+		hazard_reg3_r_next = hazard_reg2_r;
 
 
+		if (stall == 1'b1) begin
+
+			pipeline_stage1_r_next = pipeline_stage1_r;
+			pipeline_stage2_r_next = NOP_INSTRUCTION;
+			pipeline_stage3_r_next = pipeline_stage2_r;
+			pipeline_stage4_r_next = pipeline_stage3_r;
+
+			pc_stage1_r_next = pc_stage1_r;
+			pc_stage2_r_next = {ADDRESS_BITS{1'b0}};
+			pc_stage3_r_next = pc_stage2_r;
+			pc_stage4_r_next = pc_stage3_r;
+
+			hazard_reg1_r_next = hazard_reg1_r;
+			hazard_reg2_r_next = R0;
+			hazard_reg3_r_next = hazard_reg2_r;
+
+		end
+
+	end
 
 	if (load_pc == 1'b1) begin
 		pipeline_stage1_r_next = NOP_INSTRUCTION;

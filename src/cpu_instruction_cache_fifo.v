@@ -20,6 +20,8 @@ module cpu_instruction_cache_fifo #(
 	output fifo_empty,	/* = 1 when fifo is empty */
 	output fifo_full,	/* = 1 when fifo is full */
 
+	output fifo_almost_empty, /* = 1 when next read would empty fifo */
+
 	input  wr_fifo,		/* 1 => load an instruction / PC combo into fifo */
 	input  rd_fifo		/* 1 => read an instruction / PC combo from fifo */
 );
@@ -35,6 +37,8 @@ assign fifo_full = full;
 
 wire [FIFO_DEPTH_BITS - 1 : 0] fifo_rd_ptr_succ = fifo_rd_ptr + 1;
 wire [FIFO_DEPTH_BITS - 1 : 0] fifo_wr_ptr_succ = fifo_wr_ptr + 1;
+
+assign fifo_almost_empty = (fifo_rd_ptr_succ == fifo_wr_ptr);
 
 wire [1:0] rdwr = {rd_fifo, wr_fifo};
 

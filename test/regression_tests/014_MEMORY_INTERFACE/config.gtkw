@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Sun Jun 19 05:47:01 2022
+[*] Sun Jun 19 08:18:31 2022
 [*]
 [dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/014_MEMORY_INTERFACE/dump.vcd"
-[dumpfile_mtime] "Sun Jun 19 05:43:07 2022"
-[dumpfile_size] 6067639
+[dumpfile_mtime] "Sun Jun 19 08:17:00 2022"
+[dumpfile_size] 5742418
 [savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/014_MEMORY_INTERFACE/config.gtkw"
-[timestart] 1301000
+[timestart] 2581000
 [size] 1920 996
 [pos] -1 -1
-*-19.194408 3100000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-19.194408 3300000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tb.
 [treeopen] tb.cpu0.
 [treeopen] tb.cpu0.cpu0.
@@ -36,6 +36,7 @@ tb.cpu0.cpu0.memory_out[15:0]
 tb.cpu0.cpu0.memory_wr
 tb.cpu0.cpu0.memory_valid
 tb.cpu0.cpu0.memory_ready
+tb.cpu0.cpu0.cpu_mem0.is_fetching_del_r
 tb.cpu0.cpu0.cpu_mem0.memory_is_instruction
 tb.cpu0.cpu0.cpu_mem0.preserve_addr_r
 @22
@@ -48,6 +49,9 @@ tb.cpu0.cpu0.cpu_mem0.halt
 tb.cpu0.cpu0.cpu_mem0.cpu_state_r[3:0]
 @28
 tb.cpu0.cpu0.cpu_mem0.is_executing
+@29
+tb.cpu0.cpu0.cpu_mem0.will_execute_next_cycle
+@28
 tb.cpu0.cpu0.cpu_mem0.is_fetching
 @200
 -
@@ -60,14 +64,13 @@ tb.cpu0.cpu0.cpu_haz0.hazard_23
 tb.cpu0.cpu0.cpu_haz0.hazard_reg0[3:0]
 tb.cpu0.cpu0.cpu_haz0.hazard_reg1[3:0]
 tb.cpu0.cpu0.cpu_haz0.hazard_reg2[3:0]
-@23
 tb.cpu0.cpu0.cpu_haz0.hazard_reg3[3:0]
+tb.cpu0.cpu0.cpu_haz0.regA_sel0[3:0]
+tb.cpu0.cpu0.cpu_haz0.regB_sel0[3:0]
 @200
 -
 @28
 tb.cpu0.cpu0.cpu_haz0.stall
-tb.cpu0.cpu0.cpu_haz0.stall_end
-tb.cpu0.cpu0.cpu_haz0.stall_start
 @200
 -
 @22
@@ -80,6 +83,8 @@ tb.cpu0.cpu0.cpu_pip0.cache0.fifo_in[31:0]
 @28
 tb.cpu0.cpu0.cpu_pip0.cache0.wr_fifo
 tb.cpu0.cpu0.cpu_pip0.cache0.rd_fifo
+@22
+tb.cpu0.cpu0.cpu_pip0.cache0.fifo_out[31:0]
 @200
 -
 @820

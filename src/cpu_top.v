@@ -57,6 +57,10 @@ wire [1:0] memory_wr_mask_delayed;
 
 wire stall_memory_pipeline_stage3;
 
+wire stall;
+
+wire will_execute_next_cycle;
+
 slurm16_cpu_memory_interface #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_mem0  (
 	CLK,
 	RSTb,
@@ -82,17 +86,17 @@ slurm16_cpu_memory_interface #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_mem
 	is_executing,						/* CPU is currently executing */
 	is_fetching,							/* CPU is currently fetching */
 
+	will_execute_next_cycle,				/* CPU will be executing on next cycle */
+
 	memory_is_instruction,				/* current value of memory in is an instruction */
 	memory_address_prev_plus_two,		/* points to return address */
 	memory_wr_mask_delayed,				/* delayed memory write mask - for writeback */
 
-	stall_memory_pipeline_stage3
+	stall_memory_pipeline_stage3,
 
+	stall
 );
 
-wire stall;
-wire stall_start ;
-wire stall_end;
 
 wire [BITS - 1:0] pipeline_stage0;
 wire [BITS - 1:0] pipeline_stage1;
@@ -116,6 +120,7 @@ wire modifies_flags2;
 wire modifies_flags3;
 
 wire hazard1;
+wire hazard;
 
 cpu_pipeline #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_pip0
 (
@@ -128,8 +133,7 @@ cpu_pipeline #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_pip0
 	is_executing, /* CPU is executing */
 
 	stall,		  /* pipeline is stalled */
-	stall_start,  /* pipeline has started to stall */
-	stall_end,	  /* pipeline is about to end stall */
+	hazard,
 
 	pipeline_stage0,
 	pipeline_stage1,
@@ -165,7 +169,9 @@ cpu_pipeline #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_pip0
 
 	wake,
 
-	stall_memory_pipeline_stage3
+	stall_memory_pipeline_stage3,
+
+	will_execute_next_cycle
 
 );
 
@@ -183,9 +189,7 @@ slurm16_cpu_program_counter #(.ADDRESS_BITS(ADDRESS_BITS)) cpu_pc0
 
 	is_fetching,   /* CPU is fetching instructions - increment PC */
 
-	stall,		  /* pipeline is stalled */
-	stall_start,  /* pipeline has started to stall */
-	stall_end	  /* pipeline is about to end stall */
+	stall		  /* pipeline is stalled */
 );
 
 wire [REGISTER_BITS - 1:0] regA_sel;
@@ -361,9 +365,8 @@ slurm_cpu_hazard #(.BITS(BITS), .REGISTER_BITS(REGISTER_BITS), .ADDRESS_BITS(ADD
 	modifies_flags3,
 
 	stall,
-	stall_start,
-	stall_end,
 
+	hazard,
 	hazard1
 );
 
