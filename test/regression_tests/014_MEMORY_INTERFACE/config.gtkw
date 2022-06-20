@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Sun Jun 19 08:18:31 2022
+[*] Mon Jun 20 08:19:09 2022
 [*]
 [dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/014_MEMORY_INTERFACE/dump.vcd"
-[dumpfile_mtime] "Sun Jun 19 08:17:00 2022"
-[dumpfile_size] 5742418
+[dumpfile_mtime] "Mon Jun 20 08:11:09 2022"
+[dumpfile_size] 5769659
 [savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/014_MEMORY_INTERFACE/config.gtkw"
-[timestart] 2581000
+[timestart] 3600000
 [size] 1920 996
 [pos] -1 -1
-*-19.194408 3300000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-18.194408 4200000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tb.
 [treeopen] tb.cpu0.
 [treeopen] tb.cpu0.cpu0.
@@ -36,9 +36,12 @@ tb.cpu0.cpu0.memory_out[15:0]
 tb.cpu0.cpu0.memory_wr
 tb.cpu0.cpu0.memory_valid
 tb.cpu0.cpu0.memory_ready
-tb.cpu0.cpu0.cpu_mem0.is_fetching_del_r
+tb.cpu0.cpu0.cpu_mem0.is_fetching_deldel_r
+tb.cpu0.cpu0.cpu_mem0.memory_is_instruction_r
 tb.cpu0.cpu0.cpu_mem0.memory_is_instruction
 tb.cpu0.cpu0.cpu_mem0.preserve_addr_r
+@23
+tb.cpu0.cpu0.cpu_mem0.next_addr_r[15:0]
 @22
 tb.cpu0.cpu0.cpu_mem0.load_store_address[15:0]
 @28
@@ -49,9 +52,7 @@ tb.cpu0.cpu0.cpu_mem0.halt
 tb.cpu0.cpu0.cpu_mem0.cpu_state_r[3:0]
 @28
 tb.cpu0.cpu0.cpu_mem0.is_executing
-@29
 tb.cpu0.cpu0.cpu_mem0.will_execute_next_cycle
-@28
 tb.cpu0.cpu0.cpu_mem0.is_fetching
 @200
 -

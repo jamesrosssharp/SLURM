@@ -21,6 +21,13 @@ TRACE_HEX_PORT  equ 0x6002
 		st [r6, 0x4], r3
 		ld r5, [r0, 0x2000]
 
+		ld r7, [r6, 0x0]
+		ld r8, [r6, 0x2]
+		ld r9, [r6, 0x4]
+
+		or r9, r9
+		stf r10	
+
 die:
 		sleep
 		ba die
