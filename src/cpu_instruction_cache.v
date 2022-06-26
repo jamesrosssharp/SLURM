@@ -63,44 +63,47 @@ localparam state_grant_mem 	= 2'd2;
 
 reg [1:0] state, state_next;
 
-assign memory_address = address2mem;
+assign memory_address = address2mem[15:1];
+reg memory_valid_r, memory_valid_r_next;
+assign memory_valid = memory_valid_r;
 
 always @(posedge CLK)
 begin
 	if (RSTb == 1'b0) begin
 		state <= state_idle;
 		address2mem <= 16'h00;
+		memory_valid_r <= 1'b0;
 	end else begin
 		state <= state_next;
 		address2mem <= address2mem_next;
+		memory_valid_r <= memory_valid_r_next;
 	end
 end
-
-reg memory_valid_r;
-assign memory_valid = memory_valid_r;
 
 always @(*)
 begin
 	state_next = state;
 	address2mem_next = address2mem;
-	memory_valid_r = 1'b0;
+	memory_valid_r_next = 1'b0;
 	wr_bram = 1'b0;
 
 	case (state)
 		state_idle: begin
 			if (cache_miss == 1'b1) begin
+				memory_valid_r_next = 1'b1;
 				address2mem_next = address_x;
 				state_next = state_request_mem;
 			end
 		end
 		state_request_mem: begin
-			memory_valid_r = 1'b1;
+			memory_valid_r_next = 1'b1;
 			if (memory_ready == 1'b1) begin
 				state_next = state_grant_mem;
 			end
 		end
 		state_grant_mem: begin
 			// TODO: should we burst here for performance?
+			memory_valid_r = 1'b1;
 			wr_bram = 1'b1;
 			state_next = state_idle;
 		end

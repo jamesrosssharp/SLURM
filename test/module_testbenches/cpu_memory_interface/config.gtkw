@@ -1,38 +1,37 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Sun Jan  9 03:55:39 2022
+[*] Sun Jun 26 06:05:07 2022
 [*]
 [dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/module_testbenches/cpu_memory_interface/dump.vcd"
-[dumpfile_mtime] "Sun Jan  9 03:55:12 2022"
-[dumpfile_size] 1526603
+[dumpfile_mtime] "Sun Jun 26 05:55:30 2022"
+[dumpfile_size] 65397
 [savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/module_testbenches/cpu_memory_interface/config.gtkw"
 [timestart] 0
 [size] 1468 686
 [pos] -1 -1
-*-11.000000 3050 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-9.000000 450 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tb.
 [treeopen] tb.mem0.
-[sst_width] 234
-[signals_width] 166
+[sst_width] 388
+[signals_width] 222
 [sst_expanded] 1
 [sst_vpaned_height] 179
 @28
 tb.CLK
 tb.RSTb
-@22
-tb.pc[15:0]
-tb.mem0.cpu_state_r[3:0]
-@28
-tb.mem0.is_executing
-@22
-tb.mem0.addr_r[15:0]
-tb.mem0.next_addr_r[15:0]
-@28
 tb.mem0.RSTb
-tb.mem0.memory_ready
-tb.mem0.memory_valid
-tb.load_memory
-@29
-tb.store_memory
+@22
+tb.request_address[15:0]
+@28
+tb.cache0.cache_miss
+tb.cache0.state[1:0]
+@22
+tb.cache0.data_out[31:0]
+tb.mem0.state[3:0]
+@28
+tb.mem0.instruction_memory_rdy
+tb.mem0.instruction_memory_valid
+@23
+tb.mem0.data_in[15:0]
 [pattern_trace] 1
 [pattern_trace] 0
