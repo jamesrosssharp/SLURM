@@ -29,8 +29,8 @@ wire [3:0] irq = 4'd0;
 reg [15:0] memory [65535:0];
 
 initial begin
-        $display("Loading rom.");
-        $readmemh("ram_image.mem", memory);
+	$display("Loading rom.");
+	$readmemh("ram_image.mem", memory);
 end
 
 // State machine for memory simulation
@@ -63,7 +63,7 @@ begin
 	state <= state_next;
 end
 
-assign   memory_ready = (state == state_grant) ? 1'b1 : 1'b0;
+assign	 memory_ready = (state == state_grant) ? 1'b1 : 1'b0;
 
 always @(posedge CLK)
 begin
@@ -81,35 +81,35 @@ wire debug;
 
 slurm16_cpu_top top0
 (
-    CLK,
-    RSTb,
+	CLK,
+	RSTb,
 
-    memory_address,
-    memory_in,
-    memory_out,
-    memory_valid,   /* memory request */
-    memory_wr,      /* memory write */
-    memory_ready,   /* memory ready - from arbiter */
+	memory_address,
+	memory_in,
+	memory_out,
+	memory_valid,	/* memory request */
+	memory_wr,		/* memory write */
+	memory_ready,	/* memory ready - from arbiter */
 
-    port_address,
-    port_in,
-    port_out,
-    port_rd,
-    port_wr,
+	port_address,
+	port_in,
+	port_out,
+	port_rd,
+	port_wr,
 
-    irq,         /* interrupt lines */
+	irq,	 /* interrupt lines */
 	debug
 );
 
 initial begin
-    $dumpfile("dump.vcd");
-    $dumpvars(0, tb);
+	$dumpfile("dump.vcd");
+	$dumpvars(0, tb);
 	# 20000 $finish;
 end
 
 genvar j;
 for (j = 0; j < 16; j = j + 1) begin
-    initial $dumpvars(0, top0.reg0.regFileA[j]);
+	initial $dumpvars(0, top0.reg0.regFileA[j]);
 end
 
 

@@ -12,13 +12,6 @@ module cpu_pipeline #(parameter REGISTER_BITS = 4, BITS = 16, ADDRESS_BITS = 16)
 	input CLK,
 	input RSTb,
 
-	input [BITS - 1:0] memory_in,
-	input [ADDRESS_BITS - 1:0] memory_address, /* this will point to PC + 1, which we will progress 
-												  through the pipeline so we can store it for bl (branch and link) instructions */
-	input is_executing, /* CPU is executing */
-	input stall,		/* pipeline is stalled */
-	input hazard,
-
 	output [BITS - 1:0] pipeline_stage0,
 	output [BITS - 1:0] pipeline_stage1,
 	output [BITS - 1:0] pipeline_stage2,
@@ -30,52 +23,44 @@ module cpu_pipeline #(parameter REGISTER_BITS = 4, BITS = 16, ADDRESS_BITS = 16)
 	output [BITS - 1:0] imm_reg,
 
 	input load_pc,	/* PC is loaded from execute stage - i.e. branch / (i)ret - flush pipeline and mask until pipeline is synched */ 
+	input [BITS - 1:0] new_pc,
 
-	input [REGISTER_BITS - 1:0] hazard_reg0,	/*  import hazard computation, it will move with pipeline in pipeline module */
-	input modifies_flags0,						/*  import flag hazard conditions */ 
 
-	output [REGISTER_BITS - 1:0] hazard_reg1,		/* export pipelined hazards */
-	output [REGISTER_BITS - 1:0] hazard_reg2,
-	output [REGISTER_BITS - 1:0] hazard_reg3,
-	output modifies_flags1,
-	output modifies_flags2,
-	output modifies_flags3,
+	input [REGISTER_BITS - 1:0] 	hazard_reg0,	/*  import hazard computation, it will move with pipeline in pipeline module */
+	input 				modifies_flags0,						/*  import flag hazard conditions */ 
 
-	input hazard1,
-	input memory_is_instruction,
+	output [REGISTER_BITS - 1:0] 	hazard_reg1,		/* export pipelined hazards */
+	output [REGISTER_BITS - 1:0] 	hazard_reg2,
+	output [REGISTER_BITS - 1:0] 	hazard_reg3,
+	output				modifies_flags1,
+	output 				modifies_flags2,
+	output 				modifies_flags3,
 
-	input			interrupt_flag_set,	/* cpu interrupt flag set */
-	input			interrupt_flag_clear,	/* cpu interrupt flag clear */
+	input				interrupt_flag_set,	/* cpu interrupt flag set */
+	input				interrupt_flag_clear,	/* cpu interrupt flag clear */
 	
-	input  			interrupt,		/* interrupt line from interrupt controller */	
-	input  [3:0]	irq,				/* irq from interrupt controller */
+	input				interrupt,		/* interrupt line from interrupt controller */	
+	input  [3:0]			irq,			/* irq from interrupt controller */
 
-	input [ADDRESS_BITS - 1:0] pc_in,
+	/* instruction cache memory interface */
+	output [ADDRESS_BITS - 1:0]	instruction_cache_memory_address, /* memory address for instruction cache to fetch from */
+	input  [BITS - 1:0]		instruction_cache_memory_data,	  /* incoming data from memory to cache */
+	output				instruction_cache_valid,	  /* address valid from cache */
+	input				instruction_cache_rdy		  /* data ready to cache */
 
-	output wake,
-
-	input stall_memory_pipeline_stage3,
-
-	input will_execute_next_cycle
 );
 
 `include "cpu_decode_functions.v"
 `include "cpu_defs.v"
 
-reg [BITS - 1:0] pipeline_stage1_r, pipeline_stage1_r_next;
-reg [BITS - 1:0] pipeline_stage2_r, pipeline_stage2_r_next;
-reg [BITS - 1:0] pipeline_stage3_r, pipeline_stage3_r_next;
-reg [BITS - 1:0] pipeline_stage4_r, pipeline_stage4_r_next;
-
-reg [ADDRESS_BITS - 1:0] pc_stage1_r, pc_stage1_r_next;
-reg [ADDRESS_BITS - 1:0] pc_stage2_r, pc_stage2_r_next;
-reg [ADDRESS_BITS - 1:0] pc_stage3_r, pc_stage3_r_next;
-reg [ADDRESS_BITS - 1:0] pc_stage4_r, pc_stage4_r_next;
+reg [2*BITS - 1:0] pipeline_stage1_r, pipeline_stage1_r_next;	// Each pipeline stage is tagged with PC in the high word
+reg [2*BITS - 1:0] pipeline_stage2_r, pipeline_stage2_r_next;
+reg [2*BITS - 1:0] pipeline_stage3_r, pipeline_stage3_r_next;
+reg [2*BITS - 1:0] pipeline_stage4_r, pipeline_stage4_r_next;
 
 reg [REGISTER_BITS - 1:0] hazard_reg1_r, hazard_reg1_r_next;
 reg [REGISTER_BITS - 1:0] hazard_reg2_r, hazard_reg2_r_next;
 reg [REGISTER_BITS - 1:0] hazard_reg3_r, hazard_reg3_r_next;
-
 
 assign hazard_reg1 = hazard_reg1_r;
 assign hazard_reg2 = hazard_reg2_r;
@@ -89,13 +74,13 @@ assign modifies_flags1 = modifies_flags1_r;
 assign modifies_flags2 = modifies_flags2_r;
 assign modifies_flags3 = modifies_flags3_r;
 
-assign pc_stage4 = pc_stage4_r;
+assign pc_stage4 = pipeline_stage4_r[2*BITS - 1 : BITS];
 
-assign pipeline_stage0 = pipeline_stage0_r;
-assign pipeline_stage1 = pipeline_stage1_r;
-assign pipeline_stage2 = pipeline_stage2_r;
-assign pipeline_stage3 = pipeline_stage3_r;
-assign pipeline_stage4 = pipeline_stage4_r;
+assign pipeline_stage0 = pipeline_stage0_r[BITS - 1 : 0];
+assign pipeline_stage1 = pipeline_stage1_r[BITS - 1 : 0];
+assign pipeline_stage2 = pipeline_stage2_r[BITS - 1 : 0];
+assign pipeline_stage3 = pipeline_stage3_r[BITS - 1 : 0];
+assign pipeline_stage4 = pipeline_stage4_r[BITS - 1 : 0];
 
 reg [11:0] imm_r;
 reg [11:0] imm_r_next;
@@ -107,93 +92,52 @@ assign imm_reg = imm_stage2_r;
 
 reg interrupt_flag_r, interrupt_flag_r_next;
 
-reg wake_r;
-assign wake = wake_r;
 
-// FIFO Cache
+reg [BITS - 1:0] pc, pc_next;
 
-wire [31:0] fifo_in = {memory_address, memory_in};
+// CPU State machine
 
-wire [31:0] fifo_out;
-wire fifo_empty;
-wire fifo_full;
-wire fifo_almost_empty;
+localparam cpust_halt 	  = 4'd0;
+localparam cpust_execute  = 4'd1;
+localparam cpust_rewindpc = 4'd2;
+// TODO: More states, such as when there is a memory stall etc.
 
-wire wr_fifo = memory_is_instruction;
-wire rd_fifo = will_execute_next_cycle && !hazard && !fifo_empty;
+reg [3:0] state, state_next;
 
+wire [2*BITS - 1 : 0] pipeline_stage0_r;
 
+wire cache_miss;
 
-cpu_instruction_cache_fifo #(
-	.FIFO_DEPTH_BITS(4),
-	.FIFO_WIDTH_BITS(32)	
-) cache0
-(
+// Instruction cache
+cpu_instruction_cache cache0 (
 	CLK,
-	RSTb && !load_pc,
+	RSTb,
 
-	fifo_in,
-	fifo_out,
+	pc, /* request address from the cache */
+	
+	pipeline_stage0_r,
 
-	fifo_empty,	
-	fifo_full,	
+	cache_miss, /* = 1 when the requested address doesn't match the address in the cache line */
 
-	fifo_almost_empty,
-
-	wr_fifo,
-	rd_fifo	
+	/* memory interface to memory arbiter */
+	instruction_cache_valid,
+	instruction_cache_rdy,
+	instruction_cache_memory_address,
+	instruction_cache_memory_data
 );
 
-reg fifo_empty_reg;
-reg [3:0] branch_mask_count_r;
 
-wire branch_mask = branch_mask_count_r != 4'd0;
-
-always @(posedge CLK)	fifo_empty_reg <= fifo_empty;
-
-wire [15:0] pipeline_stage0_r = fifo_empty_reg || branch_mask || stall ? NOP_INSTRUCTION  : fifo_out[15:0];
-wire [15:0] pc_stage0_r = fifo_out[31:16];
-
-// Mask branches (give 4 cycles from when branch is taken to mask input to
-// pipeline)
-
-always @(posedge CLK)
-begin
-	if (RSTb == 1'b0)
-		branch_mask_count_r <= 4'd0;
-	else if (load_pc == 1'b1)
-		branch_mask_count_r <= 4'd4;
-	else if (branch_mask_count_r != 4'd0)
-		branch_mask_count_r <= branch_mask_count_r - 1;
-
-end
-
-// Branch target
-
-reg [ADDRESS_BITS - 1:0] branch_target;
-
-always @(posedge CLK)
-begin
-	if (RSTb == 1'b0)
-		branch_target <= {ADDRESS_BITS{1'b0}};
-	else
-		branch_target <= pc_in;
-end
 
 // Sequential logic
 always @(posedge CLK)
 begin
 	if (RSTb == 1'b0) begin
-		pipeline_stage1_r <= NOP_INSTRUCTION;
-		pipeline_stage2_r <= NOP_INSTRUCTION;
-		pipeline_stage3_r <= NOP_INSTRUCTION;
-		pipeline_stage4_r <= NOP_INSTRUCTION;
-		pc_stage1_r <= {ADDRESS_BITS{1'b0}};
-		pc_stage2_r <= {ADDRESS_BITS{1'b0}};
-		pc_stage3_r <= {ADDRESS_BITS{1'b0}};
-		pc_stage4_r <= {ADDRESS_BITS{1'b0}};
-		imm_r 			<= 12'h000;
-		imm_stage2_r 	<= {BITS{1'b0}};
+		pipeline_stage1_r <= {16'd0, NOP_INSTRUCTION};
+		pipeline_stage2_r <= {16'd0, NOP_INSTRUCTION};
+		pipeline_stage3_r <= {16'd0, NOP_INSTRUCTION};
+		pipeline_stage4_r <= {16'd0, NOP_INSTRUCTION};
+		imm_r			<= 12'h000;
+		imm_stage2_r	<= {BITS{1'b0}};
 		hazard_reg1_r	<= R0;
 		hazard_reg2_r	<= R0;
 		hazard_reg3_r	<= R0;
@@ -201,21 +145,21 @@ begin
 		modifies_flags2_r <= 1'b0;
 		modifies_flags3_r <= 1'b0;
 		interrupt_flag_r <= 1'b0;
+		pc <= 16'd0;
+		state <= cpust_execute;
 	end else begin
 		pipeline_stage1_r <= pipeline_stage1_r_next;
 		pipeline_stage2_r <= pipeline_stage2_r_next;
 		pipeline_stage3_r <= pipeline_stage3_r_next;
 		pipeline_stage4_r <= pipeline_stage4_r_next;
-		pc_stage1_r <= pc_stage1_r_next;
-		pc_stage2_r <= pc_stage2_r_next;
-		pc_stage3_r <= pc_stage3_r_next;
-		pc_stage4_r <= pc_stage4_r_next;
-		imm_r 			<= imm_r_next;
-		imm_stage2_r 	<= imm_stage2_r_next;
+		imm_r			<= imm_r_next;
+		imm_stage2_r	<= imm_stage2_r_next;
 		hazard_reg1_r	<= hazard_reg1_r_next;
 		hazard_reg2_r	<= hazard_reg2_r_next;
 		hazard_reg3_r	<= hazard_reg3_r_next;
 		interrupt_flag_r <= interrupt_flag_r_next;
+		pc <= pc_next;
+		state <= state_next;
 	end
 end
 
@@ -239,23 +183,6 @@ begin
 
 end
 
-// Wake
-
-always @(*)
-begin
-
-	wake_r = 1'b0;		
-
-	if (interrupt)
-		wake_r = 1'b1;
-
-end
-
-//
-//
-//
-
-
 //
 //	Actual pipeline logic
 //
@@ -264,86 +191,19 @@ reg clear_imm = 1'b0;
 
 always @(*) 
 begin
-	pipeline_stage1_r_next = pipeline_stage1_r;
-	pipeline_stage2_r_next = pipeline_stage2_r;
-	pipeline_stage3_r_next = pipeline_stage3_r;
-	pipeline_stage4_r_next = pipeline_stage4_r;
+	pipeline_stage1_r_next = pipeline_stage0_r;
+	pipeline_stage2_r_next = pipeline_stage1_r;
+	pipeline_stage3_r_next = pipeline_stage2_r;
+	pipeline_stage4_r_next = pipeline_stage3_r;
 
-	pc_stage1_r_next = pc_stage1_r;
-	pc_stage2_r_next = pc_stage2_r;
-	pc_stage3_r_next = pc_stage3_r;
-	pc_stage4_r_next = pc_stage4_r;
+	hazard_reg1_r_next = hazard_reg0;
+	hazard_reg2_r_next = hazard_reg1_r;
+	hazard_reg3_r_next = hazard_reg2_r;
 
-	hazard_reg1_r_next = hazard_reg1_r;
-	hazard_reg2_r_next = hazard_reg2_r;
-	hazard_reg3_r_next = hazard_reg3_r;
+	modifies_flags1_r = modifies_flags0;
+	modifies_flags2_r = modifies_flags1_r;
+	modifies_flags3_r = modifies_flags2_r;
 
-	if (is_executing == 1'b1) begin	
-		pipeline_stage1_r_next = pipeline_stage0_r;
-		pipeline_stage2_r_next = pipeline_stage1_r;
-		pipeline_stage3_r_next = pipeline_stage2_r;
-		pipeline_stage4_r_next = pipeline_stage3_r;
-
-		pc_stage1_r_next = pc_stage0_r;
-		pc_stage2_r_next = pc_stage1_r;
-		pc_stage3_r_next = pc_stage2_r;
-		pc_stage4_r_next = pc_stage3_r;
-
-		hazard_reg1_r_next = hazard_reg0;
-		hazard_reg2_r_next = hazard_reg1_r;
-		hazard_reg3_r_next = hazard_reg2_r;
-
-
-		if (stall == 1'b1) begin
-
-			pipeline_stage1_r_next = pipeline_stage1_r;
-			pipeline_stage2_r_next = NOP_INSTRUCTION;
-			pipeline_stage3_r_next = pipeline_stage2_r;
-			pipeline_stage4_r_next = pipeline_stage3_r;
-
-			pc_stage1_r_next = pc_stage1_r;
-			pc_stage2_r_next = {ADDRESS_BITS{1'b0}};
-			pc_stage3_r_next = pc_stage2_r;
-			pc_stage4_r_next = pc_stage3_r;
-
-			hazard_reg1_r_next = hazard_reg1_r;
-			hazard_reg2_r_next = R0;
-			hazard_reg3_r_next = hazard_reg2_r;
-
-		end
-
-	end
-
-	if (load_pc == 1'b1) begin
-		pipeline_stage1_r_next = NOP_INSTRUCTION;
-		pipeline_stage2_r_next = NOP_INSTRUCTION;
-	end
-end
-
-// Immediate register
-always @(*)
-begin
-	imm_r_next = {12{1'b0}};
-
-	// Don't change on a nop
-	if ((pipeline_stage1_r == NOP_INSTRUCTION) && !load_pc) 
-		imm_r_next = imm_r;
-
-	if ((!is_executing || stall) && !load_pc && !(clear_imm && pipeline_stage1_r != NOP_INSTRUCTION))
-		 imm_r_next = imm_r;
-
-	imm_stage2_r_next = imm_stage2_r;
-
-	if (is_executing)
-			imm_stage2_r_next 	= {imm_r, imm_lo_from_ins(pipeline_stage1_r)};
-
-	casex (pipeline_stage1_r)
-		INSTRUCTION_CASEX_IMM:   	/* imm */
-			/* there might be a spurious imm in p1 on a branch */
-			if (!load_pc)
-				imm_r_next 	= imm_r_from_ins(pipeline_stage1_r);
-		default: ;
-	endcase
 end
 
 endmodule
