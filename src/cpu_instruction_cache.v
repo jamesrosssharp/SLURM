@@ -16,24 +16,26 @@ module cpu_instruction_cache #(
 	input CLK,
 	input RSTb,
 
-	input [15:0] request_address, /* request address from the cache */
+	input [15:0] cache_request_address, /* request address from the cache */
 	
 	output [CACHE_WIDTH_BITS - 1:0] address_data,
 
 	output cache_miss, /* = 1 when the requested address doesn't match the address in the cache line */
 
 	/* memory interface to memory arbiter */
-	output memory_valid,
-	input  memory_ready,
 	output [15:0] memory_address,
-	input [15:0] memory_data
+	input [15:0]  memory_data,
+	output memory_rd_req,	/* we are requesting a read - we will get the value in two cycles time */
+	input memory_valid	/* Arbiter will assert this when we have valid data */
 );
 
 wire [CACHE_WIDTH_BITS - 1 : 0] data_out;
 
 assign address_data = data_out;
 
-reg [15:0] address2mem, address2mem_next;
+reg [15:0] memory_request_address, memory_request_address_next;		/* address we are requesting from memory */
+reg [15:0] memory_request_address_del, memory_request_address_next_del; /* address we requested on the previous cycle */
+
 reg wr_bram;
 
 bram
@@ -59,13 +61,10 @@ assign cache_miss = address_x != data_out[31:16];
 
 localparam state_idle 		= 2'd0;
 localparam state_request_mem 	= 2'd1;
-localparam state_grant_mem 	= 2'd2;
 
 reg [1:0] state, state_next;
 
 assign memory_address = address2mem[15:1];
-reg memory_valid_r, memory_valid_r_next;
-assign memory_valid = memory_valid_r;
 
 always @(posedge CLK)
 begin
@@ -84,28 +83,14 @@ always @(*)
 begin
 	state_next = state;
 	address2mem_next = address2mem;
-	memory_valid_r_next = 1'b0;
 	wr_bram = 1'b0;
 
 	case (state)
 		state_idle: begin
 			if (cache_miss == 1'b1) begin
-				memory_valid_r_next = 1'b1;
-				address2mem_next = address_x;
-				state_next = state_request_mem;
 			end
 		end
 		state_request_mem: begin
-			memory_valid_r_next = 1'b1;
-			if (memory_ready == 1'b1) begin
-				state_next = state_grant_mem;
-			end
-		end
-		state_grant_mem: begin
-			// TODO: should we burst here for performance?
-			memory_valid_r = 1'b1;
-			wr_bram = 1'b1;
-			state_next = state_idle;
 		end
 		default:
 			state_next = state_idle;

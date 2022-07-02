@@ -43,10 +43,9 @@ cpu_instruction_cache cache0 (
 	cache_miss, /* = 1 when the requested address doesn't match the address in the cache line */
 
 	/* memory interface to memory arbiter */
-	memory_valid,
-	memory_ready,
 	memory_address,
-	memory_data
+	memory_data,
+	memory_valid
 );
 
 localparam state_idle = 2'b00;
