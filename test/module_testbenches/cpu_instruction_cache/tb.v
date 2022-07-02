@@ -18,91 +18,87 @@ initial begin
 	$readmemh("ram_image.mem", memory);
 end
 
-wire memory_valid;
-wire  memory_ready;
-wire [15:0] memory_address;
-reg [15:0] memory_data;
-
-wire [31:0] address_data;
-
-reg [15:0] request_address = 0;
-
-wire cache_miss;
-
-
 // Cache (MUT)
 
+reg [14:0] 	cache_request_address = 15'd0;
+wire [31:0] 	address_data;
+
+wire 	cache_miss;
+
+reg 	invalidate_cache;
+wire	invalidation_done;
+
+wire [14:0]	memory_address;
+wire 		memory_rd_req;
+
+wire memory_success;
+wire [14:0] memory_requested_address;
+wire [15:0] memory_data;
+
 cpu_instruction_cache cache0 (
-	CLK,
-	RSTb,
 
-	request_address, /* request address from the cache */
-	
-	address_data,
+ 	CLK,
+        RSTb,
 
-	cache_miss, /* = 1 when the requested address doesn't match the address in the cache line */
+        cache_request_address, /* request address from the cache */
 
-	/* memory interface to memory arbiter */
-	memory_address,
-	memory_data,
-	memory_valid
+        address_data,
+
+        cache_miss, /* = 1 when the requested address doesn't match the address in the cache line */
+
+        invalidate_cache, /* asserted by cpu to invalidate cache */
+        invalidation_done, /* asserted when cache has been invalidated */
+
+        /* ports to memory interface */
+        memory_address,
+        memory_rd_req,   /* we are requesting a read - we will get the value in two cycles time */
+
+        memory_success,   /* Arbiter will assert this when we our request was successful */
+        memory_requested_address, /* Requested address will come back to us */
+        memory_data /* our data */
+
 );
 
-localparam state_idle = 2'b00;
-localparam state_grant = 2'b01;
+reg memBUSY = 1'b0;
 
-reg [1:0] state = state_idle, state_next;
+reg [14:0] reg_addr1, reg_addr2;
+reg [15:0] reg_data1, reg_data2;
+reg reg_success1, reg_success2;
 
-always @(*)
-begin
-	state_next = state;
-
-	case (state)
-		state_idle:
-			if (memory_valid == 1'b1) begin
-				state_next = state_grant;
-			end
-		state_grant:
-			if (memory_valid == 1'b0)
-				state_next = state_idle;
-	endcase
-
-end
+assign memory_data = reg_data2;
+assign memory_success = reg_success2;
+assign memory_requested_address = reg_addr2;
 
 always @(posedge CLK)
 begin
-	state <= state_next;
-end
-
-assign	 memory_ready = (state == state_grant) ? 1'b1 : 1'b0;
-
-always @(posedge CLK)
-begin
-	if (state == state_grant) begin
-		memory_data <= memory[memory_address];
-	end else
-		memory_data <= 16'hdead;
+	reg_addr2 <= reg_addr1;
+	reg_addr1 <= memory_address;
+	reg_data1 <= memBUSY ? 16'hdead :  memory[memory_address];
+	reg_data2 <= reg_data1;
+	reg_success1 <= ! memBUSY && memory_rd_req;
+	reg_success2 <= reg_success1;
 end
 
 
-
-initial begin
-	#600 request_address <= request_address + 2;
-	#800 request_address <= request_address + 2;
+initial begin	
+	#28000 cache_request_address <= cache_request_address + 1;
+	#800 cache_request_address <= cache_request_address + 1;
+	#1000 memBUSY <= 1'b1;
+	#100 cache_request_address <= cache_request_address + 1;
+	#1000 memBUSY <= 1'b0;
+	#5000 invalidate_cache <= 1'b1;
+	#100 invalidate_cache <= 1'b0;
 end
-
 
 initial begin
 	$dumpfile("dump.vcd");
 	$dumpvars(0, tb);
-	# 20000 $finish;
+	# 200000 $finish;
 end
 
 genvar j;
 for (j = 0; j < 256; j = j + 1) begin
 	initial $dumpvars(0, cache0.mem0.RAM[j]);
 end
-
-
 
 endmodule
