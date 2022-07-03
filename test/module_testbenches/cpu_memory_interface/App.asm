@@ -33,4 +33,11 @@ subroutine:
 theVar:
 	dw 0xaa55
 
+	.padto 0x8000
+
+	dw 0x0123
+	dw 0x4567
+	dw 0x89ab
+	dw 0xcdef
+
 	.end

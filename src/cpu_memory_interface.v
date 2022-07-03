@@ -20,7 +20,7 @@
  *	slot 2 until "bank_sw" is deasserted. If the memory operation still
  *	fails for some reason, the process will repeat until the fault clears.
  *	
- *
+ *	TODO: Read / write mask and pass back
  */
 
 module cpu_memory_interface #(parameter BITS = 16, ADDRESS_BITS = 15)  (
@@ -51,6 +51,7 @@ module cpu_memory_interface #(parameter BITS = 16, ADDRESS_BITS = 15)  (
 	output [ADDRESS_BITS: 0] 	memory_address,	/* one more bit to output address - tied low */
 	output [BITS - 1 : 0]		data_out,
 	input  [BITS - 1 : 0]		data_in,
+	output				mem_wr,
 	output				valid,		/* request access to memory bank */
 	input				rdy		/* we have access to the bank */
 
@@ -193,5 +194,7 @@ assign data_memory_success 		= (flags_stage_2[1] == 1'b0) && (flags_stage_2[2] =
 
 assign bank_sw = (state == st_bank_switch) || (state == st_request_bank);
 assign valid   = (state != st_idle);
+
+assign mem_wr = (flags_stage_2[1] == 1'b0) && (flags_stage_2[0] == 1'b0) && (flags_stage_2[2] == 1'b1) && (state == st_execute);
 
 endmodule
