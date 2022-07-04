@@ -141,6 +141,7 @@ begin
 		st_execute:
 			if (bank_switch_required) begin
 
+				next_state = st_bank_switch;
 				address_stage_1_next 	= address_stage_2;
 				data_stage_1_next    	= data_stage_2; 
 				flags_stage_1_next	= flags_stage_2;
@@ -193,7 +194,7 @@ assign instruction_memory_success 	= (flags_stage_2[1] == 1'b1) && (flags_stage_
 assign data_memory_success 		= (flags_stage_2[1] == 1'b0) && (flags_stage_2[2] == 1'b1) && (!bank_switch_required) && (state == st_execute);
 
 assign bank_sw = (state == st_bank_switch) || (state == st_request_bank);
-assign valid   = (state != st_idle);
+assign valid   = (state == st_request_bank) || (state == st_execute);
 
 assign mem_wr = (flags_stage_2[1] == 1'b0) && (flags_stage_2[0] == 1'b0) && (flags_stage_2[2] == 1'b1) && (state == st_execute);
 

@@ -64,31 +64,39 @@ bram
 	.WR(wr_bram)
 );
 
-reg [14:0] address_x;
-reg [7:0] mem_address_x;
+reg [14:0] address_x, address_xx;
+reg [7:0] mem_address_x, mem_address_x_prev;
 
 
 
 always @(posedge CLK)
 begin
 	if (RSTb == 1'b0) begin
+		address_xx <= 15'd0;
 		address_x <= 15'd0;
-		mem_address_x <= 15'd0;
+		mem_address_x <= 8'd0;
+		mem_address_x_prev <= 8'd0;
 	end
 	else begin
-
+		address_xx <= address_x;
 		address_x <= cache_request_address;
-		if (address_x != cache_request_address)	// If we just got a new request, then we will service it.
-			mem_address_x <= cache_request_address;
-		else if ((mem_address_x != 8'hff) && (state == st_execute) && (memory_success == 1'b1))
+		if ((address_x != address_xx) && cache_miss) begin	// If we just got a new request, then we will service it.
+			mem_address_x <= address_x;
+			mem_address_x_prev <= mem_address_x;
+		end
+		else if ((mem_address_x != 8'hff) && (state == st_execute) && (memory_success == 1'b1)) begin
 			mem_address_x <= mem_address_x + 1;	// Fill cache in our spare time (we need to keep the memory pipeline filled)
-
+			mem_address_x_prev <= mem_address_x;
+		end
+		else if (memory_success == 1'b0)
+			mem_address_x <= mem_address_x_prev;	
+				
 	end
 end
 
 assign cache_miss = (address_x != data_out[31:17]) || (data_out[16] != 1'b0);	// bit 16 must be zero to be valid
 
-assign memory_address = {address_x[14:8], mem_address_x};
+assign memory_address = {address_xx[14:8], mem_address_x};
 assign memory_rd_req = (state == st_execute);	// Always request memory when we are in "execute"
 
 // State machine

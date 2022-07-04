@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Sun Jul  3 09:02:00 2022
+[*] Mon Jul  4 08:23:30 2022
 [*]
 [dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/module_testbenches/cpu_memory_interface/dump.vcd"
-[dumpfile_mtime] "Sun Jul  3 08:59:49 2022"
-[dumpfile_size] 228797
+[dumpfile_mtime] "Mon Jul  4 08:23:19 2022"
+[dumpfile_size] 228545
 [savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/module_testbenches/cpu_memory_interface/config.gtkw"
-[timestart] 24460
+[timestart] 29940
 [size] 1920 996
 [pos] -1 -1
-*-11.000000 30800 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-9.000000 30600 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tb.
 [treeopen] tb.cache0.
 [treeopen] tb.mem0.
@@ -47,6 +47,7 @@ tb.mem0.mem_wr
 -
 @22
 tb.cache0.address_x[14:0]
+tb.cache0.address_xx[14:0]
 tb.cache0.memory_address[14:0]
 tb.cache0.mem0.\RAM[0][31:0]
 tb.cache0.mem0.\RAM[1][31:0]
@@ -64,7 +65,18 @@ tb.cache0.mem0.\RAM[12][31:0]
 tb.cache0.mem0.\RAM[13][31:0]
 tb.cache0.mem0.\RAM[14][31:0]
 tb.cache0.mem0.\RAM[15][31:0]
-@23
 tb.cache0.mem0.\RAM[16][31:0]
+@200
+-
+@22
+tb.mem0.address_stage_1[14:0]
+tb.mem0.address_stage_2[14:0]
+tb.mem0.address_stage_3[14:0]
+@28
+tb.mem0.valid
+tb.mem0.rdy
+tb.mem0.bank_switch_required
+@29
+tb.mem0.state[1:0]
 [pattern_trace] 1
 [pattern_trace] 0
