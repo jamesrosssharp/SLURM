@@ -25,6 +25,9 @@ module cpu_pipeline #(parameter REGISTER_BITS = 4, BITS = 16, ADDRESS_BITS = 16)
 	input load_pc,	/* PC is loaded from execute stage - i.e. branch / (i)ret - flush pipeline and mask until pipeline is synched */ 
 	input [BITS - 1:0] new_pc,
 
+	input hazard_1, /* hazard between instruction in slot0 and slot1 */
+	input hazard_2, /* hazard between instruction in slot0 and slot2 */
+	input hazard_3, /* hazard between instruction in slot0 and slot3 */
 
 	input [REGISTER_BITS - 1:0] 	hazard_reg0,	/*  import hazard computation, it will move with pipeline in pipeline module */
 	input 				modifies_flags0,						/*  import flag hazard conditions */ 
@@ -38,172 +41,140 @@ module cpu_pipeline #(parameter REGISTER_BITS = 4, BITS = 16, ADDRESS_BITS = 16)
 
 	input				interrupt_flag_set,	/* cpu interrupt flag set */
 	input				interrupt_flag_clear,	/* cpu interrupt flag clear */
-	
+	input				halt,
+	input 				wake,
+
 	input				interrupt,		/* interrupt line from interrupt controller */	
 	input  [3:0]			irq,			/* irq from interrupt controller */
 
 	/* instruction cache memory interface */
-	output [ADDRESS_BITS - 1:0]	instruction_cache_memory_address, /* memory address for instruction cache to fetch from */
-	input  [BITS - 1:0]		instruction_cache_memory_data,	  /* incoming data from memory to cache */
-	output				instruction_cache_valid,	  /* address valid from cache */
-	input				instruction_cache_rdy		  /* data ready to cache */
+	output 	[14:0] cache_request_address, /* request address from the cache */
+	input 	[31:0] cache_line,
+	input 	cache_miss, /* = 1 when the requested address doesn't match the address in the cache line */
 
+	input   invalidate_cache,  /* asserted in execute stage to invalidate cache */
+	input 	invalidation_done, /* asserted when cache has been invalidated */
+
+	/* data memory interface */
+	input	data_memory_success,
+	input   bank_switch	/* memory interface is switching banks or otherwise busy */
 );
 
 `include "cpu_decode_functions.v"
 `include "cpu_defs.v"
 
-reg [2*BITS - 1:0] pipeline_stage1_r, pipeline_stage1_r_next;	// Each pipeline stage is tagged with PC in the high word
-reg [2*BITS - 1:0] pipeline_stage2_r, pipeline_stage2_r_next;
-reg [2*BITS - 1:0] pipeline_stage3_r, pipeline_stage3_r_next;
-reg [2*BITS - 1:0] pipeline_stage4_r, pipeline_stage4_r_next;
-
-reg [REGISTER_BITS - 1:0] hazard_reg1_r, hazard_reg1_r_next;
-reg [REGISTER_BITS - 1:0] hazard_reg2_r, hazard_reg2_r_next;
-reg [REGISTER_BITS - 1:0] hazard_reg3_r, hazard_reg3_r_next;
-
-assign hazard_reg1 = hazard_reg1_r;
-assign hazard_reg2 = hazard_reg2_r;
-assign hazard_reg3 = hazard_reg3_r;
-
-reg modifies_flags1_r, modifies_flags1_r_next;
-reg modifies_flags2_r, modifies_flags2_r_next;
-reg modifies_flags3_r, modifies_flags3_r_next;
-
-assign modifies_flags1 = modifies_flags1_r;
-assign modifies_flags2 = modifies_flags2_r;
-assign modifies_flags3 = modifies_flags3_r;
-
-assign pc_stage4 = pipeline_stage4_r[2*BITS - 1 : BITS];
-
-assign pipeline_stage0 = pipeline_stage0_r[BITS - 1 : 0];
-assign pipeline_stage1 = pipeline_stage1_r[BITS - 1 : 0];
-assign pipeline_stage2 = pipeline_stage2_r[BITS - 1 : 0];
-assign pipeline_stage3 = pipeline_stage3_r[BITS - 1 : 0];
-assign pipeline_stage4 = pipeline_stage4_r[BITS - 1 : 0];
-
-reg [11:0] imm_r;
-reg [11:0] imm_r_next;
-
-reg [BITS - 1:0] imm_stage2_r;
-reg [BITS - 1:0] imm_stage2_r_next;
-
-assign imm_reg = imm_stage2_r;
-
-reg interrupt_flag_r, interrupt_flag_r_next;
-
-
-reg [BITS - 1:0] pc, pc_next;
-
 // CPU State machine
 
-localparam cpust_halt 	  = 4'd0;
-localparam cpust_execute  = 4'd1;
-localparam cpust_rewindpc = 4'd2;
-// TODO: More states, such as when there is a memory stall etc.
+localparam st_halt 		= 4'd0;
+localparam st_execute 		= 4'd1;
+localparam st_wait_cache1 	= 4'd2;
+localparam st_wait_cache2	= 4'd3;
+localparam st_stall_2		= 4'd4;
+localparam st_stall_3		= 4'd5;
+localparam st_stall_4		= 4'd6;
+localparam st_mem_stall1	= 4'd7;
+localparam st_mem_stall2	= 4'd8;
+localparam st_invalidate_cache	= 4'd9;
+localparam st_wait_invalidate	= 4'd10;
 
-reg [3:0] state, state_next;
+reg [3:0] state, next_state;
 
-wire [2*BITS - 1 : 0] pipeline_stage0_r;
-
-wire cache_miss;
-
-// Instruction cache
-cpu_instruction_cache cache0 (
-	CLK,
-	RSTb,
-
-	pc, /* request address from the cache */
-	
-	pipeline_stage0_r,
-
-	cache_miss, /* = 1 when the requested address doesn't match the address in the cache line */
-
-	/* memory interface to memory arbiter */
-	instruction_cache_valid,
-	instruction_cache_rdy,
-	instruction_cache_memory_address,
-	instruction_cache_memory_data
-);
-
-
-
-// Sequential logic
 always @(posedge CLK)
 begin
-	if (RSTb == 1'b0) begin
-		pipeline_stage1_r <= {16'd0, NOP_INSTRUCTION};
-		pipeline_stage2_r <= {16'd0, NOP_INSTRUCTION};
-		pipeline_stage3_r <= {16'd0, NOP_INSTRUCTION};
-		pipeline_stage4_r <= {16'd0, NOP_INSTRUCTION};
-		imm_r			<= 12'h000;
-		imm_stage2_r	<= {BITS{1'b0}};
-		hazard_reg1_r	<= R0;
-		hazard_reg2_r	<= R0;
-		hazard_reg3_r	<= R0;
-		modifies_flags1_r <= 1'b0;
-		modifies_flags2_r <= 1'b0;
-		modifies_flags3_r <= 1'b0;
-		interrupt_flag_r <= 1'b0;
-		pc <= 16'd0;
-		state <= cpust_execute;
-	end else begin
-		pipeline_stage1_r <= pipeline_stage1_r_next;
-		pipeline_stage2_r <= pipeline_stage2_r_next;
-		pipeline_stage3_r <= pipeline_stage3_r_next;
-		pipeline_stage4_r <= pipeline_stage4_r_next;
-		imm_r			<= imm_r_next;
-		imm_stage2_r	<= imm_stage2_r_next;
-		hazard_reg1_r	<= hazard_reg1_r_next;
-		hazard_reg2_r	<= hazard_reg2_r_next;
-		hazard_reg3_r	<= hazard_reg3_r_next;
-		interrupt_flag_r <= interrupt_flag_r_next;
-		pc <= pc_next;
-		state <= state_next;
-	end
+	if (RSTb == 1'b0)
+		state <= st_execute;
+	else
+		state <= next_state;
 end
-
-// Combinational logic
-
-// Interrupt flag
-
-reg pipeline_clear_interrupt;
 
 always @(*)
 begin
-	interrupt_flag_r_next = interrupt_flag_r; 
+	next_state = state;
 
-	if (interrupt_flag_set) begin
-		interrupt_flag_r_next = 1'b1;
-	end
+	case (state)
+		st_halt:
+			if (wake == 1'b1)
+				next_state = st_execute;
+		st_execute: begin
+			// In order of priority (each item higher up the chain
+			// trumps the lower items):
+			// Memory stall?
 
-	if (interrupt_flag_clear || pipeline_clear_interrupt) begin
-		interrupt_flag_r_next = 1'b0;
-	end
+			if (/* check pipeline && */ (data_memory_success == 1'b0))
+				next_state = st_mem_stall1;
 
+			// Hazard?
+			else if (hazard_1 == 1'b1)
+				next_state = st_stall_2;
+			else if (hazard_2 == 1'b1)
+				next_state = st_stall_3;
+			else if (hazard_3 == 1'b1)
+				next_state = st_stall_4;	
+
+			// Cache invalidate?
+			else if (invalidate_cache == 1'b1)
+				next_state = st_invalidate_cache;
+			// Cache miss?
+			else if (cache_miss == 1'b1)
+				next_state = st_wait_cache1;
+		end
+		st_wait_cache1:
+			// Wait state while PC returns to previous value
+			next_state = st_wait_cache2;	
+			
+		st_wait_cache2:
+			if (cache_miss == 1'b0)	
+				next_state = st_execute;
+		st_stall_2:
+			next_state = st_stall_3;
+		st_stall_3:
+			next_state = st_stall_4;
+		st_stall_4:
+			next_state = st_execute;
+		st_mem_stall1:
+			// Wait state while PC returns to previous value
+			next_state = st_mem_stall2;
+		st_mem_stall2:
+			if (bank_switch == 1'b0)
+				next_state = st_execute;	
+		st_invalidate_cache:
+			next_state = st_wait_invalidate;
+		st_wait_invalidate:
+			if (invalidation_done == 1'b1)
+				next_state = st_execute;
+
+	endcase
+
+	// In some states, we can jump out of the state if there is a memory
+	// stall (which trumps everything)
+	
+	case (state)
+		st_wait_cache1,
+		st_wait_cache2,
+		st_stall_2,
+		st_stall_3,
+		st_stall_4,
+		st_invalidate_cache,
+		st_wait_invalidate:
+			if (/* check pipeline && */ (data_memory_success == 1'b0))
+				next_state = st_mem_stall1;
+		default: ;
+	endcase
 end
 
-//
-//	Actual pipeline logic
-//
+// PC
 
-reg clear_imm = 1'b0;
 
-always @(*) 
-begin
-	pipeline_stage1_r_next = pipeline_stage0_r;
-	pipeline_stage2_r_next = pipeline_stage1_r;
-	pipeline_stage3_r_next = pipeline_stage2_r;
-	pipeline_stage4_r_next = pipeline_stage3_r;
 
-	hazard_reg1_r_next = hazard_reg0;
-	hazard_reg2_r_next = hazard_reg1_r;
-	hazard_reg3_r_next = hazard_reg2_r;
+// Pipeline
 
-	modifies_flags1_r = modifies_flags0;
-	modifies_flags2_r = modifies_flags1_r;
-	modifies_flags3_r = modifies_flags2_r;
 
-end
+
+// Imm reg
+
+
+
+// Interrupt flag
+
 
 endmodule

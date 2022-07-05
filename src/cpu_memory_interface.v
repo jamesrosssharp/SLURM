@@ -190,6 +190,10 @@ assign instruction_memory_address_out = address_stage_2;
 
 // Determine success of request
 
+//
+//	To do: register these signals
+//
+
 assign instruction_memory_success 	= (flags_stage_2[1] == 1'b1) && (flags_stage_2[2] == 1'b1) && (!bank_switch_required) && (state == st_execute);
 assign data_memory_success 		= (flags_stage_2[1] == 1'b0) && (flags_stage_2[2] == 1'b1) && (!bank_switch_required) && (state == st_execute);
 
