@@ -57,7 +57,9 @@ module cpu_pipeline #(parameter REGISTER_BITS = 4, BITS = 16, ADDRESS_BITS = 16)
 
 	/* data memory interface */
 	input	data_memory_success,
-	input   bank_switch	/* memory interface is switching banks or otherwise busy */
+	input   bank_switch,	/* memory interface is switching banks or otherwise busy */
+	input	data_memory_was_requested
+
 );
 
 `include "cpu_decode_functions.v"
@@ -82,7 +84,7 @@ reg [3:0] state, next_state;
 always @(posedge CLK)
 begin
 	if (RSTb == 1'b0)
-		state <= st_execute;
+		state <= st_wait_invalidate;
 	else
 		state <= next_state;
 end
@@ -100,7 +102,7 @@ begin
 			// trumps the lower items):
 			// Memory stall?
 
-			if (/* check pipeline && */ (data_memory_success == 1'b0))
+			if (data_memory_was_requested && (data_memory_success == 1'b0))
 				next_state = st_mem_stall1;
 
 			// Hazard?
@@ -156,7 +158,7 @@ begin
 		st_stall_4,
 		st_invalidate_cache,
 		st_wait_invalidate:
-			if (/* check pipeline && */ (data_memory_success == 1'b0))
+			if (data_memory_was_requested && (data_memory_success == 1'b0))
 				next_state = st_mem_stall1;
 		default: ;
 	endcase
@@ -164,6 +166,52 @@ end
 
 // PC
 
+reg [14:0] pc, pc_next, pc_prev, pc_prev_next;
+
+assign cache_request_address = pc;
+
+always @(posedge CLK)
+begin
+	if (RSTb == 1'b0) begin
+		pc_prev <= 15'd0;
+		pc <= 15'd0;
+	end
+	else begin
+		pc <= pc_next;
+		pc_prev <= pc_prev_next;
+	end
+end
+
+always @(*)
+begin
+	pc_next = pc;
+	pc_prev_next = pc;
+
+
+	case (state)
+		st_halt:	;
+		st_execute: begin 
+			pc_next = pc + 1;
+			
+			if ((data_memory_was_requested && (data_memory_success == 1'b0)) || 
+				(hazard_1 == 1'b1) || (hazard_2 == 1'b1) || (hazard_3 == 1'b1) ||
+				(invalidate_cache == 1'b1) || (cache_miss == 1'b1)) begin
+				pc_prev_next = pc_prev;
+				pc_next = pc_prev;
+			end	
+		end			
+		st_wait_cache1:	;
+		st_wait_cache2:	;
+		st_stall_2:	;
+		st_stall_3:	;
+		st_stall_4:	;
+		st_mem_stall1:	;
+		st_mem_stall2:	;
+		st_invalidate_cache:	;
+		st_wait_invalidate:	;
+	endcase
+
+end
 
 
 // Pipeline
