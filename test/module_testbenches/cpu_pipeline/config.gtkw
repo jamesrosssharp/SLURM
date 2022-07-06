@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Tue Jul  5 10:57:57 2022
+[*] Wed Jul  6 22:05:56 2022
 [*]
 [dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/module_testbenches/cpu_pipeline/dump.vcd"
-[dumpfile_mtime] "Tue Jul  5 10:57:38 2022"
-[dumpfile_size] 561740
+[dumpfile_mtime] "Wed Jul  6 22:04:02 2022"
+[dumpfile_size] 665787
 [savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/module_testbenches/cpu_pipeline/config.gtkw"
-[timestart] 25076
+[timestart] 27141
 [size] 1920 996
 [pos] -1 -1
-*-9.000000 26660 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-8.000000 27800 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tb.
 [treeopen] tb.cache0.
 [treeopen] tb.mem0.
@@ -25,8 +25,16 @@ tb.RSTb
 -
 @22
 tb.pip0.state[3:0]
-@23
 tb.pip0.pc[14:0]
+@200
+-
+@22
+tb.pip0.pipeline_stage0_r[15:0]
+tb.pip0.pipeline_stage1_r[15:0]
+tb.pip0.pipeline_stage2_r[15:0]
+tb.pip0.pipeline_stage3_r[15:0]
+@23
+tb.pip0.pipeline_stage4_r[15:0]
 @200
 -
 -

@@ -213,10 +213,147 @@ begin
 
 end
 
-
 // Pipeline
 
+reg [15:0] pipeline_stage0_r, pipeline_stage0_r_next;
+reg [14:0] pc_stage0_r, pc_stage0_r_next;
 
+reg [15:0] pipeline_stage1_r, pipeline_stage1_r_next;
+reg [14:0] pc_stage1_r, pc_stage1_r_next;
+reg [REGISTER_BITS - 1:0] hazard_reg1_r, hazard_reg1_r_next;
+reg modifies_flags1_r, modifies_flags1_r_next;
+
+reg [15:0] pipeline_stage2_r, pipeline_stage2_r_next;
+reg [14:0] pc_stage2_r, pc_stage2_r_next;
+reg [REGISTER_BITS - 1:0] hazard_reg2_r, hazard_reg2_r_next;
+reg modifies_flags2_r, modifies_flags2_r_next;
+
+reg [15:0] pipeline_stage3_r, pipeline_stage3_r_next;
+reg [14:0] pc_stage3_r, pc_stage3_r_next;
+reg [REGISTER_BITS - 1:0] hazard_reg3_r, hazard_reg3_r_next;
+reg modifies_flags3_r, modifies_flags3_r_next;
+
+reg [15:0] pipeline_stage4_r, pipeline_stage4_r_next;
+reg [14:0] pc_stage4_r, pc_stage4_r_next;
+
+always @(posedge CLK)
+begin
+	if (RSTb == 1'b0) begin
+		pipeline_stage0_r 	<= 16'd0;
+		pc_stage0_r 		<= 15'd0;
+
+		pipeline_stage1_r 	<= 16'd0;
+		pc_stage1_r 		<= 15'd0;
+		hazard_reg1_r 		<= {REGISTER_BITS{1'b0}};
+		modifies_flags1_r 	<= 1'b0;
+
+		pipeline_stage2_r 	<= 16'd0;
+		pc_stage2_r 		<= 15'd0;
+		hazard_reg2_r 		<= {REGISTER_BITS{1'b0}};
+		modifies_flags2_r 	<= 1'b0;
+
+		pipeline_stage3_r 	<= 16'd0;
+		pc_stage3_r 		<= 15'd0;
+		hazard_reg3_r 		<= {REGISTER_BITS{1'b0}};
+		modifies_flags3_r 	<= 1'b0;
+
+		pipeline_stage4_r 	<= 16'd0;
+		pc_stage4_r 		<= 15'd0;
+
+	end else begin
+
+		pipeline_stage0_r 	<= pipeline_stage0_r_next;
+		pc_stage0_r 		<= pc_stage0_r_next;
+
+		pipeline_stage1_r 	<= pipeline_stage1_r_next;
+		pc_stage1_r 		<= pc_stage1_r_next;
+		hazard_reg1_r 		<= hazard_reg1_r_next;
+		modifies_flags1_r 	<= modifies_flags1_r_next;
+
+		pipeline_stage2_r 	<= pipeline_stage2_r_next;
+		pc_stage2_r 		<= pc_stage2_r_next;
+		hazard_reg2_r 		<= hazard_reg2_r_next;
+		modifies_flags2_r 	<= modifies_flags2_r_next;
+
+		pipeline_stage3_r 	<= pipeline_stage3_r_next;
+		pc_stage3_r 		<= pc_stage3_r_next;
+		hazard_reg3_r 		<= hazard_reg3_r_next;
+		modifies_flags3_r 	<= modifies_flags3_r_next;
+
+		pipeline_stage4_r 	<= pipeline_stage4_r_next;
+		pc_stage4_r 		<= pc_stage4_r_next;
+
+	end
+end
+
+always @(*)
+begin
+
+	pipeline_stage0_r_next 	= pipeline_stage0_r;
+	pc_stage0_r_next 	= pc_stage0_r;
+
+	pipeline_stage1_r_next 	= pipeline_stage1_r;
+	pc_stage1_r_next 	= pc_stage1_r;
+	hazard_reg1_r_next 	= hazard_reg1_r;
+	modifies_flags1_r_next 	= modifies_flags1_r;
+
+	pipeline_stage2_r_next 	= pipeline_stage2_r;
+	pc_stage2_r_next 	= pc_stage2_r;
+	hazard_reg2_r_next 	= hazard_reg2_r;
+	modifies_flags2_r_next 	= modifies_flags2_r;
+
+	pipeline_stage3_r_next 	= pipeline_stage3_r;
+	pc_stage3_r_next 	= pc_stage3_r;
+	hazard_reg3_r_next 	= hazard_reg3_r;
+	modifies_flags3_r_next 	= modifies_flags3_r;
+
+	pipeline_stage4_r_next 	= pipeline_stage4_r;
+	pc_stage4_r_next 	= pc_stage4_r;
+
+
+	case (state)
+		st_halt:	;
+		st_execute: begin 
+		
+			if (cache_miss == 1'b0) begin
+				pipeline_stage0_r_next 	= cache_line[15:0];
+				pc_stage0_r_next 	= cache_line[31:17];
+			end else begin
+				pipeline_stage0_r_next  = NOP_INSTRUCTION;
+				pc_stage0_r_next	= pc_prev;
+			end
+
+			pipeline_stage1_r_next 	= pipeline_stage0_r;
+			pc_stage1_r_next 	= pc_stage0_r;
+			hazard_reg1_r_next 	= hazard_reg0;
+			modifies_flags1_r_next 	= modifies_flags0;
+
+			pipeline_stage2_r_next 	= pipeline_stage1_r;
+			pc_stage2_r_next 	= pc_stage1_r;
+			hazard_reg2_r_next 	= hazard_reg1_r;
+			modifies_flags2_r_next 	= modifies_flags1_r;
+
+			pipeline_stage3_r_next 	= pipeline_stage2_r;
+			pc_stage3_r_next 	= pc_stage2_r;
+			hazard_reg3_r_next 	= hazard_reg2_r;
+			modifies_flags3_r_next 	= modifies_flags2_r;
+
+			pipeline_stage4_r_next 	= pipeline_stage3_r;
+			pc_stage4_r_next 	= pc_stage3_r;
+	
+		end			
+		st_wait_cache1:	;
+		st_wait_cache2:	;
+		st_stall_2:	;
+		st_stall_3:	;
+		st_stall_4:	;
+		st_mem_stall1:	;
+		st_mem_stall2:	;
+		st_invalidate_cache:	;
+		st_wait_invalidate:	;
+	endcase
+
+end
 
 // Imm reg
 
