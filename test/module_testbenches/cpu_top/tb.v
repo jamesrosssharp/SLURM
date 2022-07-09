@@ -15,6 +15,8 @@ wire [15:0] memory_out;
 wire memory_wr;
 wire memory_valid;
 wire  memory_ready;
+wire [1:0] memory_wr_mask;
+
 
 wire [15:0] port_address;
 wire [15:0] port_in;
@@ -22,6 +24,7 @@ wire [15:0] port_out;
 wire port_wr;
 wire port_rd;
 
+wire interrupt = 1'b0;
 wire [3:0] irq = 4'd0;
 
 // Memory interface logic
@@ -68,8 +71,12 @@ assign	 memory_ready = (state == state_grant) ? 1'b1 : 1'b0;
 always @(posedge CLK)
 begin
 	if (state == state_grant) begin
-		if (memory_wr == 1'b1)
-			memory[memory_address] <= memory_out;
+		if (memory_wr == 1'b1) begin
+			if (memory_wr_mask[0] == 1'b1)
+				memory[memory_address][7:0] <= memory_out[7:0];
+			if (memory_wr_mask[1] == 1'b1)
+				memory[memory_address][15:8] <= memory_out[15:8];
+		end
 		memory_in <= memory[memory_address];
 	end else if (memBUSY == 1'b1)
 		memory_in <= 16'hbeef;
@@ -79,7 +86,7 @@ end
 
 wire debug;
 
-slurm16_cpu_top top0
+cpu_top top0
 (
 	CLK,
 	RSTb,
@@ -90,6 +97,7 @@ slurm16_cpu_top top0
 	memory_valid,	/* memory request */
 	memory_wr,		/* memory write */
 	memory_ready,	/* memory ready - from arbiter */
+	memory_wr_mask, /* write mask */
 
 	port_address,
 	port_in,
@@ -97,14 +105,15 @@ slurm16_cpu_top top0
 	port_rd,
 	port_wr,
 
-	irq,	 /* interrupt lines */
+	interrupt,	 /* interrupt lines */
+	irq,
 	debug
 );
 
 initial begin
 	$dumpfile("dump.vcd");
 	$dumpvars(0, tb);
-	# 20000 $finish;
+	# 200000 $finish;
 end
 
 genvar j;

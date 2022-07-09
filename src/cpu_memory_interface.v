@@ -41,10 +41,12 @@ module cpu_memory_interface #(parameter BITS = 16, ADDRESS_BITS = 15)  (
 	input  [BITS - 1: 0]	     	data_memory_in,
 	input				data_memory_read_req,
 	input				data_memory_write_req,
-	
+	input	[1:0]			data_memory_wr_mask,
+
 	output [BITS - 1: 0]	     	data_memory_data_out,
 	output				data_memory_success,	
 	output				data_memory_was_requested,
+	output [1:0]			data_memory_wr_mask_out,
 
 	/* bank switch flag : asserted when switching bank. See notes above */
 	output 				bank_sw,
@@ -52,6 +54,7 @@ module cpu_memory_interface #(parameter BITS = 16, ADDRESS_BITS = 15)  (
 	output [ADDRESS_BITS: 0] 	memory_address,	/* one more bit to output address - tied low */
 	output [BITS - 1 : 0]		data_out,
 	input  [BITS - 1 : 0]		data_in,
+	output [1:0]			wr_mask,
 	output				mem_wr,
 	output				valid,		/* request access to memory bank */
 	input				rdy		/* we have access to the bank */
@@ -69,14 +72,18 @@ assign data_memory_data_out 	= data_in;
 reg [ADDRESS_BITS - 1 : 0] address_stage_1, address_stage_1_next;
 reg [BITS - 1 : 0] 	   data_stage_1, data_stage_1_next;
 reg [2:0] 		   flags_stage_1, flags_stage_1_next;	// bit 0: RD/WRb, bit 1: 1 = instruction, 0 = memory, bit 2: 1 = is requested, 0 = no requests
+reg [1:0]		   data_wr_mask_stage_1, data_wr_mask_stage_1_next;
 
 reg [ADDRESS_BITS - 1 : 0] address_stage_2;
 reg [BITS - 1 : 0] 	   data_stage_2;
 reg [2:0] 		   flags_stage_2;
+reg [1:0]		   data_wr_mask_stage_2;
 
 reg [ADDRESS_BITS - 1 : 0] address_stage_3;
 
 assign data_out 	= data_stage_1; 
+assign wr_mask		= data_wr_mask_stage_1;
+assign data_memory_wr_mask_out = data_wr_mask_stage_2;
 
 // Pipeline
 
@@ -87,6 +94,7 @@ begin
 		address_stage_2 <= {ADDRESS_BITS{1'b0}}; 
 		address_stage_3 <= {ADDRESS_BITS{1'b0}}; 
 		data_stage_2 <= {BITS{1'B0}};
+		data_wr_mask_stage_2 <= 2'b00;
 	end else begin	
 		// Pipeline always advances.
 		// When we are changing banks, xxx_stage_1 will be held at
@@ -95,6 +103,7 @@ begin
 		address_stage_2 <= address_stage_1;
 		address_stage_3 <= address_stage_2;
 		data_stage_2 	<= data_stage_1;
+		data_wr_mask_stage_2 <= data_wr_mask_stage_1;
 	end
 end
 
@@ -115,12 +124,14 @@ begin
 		state <= st_idle;
 		address_stage_1 <= {ADDRESS_BITS{1'b0}};
 		data_stage_1 	<= {BITS{1'b0}};
-		flags_stage_1   <= 3'b000;	
+		flags_stage_1   <= 3'b000;
+		data_wr_mask_stage_1 <= 2'b00;	
 	end else begin
 		state <= next_state;
 		address_stage_1 <= address_stage_1_next;
 		data_stage_1 	<= data_stage_1_next;
 		flags_stage_1 	<= flags_stage_1_next; 
+		data_wr_mask_stage_1 <= data_wr_mask_stage_1_next;
 	end
 end
 
@@ -131,6 +142,7 @@ begin
  	address_stage_1_next 	= address_stage_1;
 	data_stage_1_next 	= data_stage_1;
 	flags_stage_1_next 	= flags_stage_1;	
+	data_wr_mask_stage_1_next = data_wr_mask_stage_1;
 
 	case (state)
 		st_idle:
@@ -149,6 +161,7 @@ begin
 				flags_stage_1_next[0] 	= 1'b1; // Don't explicitly write the memory until 
 							       // we are executing again and the request comes
 							       // in again from cpu
+				data_wr_mask_stage_1_next = data_wr_mask_stage_1;
 
 			end else if (data_memory_read_req || data_memory_write_req) begin
 				
@@ -159,6 +172,8 @@ begin
 				flags_stage_1_next[1] 	= 1'b0;
 				flags_stage_1_next[2] 	= 1'b1;
 
+				data_wr_mask_stage_1_next = data_memory_wr_mask;
+
 			end else if (instruction_memory_read_req) begin
 
 				address_stage_1_next 	= instruction_memory_address;
@@ -168,11 +183,14 @@ begin
 				flags_stage_1_next[1] 	= 1'b1;
 				flags_stage_1_next[2] 	= 1'b1;
 
+				data_wr_mask_stage_1_next = 2'b00;
+
 			end else begin
 
 				address_stage_1_next 	= {ADDRESS_BITS{1'b0}};
 				data_stage_1_next 	= {BITS{1'b0}};
 				flags_stage_1_next 	= 3'b000;
+				data_wr_mask_stage_1_next = 2'b00;
 
 				next_state = st_idle;
 			end

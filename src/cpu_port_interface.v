@@ -5,7 +5,7 @@
  *
  */
 
-module slurm16_cpu_port_interface #(parameter BITS = 16, ADDRESS_BITS = 16)  (
+module cpu_port_interface #(parameter BITS = 16, ADDRESS_BITS = 16)  (
 	input CLK,
 	input RSTb,
 

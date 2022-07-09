@@ -66,7 +66,9 @@ bram
 
 reg [14:0] address_x, address_xx;
 reg [7:0] mem_address_x, mem_address_x_prev;
-
+reg [14:0] mem_address_xx, mem_address_xxx;
+assign memory_address = {address_xx[14:8], mem_address_x};
+assign memory_rd_req = (state == st_execute);	// Always request memory when we are in "execute"
 
 
 always @(posedge CLK)
@@ -76,28 +78,36 @@ begin
 		address_x <= 15'd0;
 		mem_address_x <= 8'd0;
 		mem_address_x_prev <= 8'd0;
+		mem_address_xx <= 15'd0;
+		mem_address_xxx <= 15'd0;
 	end
 	else begin
-		address_xx <= address_x;
-		address_x <= cache_request_address;
-		if ((address_x != address_xx) && cache_miss) begin	// If we just got a new request, then we will service it.
-			mem_address_x <= address_x;
-			mem_address_x_prev <= mem_address_x;
+		address_xx 	<= address_x;
+		address_x 	<= cache_request_address;
+
+		// There is potential for the cache to get stuck here. TODO:
+		// Fix
+		mem_address_xx 	<= memory_address;
+		mem_address_xxx <= mem_address_xx;
+		
+		if ((address_x != mem_address_xx) && (address_x != mem_address_xxx) &&  
+		    (address_x != address_xx) && cache_miss) begin	// If we just got a new request, then we will service it.
+			mem_address_x 		<= address_x[7:0];
+			mem_address_x_prev 	<= mem_address_x;
 		end
+		// TODO: replace memory_success here 
 		else if ((mem_address_x != 8'hff) && (state == st_execute) && (memory_success == 1'b1)) begin
-			mem_address_x <= mem_address_x + 1;	// Fill cache in our spare time (we need to keep the memory pipeline filled)
-			mem_address_x_prev <= mem_address_x;
+			mem_address_x 		<= mem_address_x + 1;	// Fill cache in our spare time (we need to keep the memory pipeline filled)
+			mem_address_x_prev 	<= mem_address_x;
 		end
-		else if (memory_success == 1'b0)
-			mem_address_x <= mem_address_x_prev;	
+		else if (memory_success == 1'b0) begin
+			mem_address_x 		<= mem_address_x_prev;	
+		end
 				
 	end
 end
 
 assign cache_miss = (address_x != data_out[31:17]) || (data_out[16] != 1'b0);	// bit 16 must be zero to be valid
-
-assign memory_address = {address_xx[14:8], mem_address_x};
-assign memory_rd_req = (state == st_execute);	// Always request memory when we are in "execute"
 
 // State machine
 

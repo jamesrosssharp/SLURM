@@ -42,7 +42,7 @@ module cpu_pipeline #(parameter REGISTER_BITS = 4, BITS = 16, ADDRESS_BITS = 16)
 	input				interrupt_flag_set,	/* cpu interrupt flag set */
 	input				interrupt_flag_clear,	/* cpu interrupt flag clear */
 	input				halt,
-	input 				wake,
+	output 				wake,
 
 	input				interrupt,		/* interrupt line from interrupt controller */	
 	input  [3:0]			irq,			/* irq from interrupt controller */
@@ -58,7 +58,10 @@ module cpu_pipeline #(parameter REGISTER_BITS = 4, BITS = 16, ADDRESS_BITS = 16)
 	/* data memory interface */
 	input	data_memory_success,
 	input   bank_switch,	/* memory interface is switching banks or otherwise busy */
-	input	data_memory_was_requested
+	input	data_memory_was_requested,
+
+	/* cpu state */
+	output  is_executing
 
 );
 
@@ -80,6 +83,8 @@ localparam st_invalidate_cache	= 4'd9;
 localparam st_wait_invalidate	= 4'd10;
 
 reg [3:0] state, next_state;
+
+assign is_executing = state == st_execute;
 
 always @(posedge CLK)
 begin
@@ -211,6 +216,11 @@ begin
 		st_wait_invalidate:	;
 	endcase
 
+	case (next_state)
+		st_execute:
+			pc_next = pc + 1;
+		default: ;
+	endcase
 end
 
 // Pipeline
@@ -235,6 +245,19 @@ reg modifies_flags3_r, modifies_flags3_r_next;
 
 reg [15:0] pipeline_stage4_r, pipeline_stage4_r_next;
 reg [14:0] pc_stage4_r, pc_stage4_r_next;
+
+assign pipeline_stage0 = pipeline_stage0_r;
+assign pipeline_stage1 = pipeline_stage1_r;
+assign pipeline_stage2 = pipeline_stage2_r;
+assign pipeline_stage3 = pipeline_stage3_r;
+assign pipeline_stage4 = pipeline_stage4_r;
+
+assign pc_stage4 = {pc_stage4_r, 1'b0};
+
+assign hazard_reg1 = hazard_reg1_r;
+assign hazard_reg2 = hazard_reg2_r;
+assign hazard_reg3 = hazard_reg3_r;
+
 
 always @(posedge CLK)
 begin

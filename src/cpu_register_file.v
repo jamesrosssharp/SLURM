@@ -7,7 +7,7 @@
  *
  */
 
-module slurm16_cpu_register_file
+module cpu_register_file
 #(parameter REG_BITS = 4 /* default 2**4 = 16 registers */, parameter BITS = 16 /* default 16 bits */)
 (
 	input CLK,

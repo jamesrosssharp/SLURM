@@ -47,6 +47,9 @@ reg  [15:0] data_in;
 wire valid;	
 reg  rdy;
 wire mem_wr;
+reg [1:0] 	data_memory_wr_mask = 2'b00;
+wire [1:0] 	data_memory_wr_mask_out;
+wire [1:0] 	wr_mask;
 
 cpu_instruction_cache cache0 (
 	CLK,
@@ -87,9 +90,12 @@ cpu_memory_interface mem0 (
 	data_memory_in,
 	data_memory_read_req,
 	data_memory_write_req,
-	
+	data_memory_wr_mask,
+
 	data_memory_data_out,
 	data_memory_success,	
+	data_memory_was_requested,
+        data_memory_wr_mask_out,
 
 	/* bank switch flag : asserted when switching bank. See notes above */
 	bank_sw,
@@ -97,6 +103,7 @@ cpu_memory_interface mem0 (
 	memory_address,	/* one more bit to output address - tied low */
 	data_out,
 	data_in,
+ 	wr_mask,
 	mem_wr,
 	valid,		/* request access to memory bank */
 	rdy		/* we have access to the bank */

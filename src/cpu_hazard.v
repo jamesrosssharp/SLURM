@@ -1,18 +1,12 @@
 /*
  *
- *	CPU Hazard: manages hazards
+ *	CPU Hazard: computes hazards
  *
  *
  */
 
-module slurm_cpu_hazard #(parameter BITS = 16, REGISTER_BITS = 4, ADDRESS_BITS = 16) 
+module cpu_hazard #(parameter BITS = 16, REGISTER_BITS = 4) 
 (
-	input CLK,
-	input RSTb,
-
-	input is_executing,
-	input load_pc,
-	
 	input [BITS - 1:0] instruction, /* p0 pipeline slot instruction*/
 
 	input [REGISTER_BITS - 1:0] regA_sel0,		/* registers that pipeline0 instruction will read from */
@@ -28,10 +22,9 @@ module slurm_cpu_hazard #(parameter BITS = 16, REGISTER_BITS = 4, ADDRESS_BITS =
 	input modifies_flags2,
 	input modifies_flags3,
 
-	output stall,
-
-	output hazard,
-	output hazard1_but_23_clear
+	output hazard_1,
+	output hazard_2,
+	output hazard_3
 );
 
 `include "cpu_decode_functions.v"
@@ -40,7 +33,7 @@ module slurm_cpu_hazard #(parameter BITS = 16, REGISTER_BITS = 4, ADDRESS_BITS =
 // Determine hazard registers to propagate from p0
 
 reg [REGISTER_BITS - 1:0] hazard_reg0_r;
-assign 					  hazard_reg0 = hazard_reg0_r;
+assign 	hazard_reg0 = hazard_reg0_r;
 
 reg 	modifies_flags0_r;
 assign  modifies_flags0 = modifies_flags0_r;
@@ -50,6 +43,7 @@ begin
 
 	hazard_reg0_r = {REGISTER_BITS{1'b0}};	
 
+	/* verilator lint_off CASEX */
 	casex (instruction)
 		INSTRUCTION_CASEX_ALUOP_SINGLE_REG : begin /* alu op reg */
 			hazard_reg0_r 	= reg_src_from_ins(instruction); // source is destination in this case
@@ -95,89 +89,48 @@ end
 
 // Compute if a hazard occurs
 
-reg hazard_23;
+reg hazard_1_r;
+reg hazard_2_r;
+reg hazard_3_r;
+
+assign hazard_1 = hazard_1_r;
+assign hazard_2 = hazard_2_r;
+assign hazard_3 = hazard_3_r;
 
 always @(*)
 begin
-
-	hazard_23 = 1'b0;
-
-	if (regA_sel0 != R0) begin
-		if (regA_sel0 == hazard_reg2)
-			hazard_23 = 1'b1;
-// We *do* need register hazards from stage 3
-		if (regA_sel0 == hazard_reg3)
-			hazard_23 = 1'b1;
-	end
-
-	if (regB_sel0 != R0) begin
-
-		if (regB_sel0 == hazard_reg2)
-			hazard_23 = 1'b1;
-		if (regB_sel0 == hazard_reg3)
-			hazard_23 = 1'b1;
-	end
-
-	casex(instruction)
-		INSTRUCTION_CASEX_BRANCH: begin /* branch */
-			if (uses_flags_for_branch(instruction)) begin
-				if (modifies_flags2) hazard_23 = 1'b1;
-				if (modifies_flags3) hazard_23 = 1'b1;
-			end
-		end
-	endcase
-end
-
-reg hazard1; 
-
-always @(*)
-begin
-
-	hazard1 = 1'b0;
+	hazard_1_r = 1'b0;
+	hazard_2_r = 1'b0;
+	hazard_3_r = 1'b0;
 
 	if (regA_sel0 != R0) begin
-
 		if (regA_sel0 == hazard_reg1)
-			hazard1 = 1'b1;
+			hazard_1_r = 1'b1;
+		if (regA_sel0 == hazard_reg2)
+			hazard_2_r = 1'b1;
+		if (regA_sel0 == hazard_reg3)
+			hazard_3_r = 1'b1;
 	end
 
 	if (regB_sel0 != R0) begin
-
 		if (regB_sel0 == hazard_reg1)
-			hazard1 = 1'b1;
+			hazard_1_r = 1'b1;
+		if (regB_sel0 == hazard_reg2)
+			hazard_2_r = 1'b1;
+		if (regB_sel0 == hazard_reg3)
+			hazard_3_r = 1'b1;
 	end
 
 	casex(instruction)
 		INSTRUCTION_CASEX_BRANCH: begin /* branch */
 			if (uses_flags_for_branch(instruction)) begin
-				if (modifies_flags1) hazard1 = 1'b1;
+				if (modifies_flags1) hazard_1_r = 1'b1;
+				if (modifies_flags2) hazard_2_r = 1'b1;
+				if (modifies_flags3) hazard_3_r = 1'b1;
 			end
 		end
+		default: ;
 	endcase
-end
-
-assign hazard = hazard1 || hazard_23;
-
-assign hazard1_but_23_clear = hazard1 && !hazard_23;
-
-// Stall flag
-
-reg stall_r;
-
-assign stall 		= stall_r;
-
-always @(posedge CLK)
-begin
-	if (RSTb == 1'b0) begin
-		stall_r <= 1'b0;	
-	end
-	if (load_pc) begin
-		stall_r <= 1'b0;
-	end
-	else if (hazard && is_executing)
-		stall_r <= 1'b1;
-	else if ((stall_r == 1'b1) && !hazard && is_executing)
-		stall_r <= 1'b0;
 end
 
 endmodule

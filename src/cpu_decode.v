@@ -4,7 +4,7 @@
  *
  */
 
-module slurm16_cpu_decode #(parameter BITS = 16, ADDRESS_BITS = 16, REGISTER_BITS = 4)
+module cpu_decode #(parameter BITS = 16, ADDRESS_BITS = 16, REGISTER_BITS = 4)
 (
 	input CLK,
 	input RSTb,

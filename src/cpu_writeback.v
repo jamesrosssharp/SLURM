@@ -6,7 +6,7 @@
  *
  */
 
-module slurm16_cpu_writeback #(parameter REGISTER_BITS = 4, BITS = 16, ADDRESS_BITS = 16)
+module cpu_writeback #(parameter REGISTER_BITS = 4, BITS = 16, ADDRESS_BITS = 16)
 (
 	input CLK,
 	input RSTb,

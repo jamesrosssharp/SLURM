@@ -3,6 +3,7 @@
  *
  */
 
+/* verilator lint_off UNUSED */
 function is_branch_link_from_ins;
 input [15:0] ins;
 	is_branch_link_from_ins = (ins[11:8] == 4'b0111) ? 1'b1 : 1'b0;
@@ -154,4 +155,5 @@ function is_ret_or_iret;
 input [15:0] ins;
 		is_ret_or_iret = ins[0];	// 1 = iret, 0 = ret
 endfunction
+/* lint_on */
 

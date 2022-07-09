@@ -1,12 +1,12 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Mon Jul  4 08:23:30 2022
+[*] Sat Jul  9 04:07:18 2022
 [*]
 [dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/module_testbenches/cpu_memory_interface/dump.vcd"
-[dumpfile_mtime] "Mon Jul  4 08:23:19 2022"
-[dumpfile_size] 228545
+[dumpfile_mtime] "Sat Jul  9 04:06:37 2022"
+[dumpfile_size] 244663
 [savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/module_testbenches/cpu_memory_interface/config.gtkw"
-[timestart] 29940
+[timestart] 26723
 [size] 1920 996
 [pos] -1 -1
 *-9.000000 30600 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1

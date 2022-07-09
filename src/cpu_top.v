@@ -4,136 +4,87 @@
  *
  */
 
-module slurm16_cpu_top
+module cpu_top
 (
 	input CLK,
 	input RSTb,
 
-	output [ADDRESS_BITS - 1:0] memory_address,
+	output [ADDRESS_BITS - 1:0] 	memory_address,
 	input  [BITS - 1:0] 		memory_in,
-	output [BITS - 1:0]			memory_out,
-	output						memory_valid,	/* memory request */
-	output						memory_wr,		/* memory write */
-	input						memory_ready,	/* memory ready - from arbiter */
-	output [1:0]				memory_wr_mask, /* write mask - for byte wise access to memory */
+	output [BITS - 1:0]		memory_out,
+	output				memory_valid,	/* memory request */
+	output				memory_wr,	/* memory write */
+	input				memory_ready,	/* memory ready - from arbiter */
+	output [1:0]			memory_wr_mask, /* write mask - for byte wise access to memory */
 
-	output [ADDRESS_BITS - 1:0] port_address,
-	input  [BITS - 1:0]			port_in,
-	output [BITS - 1:0]		    port_out,
-	output						port_rd,
-	output						port_wr,
+	output [ADDRESS_BITS - 1:0] 	port_address,
+	input  [BITS - 1:0]		port_in,
+	output [BITS - 1:0]		port_out,
+	output				port_rd,
+	output				port_wr,
 
-	input  						interrupt,		/* interrupt line from interrupt controller */	
-	input  [3:0]				irq,			/* irq from interrupt controller */
-	output						cpu_debug_pin
+	input  				interrupt,	/* interrupt line from interrupt controller */	
+	input  [3:0]			irq,		/* irq from interrupt controller */
+	output				cpu_debug_pin
 );
+
+assign cpu_debug_pin = 1'b0;
 
 /* Machine is 16 bit with 16 bit address bus, and 16 registers */
 localparam BITS = 16;
 localparam ADDRESS_BITS = 16;
 localparam REGISTER_BITS = 4;
 
-wire load_memory;
-wire store_memory;
-wire halt;
-wire wake;
+wire [15:0] pipeline_stage0;
+wire [15:0] pipeline_stage1;
+wire [15:0] pipeline_stage2;
+wire [15:0] pipeline_stage3;
+wire [15:0] pipeline_stage4;
 
-wire [ADDRESS_BITS - 1:0] pc;
-wire [ADDRESS_BITS - 1:0] load_store_address;
+wire [15:0] pc_stage4;
 
-assign cpu_debug_pin = memory_ready;
+wire [15:0] imm_reg;
 
-wire [BITS - 1:0] store_memory_data;
-
-wire is_executing;
-wire is_fetching;
-wire memory_is_instruction;
-wire [ADDRESS_BITS - 1:0] memory_address_prev_plus_two;
-
-wire interrupt_flag_set;
-wire interrupt_flag_clear;
-
-wire [1:0] memory_wr_mask_delayed;
-
-wire stall_memory_pipeline_stage3;
-
-wire stall;
-
-wire will_execute_next_cycle;
-
-slurm16_cpu_memory_interface #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_mem0  (
-	CLK,
-	RSTb,
-
-	load_memory, 	/* perform a load operation next */
-	store_memory,	/* perform a store operation next */
-	halt,			/* put the CPU to sleep */
-	wake,			/* wake the CPU up */
-
-	pc, /* pc input from pc module */
-	load_store_address, /* load store address */
-	store_memory_data, /* data to store to memory */
-	store_memory_wr_mask, /* write mask for memory write from execute stage */
-
-	memory_address, /* memory address - to memory arbiter */
-	memory_out,		/* memory output */
-
-	memory_valid,						/* memory valid signal - request to mem. arbiter */
-	memory_ready,						/* grant - from memory arbiter */
-	memory_wr,							/* write to memory */
-	memory_wr_mask,						/* write mask to memory */
-
-	is_executing,						/* CPU is currently executing */
-	is_fetching,							/* CPU is currently fetching */
-
-	will_execute_next_cycle,				/* CPU will be executing on next cycle */
-
-	memory_is_instruction,				/* current value of memory in is an instruction */
-	memory_address_prev_plus_two,		/* points to return address */
-	memory_wr_mask_delayed,				/* delayed memory write mask - for writeback */
-
-	stall_memory_pipeline_stage3,
-
-	stall
-);
-
-
-wire [BITS - 1:0] pipeline_stage0;
-wire [BITS - 1:0] pipeline_stage1;
-wire [BITS - 1:0] pipeline_stage2;
-wire [BITS - 1:0] pipeline_stage3;
-wire [BITS - 1:0] pipeline_stage4;
-
-wire [ADDRESS_BITS - 1:0] pc_stage4;
-
-wire [BITS - 1:0] imm_reg;
 wire load_pc;
+wire [15:0] new_pc;
 
-wire [REGISTER_BITS - 1:0] hazard_reg0; 
+wire hazard_1;
+wire hazard_2;
+wire hazard_3;
+
+wire [REGISTER_BITS - 1 : 0] hazard_reg0;
 wire modifies_flags0;
 
-wire [REGISTER_BITS - 1:0] hazard_reg1;
-wire [REGISTER_BITS - 1:0] hazard_reg2;
-wire [REGISTER_BITS - 1:0] hazard_reg3;
+wire [REGISTER_BITS - 1 : 0] hazard_reg1;
+wire [REGISTER_BITS - 1 : 0] hazard_reg2;
+wire [REGISTER_BITS - 1 : 0] hazard_reg3;
 wire modifies_flags1;
 wire modifies_flags2;
 wire modifies_flags3;
 
-wire hazard1;
-wire hazard;
+wire interrupt_flag_set;
+wire interrupt_flag_clear;
+wire halt;
+wire wake;
 
-cpu_pipeline #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_pip0
+wire [14:0] cache_request_address;
+wire [31:0] cache_line;
+wire cache_miss; 
+
+// TODO: Move this to execute
+wire invalidate_cache = 1'b0;
+wire invalidation_done;
+
+wire data_memory_success;
+wire bank_switch;
+wire data_memory_was_requested;
+
+wire is_executing;
+
+cpu_pipeline #(.REGISTER_BITS(REGISTER_BITS), .BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) pip0
 (
 	CLK,
 	RSTb,
-
-	memory_in,
-	memory_address_prev_plus_two,
-
-	is_executing, /* CPU is executing */
-
-	stall,		  /* pipeline is stalled */
-	hazard,
 
 	pipeline_stage0,
 	pipeline_stage1,
@@ -142,60 +93,121 @@ cpu_pipeline #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_pip0
 	pipeline_stage4,
 
 	pc_stage4,
+
 	imm_reg,
+
 	load_pc,
+	new_pc,
 
-	hazard_reg0,		/*  import hazard computation, it will move with pipeline in pipeline module */
-	modifies_flags0,	/*  import flag hazard conditions */ 
+	hazard_1,
+	hazard_2,
+	hazard_3,
 
-	hazard_reg1,		/* export pipelined hazards */
+	hazard_reg0,	
+	modifies_flags0,
+
+	hazard_reg1,
 	hazard_reg2,
 	hazard_reg3,
 	modifies_flags1,
 	modifies_flags2,
 	modifies_flags3,
 
-	hazard1,
-
-	memory_is_instruction,
-
 	interrupt_flag_set,
 	interrupt_flag_clear,
-
-	interrupt,
-	irq,
-
-	pc_in,
-
+	halt,
 	wake,
 
-	stall_memory_pipeline_stage3,
+	interrupt,	
+	irq,	
 
-	will_execute_next_cycle
+	cache_request_address, 
+	cache_line,
+	cache_miss, 
 
+	invalidate_cache, 
+	invalidation_done,
+
+	data_memory_success,
+	bank_switch,
+	data_memory_was_requested,
+
+	is_executing
 );
 
-wire [ADDRESS_BITS-1:0] pc_in;
+wire [14:0] instruction_memory_address;
+wire instruction_memory_rd_req;
+wire instruction_memory_success;
+wire [14:0] instruction_memory_requested_address;
+wire [15:0] instruction_memory_data;
 
-slurm16_cpu_program_counter #(.ADDRESS_BITS(ADDRESS_BITS)) cpu_pc0
-(
+cpu_instruction_cache cache0 (
 	CLK,
 	RSTb,
 
-	pc,
+	cache_request_address, 
+	cache_line,
+	cache_miss, 
 
-	pc_in,		/* PC in for load (branch, ret etc) */
-	load_pc,						 /* load the PC */
+	invalidate_cache, 
+	invalidation_done, 
 
-	is_fetching,   /* CPU is fetching instructions - increment PC */
+	instruction_memory_address,
+	instruction_memory_rd_req,	
+	
+	instruction_memory_success,	
+	instruction_memory_requested_address,	
+	instruction_memory_data 
+);
 
-	stall		  /* pipeline is stalled */
+wire load_memory;
+wire store_memory;
+wire [15:0] load_store_address;
+wire [15:0] store_memory_data;
+wire [1:0] store_memory_wr_mask;
+
+wire [15:0] data_memory_data_out;
+wire [1:0] data_memory_wr_mask_out;
+
+
+
+cpu_memory_interface mem0 (
+	CLK,
+	RSTb,
+
+	instruction_memory_address,
+	instruction_memory_rd_req,
+
+	instruction_memory_data,
+	instruction_memory_requested_address, 
+	instruction_memory_success,	
+
+	load_store_address[15:1],
+	store_memory_data,
+	load_memory,
+	store_memory,
+	store_memory_wr_mask,
+
+	data_memory_data_out,
+	data_memory_success,	
+	data_memory_was_requested,
+	data_memory_wr_mask_out,
+
+	bank_switch,
+
+	memory_address,	
+	memory_out,
+	memory_in,
+	memory_wr_mask,
+	memory_wr,
+	memory_valid,		
+	memory_ready		
 );
 
 wire [REGISTER_BITS - 1:0] regA_sel;
 wire [REGISTER_BITS - 1:0] regB_sel;
  
-slurm16_cpu_decode #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS), .REGISTER_BITS(REGISTER_BITS)) cpu_dec0
+cpu_decode #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS), .REGISTER_BITS(REGISTER_BITS)) cpu_dec0
 (
 	CLK,
 	RSTb,
@@ -210,7 +222,7 @@ wire [REGISTER_BITS - 1:0] regA_sel0;
 wire [REGISTER_BITS - 1:0] regB_sel0;
 
 // Hazard register decoder 
-slurm16_cpu_decode #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS), .REGISTER_BITS(REGISTER_BITS)) cpu_dec1
+cpu_decode #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS), .REGISTER_BITS(REGISTER_BITS)) cpu_dec1
 (
 	CLK,
 	RSTb,
@@ -221,12 +233,12 @@ slurm16_cpu_decode #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS), .REGISTER_BITS(RE
 	regB_sel0  /* register B select */
 );
 
-wire [REGISTER_BITS - 1:0]  regIn_sel;
+wire [REGISTER_BITS - 1:0]  		regIn_sel;
 wire [BITS - 1:0] 			regOutA_data;
 wire [BITS - 1:0] 			regOutB_data;
 wire [BITS - 1:0] 			regIn_data;
 
-slurm16_cpu_register_file
+cpu_register_file
 #(.REG_BITS(REGISTER_BITS), .BITS(BITS)) reg0
 (
 	CLK,
@@ -253,9 +265,8 @@ wire [ADDRESS_BITS - 1:0] ex_port_address;
 wire [BITS - 1:0] ex_port_out;
 wire ex_port_rd;
 wire ex_port_wr;
-wire [1:0] store_memory_wr_mask;
 
-slurm16_cpu_execute #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_exec0
+cpu_execute #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_exec0
 (
 	CLK,
 	RSTb,
@@ -280,7 +291,7 @@ slurm16_cpu_execute #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_exec0
 	aluA,
 	aluB,
 	load_pc,
-	pc_in,
+	new_pc,
 	interrupt_flag_set,
 	interrupt_flag_clear,
 	halt
@@ -306,7 +317,7 @@ alu
 	S /* sign flag */
 );
 
-slurm16_cpu_writeback #(.REGISTER_BITS(REGISTER_BITS), .BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_wr0
+cpu_writeback #(.REGISTER_BITS(REGISTER_BITS), .BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_wr0
 (
 	CLK,
 	RSTb,
@@ -321,10 +332,10 @@ slurm16_cpu_writeback #(.REGISTER_BITS(REGISTER_BITS), .BITS(BITS), .ADDRESS_BIT
 	regIn_data,
 
 	pc_stage4,
-	memory_wr_mask_delayed
+	data_memory_wr_mask_out
 );
 
-slurm16_cpu_port_interface #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_prt0 (
+cpu_port_interface #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_prt0 (
 	CLK,
 	RSTb,
 
@@ -341,36 +352,27 @@ slurm16_cpu_port_interface #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_prt0 
 	port_wr
 );
 
-slurm_cpu_hazard #(.BITS(BITS), .REGISTER_BITS(REGISTER_BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_haz0 
+cpu_hazard haz0
 (
-	CLK,
-	RSTb,
+	pipeline_stage0,
 
-	is_executing,
-	load_pc,
-
-	pipeline_stage0,	
-
-	regA_sel0,		/* registers that pipeline0 instruction will read from */
+	regA_sel0,
 	regB_sel0,
 
-	hazard_reg0,	/*  export hazard computation, it will move with pipeline in pipeline module */
-	modifies_flags0,/*  export flag hazard conditions */ 
+	hazard_reg0,	
+	modifies_flags0,					
 
-	hazard_reg1,	/* import pipelined hazards */
+	hazard_reg1,	
 	hazard_reg2,
 	hazard_reg3,
 	modifies_flags1,
 	modifies_flags2,
 	modifies_flags3,
 
-	stall,
-
-	hazard,
-	hazard1
+	hazard_1,
+	hazard_2,
+	hazard_3
 );
-
-
 
 
 endmodule
