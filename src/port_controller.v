@@ -375,7 +375,7 @@ interrupt_controller #(.BITS(BITS)) irq0
 
 // Scratchpad RAM
 
-bram #(.BITS(16), .ADDRESS_BITS(9)) scr0
+/*bram #(.BITS(16), .ADDRESS_BITS(9)) scr0
 (
 	CLK,
 	ADDRESS[8:0],
@@ -383,9 +383,6 @@ bram #(.BITS(16), .ADDRESS_BITS(9)) scr0
 	ADDRESS[8:0],
 	DATA_IN,
 	WR_SCRATCH
-);
-
-
-
+);*/
 
 endmodule

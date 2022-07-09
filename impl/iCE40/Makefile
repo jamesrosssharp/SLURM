@@ -7,43 +7,44 @@ SRCDIR=../../src
 AS=../../slurmasm/slurmasm
 CC=../../slurmcc/lcc/lcc/build/rcc
 
-SOURCE=$(SRCDIR)/alpha.v	\
+SOURCE=$(SRCDIR)/alpha.v		\
 $(SRCDIR)/alu.v				\
 $(SRCDIR)/audio.v			\
 $(SRCDIR)/background_controller2.v	\
 $(SRCDIR)/background_controller.v	\
-$(SRCDIR)/baudgen.v					\
+$(SRCDIR)/baudgen.v			\
 bram_mask.v				\
-$(SRCDIR)/bram.v					\
-$(SRCDIR)/copper.v					\
-$(SRCDIR)/fb_doubler.v				\
-$(SRCDIR)/fb_scale.v				\
+$(SRCDIR)/bram.v			\
+$(SRCDIR)/copper.v			\
+$(SRCDIR)/fb_doubler.v			\
+$(SRCDIR)/fb_scale.v			\
 $(SRCDIR)/gfx.v				\
-$(SRCDIR)/gpio.v					\
-$(SRCDIR)/memory_arbiter.v			\
-$(SRCDIR)/memory_controller.v	\
+$(SRCDIR)/gpio.v			\
+$(SRCDIR)/memory_arbiter.v		\
+$(SRCDIR)/memory_controller.v		\
 memory.v				\
 mult.v					\
-$(SRCDIR)/port_controller.v			\
-pwm_led.v					\
-boot_memory.v						\
-$(SRCDIR)/spi_flash.v				\
+$(SRCDIR)/port_controller.v		\
+pwm_led.v				\
+boot_memory.v				\
+$(SRCDIR)/spi_flash.v			\
 $(SRCDIR)/sprite_controller.v		\
 trace.v					\
-$(SRCDIR)/uart_tx.v					\
-$(SRCDIR)/uart.v					\
-$(SRCDIR)/cpu_hazard.v				\
-$(SRCDIR)/cpu_pipeline.v			\
+$(SRCDIR)/uart_tx.v			\
+$(SRCDIR)/uart.v			\
+$(SRCDIR)/cpu_hazard.v			\
+$(SRCDIR)/cpu_pipeline.v		\
 $(SRCDIR)/cpu_program_counter.v		\
-$(SRCDIR)/cpu_top.v					\
-$(SRCDIR)/cpu_decode.v				\
-$(SRCDIR)/cpu_execute.v				\
+$(SRCDIR)/cpu_top.v			\
+$(SRCDIR)/cpu_decode.v			\
+$(SRCDIR)/cpu_execute.v			\
 $(SRCDIR)/cpu_memory_interface.v	\
 $(SRCDIR)/cpu_port_interface.v		\
 $(SRCDIR)/cpu_register_file.v		\
-$(SRCDIR)/cpu_writeback.v			\
-$(SRCDIR)/slurm16_soc.v				\
+$(SRCDIR)/cpu_writeback.v		\
+$(SRCDIR)/slurm16_soc.v			\
 $(SRCDIR)/interrupt_controller.v	\
+$(SRCDIR)/cpu_instruction_cache.v	\
 slurm16_ice40.v 
 
 ICEPACK = icepack
