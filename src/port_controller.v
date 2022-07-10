@@ -241,6 +241,7 @@ trace tr0 (
 	RD_TRACE
 );
 
+`ifndef WITHOUT_UART
 uart 
 #(.CLK_FREQ(CLOCK_FREQ), .BAUD_RATE(115200), .BITS(BITS)) u0
 (
@@ -252,8 +253,11 @@ uart
 	WR_UART,  // write memory  
 	uart_tx   // UART output   
 );
+`else
+assign DATA_OUT_UART = 16'd0;
+`endif
 
-
+`ifndef WITHOUT_GPIO
 gpio
 #(.CLK_FREQ(CLOCK_FREQ), .BITS(BITS)) g0
 (
@@ -267,9 +271,12 @@ gpio
 	gpio_in, // input pins
 	gpio_int
 );
+`else
+assign DATA_OUT_GPIO = 16'd0;
+`endif
 
 
-
+`ifndef WITHOUT_PWM
 pwm_led
 #(.CLK_FREQ(CLOCK_FREQ), .BITS(BITS)) led0
 (
@@ -283,8 +290,12 @@ pwm_led
 	led_g,
 	led_b
 );
+`else
+assign DATA_OUT_PWM = 16'd0;
+`endif
 
 
+`ifndef WITHOUT_GFX
 gfx #(.BITS(BITS), .BANK_ADDRESS_BITS(14), .ADDRESS_BITS(12)) gfx0
 (
 	.CLK(CLK),
@@ -317,8 +328,11 @@ gfx #(.BITS(BITS), .BANK_ADDRESS_BITS(14), .ADDRESS_BITS(12)) gfx0
 	.irq_hsync(irq_hsync),
 	.irq_vsync(irq_vsync)
 );
+`else
+assign DATA_OUT_GFX = 16'd0;
+`endif
 
-
+`ifndef WITHOUT_AUDIO
 audio
 #(.BITS(BITS), .ADDRESS_BITS(12), .CLK_FREQ(CLOCK_FREQ)) aud0
 (
@@ -334,8 +348,11 @@ audio
 	i2s_data,
 	irq_audio
 );
+`else
+assign DATA_OUT_AUDIO = 16'd0;
+`endif
 
-
+`ifndef WITHOUT_SPI_FLASH
 spi_flash
 #(.BITS(BITS), .ADDRESS_BITS(8), .CLK_FREQ(CLOCK_FREQ)) spi_flash0
 (
@@ -355,7 +372,11 @@ spi_flash
 	fl_memory_data,
 	irq_spi_flash
 );
+`else
+assign DATA_OUT_SPI = 16'd0;
+`endif
 
+`ifndef WITHOUT_INTERRUPT_CONTROLLER
 interrupt_controller #(.BITS(BITS)) irq0
 (
 	CLK,	
@@ -372,10 +393,16 @@ interrupt_controller #(.BITS(BITS)) irq0
 	interrupt,	
 	irq
 );
+`else
+assign DATA_OUT_INTERRUPT = 16'd0;
+assign interrupt = 1'b0;
+assign irq = 4'b0000;
+`endif
 
 // Scratchpad RAM
 
-/*bram #(.BITS(16), .ADDRESS_BITS(9)) scr0
+`ifndef WITHOUT_SCRATCH_PAD
+bram #(.BITS(16), .ADDRESS_BITS(9)) scr0
 (
 	CLK,
 	ADDRESS[8:0],
@@ -383,6 +410,9 @@ interrupt_controller #(.BITS(BITS)) irq0
 	ADDRESS[8:0],
 	DATA_IN,
 	WR_SCRATCH
-);*/
+);
+`else
+assign DATA_OUT_SCRATCH = 16'd0;
+`endif
 
 endmodule

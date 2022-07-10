@@ -1,0 +1,49 @@
+set_io UART_TX		46
+
+# 13b
+set_io GPIO1		6	
+
+# 6A
+set_io GPIO2	    2
+
+set_io RED_LED		41
+set_io GREEN_LED	40
+set_io BLUE_LED		39
+
+set_io BB[0] 12
+set_io BB[1] 21
+set_io BB[2] 13
+set_io BB[3] 20
+
+set_io RR[0] 4
+set_io RR[1] 3
+set_io RR[2] 48
+set_io RR[3] 45
+
+set_io GG[0] 47
+set_io GG[1] 11
+set_io GG[2] 10
+set_io GG[3] 9
+
+set_io HS 19
+set_io VS 18
+
+set_io CLK12 35
+
+set_io UP_BUTTON		28
+set_io DOWN_BUTTON		32
+set_io LEFT_BUTTON		43	
+set_io RIGHT_BUTTON		37
+set_io A_BUTTON		    31
+set_io B_BUTTON		    34
+
+set_io DAC_MCLK			38	
+set_io DAC_LRCLK		27
+set_io DAC_SCLK			42
+set_io DAC_SDIN			26
+
+set_io SPI_FLASH_MOSI	14
+set_io SPI_FLASH_MISO	17
+set_io SPI_FLASH_SCK	15
+set_io SPI_FLASH_CSb	16
+
