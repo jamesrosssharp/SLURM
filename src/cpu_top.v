@@ -196,7 +196,7 @@ cpu_memory_interface mem0 (
 
 	bank_switch,
 
-	memory_address[14:0],	
+	memory_address,	
 	memory_out,
 	memory_in,
 	memory_wr_mask,
@@ -204,8 +204,6 @@ cpu_memory_interface mem0 (
 	memory_valid,		
 	memory_ready		
 );
-
-assign memory_address[15] = 1'b0;
 
 wire [REGISTER_BITS - 1:0] regA_sel;
 wire [REGISTER_BITS - 1:0] regB_sel;

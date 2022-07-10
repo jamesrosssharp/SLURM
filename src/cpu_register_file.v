@@ -38,15 +38,15 @@ begin
 	if (is_executing) begin
 		if (regOutA == 4'd0)
 			outA <= 16'h0;
-		else if (regOutA == regIn)
-			outA <= regIn_data;
+	//	else if (regOutA == regIn)
+	//		outA <= regIn_data;
 		else
 			outA <= regFileA[regOutA];
 
 		if (regOutB == 4'd0)
 			outB <= 16'h0;	
-		else if (regOutB == regIn)
-			outB <= regIn_data;
+	//	else if (regOutB == regIn)
+	//		outB <= regIn_data;
 		else
 			outB <= regFileB[regOutB];
 	end

@@ -198,29 +198,36 @@ begin
 		st_execute: begin 
 			pc_next = pc + 1;
 			
-			if ((data_memory_was_requested && (data_memory_success == 1'b0)) || 
-				(hazard_1 == 1'b1) || (hazard_2 == 1'b1) || (hazard_3 == 1'b1) ||
-				(invalidate_cache == 1'b1) || (cache_miss == 1'b1)) begin
-				pc_prev_next = pc_prev;
-				pc_next = pc_prev;
-			end	
+			//if ((data_memory_was_requested && (data_memory_success == 1'b0)) || 
+			//	(hazard_1 == 1'b1) || (hazard_2 == 1'b1) || (hazard_3 == 1'b1) ||
+			//	(invalidate_cache == 1'b1) || (cache_miss == 1'b1)) begin
+			//	pc_prev_next = pc_prev;
+			//	pc_next = pc_prev;
+			//end	
 		end			
-		st_wait_cache1:	;
+		st_wait_cache1:	begin
+			pc_prev_next = pc_prev;
+			pc_next = pc_prev;
+		end
 		st_wait_cache2:	;
 		st_stall_2:	;
 		st_stall_3:	;
 		st_stall_4:	;
-		st_mem_stall1:	;
+		st_mem_stall1:	
+		begin
+			pc_prev_next = pc_prev;
+			pc_next = pc_prev;
+		end
 		st_mem_stall2:	;
 		st_invalidate_cache:	;
 		st_wait_invalidate:	;
 	endcase
 
-	case (next_state)
+	/*case (next_state)
 		st_execute:
 			pc_next = pc + 1;
 		default: ;
-	endcase
+	endcase*/
 end
 
 // Pipeline

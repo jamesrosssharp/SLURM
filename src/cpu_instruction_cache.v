@@ -36,20 +36,20 @@ module cpu_instruction_cache #(
 
 wire [31:0] data_out;
 
-assign address_data = {data_out[31:17], 1'b0, data_out[15:0]};
+assign address_data = data_out;
 
 localparam st_init 		= 2'd0;
 localparam st_invalidate 	= 2'd1;
 localparam st_invalidate_done 	= 2'd2;
 localparam st_execute		= 2'd3;
 
-reg [1:0] state, next_state;
+reg [1:0] state = st_execute, next_state;
 
 reg [CACHE_DEPTH_BITS - 1 : 0] invalid_addr, invalid_addr_next;
 
-wire [CACHE_DEPTH_BITS - 1 : 0] bram_wr_addr = (state == st_execute) ? memory_requested_address[7:0] : invalid_addr;
-wire  [CACHE_WIDTH_BITS - 1 : 0 ] bram_wr_data = (state == st_execute) ? {memory_requested_address, 1'b0, memory_data} : {CACHE_WIDTH_BITS{1'b1}};  
-wire wr_bram = (state == st_execute && memory_success) || (state == st_invalidate);
+wire [CACHE_DEPTH_BITS - 1 : 0] bram_wr_addr = memory_requested_address[7:0];
+wire  [CACHE_WIDTH_BITS - 1 : 0 ] bram_wr_data = {memory_requested_address, 1'b0, memory_data};  
+wire wr_bram = (state == st_execute && memory_success);
 
 assign invalidation_done = (state == st_invalidate_done);
 
@@ -65,8 +65,7 @@ bram
 );
 
 reg [14:0] address_x, address_xx;
-reg [7:0] mem_address_x, mem_address_x_prev;
-reg [14:0] mem_address_xx, mem_address_xxx;
+reg [7:0] mem_address_x;
 assign memory_address = {address_xx[14:8], mem_address_x};
 assign memory_rd_req = (state == st_execute);	// Always request memory when we are in "execute"
 
@@ -77,9 +76,6 @@ begin
 		address_xx <= 15'd0;
 		address_x <= 15'd0;
 		mem_address_x <= 8'd0;
-		mem_address_x_prev <= 8'd0;
-		mem_address_xx <= 15'd0;
-		mem_address_xxx <= 15'd0;
 	end
 	else begin
 		address_xx 	<= address_x;
@@ -87,61 +83,19 @@ begin
 
 		// There is potential for the cache to get stuck here. TODO:
 		// Fix
-		mem_address_xx 	<= memory_address;
-		mem_address_xxx <= mem_address_xx;
 		
-		if ((address_x != mem_address_xx) && (address_x != mem_address_xxx) &&  
-		    (address_x != address_xx) && cache_miss) begin	// If we just got a new request, then we will service it.
+		if ((address_x != address_xx) && cache_miss) begin	// If we just got a new request, then we will service it.
 			mem_address_x 		<= address_x[7:0];
 			mem_address_x_prev 	<= mem_address_x;
 		end
 		// TODO: replace memory_success here 
 		else if ((mem_address_x != 8'hff) && (state == st_execute) && (memory_success == 1'b1)) begin
 			mem_address_x 		<= mem_address_x + 1;	// Fill cache in our spare time (we need to keep the memory pipeline filled)
-			mem_address_x_prev 	<= mem_address_x;
-		end
-		else if (memory_success == 1'b0) begin
-			mem_address_x 		<= mem_address_x_prev;	
 		end
 				
 	end
 end
 
 assign cache_miss = (address_x != data_out[31:17]) || (data_out[16] != 1'b0);	// bit 16 must be zero to be valid
-
-// State machine
-
-always @(posedge CLK)
-begin
-	if (RSTb == 1'b0) begin
-		state <= st_init;
-		invalid_addr <= {CACHE_DEPTH_BITS{1'b0}};
-	end else begin
-		state <= next_state;
-		invalid_addr <= invalid_addr_next;
-	end
-end
-
-always @(*)
-begin
-	next_state = state;
-	invalid_addr_next = invalid_addr;
-
-	case (state)
-		st_init:		
-			next_state = st_invalidate;
-		st_invalidate: begin
-			invalid_addr_next = invalid_addr + 1;
-			if (invalid_addr == (1 << CACHE_DEPTH_BITS) - 1)
-				next_state = st_invalidate_done;
-		end
-		st_invalidate_done:
-			next_state = st_execute;
-		st_execute:
-			if (invalidate_cache == 1'b1)
-				next_state = st_invalidate;
-	endcase
-
-end
 
 endmodule

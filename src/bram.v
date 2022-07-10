@@ -23,9 +23,9 @@ begin
 		RAM[WR_ADDRESS] <= DATA_IN;
 	end
 
-	if ((WR_ADDRESS == RD_ADDRESS) && (WR == 1'b1))
-		dout <= DATA_IN;
-	else
+//	if ((WR_ADDRESS == RD_ADDRESS) && (WR == 1'b1))
+//		dout <= DATA_IN;
+//	else
 		dout <= RAM[RD_ADDRESS];
 end
 
