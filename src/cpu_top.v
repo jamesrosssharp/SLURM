@@ -71,9 +71,6 @@ wire [14:0] cache_request_address;
 wire [31:0] cache_line;
 wire cache_miss; 
 
-// TODO: Move this to execute
-wire invalidate_cache = 1'b0;
-wire invalidation_done;
 
 wire data_memory_success;
 wire bank_switch;
@@ -125,9 +122,6 @@ cpu_pipeline #(.REGISTER_BITS(REGISTER_BITS), .BITS(BITS), .ADDRESS_BITS(ADDRESS
 	cache_line,
 	cache_miss, 
 
-	invalidate_cache, 
-	invalidation_done,
-
 	data_memory_success,
 	bank_switch,
 	data_memory_was_requested,
@@ -149,9 +143,6 @@ cpu_instruction_cache cache0 (
 	cache_request_address, 
 	cache_line,
 	cache_miss, 
-
-	invalidate_cache, 
-	invalidation_done, 
 
 	instruction_memory_address,
 	instruction_memory_rd_req,	

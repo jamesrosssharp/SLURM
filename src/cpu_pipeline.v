@@ -52,9 +52,6 @@ module cpu_pipeline #(parameter REGISTER_BITS = 4, BITS = 16, ADDRESS_BITS = 16)
 	input 	[31:0] cache_line,
 	input 	cache_miss, /* = 1 when the requested address doesn't match the address in the cache line */
 
-	input   invalidate_cache,  /* asserted in execute stage to invalidate cache */
-	input 	invalidation_done, /* asserted when cache has been invalidated */
-
 	/* data memory interface */
 	input	data_memory_success,
 	input   bank_switch,	/* memory interface is switching banks or otherwise busy */
@@ -79,8 +76,6 @@ localparam st_stall_3		= 4'd5;
 localparam st_stall_4		= 4'd6;
 localparam st_mem_stall1	= 4'd7;
 localparam st_mem_stall2	= 4'd8;
-localparam st_invalidate_cache	= 4'd9;
-localparam st_wait_invalidate	= 4'd10;
 
 reg [3:0] state, next_state;
 
@@ -89,7 +84,7 @@ assign is_executing = state == st_execute;
 always @(posedge CLK)
 begin
 	if (RSTb == 1'b0)
-		state <= st_wait_invalidate;
+		state <= st_execute;
 	else
 		state <= next_state;
 end
@@ -118,9 +113,6 @@ begin
 			else if (hazard_3 == 1'b1)
 				next_state = st_stall_4;	
 
-			// Cache invalidate?
-			else if (invalidate_cache == 1'b1)
-				next_state = st_invalidate_cache;
 			// Cache miss?
 			else if (cache_miss == 1'b1)
 				next_state = st_wait_cache1;
@@ -144,12 +136,6 @@ begin
 		st_mem_stall2:
 			if (bank_switch == 1'b0)
 				next_state = st_execute;	
-		st_invalidate_cache:
-			next_state = st_wait_invalidate;
-		st_wait_invalidate:
-			if (invalidation_done == 1'b1)
-				next_state = st_execute;
-
 	endcase
 
 	// In some states, we can jump out of the state if there is a memory
@@ -160,9 +146,7 @@ begin
 		st_wait_cache2,
 		st_stall_2,
 		st_stall_3,
-		st_stall_4,
-		st_invalidate_cache,
-		st_wait_invalidate:
+		st_stall_4:
 			if (data_memory_was_requested && (data_memory_success == 1'b0))
 				next_state = st_mem_stall1;
 		default: ;
@@ -219,8 +203,6 @@ begin
 			pc_next = pc_prev;
 		end
 		st_mem_stall2:	;
-		st_invalidate_cache:	;
-		st_wait_invalidate:	;
 	endcase
 
 	/*case (next_state)
@@ -379,8 +361,6 @@ begin
 		st_stall_4:	;
 		st_mem_stall1:	;
 		st_mem_stall2:	;
-		st_invalidate_cache:	;
-		st_wait_invalidate:	;
 	endcase
 
 end
