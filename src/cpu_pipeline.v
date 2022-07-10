@@ -77,16 +77,19 @@ localparam st_stall_4		= 4'd6;
 localparam st_mem_stall1	= 4'd7;
 localparam st_mem_stall2	= 4'd8;
 
-reg [3:0] state, next_state;
+reg [3:0] state, next_state, prev_state;
 
 assign is_executing = state == st_execute;
 
 always @(posedge CLK)
 begin
-	if (RSTb == 1'b0)
+	if (RSTb == 1'b0) begin
 		state <= st_execute;
-	else
+		prev_state <= st_halt;
+	end else begin
 		state <= next_state;
+		prev_state <= state;
+	end
 end
 
 always @(*)
@@ -182,12 +185,12 @@ begin
 		st_execute: begin 
 			pc_next = pc + 1;
 			
-			//if ((data_memory_was_requested && (data_memory_success == 1'b0)) || 
-			//	(hazard_1 == 1'b1) || (hazard_2 == 1'b1) || (hazard_3 == 1'b1) ||
-			//	(invalidate_cache == 1'b1) || (cache_miss == 1'b1)) begin
-			//	pc_prev_next = pc_prev;
-			//	pc_next = pc_prev;
-			//end	
+			if ((data_memory_was_requested && (data_memory_success == 1'b0)) || 
+				(hazard_1 == 1'b1) || (hazard_2 == 1'b1) || (hazard_3 == 1'b1) ||
+				(cache_miss == 1'b1)) begin
+				pc_prev_next = pc_prev;
+				pc_next = pc_prev;
+			end	
 		end			
 		st_wait_cache1:	begin
 			pc_prev_next = pc_prev;
@@ -327,7 +330,7 @@ begin
 		st_halt:	;
 		st_execute: begin 
 		
-			if (cache_miss == 1'b0) begin
+			if (cache_miss == 1'b0 && (state == prev_state)) begin
 				pipeline_stage0_r_next 	= cache_line[15:0];
 				pc_stage0_r_next 	= cache_line[31:17];
 			end else begin

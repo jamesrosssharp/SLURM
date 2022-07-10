@@ -23,9 +23,6 @@ wire [31:0] address_data;
 
 wire cache_miss;
 
-reg invalidate_cache = 1'b0;;
-wire invalidation_done;
-
 wire [14:0] instruction_memory_address;
 wire instruction_memory_read_req;
 
@@ -60,9 +57,6 @@ cpu_instruction_cache cache0 (
 	address_data,
 
 	cache_miss, /* = 1 when the requested address doesn't match the address in the cache line */
-
-	invalidate_cache, /* asserted by cpu to invalidate cache */
-	invalidation_done, /* asserted when cache has been invalidated */
 
 	/* ports to memory interface */
 	instruction_memory_address,
@@ -146,7 +140,7 @@ end
 
 
 initial begin
-	#27810 cache_request_address <= cache_request_address + 1;
+	#810 cache_request_address <= cache_request_address + 1;
 	#800 cache_request_address <= cache_request_address + 1;
 	#800 cache_request_address <= 15'd0;
 	#800 cache_request_address <= 15'h4000;

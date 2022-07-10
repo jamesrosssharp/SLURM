@@ -23,9 +23,6 @@ wire [31:0] address_data;
 
 wire cache_miss;
 
-reg invalidate_cache = 1'b0;;
-wire invalidation_done;
-
 wire [14:0] instruction_memory_address;
 wire instruction_memory_read_req;
 
@@ -41,12 +38,16 @@ reg data_memory_write_req = 1'b0;
 wire [15:0] data_memory_data_out;
 wire data_memory_success;	
 wire bank_sw;
-wire [14:0] memory_address;
+wire [15:0] memory_address;
 wire [15:0] data_out;
 reg  [15:0] data_in;
 wire valid;	
 reg  rdy;
 wire mem_wr;
+
+reg [1:0] data_memory_wr_mask = 2'b00;
+wire [1:0] wr_mask;
+wire [1:0] data_memory_wr_mask_out = 2'b00;
 
 wire data_memory_was_requested;
 
@@ -59,9 +60,6 @@ cpu_instruction_cache cache0 (
 	address_data,
 
 	cache_miss, /* = 1 when the requested address doesn't match the address in the cache line */
-
-	invalidate_cache, /* asserted by cpu to invalidate cache */
-	invalidation_done, /* asserted when cache has been invalidated */
 
 	/* ports to memory interface */
 	instruction_memory_address,
@@ -89,10 +87,12 @@ cpu_memory_interface mem0 (
 	data_memory_in,
 	data_memory_read_req,
 	data_memory_write_req,
-	
+	data_memory_wr_mask,
+
 	data_memory_data_out,
 	data_memory_success,	
 	data_memory_was_requested,
+	data_memory_wr_mask_out,
 
 	/* bank switch flag : asserted when switching bank. See notes above */
 	bank_sw,
@@ -100,6 +100,7 @@ cpu_memory_interface mem0 (
 	memory_address,	/* one more bit to output address - tied low */
 	data_out,
 	data_in,
+	wr_mask,
 	mem_wr,
 	valid,		/* request access to memory bank */
 	rdy		/* we have access to the bank */
@@ -126,9 +127,9 @@ reg	hazard_3;
 reg	hazard_reg0 = 4'd0;
 wire	modifies_flags0 = 1'b0;
 
-wire	hazard_reg1;
-wire	hazard_reg2;
-wire	hazard_reg3;
+wire	[3:0] hazard_reg1;
+wire	[3:0] hazard_reg2;
+wire	[3:0] hazard_reg3;
 
 wire	modifies_flags1;
 wire	modifies_flags2;
@@ -137,10 +138,12 @@ wire	modifies_flags3;
 reg	interrupt_flag_set = 1'b0;
 reg	interrupt_flag_clear = 1'b0;
 reg	halt	= 1'b0;
-reg	wake	= 1'b0;
+wire	wake;
 
 reg	interrupt = 1'b0;
 reg	[3:0] irq = 4'b000;
+
+wire 	is_executing;
 
 cpu_pipeline pip0
 (
@@ -187,19 +190,13 @@ cpu_pipeline pip0
 	address_data,
 	cache_miss, /* = 1 when the requested address doesn't match the address in the cache line */
 
-	invalidate_cache,  /* asserted in execute stage to invalidate cache */
-	invalidation_done, /* asserted when cache has been invalidated */
-
 	/* data memory interface */
 	data_memory_success,
 	bank_sw,	/* memory interface is switching banks or otherwise busy */
-	data_memory_was_requested
+	data_memory_was_requested,
+
+	is_executing
 );
-
-
-
-
-
 
 // Simulate memory arbiter
 
