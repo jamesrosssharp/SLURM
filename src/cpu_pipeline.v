@@ -79,7 +79,13 @@ localparam st_mem_stall2	= 4'd8;
 
 reg [3:0] state, next_state, prev_state;
 
-assign is_executing = state == st_execute;
+assign is_executing = (state == st_execute) ||
+		      (state == st_wait_cache1) ||
+		      (state == st_wait_cache2) ||
+		      (state == st_stall_2) ||
+		      (state == st_stall_3) ||
+		      (state == st_stall_4)
+			;
 
 always @(posedge CLK)
 begin
@@ -110,11 +116,11 @@ begin
 
 			// Hazard?
 			else if (hazard_1 == 1'b1)
-				next_state = st_stall_2;
-			else if (hazard_2 == 1'b1)
 				next_state = st_stall_3;
-			else if (hazard_3 == 1'b1)
-				next_state = st_stall_4;	
+			else if (hazard_2 == 1'b1)
+				next_state = st_stall_4;
+		//	else if (hazard_3 == 1'b1)
+		//		next_state = st_stall_4;	
 
 			// Cache miss?
 			else if (cache_miss == 1'b1)
@@ -162,15 +168,19 @@ reg [14:0] pc, pc_next, pc_prev, pc_prev_next;
 
 assign cache_request_address = pc;
 
+reg load_pc_r;
+
 always @(posedge CLK)
 begin
 	if (RSTb == 1'b0) begin
 		pc_prev <= 15'd0;
 		pc <= 15'd0;
+		load_pc_r <= 1'b0;
 	end
 	else begin
 		pc <= pc_next;
 		pc_prev <= pc_prev_next;
+		load_pc_r <= load_pc;
 	end
 end
 
@@ -208,11 +218,9 @@ begin
 		st_mem_stall2:	;
 	endcase
 
-	/*case (next_state)
-		st_execute:
-			pc_next = pc + 1;
-		default: ;
-	endcase*/
+	if (load_pc)
+		pc_next = new_pc[15:1];
+
 end
 
 // Pipeline
@@ -330,12 +338,12 @@ begin
 		st_halt:	;
 		st_execute: begin 
 		
-			if (cache_miss == 1'b0 && (state == prev_state)) begin
+			if (cache_miss == 1'b0 && (state == prev_state) && (load_pc_r == 1'b0)) begin
 				pipeline_stage0_r_next 	= cache_line[15:0];
-				pc_stage0_r_next 	= cache_line[31:17];
+				pc_stage0_r_next 	= cache_line[31:17] + 1;
 			end else begin
 				pipeline_stage0_r_next  = NOP_INSTRUCTION;
-				pc_stage0_r_next	= pc_prev;
+				pc_stage0_r_next	= pc;
 			end
 
 			pipeline_stage1_r_next 	= pipeline_stage0_r;
@@ -357,20 +365,95 @@ begin
 			pc_stage4_r_next 	= pc_stage3_r;
 	
 		end			
-		st_wait_cache1:	;
-		st_wait_cache2:	;
-		st_stall_2:	;
-		st_stall_3:	;
-		st_stall_4:	;
+		st_wait_cache1,
+		st_wait_cache2,
+		st_stall_2,
+		st_stall_3,
+		st_stall_4: begin	
+			pipeline_stage0_r_next  = NOP_INSTRUCTION;
+			pc_stage0_r_next	= pc_prev;
+		
+			pipeline_stage1_r_next 	= pipeline_stage1_r;
+			pc_stage1_r_next 	= pc_stage1_r;
+			hazard_reg1_r_next 	= hazard_reg1;
+			modifies_flags1_r_next 	= modifies_flags1;
+
+			pipeline_stage2_r_next 	= NOP_INSTRUCTION;
+			pc_stage2_r_next 	= pc_stage1_r;
+			hazard_reg2_r_next 	= R0;
+			modifies_flags2_r_next 	= 1'b0;
+
+			pipeline_stage3_r_next 	= pipeline_stage2_r;
+			pc_stage3_r_next 	= pc_stage2_r;
+			hazard_reg3_r_next 	= hazard_reg2_r;
+			modifies_flags3_r_next 	= modifies_flags2_r;
+
+			pipeline_stage4_r_next 	= pipeline_stage3_r;
+			pc_stage4_r_next 	= pc_stage3_r;
+	
+		end
 		st_mem_stall1:	;
 		st_mem_stall2:	;
 	endcase
+
+	if (load_pc == 1'b1) begin
+			pipeline_stage0_r_next  = NOP_INSTRUCTION;
+			pc_stage0_r_next	= new_pc[15:1];
+		
+			pipeline_stage1_r_next 	= NOP_INSTRUCTION;
+			pc_stage1_r_next 	= new_pc[15:1];
+			hazard_reg1_r_next 	= R0;
+			modifies_flags1_r_next 	= 1'b0;
+
+			pipeline_stage2_r_next 	= NOP_INSTRUCTION;
+			pc_stage2_r_next 	= new_pc[15:1];
+			hazard_reg2_r_next 	= R0;
+			modifies_flags2_r_next 	= 1'b0;	
+	end
 
 end
 
 // Imm reg
 
+reg [11:0] imm_r;
+reg [11:0] imm_r_next;
 
+reg [BITS - 1:0] imm_stage2_r;
+reg [BITS - 1:0] imm_stage2_r_next;
+
+assign imm_reg = imm_stage2_r;
+
+always @(posedge CLK)
+begin
+	if (RSTb == 1'b0) begin
+		imm_r 		<= 12'd0;
+		imm_stage2_r 	<= 16'd0;
+	end else begin
+		imm_r 		<= imm_r_next;
+		imm_stage2_r 	<= imm_stage2_r_next;
+	end
+end
+
+always @(*)
+begin
+	imm_r_next = {12{1'b0}};
+
+	// Don't change on a nop
+	if ((pipeline_stage1_r == NOP_INSTRUCTION) && !load_pc) 
+		imm_r_next = imm_r;
+
+	imm_stage2_r_next = imm_stage2_r;
+
+	if (prev_state == st_execute)
+		imm_stage2_r_next 	= {imm_r, imm_lo_from_ins(pipeline_stage1_r)};
+
+	casex (pipeline_stage1_r)
+		INSTRUCTION_CASEX_IMM:   	/* imm */
+			/* there might be a spurious imm in p1 on a branch */
+			imm_r_next 	= imm_r_from_ins(pipeline_stage1_r);
+		default: ;
+	endcase
+end
 
 // Interrupt flag
 
