@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Mon Jul 11 11:55:25 2022
+[*] Tue Jul 12 08:02:26 2022
 [*]
 [dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/module_testbenches/cpu_top/dump.vcd"
-[dumpfile_mtime] "Mon Jul 11 11:48:03 2022"
-[dumpfile_size] 1703593
+[dumpfile_mtime] "Tue Jul 12 08:02:09 2022"
+[dumpfile_size] 1744974
 [savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/module_testbenches/cpu_top/config.gtkw"
-[timestart] 459
+[timestart] 5044
 [size] 1775 954
 [pos] -1 -1
-*-9.000000 3450 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-9.000000 6450 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tb.
 [treeopen] tb.top0.
 [sst_width] 319
@@ -47,7 +47,6 @@ tb.top0.cache0.data_out[31:0]
 @28
 tb.top0.mem0.data_memory_wr_mask[1:0]
 tb.top0.mem0.mem_wr
-@29
 tb.top0.mem0.wr_mask[1:0]
 @200
 -
@@ -58,6 +57,9 @@ tb.top0.pip0.load_pc
 tb.top0.cache0.cache_miss
 @22
 tb.top0.pip0.pc[14:0]
+tb.top0.pip0.pc_next[14:0]
+@23
+tb.top0.pip0.pc_prev[14:0]
 @200
 -
 @22

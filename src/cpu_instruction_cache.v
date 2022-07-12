@@ -28,7 +28,10 @@ module cpu_instruction_cache #(
 	
 	input memory_success,	/* Arbiter will assert this when we our request was successful */
 	input [14:0]  memory_requested_address,	/* Requested address will come back to us */ 
-	input [15:0]  memory_data /* our data */
+	input [15:0]  memory_data, /* our data */
+
+	input will_queue
+
 );
 
 wire [31:0] data_out;
@@ -73,7 +76,7 @@ begin
 			mem_address_x 		<= {1'b0, address_x[7:0]};
 			mem_rd_req_r <= 1'b1;
 		end
-		else if ((mem_address_x[8] != 1'b1) && (memory_success == 1'b1)) begin
+		else if ((mem_address_x[8] != 1'b1) && (will_queue == 1'b1)) begin
 			mem_address_x 		<= mem_address_x + 1;	// Fill cache in our spare time (we need to keep the memory pipeline filled)
 			mem_rd_req_r <= 1'b1;
 		end

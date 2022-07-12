@@ -42,7 +42,6 @@ module cpu_pipeline #(parameter REGISTER_BITS = 4, BITS = 16, ADDRESS_BITS = 16)
 	input				interrupt_flag_set,	/* cpu interrupt flag set */
 	input				interrupt_flag_clear,	/* cpu interrupt flag clear */
 	input				halt,
-	output 				wake,
 
 	input				interrupt,		/* interrupt line from interrupt controller */	
 	input  [3:0]			irq,			/* irq from interrupt controller */
@@ -104,7 +103,7 @@ begin
 
 	case (state)
 		st_halt:
-			if (wake == 1'b1)
+			if (interrupt == 1'b1)
 				next_state = st_execute;
 		st_execute: begin
 			// In order of priority (each item higher up the chain
@@ -116,11 +115,11 @@ begin
 
 			// Hazard?
 			else if (hazard_1 == 1'b1)
-				next_state = st_stall_3;
+				next_state = st_stall_2;
 			else if (hazard_2 == 1'b1)
-				next_state = st_stall_4;
-		//	else if (hazard_3 == 1'b1)
-		//		next_state = st_stall_4;	
+				next_state = st_stall_3;
+			else if (hazard_3 == 1'b1)
+				next_state = st_stall_4;	
 
 			// Cache miss?
 			else if (cache_miss == 1'b1)
@@ -195,8 +194,10 @@ begin
 		st_execute: begin 
 			pc_next = pc + 1;
 			
-			if ((data_memory_was_requested && (data_memory_success == 1'b0)) || 
-				(hazard_1 == 1'b1) || (hazard_2 == 1'b1) || (hazard_3 == 1'b1) ||
+			if ((data_memory_was_requested == 1'b1) && (data_memory_success == 1'b0)) begin
+				pc_next = pc_stage3_r;
+				pc_prev_next = pc_stage3_r;
+			end else if	((hazard_1 == 1'b1) || (hazard_2 == 1'b1) || (hazard_3 == 1'b1) ||
 				(cache_miss == 1'b1)) begin
 				pc_prev_next = pc_prev;
 				pc_next = pc_prev;
@@ -252,11 +253,15 @@ assign pipeline_stage2 = pipeline_stage2_r;
 assign pipeline_stage3 = pipeline_stage3_r;
 assign pipeline_stage4 = pipeline_stage4_r;
 
-assign pc_stage4 = {pc_stage4_r, 1'b0};
+assign pc_stage4 = {pc_stage4_r + 15'd1, 1'b0};
 
 assign hazard_reg1 = hazard_reg1_r;
 assign hazard_reg2 = hazard_reg2_r;
 assign hazard_reg3 = hazard_reg3_r;
+
+assign modifies_flags1 = modifies_flags1_r;
+assign modifies_flags2 = modifies_flags2_r;
+assign modifies_flags3 = modifies_flags3_r;
 
 
 always @(posedge CLK)
@@ -340,10 +345,10 @@ begin
 		
 			if (cache_miss == 1'b0 && (state == prev_state) && (load_pc_r == 1'b0)) begin
 				pipeline_stage0_r_next 	= cache_line[15:0];
-				pc_stage0_r_next 	= cache_line[31:17] + 1;
+				pc_stage0_r_next 	= cache_line[31:17];
 			end else begin
 				pipeline_stage0_r_next  = NOP_INSTRUCTION;
-				pc_stage0_r_next	= pc;
+				pc_stage0_r_next	= pc_prev;
 			end
 
 			pipeline_stage1_r_next 	= pipeline_stage0_r;
@@ -363,7 +368,34 @@ begin
 
 			pipeline_stage4_r_next 	= pipeline_stage3_r;
 			pc_stage4_r_next 	= pc_stage3_r;
-	
+
+
+			if ((data_memory_was_requested == 1'b1) && (data_memory_success == 1'b0)) begin
+
+				pipeline_stage0_r_next  = NOP_INSTRUCTION;
+				pc_stage0_r_next	= pc_prev;
+			
+				pipeline_stage1_r_next 	= NOP_INSTRUCTION;
+				pc_stage1_r_next 	= pc_prev;
+				hazard_reg1_r_next 	= R0;
+				modifies_flags1_r_next 	= 1'b0;
+
+				pipeline_stage2_r_next 	= pipeline_stage4_r;
+				pc_stage2_r_next 	= pc_stage4_r;
+				hazard_reg2_r_next 	= R0;
+				modifies_flags2_r_next 	= 1'b0;
+
+				pipeline_stage3_r_next 	= NOP_INSTRUCTION;
+				pc_stage3_r_next 	= pc_prev;
+				hazard_reg3_r_next 	= R0;
+				modifies_flags3_r_next 	= 1'b0;
+
+				pipeline_stage4_r_next 	= NOP_INSTRUCTION;
+				pc_stage4_r_next 	= pc_prev;
+		
+			end
+
+
 		end			
 		st_wait_cache1,
 		st_wait_cache2,
@@ -391,9 +423,60 @@ begin
 			pipeline_stage4_r_next 	= pipeline_stage3_r;
 			pc_stage4_r_next 	= pc_stage3_r;
 	
+	
+			if ((data_memory_was_requested == 1'b1) && (data_memory_success == 1'b0)) begin
+
+				pipeline_stage0_r_next  = NOP_INSTRUCTION;
+				pc_stage0_r_next	= pc_prev;
+			
+				pipeline_stage1_r_next 	= NOP_INSTRUCTION;
+				pc_stage1_r_next 	= pc_prev;
+				hazard_reg1_r_next 	= R0;
+				modifies_flags1_r_next 	= 1'b0;
+
+				pipeline_stage2_r_next 	= pipeline_stage4_r;
+				pc_stage2_r_next 	= pc_stage4_r;
+				hazard_reg2_r_next 	= R0;
+				modifies_flags2_r_next 	= 1'b0;
+
+				pipeline_stage3_r_next 	= NOP_INSTRUCTION;
+				pc_stage3_r_next 	= pc_prev;
+				hazard_reg3_r_next 	= R0;
+				modifies_flags3_r_next 	= 1'b0;
+
+				pipeline_stage4_r_next 	= NOP_INSTRUCTION;
+				pc_stage4_r_next 	= pc_prev;
+		
+			end
+
+
+
+	
 		end
-		st_mem_stall1:	;
-		st_mem_stall2:	;
+		st_mem_stall1,
+		st_mem_stall2:	begin
+				pipeline_stage0_r_next  = NOP_INSTRUCTION;
+				pc_stage0_r_next	= pc_stage0_r;
+			
+				pipeline_stage1_r_next 	= NOP_INSTRUCTION;
+				pc_stage1_r_next 	= pc_stage1_r;
+				hazard_reg1_r_next 	= R0;
+				modifies_flags1_r_next 	= 1'b0;
+
+				pipeline_stage2_r_next 	= pipeline_stage2_r;
+				pc_stage2_r_next 	= pc_stage2_r;
+				hazard_reg2_r_next 	= R0;
+				modifies_flags2_r_next 	= 1'b0;
+
+				pipeline_stage3_r_next 	= NOP_INSTRUCTION;
+				pc_stage3_r_next 	= pc_stage3_r;
+				hazard_reg3_r_next 	= R0;
+				modifies_flags3_r_next 	= 1'b0;
+
+				pipeline_stage4_r_next 	= NOP_INSTRUCTION;
+				pc_stage4_r_next 	= pc_stage4_r;
+		
+		end
 	endcase
 
 	if (load_pc == 1'b1) begin
@@ -439,7 +522,7 @@ begin
 	imm_r_next = {12{1'b0}};
 
 	// Don't change on a nop
-	if ((pipeline_stage1_r == NOP_INSTRUCTION) && !load_pc) 
+	if ((pipeline_stage1_r == NOP_INSTRUCTION) && (load_pc == 1'b0)) 
 		imm_r_next = imm_r;
 
 	imm_stage2_r_next = imm_stage2_r;
@@ -453,6 +536,11 @@ begin
 			imm_r_next 	= imm_r_from_ins(pipeline_stage1_r);
 		default: ;
 	endcase
+
+	if (load_pc_r == 1'b1) begin
+		imm_stage2_r_next = 16'd0;
+		imm_r = 12'd0;
+	end
 end
 
 // Interrupt flag

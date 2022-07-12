@@ -65,7 +65,6 @@ wire modifies_flags3;
 wire interrupt_flag_set;
 wire interrupt_flag_clear;
 wire halt;
-wire wake;
 
 wire [14:0] cache_request_address;
 wire [31:0] cache_line;
@@ -113,7 +112,6 @@ cpu_pipeline #(.REGISTER_BITS(REGISTER_BITS), .BITS(BITS), .ADDRESS_BITS(ADDRESS
 	interrupt_flag_set,
 	interrupt_flag_clear,
 	halt,
-	wake,
 
 	interrupt,	
 	irq,	
@@ -135,6 +133,7 @@ wire instruction_memory_success;
 wire [14:0] instruction_memory_requested_address;
 wire [15:0] instruction_memory_data;
 
+wire instruction_will_queue;
 
 cpu_instruction_cache cache0 (
 	CLK,
@@ -149,7 +148,9 @@ cpu_instruction_cache cache0 (
 	
 	instruction_memory_success,	
 	instruction_memory_requested_address,	
-	instruction_memory_data 
+	instruction_memory_data,
+
+	instruction_will_queue
 );
 
 wire load_memory;
@@ -173,6 +174,7 @@ cpu_memory_interface mem0 (
 	instruction_memory_data,
 	instruction_memory_requested_address, 
 	instruction_memory_success,	
+	instruction_will_queue,
 
 	load_store_address[15:1],
 	store_memory_data,
@@ -193,7 +195,9 @@ cpu_memory_interface mem0 (
 	memory_wr_mask,
 	memory_wr,
 	memory_valid,		
-	memory_ready		
+	memory_ready,
+
+	halt	
 );
 
 wire [REGISTER_BITS - 1:0] regA_sel;

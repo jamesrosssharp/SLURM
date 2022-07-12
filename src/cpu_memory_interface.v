@@ -34,6 +34,8 @@ module cpu_memory_interface #(parameter BITS = 16, ADDRESS_BITS = 15)  (
 	output [BITS - 1: 0]	     	instruction_memory_data,	/* data output */
 	output [ADDRESS_BITS - 1: 0]	instruction_memory_address_out, /* requested address pass back */
 	output 			     	instruction_memory_success,	/* 1 = read successful, 0 = read failed */
+	output				instruction_will_queue,
+
 
 	/* data interface */
 	input  [ADDRESS_BITS - 1: 0] 	data_memory_address,
@@ -56,7 +58,9 @@ module cpu_memory_interface #(parameter BITS = 16, ADDRESS_BITS = 15)  (
 	output [1:0]			wr_mask,
 	output				mem_wr,
 	output				valid,		/* request access to memory bank */
-	input				rdy		/* we have access to the bank */
+	input				rdy,		/* we have access to the bank */
+
+	input				halt
 
 );
 
@@ -131,6 +135,10 @@ begin
 	end
 end
 
+reg instruction_will_queue_r;
+
+assign instruction_will_queue = instruction_will_queue_r;
+
 always @(*)
 begin
 	next_state = state;
@@ -140,13 +148,29 @@ begin
 	flags_stage_1_next 	= flags_stage_1;	
 	data_wr_mask_stage_1_next = data_wr_mask_stage_1;
 
+	instruction_will_queue_r = 1'b0;
+
 	case (state)
-		st_idle:
+		st_idle: begin
 			if (data_memory_read_req || data_memory_write_req || instruction_memory_read_req)
 			       next_state = st_request_bank;	
-		st_request_bank:
-       			if (rdy == 1'b1)
+			if (data_memory_read_req || data_memory_write_req) begin
+				flags_stage_1_next[0] 	= data_memory_read_req;
+				flags_stage_1_next[1] 	= 1'b0;
+				flags_stage_1_next[2] 	= 1'b1;
+			end
+		end
+		st_request_bank: begin
+       		
+			if (data_memory_read_req || data_memory_write_req) begin
+				flags_stage_1_next[0] 	= data_memory_read_req;
+				flags_stage_1_next[1] 	= 1'b0;
+				flags_stage_1_next[2] 	= 1'b1;
+			end
+		
+			if (rdy == 1'b1)
 				next_state = st_execute;
+		end
 		st_execute:
 			if (bank_switch_required) begin
 
@@ -179,17 +203,27 @@ begin
 
 				data_wr_mask_stage_1_next = 2'b00;
 
+				instruction_will_queue_r = 1'b1;
+
 			end else begin
 
 				address_stage_1_next 	= {ADDRESS_BITS{1'b0}};
 				flags_stage_1_next 	= 3'b000;
 				data_wr_mask_stage_1_next = 2'b00;
 
-				next_state = st_idle;
+				if (halt == 1'b1)
+					next_state = st_idle;
 			end
-		st_bank_switch:
+		st_bank_switch: begin
 			// Wait state
 			next_state = st_request_bank;
+			if (data_memory_read_req || data_memory_write_req) begin
+				flags_stage_1_next[0] 	= data_memory_read_req;
+				flags_stage_1_next[1] 	= 1'b0;
+				flags_stage_1_next[2] 	= 1'b1;
+			end
+		end
+
 
 	endcase
 end
