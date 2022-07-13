@@ -75,6 +75,8 @@ localparam st_stall_3		= 4'd5;
 localparam st_stall_4		= 4'd6;
 localparam st_mem_stall1	= 4'd7;
 localparam st_mem_stall2	= 4'd8;
+localparam st_mem_stall3	= 4'd9;
+localparam st_mem_stall4	= 4'd10;
 
 reg [3:0] state, next_state, prev_state;
 
@@ -136,6 +138,10 @@ begin
 			// Wait state while PC returns to previous value
 			next_state = st_mem_stall2;
 		st_mem_stall2:
+			next_state = st_mem_stall3;
+		st_mem_stall3:
+			next_state = st_mem_stall4;
+		st_mem_stall4:
 			if (bank_switch == 1'b0)
 				next_state = st_execute;	
 	endcase
@@ -148,7 +154,8 @@ begin
 		st_wait_cache2,
 		st_stall_2,
 		st_stall_3,
-		st_stall_4:
+		st_stall_4,
+		st_mem_stall4:
 			if (data_memory_was_requested && (data_memory_success == 1'b0))
 				next_state = st_mem_stall1;
 		default: ;
@@ -215,10 +222,20 @@ begin
 		pc_prev_next = new_pc[15:1];
 	end
 
-	if ((data_memory_was_requested == 1'b1) && (data_memory_success == 1'b0)) begin
-		pc_next = pc_stage3_r;
-		pc_prev_next = pc_stage3_r;
-	end 
+	case (state)
+		st_execute,  st_wait_cache1, 
+                  st_wait_cache2,
+                  st_stall_2,     
+                  st_stall_3,
+                  st_stall_4,
+		  st_mem_stall4:
+
+		if ((data_memory_was_requested == 1'b1) && (data_memory_success == 1'b0)) begin
+			pc_next = pc_stage3_r;
+			pc_prev_next = pc_stage3_r;
+		end
+	       default: ;
+       endcase	       
 
 end
 
@@ -401,24 +418,26 @@ begin
 
 		end
 		st_mem_stall1,
-		st_mem_stall2:	begin
+		st_mem_stall2,
+		st_mem_stall3,
+		st_mem_stall4:	begin
 				pipeline_stage0_r_next  = NOP_INSTRUCTION;
 				pc_stage0_r_next	= pc_stage0_r;
 			
-				pipeline_stage1_r_next 	= NOP_INSTRUCTION;
-				pc_stage1_r_next 	= pc_stage1_r;
-				hazard_reg1_r_next 	= R0;
-				modifies_flags1_r_next 	= 1'b0;
+				pipeline_stage1_r_next 	= pipeline_stage0_r;
+				pc_stage1_r_next 	= pc_stage0_r;
+				hazard_reg1_r_next 	= hazard_reg0;
+				modifies_flags1_r_next 	= modifies_flags0;
 
-				pipeline_stage2_r_next 	= NOP_INSTRUCTION;
-				pc_stage2_r_next 	= pc_stage2_r;
-				hazard_reg2_r_next 	= R0;
-				modifies_flags2_r_next 	= 1'b0;
+				pipeline_stage2_r_next 	= pipeline_stage1_r;
+				pc_stage2_r_next 	= pc_stage1_r;
+				hazard_reg2_r_next 	= hazard_reg1_r;
+				modifies_flags2_r_next 	= modifies_flags1_r;
 
 				pipeline_stage3_r_next 	= pipeline_stage2_r;
 				pc_stage3_r_next 	= pc_stage2_r;
-				hazard_reg3_r_next 	= R0;
-				modifies_flags3_r_next 	= 1'b0;
+				hazard_reg3_r_next 	= hazard_reg2_r;
+				modifies_flags3_r_next 	= modifies_flags2_r;
 
 				pipeline_stage4_r_next 	= pipeline_stage3_r;
 				pc_stage4_r_next 	= pc_stage3_r;
@@ -446,19 +465,20 @@ begin
                   st_wait_cache2,
                   st_stall_2,     
                   st_stall_3,
-                  st_stall_4:
+                  st_stall_4,
+		  st_mem_stall4:
 
 			if ((data_memory_was_requested == 1'b1) && (data_memory_success == 1'b0)) begin
 
 				pipeline_stage0_r_next  = NOP_INSTRUCTION;
 				pc_stage0_r_next	= pc_stage3_r;
 			
-				pipeline_stage1_r_next 	= NOP_INSTRUCTION;
-				pc_stage1_r_next 	= pc_stage3_r;
+				pipeline_stage1_r_next 	= pipeline_stage4_r;
+				pc_stage1_r_next 	= pc_stage4_r;
 				hazard_reg1_r_next 	= R0;
 				modifies_flags1_r_next 	= 1'b0;
 
-				pipeline_stage2_r_next 	= pipeline_stage4_r;
+				pipeline_stage2_r_next 	= NOP_INSTRUCTION;
 				pc_stage2_r_next 	= pc_stage4_r;
 				hazard_reg2_r_next 	= R0;
 				modifies_flags2_r_next 	= 1'b0;

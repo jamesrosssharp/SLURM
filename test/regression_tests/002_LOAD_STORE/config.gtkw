@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Wed Jul 13 10:53:39 2022
+[*] Wed Jul 13 21:50:36 2022
 [*]
 [dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/002_LOAD_STORE/dump.vcd"
-[dumpfile_mtime] "Wed Jul 13 10:52:51 2022"
-[dumpfile_size] 13476306
+[dumpfile_mtime] "Wed Jul 13 21:50:06 2022"
+[dumpfile_size] 15891356
 [savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/002_LOAD_STORE/config.gtkw"
 [timestart] 145701000
 [size] 1920 996
 [pos] -1 -1
-*-19.194408 147500000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-19.194408 147800000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tb.
 [treeopen] tb.cpu0.
 [treeopen] tb.cpu0.cpu0.
@@ -32,6 +32,12 @@ tb.cpu0.cpu0.memory_out[15:0]
 tb.cpu0.cpu0.memory_wr
 tb.cpu0.cpu0.memory_valid
 tb.cpu0.cpu0.memory_ready
+@22
+tb.cpu0.cpu0.mem0.address_stage_1[14:0]
+@29
+tb.cpu0.cpu0.mem0.state[1:0]
+@22
+tb.cpu0.cpu0.mem0.address_stage_2[14:0]
 @200
 -
 @22
@@ -74,7 +80,6 @@ tb.cpu0.cpu0.pip0.pc_stage0_r[14:0]
 tb.cpu0.cpu0.pip0.pc_stage1_r[14:0]
 tb.cpu0.cpu0.pip0.pc_stage2_r[14:0]
 tb.cpu0.cpu0.pip0.pc_stage3_r[14:0]
-@23
 tb.cpu0.cpu0.pip0.pc_stage4[15:0]
 @200
 -
