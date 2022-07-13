@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Tue Jul 12 11:12:27 2022
+[*] Wed Jul 13 10:14:02 2022
 [*]
 [dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/001_ALU/dump.vcd"
-[dumpfile_mtime] "Tue Jul 12 11:12:19 2022"
-[dumpfile_size] 15384258
+[dumpfile_mtime] "Wed Jul 13 10:13:38 2022"
+[dumpfile_size] 15181131
 [savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/001_ALU/config.gtkw"
-[timestart] 0
+[timestart] 355150000
 [size] 1920 996
 [pos] -1 -1
-*-27.194408 18799000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-24.194408 259100000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] alu_tb.
 [treeopen] alu_tb.cpu0.
 [treeopen] alu_tb.cpu0.cpu0.
@@ -39,6 +39,10 @@ alu_tb.cpu0.cpu0.mem0.state[1:0]
 alu_tb.cpu0.cpu0.cpu_exec0.load_store_address[15:0]
 @200
 -
+@28
+alu_tb.cpu0.cpu0.pip0.load_pc
+@23
+alu_tb.cpu0.cpu0.pip0.new_pc[15:0]
 @22
 alu_tb.cpu0.cpu0.cache0.data_out[31:0]
 @28
@@ -56,8 +60,9 @@ alu_tb.cpu0.cpu0.pip0.pipeline_stage4[15:0]
 alu_tb.cpu0.cpu0.pip0.pc[14:0]
 @200
 -
-@22
+@820
 alu_tb.cpu0.pc0.tr0.traceChar_r[7:0]
+@22
 alu_tb.cpu0.pc0.tr0.traceHex_r[15:0]
 alu_tb.cpu0.pc0.tr0.traceVal_r[15:0]
 @200

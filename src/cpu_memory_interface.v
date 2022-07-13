@@ -246,7 +246,7 @@ assign data_memory_success 		= (flags_stage_2[1] == 1'b0) && (flags_stage_2[2] =
 assign bank_sw = (state == st_bank_switch) || (state == st_request_bank);
 assign valid   = (state == st_request_bank) || (state == st_execute);
 
-assign mem_wr = (flags_stage_2[1] == 1'b0) && (flags_stage_2[0] == 1'b0) && (flags_stage_2[2] == 1'b1) && (state == st_execute);
+assign mem_wr = (flags_stage_1[1] == 1'b0) && (flags_stage_1[0] == 1'b0) && (flags_stage_1[2] == 1'b1) && (state == st_execute);
 
 assign data_memory_was_requested = (flags_stage_2[1] == 1'b0) && (flags_stage_2[2] == 1'b1);
 
