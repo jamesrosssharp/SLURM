@@ -120,6 +120,8 @@ begin
 			// Cache miss?
 			else if (cache_miss == 1'b1)
 				next_state = st_wait_cache1;
+			else if (halt == 1'b1)
+				next_state = st_halt;
 		end
 		st_wait_cache1:
 			// Wait state while PC returns to previous value
@@ -144,6 +146,7 @@ begin
 		st_mem_stall4:
 			if (bank_switch == 1'b0)
 				next_state = st_execute;	
+		default: ;
 	endcase
 
 	// In some states, we can jump out of the state if there is a memory
@@ -161,6 +164,23 @@ begin
 		default: ;
 	endcase
 end
+
+// Interrupt flag
+
+reg interrupt_flag_r;
+
+always @(posedge CLK)
+begin
+	if (RSTb == 1'b0)
+		interrupt_flag_r <= 1'b0;
+	else begin
+		if (interrupt_flag_set)
+			interrupt_flag_r <= 1'b1;
+		else if (interrupt_flag_clear)
+			interrupt_flag_r <= 1'b0;	
+	end
+end
+
 
 // PC
 
@@ -196,7 +216,7 @@ begin
 			pc_next = pc + 1;
 			
 			 if	((hazard_1 == 1'b1) || (hazard_2 == 1'b1) || (hazard_3 == 1'b1) ||
-				(cache_miss == 1'b1)) begin
+				(cache_miss == 1'b1) || (interrupt_flag_r == 1'b1 && interrupt == 1'b1)) begin
 				pc_prev_next = pc_prev;
 				pc_next = pc_prev;
 			end	
@@ -215,6 +235,7 @@ begin
 			pc_next = pc_prev;
 		end
 		st_mem_stall2:	;
+		default: ;
 	endcase
 
 	if (load_pc) begin
@@ -358,7 +379,16 @@ begin
 		st_halt:	;
 		st_execute: begin 
 		
-			if (cache_miss == 1'b0 && (state == prev_state) && (load_pc_r == 1'b0)) begin
+			if (interrupt_flag_r == 1'b1 && interrupt == 1'b1) begin
+				pipeline_stage0_r_next = {12'h050, irq}; // Inject INT Instruction
+
+				if (pipeline_stage0_r[15:12] == 4'h1) begin
+					pc_stage0_r_next = pc_prev - 2;
+				end
+				else begin
+					pc_stage0_r_next = pc_prev;
+				end
+			end else if (cache_miss == 1'b0 && (state == prev_state) && (load_pc_r == 1'b0)) begin
 				pipeline_stage0_r_next 	= cache_line[15:0];
 				pc_stage0_r_next 	= cache_line[31:17];
 			end else begin
@@ -443,6 +473,7 @@ begin
 				pc_stage4_r_next 	= pc_stage3_r;
 		
 		end
+		default : ;
 	endcase
 
 	if (load_pc == 1'b1) begin
@@ -544,7 +575,8 @@ begin
 	end
 end
 
-// Interrupt flag
+
+
 
 
 endmodule

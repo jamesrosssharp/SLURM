@@ -264,6 +264,9 @@ begin
 		INSTRUCTION_CASEX_SLEEP: begin
 			interrupt_flag_set_r = 1'b1;
 		end
+		INSTRUCTION_CASEX_INTERRUPT: begin
+			interrupt_flag_clear_r = 1'b1;
+		end
 		default: ;
 	endcase
 end

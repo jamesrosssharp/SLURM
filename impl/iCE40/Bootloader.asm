@@ -29,6 +29,12 @@ GPIO_VEC:
 VECTORS:
 	.times 20 dw 0x0000
 
+my_loop:
+	mov r1, 0x41
+	out [r0, 0], r1
+	ba my_loop
+
+
 start:	
 	// Wake up spi flash
 	mov r1, 2
