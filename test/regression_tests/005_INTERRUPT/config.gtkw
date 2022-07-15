@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Sat Jan 22 07:31:20 2022
+[*] Fri Jul 15 08:23:53 2022
 [*]
 [dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/005_INTERRUPT/dump.vcd"
-[dumpfile_mtime] "Sat Jan 22 07:30:15 2022"
-[dumpfile_size] 2040074
+[dumpfile_mtime] "Fri Jul 15 08:07:02 2022"
+[dumpfile_size] 16308076
 [savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/005_INTERRUPT/config.gtkw"
-[timestart] 0
+[timestart] 78301000
 [size] 1920 996
 [pos] -1 -1
-*-24.194408 20540000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-19.194408 70700000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tb.
 [treeopen] tb.cpu0.
 [treeopen] tb.cpu0.cpu0.
@@ -23,9 +23,6 @@ tb.cpu0.cpu0.CLK
 tb.cpu0.cpu0.RSTb
 @200
 -
-@22
-tb.cpu0.cpu0.cpu_pc0.pc[15:0]
-@200
 -
 @22
 tb.cpu0.cpu0.memory_address[15:0]
@@ -35,13 +32,10 @@ tb.cpu0.cpu0.memory_out[15:0]
 tb.cpu0.cpu0.memory_wr
 tb.cpu0.cpu0.memory_valid
 tb.cpu0.cpu0.memory_ready
-tb.cpu0.cpu0.cpu_mem0.memory_is_instruction
 @200
 -
 @28
 tb.cpu0.cpu0.halt
-@29
-tb.cpu0.cpu0.wake
 @200
 -
 @28
@@ -52,31 +46,19 @@ tb.cpu0.pc0.u0.TX
 tb.gpio_in[5:0]
 @200
 -
+-
 @22
-tb.cpu0.cpu0.cpu_mem0.cpu_state_r[3:0]
-@28
-tb.cpu0.cpu0.cpu_mem0.is_executing
-tb.cpu0.cpu0.cpu_mem0.is_fetching
+tb.cpu0.cpu0.pip0.state[3:0]
+tb.cpu0.cpu0.pip0.pc[14:0]
 @200
 -
-@28
-tb.cpu0.cpu0.cpu_haz0.load_pc
-tb.cpu0.cpu0.cpu_haz0.hazard
-tb.cpu0.cpu0.cpu_haz0.hazard1
-tb.cpu0.cpu0.cpu_haz0.hazard_23
-@200
--
-@28
-tb.cpu0.cpu0.cpu_haz0.stall
-tb.cpu0.cpu0.cpu_haz0.stall_end
-tb.cpu0.cpu0.cpu_haz0.stall_start
-tb.cpu0.cpu0.cpu_pip0.stall_mask_count_r[1:0]
-tb.cpu0.cpu0.cpu_pip0.alt_pip_ld_count_r[1:0]
-tb.cpu0.cpu0.cpu_pip0.reading_alt_pipeline
-tb.cpu0.cpu0.cpu_pip0.stall_count_r[2:0]
-tb.cpu0.cpu0.cpu_pip0.stall_read_count_r[2:0]
-tb.cpu0.cpu0.cpu_pip0.mask_count_r[2:0]
-tb.cpu0.cpu0.cpu_pip0.pipeline_clear_interrupt
+@22
+tb.cpu0.cpu0.pip0.pipeline_stage0[15:0]
+tb.cpu0.cpu0.pip0.pipeline_stage1[15:0]
+tb.cpu0.cpu0.pip0.pipeline_stage2[15:0]
+tb.cpu0.cpu0.pip0.pipeline_stage3[15:0]
+@23
+tb.cpu0.cpu0.pip0.pipeline_stage4[15:0]
 @200
 -
 -
@@ -87,22 +69,7 @@ tb.cpu0.pc0.tr0.traceHex_r[15:0]
 tb.cpu0.pc0.tr0.traceVal_r[15:0]
 @200
 -
-@22
-tb.cpu0.cpu0.cpu_pip0.memory_address[15:0]
-tb.cpu0.cpu0.cpu_pip0.pc_stage0_r[15:0]
-tb.cpu0.cpu0.cpu_pip0.pc_stage1_r[15:0]
-tb.cpu0.cpu0.cpu_pip0.pc_stage2_r[15:0]
-tb.cpu0.cpu0.cpu_pip0.pc_stage3_r[15:0]
-tb.cpu0.cpu0.cpu_pip0.pc_stage4_r[15:0]
-@200
 -
-@22
-tb.cpu0.cpu0.cpu_pip0.pipeline_stage0[15:0]
-tb.cpu0.cpu0.cpu_pip0.pipeline_stage1[15:0]
-tb.cpu0.cpu0.cpu_pip0.pipeline_stage2[15:0]
-tb.cpu0.cpu0.cpu_pip0.pipeline_stage3[15:0]
-tb.cpu0.cpu0.cpu_pip0.pipeline_stage4[15:0]
-@200
 -
 @22
 tb.cpu0.cpu0.port_address[15:0]
@@ -127,7 +94,6 @@ tb.gpio_in[5:0]
 @200
 -
 @22
-tb.cpu0.cpu0.cpu_pip0.imm_reg[15:0]
 tb.cpu0.cpu0.reg0.\regFileA[1][15:0]
 tb.cpu0.cpu0.reg0.\regFileA[2][15:0]
 tb.cpu0.cpu0.reg0.\regFileA[3][15:0]
@@ -157,7 +123,6 @@ tb.cpu0.pc0.irq0.irq_vsync
 -
 @28
 tb.cpu0.cpu0.interrupt
-tb.cpu0.cpu0.cpu_pip0.interrupt_flag_r
 @200
 -
 [pattern_trace] 1

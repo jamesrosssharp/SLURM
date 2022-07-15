@@ -1,8 +1,8 @@
 	.org 0x0000
-	.padto 0x100
+	.padto 0x200
 
-HBLANK_INT_VECTOR equ 0x2
-VBLANK_INT_VECTOR equ 0x4
+HBLANK_INT_VECTOR equ 0x4
+VBLANK_INT_VECTOR equ 0x8
 
 INTERRUPT_ENABLE_PORT equ 0x7000
 
@@ -11,23 +11,25 @@ entry:
 	mov r1, (interrupt_handler >> 4) | 0x1000
 	st [r0, HBLANK_INT_VECTOR], r1
 	mov r1, (interrupt_handler & 0xf) | 0x4600
-	st [r0, HBLANK_INT_VECTOR + 1], r1	
+	st [r0, HBLANK_INT_VECTOR + 2], r1	
 
 	/* enable hblank interrupt in interrupt controller */
 	mov r1, 1
 	out [r0, INTERRUPT_ENABLE_PORT], r1
 
 	/* enable interrupts */
-	dw 0x0601
+	sti
 
 	/* sleep forever */
 
 sleep_loop:
 	nop
-	dw 0x0700	// sleep
+	sleep	// sleep
 	ba sleep_loop
 
 interrupt_handler:
-
+	mov r1, 0x666
+	out [r0, 0x6002], r1
+	iret
 
 	.end

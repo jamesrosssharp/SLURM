@@ -57,6 +57,7 @@ void clear_screen()
 	int i;
 	char* ptr = (char*)0x8000;
 	for (i = 0; i < (256*120); i++)
+	//for (i = 0; i < (256*4); i++)
 	{
 		*ptr++ = col++;
 	}

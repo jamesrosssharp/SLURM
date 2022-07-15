@@ -386,7 +386,7 @@ begin
 					pc_stage0_r_next = pc_prev - 2;
 				end
 				else begin
-					pc_stage0_r_next = pc_prev;
+					pc_stage0_r_next = pc_prev - 1;
 				end
 			end else if (cache_miss == 1'b0 && (state == prev_state) && (load_pc_r == 1'b0)) begin
 				pipeline_stage0_r_next 	= cache_line[15:0];
