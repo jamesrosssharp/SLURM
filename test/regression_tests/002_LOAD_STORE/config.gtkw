@@ -1,18 +1,19 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Wed Jul 13 21:50:36 2022
+[*] Fri Jul 15 06:38:11 2022
 [*]
 [dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/002_LOAD_STORE/dump.vcd"
-[dumpfile_mtime] "Wed Jul 13 21:50:06 2022"
-[dumpfile_size] 15891356
+[dumpfile_mtime] "Fri Jul 15 06:37:34 2022"
+[dumpfile_size] 15935355
 [savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/002_LOAD_STORE/config.gtkw"
-[timestart] 145701000
+[timestart] 146270000
 [size] 1920 996
 [pos] -1 -1
-*-19.194408 147800000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-18.194408 147500000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tb.
 [treeopen] tb.cpu0.
 [treeopen] tb.cpu0.cpu0.
+[treeopen] tb.cpu0.mem0.
 [treeopen] tb.cpu0.pc0.
 [sst_width] 290
 [signals_width] 383
@@ -34,10 +35,21 @@ tb.cpu0.cpu0.memory_valid
 tb.cpu0.cpu0.memory_ready
 @22
 tb.cpu0.cpu0.mem0.address_stage_1[14:0]
-@29
+@28
 tb.cpu0.cpu0.mem0.state[1:0]
 @22
 tb.cpu0.cpu0.mem0.address_stage_2[14:0]
+@200
+-
+@28
+tb.cpu0.mem0.ma0.state_r_0[2:0]
+tb.cpu0.mem0.ma0.state_r_1[2:0]
+@22
+tb.cpu0.mem0.ma0.B2_ADDR[13:0]
+tb.cpu0.mem0.ma0.B2_DIN[15:0]
+@28
+tb.cpu0.mem0.ma0.B2_WR
+tb.cpu0.mem0.mb2.MASK[1:0]
 @200
 -
 @22
@@ -63,6 +75,9 @@ tb.cpu0.cpu0.mem0.address_stage_2[14:0]
 tb.cpu0.cpu0.mem0.data_memory_wr_mask[1:0]
 tb.cpu0.cpu0.mem0.data_memory_write_req
 tb.cpu0.cpu0.mem0.mem_wr
+tb.cpu0.cpu0.mem0.data_wr_mask_stage_1[1:0]
+@29
+tb.cpu0.cpu0.mem0.data_wr_mask_stage_2[1:0]
 @200
 -
 @22
@@ -138,6 +153,12 @@ tb.cpu0.cpu0.cpu_exec0.regB[15:0]
 -
 @22
 tb.cpu0.cpu0.cpu_exec0.load_store_address[15:0]
+@200
+-
+@22
+tb.cpu0.mem0.mb2.\RAM[0][15:0]
+tb.cpu0.mem0.mb2.\RAM[1][15:0]
+tb.cpu0.mem0.mb2.\RAM[2][15:0]
 @200
 -
 [pattern_trace] 1

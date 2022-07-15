@@ -82,4 +82,10 @@ for (j = 0; j < 16; j = j + 1) begin
     initial $dumpvars(0, cpu0.cpu0.reg0.regFileA[j]);
 end
 
+for (j = 0; j < 16; j = j + 1) begin
+    initial $dumpvars(0, cpu0.mem0.mb2.RAM[j]);
+end
+
+
+
 endmodule

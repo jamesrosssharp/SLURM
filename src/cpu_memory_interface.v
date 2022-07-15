@@ -158,6 +158,7 @@ begin
 				flags_stage_1_next[0] 	= data_memory_read_req;
 				flags_stage_1_next[1] 	= 1'b0;
 				flags_stage_1_next[2] 	= 1'b1;
+				data_wr_mask_stage_1_next = data_memory_wr_mask;
 			end
 		end
 		st_request_bank: begin
@@ -166,6 +167,7 @@ begin
 				flags_stage_1_next[0] 	= data_memory_read_req;
 				flags_stage_1_next[1] 	= 1'b0;
 				flags_stage_1_next[2] 	= 1'b1;
+				data_wr_mask_stage_1_next = data_memory_wr_mask;
 			end
 		
 			if (rdy == 1'b1)
@@ -221,6 +223,7 @@ begin
 				flags_stage_1_next[0] 	= data_memory_read_req;
 				flags_stage_1_next[1] 	= 1'b0;
 				flags_stage_1_next[2] 	= 1'b1;
+				data_wr_mask_stage_1_next = data_memory_wr_mask;
 			end
 		end
 
