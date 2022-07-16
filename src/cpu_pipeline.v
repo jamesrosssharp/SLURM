@@ -560,14 +560,25 @@ reg [BITS - 1:0] imm_stage2_r_next;
 
 assign imm_reg = imm_stage2_r;
 
+
+reg [BITS - 1:0] imm_stage3_r;
+reg [BITS - 1:0] imm_stage4_r;
+
 always @(posedge CLK)
 begin
 	if (RSTb == 1'b0) begin
 		imm_r 		<= 12'd0;
 		imm_stage2_r 	<= 16'd0;
+		imm_stage3_r 	<= 16'd0;
+		imm_stage4_r 	<= 16'd0;
 	end else begin
 		imm_r 		<= imm_r_next;
 		imm_stage2_r 	<= imm_stage2_r_next;
+
+		if (state != st_halt) begin
+			imm_stage3_r 	<= imm_stage2_r;
+			imm_stage4_r 	<= imm_stage3_r;
+		end
 	end
 end
 
@@ -598,8 +609,8 @@ begin
 
 	// Dirty hack for now... fix this!
 	if ((load_store_req4 == 1'b1) && (data_memory_success == 1'b0)) begin
-		imm_stage2_r_next = 16'd0;
-		imm_r_next = 12'd0;
+		imm_stage2_r_next = imm_stage4_r;
+		imm_r_next = imm_stage4_r[15:4];
 	end	
 end
 
