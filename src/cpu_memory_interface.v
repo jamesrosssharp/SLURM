@@ -46,7 +46,6 @@ module cpu_memory_interface #(parameter BITS = 16, ADDRESS_BITS = 15)  (
 
 	output [BITS - 1: 0]	     	data_memory_data_out,
 	output				data_memory_success,	
-	output				data_memory_was_requested,
 	output [1:0]			data_memory_wr_mask_out,
 
 	/* bank switch flag : asserted when switching bank. See notes above */
@@ -74,11 +73,11 @@ assign data_memory_data_out 	= data_in;
 
 reg [ADDRESS_BITS - 1 : 0] address_stage_1, address_stage_1_next;
 reg [BITS - 1 : 0] 	   data_stage_1, data_stage_1_next;
-reg [2:0] 		   flags_stage_1, flags_stage_1_next;	// bit 0: RD/WRb, bit 1: 1 = instruction, 0 = memory, bit 2: 1 = is requested, 0 = no requests
+reg [3:0] 		   flags_stage_1, flags_stage_1_next;	// bit 0: RD/WRb, bit 1: 1 = instruction, 0 = memory, bit 2: 1 = is requested, 0 = no requests
 reg [1:0]		   data_wr_mask_stage_1, data_wr_mask_stage_1_next;
 
 reg [ADDRESS_BITS - 1 : 0] address_stage_2;
-reg [2:0] 		   flags_stage_2;
+reg [3:0] 		   flags_stage_2;
 reg [1:0]		   data_wr_mask_stage_2;
 
 
@@ -91,7 +90,7 @@ assign data_memory_wr_mask_out = data_wr_mask_stage_2;
 always @(posedge CLK)
 begin
 	if (RSTb == 1'b0) begin
-		flags_stage_2   <= 3'b000;
+		flags_stage_2   <= 4'b0000;
 		address_stage_2 <= {ADDRESS_BITS{1'b0}}; 
 		data_wr_mask_stage_2 <= 2'b00;
 	end else begin	
@@ -122,7 +121,7 @@ begin
 		state <= st_idle;
 		address_stage_1 <= {ADDRESS_BITS{1'b0}};
 		data_stage_1 	<= {BITS{1'b0}};
-		flags_stage_1   <= 3'b000;
+		flags_stage_1   <= 4'b000;
 		data_wr_mask_stage_1 <= 2'b00;	
 		bank_switch_required <= 1'b0;
 	end else begin
@@ -150,30 +149,21 @@ begin
 
 	instruction_will_queue_r = 1'b0;
 
+	flags_stage_1_next[3]   = 1'b0;
+
 	case (state)
 		st_idle: begin
 			if (data_memory_read_req || data_memory_write_req || instruction_memory_read_req)
 			       next_state = st_request_bank;	
-			if (data_memory_read_req || data_memory_write_req) begin
-				flags_stage_1_next[0] 	= data_memory_read_req;
-				flags_stage_1_next[1] 	= 1'b0;
-				flags_stage_1_next[2] 	= 1'b1;
-				data_wr_mask_stage_1_next = data_memory_wr_mask;
-			end
 		end
 		st_request_bank: begin
-       		
-			if (data_memory_read_req || data_memory_write_req) begin
-				flags_stage_1_next[0] 	= data_memory_read_req;
-				flags_stage_1_next[1] 	= 1'b0;
-				flags_stage_1_next[2] 	= 1'b1;
-				data_wr_mask_stage_1_next = data_memory_wr_mask;
-			end
-		
 			if (rdy == 1'b1)
 				next_state = st_execute;
 		end
-		st_execute:
+		st_execute: begin
+
+			flags_stage_1_next[3]   = 1'b1;
+
 			if (bank_switch_required) begin
 
 				next_state = st_bank_switch;
@@ -182,7 +172,7 @@ begin
 				flags_stage_1_next[0] 	= 1'b1; // Don't explicitly write the memory until 
 							       // we are executing again and the request comes
 							       // in again from cpu
-				data_wr_mask_stage_1_next = data_wr_mask_stage_1;
+				data_wr_mask_stage_1_next = data_wr_mask_stage_2;
 
 			end else if (data_memory_read_req || data_memory_write_req) begin
 				
@@ -209,22 +199,17 @@ begin
 
 			end else begin
 
-				address_stage_1_next 	= {ADDRESS_BITS{1'b0}};
-				flags_stage_1_next 	= 3'b000;
+				//address_stage_1_next 	= {ADDRESS_BITS{1'b0}};
+				flags_stage_1_next 	= 4'b0000;
 				data_wr_mask_stage_1_next = 2'b00;
 
 				if (halt == 1'b1)
 					next_state = st_idle;
 			end
+		end
 		st_bank_switch: begin
 			// Wait state
 			next_state = st_request_bank;
-			if (data_memory_read_req || data_memory_write_req) begin
-				flags_stage_1_next[0] 	= data_memory_read_req;
-				flags_stage_1_next[1] 	= 1'b0;
-				flags_stage_1_next[2] 	= 1'b1;
-				data_wr_mask_stage_1_next = data_memory_wr_mask;
-			end
 		end
 
 
@@ -243,14 +228,12 @@ assign instruction_memory_address_out = address_stage_2;
 //	To do: register these signals
 //
 
-assign instruction_memory_success 	= (flags_stage_2[1] == 1'b1) && (flags_stage_2[2] == 1'b1) && (!bank_switch_required) && (state == st_execute);
-assign data_memory_success 		= (flags_stage_2[1] == 1'b0) && (flags_stage_2[2] == 1'b1) && (!bank_switch_required) && (state == st_execute);
+assign instruction_memory_success 	= (flags_stage_2[1] == 1'b1) && (flags_stage_2[2] == 1'b1) && (!bank_switch_required) && (flags_stage_2[3] == 1'b1);
+assign data_memory_success 		= (flags_stage_2[1] == 1'b0) && (flags_stage_2[2] == 1'b1) && (!bank_switch_required) && (flags_stage_2[3] == 1'b1);
 
 assign bank_sw = (state == st_bank_switch) || (state == st_request_bank);
 assign valid   = (state == st_request_bank) || (state == st_execute);
 
-assign mem_wr = (flags_stage_1[1] == 1'b0) && (flags_stage_1[0] == 1'b0) && (flags_stage_1[2] == 1'b1) && (bank_switch_required_next != 1'b1) && (state == st_execute);
-
-assign data_memory_was_requested = (flags_stage_2[1] == 1'b0) && (flags_stage_2[2] == 1'b1);
+assign mem_wr = (flags_stage_1[1] == 1'b0) && (flags_stage_1[0] == 1'b0) && (flags_stage_1[2] == 1'b1) && (bank_switch_required_next != 1'b1) && (flags_stage_1[3] == 1'b1);
 
 endmodule

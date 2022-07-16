@@ -54,11 +54,11 @@ module cpu_pipeline #(parameter REGISTER_BITS = 4, BITS = 16, ADDRESS_BITS = 16)
 	/* data memory interface */
 	input	data_memory_success,
 	input   bank_switch,	/* memory interface is switching banks or otherwise busy */
-	input	data_memory_was_requested,
 
 	/* cpu state */
-	output  is_executing
+	output  is_executing,
 
+	input	load_store_req
 );
 
 `include "cpu_decode_functions.v"
@@ -106,7 +106,7 @@ begin
 			// trumps the lower items):
 			// Memory stall?
 
-			if (data_memory_was_requested && (data_memory_success == 1'b0))
+			if (load_store_req4 && (data_memory_success == 1'b0))
 				next_state = st_mem_stall1;
 
 			// Hazard?
@@ -159,7 +159,7 @@ begin
 		st_stall_3,
 		st_stall_4,
 		st_mem_stall4:
-			if (data_memory_was_requested && (data_memory_success == 1'b0))
+			if (load_store_req4 && (data_memory_success == 1'b0))
 				next_state = st_mem_stall1;
 		default: ;
 	endcase
@@ -251,7 +251,7 @@ begin
                   st_stall_4,
 		  st_mem_stall4:
 
-		if ((data_memory_was_requested == 1'b1) && (data_memory_success == 1'b0)) begin
+		if ((load_store_req4 == 1'b1) && (data_memory_success == 1'b0)) begin
 			pc_next = pc_stage3_r;
 			pc_prev_next = pc_stage3_r;
 		end
@@ -283,6 +283,9 @@ reg modifies_flags3_r, modifies_flags3_r_next;
 reg [15:0] pipeline_stage4_r, pipeline_stage4_r_next;
 reg [14:0] pc_stage4_r, pc_stage4_r_next;
 
+reg load_store_req3, load_store_req3_next;
+reg load_store_req4, load_store_req4_next;
+
 assign pipeline_stage0 = pipeline_stage0_r;
 assign pipeline_stage1 = pipeline_stage1_r;
 assign pipeline_stage2 = pipeline_stage2_r;
@@ -298,6 +301,20 @@ assign hazard_reg3 = hazard_reg3_r;
 assign modifies_flags1 = modifies_flags1_r;
 assign modifies_flags2 = modifies_flags2_r;
 assign modifies_flags3 = modifies_flags3_r;
+
+reg [11:0] imm_r;
+reg [11:0] imm_r_next;
+
+reg [BITS - 1:0] imm_stage2_r;
+reg [BITS - 1:0] imm_stage2_r_next;
+
+reg [BITS - 1:0] imm_stage3_r;
+reg [BITS - 1:0] imm_stage3_r_next;
+
+reg [BITS - 1:0] imm_stage4_r;
+reg [BITS - 1:0] imm_stage4_r_next;
+
+assign imm_reg = imm_stage2_r;
 
 
 always @(posedge CLK)
@@ -324,6 +341,14 @@ begin
 		pipeline_stage4_r 	<= 16'd0;
 		pc_stage4_r 		<= 15'd0;
 
+		imm_r			<= 12'd0;
+		imm_stage2_r		<= 16'd0;
+		imm_stage3_r		<= 16'd0;
+		imm_stage4_r		<= 16'd0;
+
+		load_store_req3		<= 1'b0;
+		load_store_req4		<= 1'b0;
+
 	end else begin
 
 		pipeline_stage0_r 	<= pipeline_stage0_r_next;
@@ -347,6 +372,13 @@ begin
 		pipeline_stage4_r 	<= pipeline_stage4_r_next;
 		pc_stage4_r 		<= pc_stage4_r_next;
 
+		imm_r			<= imm_r_next;
+		imm_stage2_r		<= imm_stage2_r_next;
+		imm_stage3_r		<= imm_stage3_r_next;
+		imm_stage4_r		<= imm_stage4_r_next;
+
+		load_store_req3		<= load_store_req3_next;
+		load_store_req4		<= load_store_req4_next;
 	end
 end
 
@@ -374,11 +406,34 @@ begin
 	pipeline_stage4_r_next 	= pipeline_stage4_r;
 	pc_stage4_r_next 	= pc_stage4_r;
 
+	imm_stage2_r_next	= imm_stage2_r;
+	imm_stage3_r_next	= imm_stage3_r;
+	imm_stage4_r_next	= imm_stage4_r;
+
+	load_store_req3_next	= load_store_req3;
+	load_store_req4_next	= load_store_req4;
+
+
+	imm_r_next = {12{1'b0}};
+
+	casex (pipeline_stage1_r)
+		INSTRUCTION_CASEX_IMM:   	/* imm */
+			/* there might be a spurious imm in p1 on a branch */
+			imm_r_next 	= imm_r_from_ins(pipeline_stage1_r);
+		NOP_INSTRUCTION:		/* nop */
+			imm_r_next 	= imm_r;
+		default: ;
+	endcase
+
 
 	case (state)
-		st_halt:	;
+		st_halt:	
+			imm_r_next = imm_r;
 		st_execute: begin 
-		
+	
+			load_store_req3_next = load_store_req;
+			load_store_req4_next = load_store_req3;
+
 			if (interrupt_flag_r == 1'b1 && interrupt == 1'b1) begin
 				pipeline_stage0_r_next = {12'h050, irq}; // Inject INT Instruction
 
@@ -405,16 +460,17 @@ begin
 			pc_stage2_r_next 	= pc_stage1_r;
 			hazard_reg2_r_next 	= hazard_reg1_r;
 			modifies_flags2_r_next 	= modifies_flags1_r;
+			imm_stage2_r_next   = {imm_r, imm_lo_from_ins(pipeline_stage1_r)}; 
 
 			pipeline_stage3_r_next 	= pipeline_stage2_r;
 			pc_stage3_r_next 	= pc_stage2_r;
 			hazard_reg3_r_next 	= hazard_reg2_r;
 			modifies_flags3_r_next 	= modifies_flags2_r;
+			imm_stage3_r_next 	= imm_stage2_r;
 
 			pipeline_stage4_r_next 	= pipeline_stage3_r;
 			pc_stage4_r_next 	= pc_stage3_r;
-
-
+			imm_stage4_r_next 	= imm_stage3_r;
 
 		end			
 		st_wait_cache1,
@@ -422,6 +478,9 @@ begin
 		st_stall_2,
 		st_stall_3,
 		st_stall_4: begin	
+			load_store_req3_next = load_store_req;
+			load_store_req4_next = load_store_req3;
+		
 			pipeline_stage0_r_next  = NOP_INSTRUCTION;
 			pc_stage0_r_next	= pc_prev;
 		
@@ -434,24 +493,32 @@ begin
 			pc_stage2_r_next 	= pc_stage1_r;
 			hazard_reg2_r_next 	= R0;
 			modifies_flags2_r_next 	= 1'b0;
+			imm_stage2_r_next	= imm_stage2_r;
 
 			pipeline_stage3_r_next 	= pipeline_stage2_r;
 			pc_stage3_r_next 	= pc_stage2_r;
 			hazard_reg3_r_next 	= hazard_reg2_r;
 			modifies_flags3_r_next 	= modifies_flags2_r;
+			imm_stage3_r_next 	= imm_stage2_r;
 
 			pipeline_stage4_r_next 	= pipeline_stage3_r;
 			pc_stage4_r_next 	= pc_stage3_r;
+			imm_stage4_r_next 	= imm_stage3_r;
 
-
-
+			imm_r_next = imm_r; 
 
 		end
 		st_mem_stall1,
 		st_mem_stall2,
 		st_mem_stall3,
 		st_mem_stall4:	begin
-				pipeline_stage0_r_next  = NOP_INSTRUCTION;
+
+				load_store_req3_next = load_store_req;
+				load_store_req4_next = load_store_req3;
+
+				imm_r_next = imm_r;
+
+				pipeline_stage0_r_next  = pipeline_stage0_r;
 				pc_stage0_r_next	= pc_stage0_r;
 			
 				pipeline_stage1_r_next 	= pipeline_stage0_r;
@@ -463,15 +530,17 @@ begin
 				pc_stage2_r_next 	= pc_stage1_r;
 				hazard_reg2_r_next 	= hazard_reg1_r;
 				modifies_flags2_r_next 	= modifies_flags1_r;
-
+				imm_stage2_r_next   = {imm_r, imm_lo_from_ins(pipeline_stage1_r)}; 
+				
 				pipeline_stage3_r_next 	= pipeline_stage2_r;
 				pc_stage3_r_next 	= pc_stage2_r;
 				hazard_reg3_r_next 	= hazard_reg2_r;
 				modifies_flags3_r_next 	= modifies_flags2_r;
+				imm_stage3_r_next 	= imm_stage2_r;
 
 				pipeline_stage4_r_next 	= pipeline_stage3_r;
 				pc_stage4_r_next 	= pc_stage3_r;
-		
+				imm_stage4_r_next 	= imm_stage3_r;
 		end
 		default : ;
 	endcase
@@ -489,6 +558,9 @@ begin
 			pc_stage2_r_next 	= new_pc[15:1];
 			hazard_reg2_r_next 	= R0;
 			modifies_flags2_r_next 	= 1'b0;	
+
+			imm_r_next = 12'd0;
+			imm_stage2_r_next = 16'd0;	
 	end
 
 	case (state)
@@ -499,84 +571,75 @@ begin
                   st_stall_4,
 		  st_mem_stall4:
 
-			if ((data_memory_was_requested == 1'b1) && (data_memory_success == 1'b0)) begin
+			if ((load_store_req4 == 1'b1) && (data_memory_success == 1'b0)) begin
 
-				pipeline_stage0_r_next  = NOP_INSTRUCTION;
+				pipeline_stage0_r_next  = pipeline_stage4_r;
 				pc_stage0_r_next	= pc_stage3_r;
 			
 				pipeline_stage1_r_next 	= pipeline_stage4_r;
-				pc_stage1_r_next 	= pc_stage4_r;
+				pc_stage1_r_next 	= pc_stage3_r;
 				hazard_reg1_r_next 	= R0;
 				modifies_flags1_r_next 	= 1'b0;
 
-				pipeline_stage2_r_next 	= NOP_INSTRUCTION;
-				pc_stage2_r_next 	= pc_stage4_r;
+				pipeline_stage2_r_next 	= pipeline_stage4_r;
+				pc_stage2_r_next 	= pc_stage3_r;
 				hazard_reg2_r_next 	= R0;
 				modifies_flags2_r_next 	= 1'b0;
 
 				pipeline_stage3_r_next 	= NOP_INSTRUCTION;
-				pc_stage3_r_next 	= pc_stage4_r;
+				pc_stage3_r_next 	= pc_stage3_r;
 				hazard_reg3_r_next 	= R0;
 				modifies_flags3_r_next 	= 1'b0;
 
 				pipeline_stage4_r_next 	= NOP_INSTRUCTION;
-				pc_stage4_r_next 	= pc_stage4_r;
+				pc_stage4_r_next 	= pc_stage3_r;
+
+				imm_r_next		= imm_stage4_r[15:4];
+				imm_stage2_r_next	= imm_stage4_r;
+				imm_stage3_r_next	= imm_stage4_r;
+				imm_stage4_r_next	= imm_stage4_r;
 
 			end
 		default: ;
 	endcase
 
-end
+	case (state)
+		  st_mem_stall4:
+			if ((load_store_req4 == 1'b1) && (data_memory_success == 1'b1)) begin
 
-// Imm reg
+				pipeline_stage0_r_next  = NOP_INSTRUCTION;
+				pc_stage0_r_next	= pc;
+			
+				pipeline_stage1_r_next 	= NOP_INSTRUCTION;
+				pc_stage1_r_next 	= pc;
+				hazard_reg1_r_next 	= R0;
+				modifies_flags1_r_next 	= 1'b0;
 
-reg [11:0] imm_r;
-reg [11:0] imm_r_next;
+				pipeline_stage2_r_next 	= NOP_INSTRUCTION;
+				pc_stage2_r_next 	= pc;
+				hazard_reg2_r_next 	= R0;
+				modifies_flags2_r_next 	= 1'b0;
 
-reg [BITS - 1:0] imm_stage2_r;
-reg [BITS - 1:0] imm_stage2_r_next;
+				pipeline_stage3_r_next 	= NOP_INSTRUCTION;
+				pc_stage3_r_next 	= pc;
+				hazard_reg3_r_next 	= R0;
+				modifies_flags3_r_next 	= 1'b0;
 
-assign imm_reg = imm_stage2_r;
+				pipeline_stage4_r_next 	= NOP_INSTRUCTION;
+				pc_stage4_r_next 	= pc;
 
-always @(posedge CLK)
-begin
-	if (RSTb == 1'b0) begin
-		imm_r 		<= 12'd0;
-		imm_stage2_r 	<= 16'd0;
-	end else begin
-		imm_r 		<= imm_r_next;
-		imm_stage2_r 	<= imm_stage2_r_next;
-	end
-end
+				imm_r_next		= 0;
+				imm_stage2_r_next	= 0;
+				imm_stage3_r_next	= 0;
+				imm_stage4_r_next	= 0;
 
-always @(*)
-begin
-	imm_r_next = {12{1'b0}};
-
-	// Don't change on a nop
-	if ((pipeline_stage1_r == NOP_INSTRUCTION) && (load_pc == 1'b0)) 
-		imm_r_next = imm_r;
-
-	imm_stage2_r_next = imm_stage2_r;
-
-	if (prev_state == st_execute)
-		imm_stage2_r_next 	= {imm_r, imm_lo_from_ins(pipeline_stage1_r)};
-
-	casex (pipeline_stage1_r)
-		INSTRUCTION_CASEX_IMM:   	/* imm */
-			/* there might be a spurious imm in p1 on a branch */
-			imm_r_next 	= imm_r_from_ins(pipeline_stage1_r);
+			end
 		default: ;
 	endcase
 
-	if (load_pc_r == 1'b1) begin
-		imm_stage2_r_next = 16'd0;
-		imm_r_next = 12'd0;
-	end
+
+
 end
-
-
-
 
 
 endmodule
