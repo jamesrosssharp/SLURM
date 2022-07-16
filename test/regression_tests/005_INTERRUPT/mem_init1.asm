@@ -30,6 +30,9 @@ sleep_loop:
 interrupt_handler:
 	mov r1, 0x666
 	out [r0, 0x6002], r1
+	mov r1, 0x1f
+	out [r0, 0x7001], r1
+
 	iret
 
 	.end

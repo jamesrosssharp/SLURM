@@ -3,6 +3,6 @@ SRCDIR=../../../src
 
 include ../../common/slurmsrc.mk
 
-PROJECT=memory_interface
+PROJECT=memcpy
 
 include ../../common/test.mk
