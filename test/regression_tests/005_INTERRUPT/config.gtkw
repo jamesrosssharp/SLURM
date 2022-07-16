@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Fri Jul 15 08:23:53 2022
+[*] Sat Jul 16 03:01:11 2022
 [*]
 [dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/005_INTERRUPT/dump.vcd"
-[dumpfile_mtime] "Fri Jul 15 08:07:02 2022"
-[dumpfile_size] 16308076
+[dumpfile_mtime] "Sat Jul 16 03:01:00 2022"
+[dumpfile_size] 6841809
 [savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/005_INTERRUPT/config.gtkw"
-[timestart] 78301000
+[timestart] 0
 [size] 1920 996
 [pos] -1 -1
-*-19.194408 70700000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-28.194408 1262000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tb.
 [treeopen] tb.cpu0.
 [treeopen] tb.cpu0.cpu0.
@@ -57,10 +57,15 @@ tb.cpu0.cpu0.pip0.pipeline_stage0[15:0]
 tb.cpu0.cpu0.pip0.pipeline_stage1[15:0]
 tb.cpu0.cpu0.pip0.pipeline_stage2[15:0]
 tb.cpu0.cpu0.pip0.pipeline_stage3[15:0]
-@23
 tb.cpu0.cpu0.pip0.pipeline_stage4[15:0]
 @200
 -
+@22
+tb.cpu0.cpu0.pip0.imm_stage2_r[15:0]
+tb.cpu0.cpu0.pip0.imm_stage3_r[15:0]
+@23
+tb.cpu0.cpu0.pip0.imm_stage4_r[15:0]
+@200
 -
 @820
 tb.cpu0.pc0.tr0.traceChar_r[7:0]
