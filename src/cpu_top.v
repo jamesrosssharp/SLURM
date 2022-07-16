@@ -73,7 +73,6 @@ wire cache_miss;
 
 wire data_memory_success;
 wire bank_switch;
-wire data_memory_was_requested;
 
 wire is_executing;
 
@@ -122,7 +121,7 @@ cpu_pipeline #(.REGISTER_BITS(REGISTER_BITS), .BITS(BITS), .ADDRESS_BITS(ADDRESS
 
 	data_memory_success,
 	bank_switch,
-	data_memory_was_requested,
+	load_memory | store_memory,
 
 	is_executing
 );
@@ -184,7 +183,6 @@ cpu_memory_interface mem0 (
 
 	data_memory_data_out,
 	data_memory_success,	
-	data_memory_was_requested,
 	data_memory_wr_mask_out,
 
 	bank_switch,

@@ -46,7 +46,6 @@ module cpu_memory_interface #(parameter BITS = 16, ADDRESS_BITS = 15)  (
 
 	output [BITS - 1: 0]	     	data_memory_data_out,
 	output				data_memory_success,	
-	output				data_memory_was_requested,
 	output [1:0]			data_memory_wr_mask_out,
 
 	/* bank switch flag : asserted when switching bank. See notes above */
@@ -154,22 +153,9 @@ begin
 		st_idle: begin
 			if (data_memory_read_req || data_memory_write_req || instruction_memory_read_req)
 			       next_state = st_request_bank;	
-			if (data_memory_read_req || data_memory_write_req) begin
-				flags_stage_1_next[0] 	= data_memory_read_req;
-				flags_stage_1_next[1] 	= 1'b0;
-				flags_stage_1_next[2] 	= 1'b1;
-				data_wr_mask_stage_1_next = data_memory_wr_mask;
-			end
 		end
 		st_request_bank: begin
        		
-			if (data_memory_read_req || data_memory_write_req) begin
-				flags_stage_1_next[0] 	= data_memory_read_req;
-				flags_stage_1_next[1] 	= 1'b0;
-				flags_stage_1_next[2] 	= 1'b1;
-				data_wr_mask_stage_1_next = data_memory_wr_mask;
-			end
-		
 			if (rdy == 1'b1)
 				next_state = st_execute;
 		end
@@ -179,10 +165,10 @@ begin
 				next_state = st_bank_switch;
 				address_stage_1_next 	= address_stage_2;
 				flags_stage_1_next	= flags_stage_2;
-				flags_stage_1_next[0] 	= 1'b1; // Don't explicitly write the memory until 
+				//flags_stage_1_next[0] 	= 1'b1; // Don't explicitly write the memory until 
 							       // we are executing again and the request comes
 							       // in again from cpu
-				data_wr_mask_stage_1_next = data_wr_mask_stage_1;
+				data_wr_mask_stage_1_next = data_wr_mask_stage_2;
 
 			end else if (data_memory_read_req || data_memory_write_req) begin
 				
@@ -209,7 +195,7 @@ begin
 
 			end else begin
 
-				address_stage_1_next 	= {ADDRESS_BITS{1'b0}};
+				//address_stage_1_next 	= {ADDRESS_BITS{1'b0}};
 				flags_stage_1_next 	= 3'b000;
 				data_wr_mask_stage_1_next = 2'b00;
 
@@ -219,12 +205,6 @@ begin
 		st_bank_switch: begin
 			// Wait state
 			next_state = st_request_bank;
-			if (data_memory_read_req || data_memory_write_req) begin
-				flags_stage_1_next[0] 	= data_memory_read_req;
-				flags_stage_1_next[1] 	= 1'b0;
-				flags_stage_1_next[2] 	= 1'b1;
-				data_wr_mask_stage_1_next = data_memory_wr_mask;
-			end
 		end
 
 
@@ -250,7 +230,5 @@ assign bank_sw = (state == st_bank_switch) || (state == st_request_bank);
 assign valid   = (state == st_request_bank) || (state == st_execute);
 
 assign mem_wr = (flags_stage_1[1] == 1'b0) && (flags_stage_1[0] == 1'b0) && (flags_stage_1[2] == 1'b1) && (bank_switch_required_next != 1'b1) && (state == st_execute);
-
-assign data_memory_was_requested = (flags_stage_2[1] == 1'b0) && (flags_stage_2[2] == 1'b1);
 
 endmodule
