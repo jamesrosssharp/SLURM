@@ -53,9 +53,11 @@ bram
 	.WR(wr_bram)
 );
 
+localparam MEM_ADDRESS_X_BITS = 5;
+
 reg [14:0] 	address_x, address_xx;
-reg [8:0] 	mem_address_x;
-assign memory_address = {address_xx[14:8], mem_address_x[7:0]};
+reg [MEM_ADDRESS_X_BITS - 1:0] 	mem_address_x;
+assign memory_address = {address_xx[14: MEM_ADDRESS_X_BITS - 1], mem_address_x[MEM_ADDRESS_X_BITS - 2:0]};
 
 reg 	mem_rd_req_r;
 assign 	memory_rd_req = mem_rd_req_r; 
@@ -65,7 +67,7 @@ begin
 	if (RSTb == 1'b0) begin
 		address_xx 	<= 15'd0;
 		address_x 	<= 15'd0;
-		mem_address_x 	<= 9'd0;
+		mem_address_x 	<= {MEM_ADDRESS_X_BITS{1'b0}};
 		mem_rd_req_r 	<= 1'b1;
 	end
 	else begin
@@ -73,14 +75,14 @@ begin
 		address_x 	<= cache_request_address;
 
 		if ((address_x != address_xx) && cache_miss) begin	// If we just got a new request, then we will service it.
-			mem_address_x 		<= {1'b0, address_x[7:0]};
+			mem_address_x 		<= {1'b0, address_x[MEM_ADDRESS_X_BITS - 2:0]};
 			mem_rd_req_r <= 1'b1;
 		end
-		else if ((mem_address_x[8] != 1'b1) && (will_queue == 1'b1)) begin
+		else if ((mem_address_x[MEM_ADDRESS_X_BITS - 1] != 1'b1) && (will_queue == 1'b1)) begin
 			mem_address_x 		<= mem_address_x + 1;	// Fill cache in our spare time (we need to keep the memory pipeline filled)
 			mem_rd_req_r <= 1'b1;
 		end
-		else if (mem_address_x[8] == 1'b1)
+		else if (mem_address_x[MEM_ADDRESS_X_BITS - 1] == 1'b1)
 			mem_rd_req_r <= 1'b0;
 				
 	end
