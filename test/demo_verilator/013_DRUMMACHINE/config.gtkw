@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Sun Jul 17 08:54:41 2022
+[*] Sun Jul 17 09:15:40 2022
 [*]
 [dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/demo_verilator/013_DRUMMACHINE/dump.vcd"
-[dumpfile_mtime] "Sun Jul 17 08:53:12 2022"
-[dumpfile_size] 1356706351
+[dumpfile_mtime] "Sun Jul 17 09:14:49 2022"
+[dumpfile_size] 1541331379
 [savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/demo_verilator/013_DRUMMACHINE/config.gtkw"
-[timestart] 17166499000
+[timestart] 17596798000
 [size] 1920 989
 [pos] -1 -1
-*-18.194408 17167400000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-19.194408 17598600000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tb.
 [treeopen] tb.cpu0.
 [treeopen] tb.cpu0.cpu0.
@@ -88,7 +88,6 @@ tb.cpu0.pc0.gfx0.spcon0.aram_WR
 @22
 tb.cpu0.cpu0.port_address[15:0]
 tb.cpu0.cpu0.port_in[15:0]
-@23
 tb.cpu0.cpu0.port_out[15:0]
 @28
 tb.cpu0.cpu0.port_rd
@@ -116,7 +115,9 @@ tb.cpu0.cpu0.reg0.\regFileA[5][15:0]
 tb.cpu0.cpu0.reg0.\regFileA[6][15:0]
 tb.cpu0.cpu0.reg0.\regFileA[7][15:0]
 tb.cpu0.cpu0.reg0.\regFileA[8][15:0]
+@23
 tb.cpu0.cpu0.reg0.\regFileA[9][15:0]
+@22
 tb.cpu0.cpu0.reg0.\regFileA[10][15:0]
 tb.cpu0.cpu0.reg0.\regFileA[11][15:0]
 tb.cpu0.cpu0.reg0.\regFileA[12][15:0]

@@ -152,12 +152,12 @@ mix_audio.do_mix:
 	st [r6, CHANNEL_STRUCT_PHASE], r7
 	cmp r7, AUDIO_FREQ
 
-	bnc mix_audio.no_sample_inc
+	bc mix_audio.no_sample_inc
 
 	sub r7, AUDIO_FREQ
 	st [r6, CHANNEL_STRUCT_PHASE], r7
 
-	add r9, r10
+	add r9, 2//r10
 	
 	ldb r7, [r6, CHANNEL_STRUCT_LOOP] // r7: loop flag
 	or  r7, r7

@@ -43,8 +43,8 @@ struct sample g_samples[4] = {
 		// Kick drum
 		(char*)&Bassdrum,
 		1,
-		1,
-		22050,
+		0,
+		10000,
 		0,
 		9468,
 		9468
@@ -84,21 +84,38 @@ void play_sample()
 {
 
 	#define SAMPLE 0
+	#define CHANNEL 0
+	#define CHANNEL2 4
 
-	channel_info[0].sample_start = g_samples[SAMPLE].offset;
-	channel_info[0].sample_end   = g_samples[SAMPLE].offset + g_samples[SAMPLE].sample_len;
+	channel_info[CHANNEL].sample_start = g_samples[SAMPLE].offset;
+	channel_info[CHANNEL].sample_end   = g_samples[SAMPLE].offset + g_samples[SAMPLE].sample_len;
 
-	channel_info[0].loop_start = g_samples[SAMPLE].offset + g_samples[SAMPLE].loop_start;
-	channel_info[0].loop_end   = g_samples[SAMPLE].offset + g_samples[SAMPLE].loop_end;
+	channel_info[CHANNEL].loop_start = g_samples[SAMPLE].offset + g_samples[SAMPLE].loop_start;
+	channel_info[CHANNEL].loop_end   = g_samples[SAMPLE].offset + g_samples[SAMPLE].loop_end;
 
-	channel_info[0].sample_pos = g_samples[SAMPLE].offset;
-	channel_info[0].frequency = g_samples[SAMPLE].speed;	
+	channel_info[CHANNEL].sample_pos = g_samples[SAMPLE].offset;
+	channel_info[CHANNEL].frequency = g_samples[SAMPLE].speed;	
 
-	channel_info[0].phase = 0;
+	channel_info[CHANNEL].phase = 0;
 
-	channel_info[0].volume = 128;
-	channel_info[0].loop   = g_samples[SAMPLE].loop;	
-	channel_info[0].bits   = g_samples[SAMPLE].bit_depth + 1; // 1 = 8 bit, 2 = 16 bit
+	channel_info[CHANNEL].volume = 128;
+	channel_info[CHANNEL].loop   = g_samples[SAMPLE].loop;	
+	channel_info[CHANNEL].bits   = g_samples[SAMPLE].bit_depth + 1; // 1 = 8 bit, 2 = 16 bit
+
+	channel_info[CHANNEL2].sample_start = g_samples[SAMPLE].offset;
+	channel_info[CHANNEL2].sample_end   = g_samples[SAMPLE].offset + g_samples[SAMPLE].sample_len;
+
+	channel_info[CHANNEL2].loop_start = g_samples[SAMPLE].offset + g_samples[SAMPLE].loop_start;
+	channel_info[CHANNEL2].loop_end   = g_samples[SAMPLE].offset + g_samples[SAMPLE].loop_end;
+
+	channel_info[CHANNEL2].sample_pos = g_samples[SAMPLE].offset;
+	channel_info[CHANNEL2].frequency = g_samples[SAMPLE].speed - 500;	
+
+	channel_info[CHANNEL2].phase = 0;
+
+	channel_info[CHANNEL2].volume = 128;
+	channel_info[CHANNEL2].loop   = g_samples[SAMPLE].loop;	
+	channel_info[CHANNEL2].bits   = g_samples[SAMPLE].bit_depth + 1; // 1 = 8 bit, 2 = 16 bit
 
 }
 
