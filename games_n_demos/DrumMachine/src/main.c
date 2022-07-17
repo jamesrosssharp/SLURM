@@ -43,10 +43,10 @@ struct sample g_samples[4] = {
 		// Kick drum
 		(char*)&Bassdrum,
 		1,
-		0,
+		1,
 		22050,
 		0,
-		0,
+		9468,
 		9468
 	}
 };
@@ -96,7 +96,7 @@ void play_sample()
 
 	channel_info[0].phase = 0;
 
-	channel_info[0].volume = 64;
+	channel_info[0].volume = 128;
 	channel_info[0].loop   = g_samples[SAMPLE].loop;	
 	channel_info[0].bits   = g_samples[SAMPLE].bit_depth + 1; // 1 = 8 bit, 2 = 16 bit
 
@@ -110,10 +110,10 @@ void init_audio()
 
 	play_sample();
 
-	//for (i = 0; i < 512; i++)
-	//{		__out(0x3000 | i, 0);
-	//		__out(0x3200 | i, 0);
-	//}
+	for (i = 0; i < 512; i++)
+	{		__out(0x3000 | i, 0);
+			__out(0x3200 | i, 0);
+	}
 	__out(0x3400, 1);
 
 }
@@ -124,23 +124,25 @@ int main()
 	
 	enable_interrupts();
 
+	play_sample();
 	init_audio();
 
 	while(1)
 	{
-	/*	if (vsync)
+	
+		my_printf("Interrupt!");
+		/*if (vsync)
 		{
 			vsync = 0;
 			count += 1;
-			if (count == 50)
+			if (count == 100)
 			{
 				play_sample();
 				count = 0;
 			}
-		}
-	*/
+		}*/
+	
 
 		__sleep();
-		//my_printf("Interrupt!");
 	}
 }

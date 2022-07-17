@@ -149,7 +149,9 @@ mix_audio.do_mix:
 
 	ld r7, [r6, CHANNEL_STRUCT_PHASE] 
 	add r7, r8	// r7 : PHASE + delta
+	st [r6, CHANNEL_STRUCT_PHASE], r7
 	cmp r7, AUDIO_FREQ
+
 	bnc mix_audio.no_sample_inc
 
 	sub r7, AUDIO_FREQ
@@ -162,7 +164,7 @@ mix_audio.do_mix:
 	bz  mix_audio.no_loop
 
 	ld  r8, [r6, CHANNEL_STRUCT_LOOP_END]
-	cmp r9, r8
+	cmp r8, r9
 	bnc mix_audio.done_sample_pos
 
 	ld  r9, [r6, CHANNEL_STRUCT_LOOP_START]
@@ -171,7 +173,7 @@ mix_audio.do_mix:
 mix_audio.no_loop:
 
 	ld  r8, [r6, CHANNEL_STRUCT_SAMPLE_END]
-	cmp r9, r8
+	cmp r8, r9
 	bnc mix_audio.done_sample_pos
 
 	st [r6, CHANNEL_STRUCT_FREQUENCY], r0

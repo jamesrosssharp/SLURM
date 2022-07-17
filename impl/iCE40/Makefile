@@ -59,6 +59,7 @@ SIEVE_BIN=../../games_n_demos/Sieve/build/sieve.bin
 MANDEL_BIN=../../games_n_demos/Mandelbrot/build/mandelbrot.bin
 CAPTOR_BIN=../../games_n_demos/Captor/build/captor.bin
 CHIPTUNE_BIN=../../games_n_demos/ChipTune/build/chiptune.bin
+DRUM_BIN=../../games_n_demos/DrumMachine/build/drummachine.bin
 
 GAME_BIN=$(BLOODLIST_BIN)
 
@@ -135,6 +136,11 @@ captor: $(PROJ).bin
 chiptune: $(PROJ).bin
 	$(ICEPROG) $(PROJ).bin
 	$(ICEPROG) -o 1M  $(CHIPTUNE_BIN) 
+
+.PHONY: drum
+drum: $(PROJ).bin
+	$(ICEPROG) $(PROJ).bin
+	$(ICEPROG) -o 1M  $(DRUM_BIN) 
 
 
 

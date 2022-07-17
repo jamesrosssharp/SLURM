@@ -1,19 +1,18 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Sat Jun 18 04:40:55 2022
+[*] Sun Jul 17 08:54:41 2022
 [*]
-[dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/013_DRUMMACHINE/dump.vcd"
-[dumpfile_mtime] "Sat Jun 18 04:40:22 2022"
-[dumpfile_size] 189477024
-[savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/013_DRUMMACHINE/config.gtkw"
-[timestart] 1372797000
-[size] 1920 996
+[dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/demo_verilator/013_DRUMMACHINE/dump.vcd"
+[dumpfile_mtime] "Sun Jul 17 08:53:12 2022"
+[dumpfile_size] 1356706351
+[savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/demo_verilator/013_DRUMMACHINE/config.gtkw"
+[timestart] 17166499000
+[size] 1920 989
 [pos] -1 -1
-*-19.194408 1373900000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-18.194408 17167400000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tb.
 [treeopen] tb.cpu0.
 [treeopen] tb.cpu0.cpu0.
-[treeopen] tb.cpu0.cpu0.cpu_mem0.
 [treeopen] tb.cpu0.mem0.
 [treeopen] tb.cpu0.pc0.
 [treeopen] tb.cpu0.pc0.gfx0.
@@ -31,61 +30,31 @@ tb.UART_BYTE[7:0]
 tb.UART_BYTE_DISPLAY[7:0]
 @200
 -
-@22
-tb.cpu0.cpu0.cpu_pc0.pc[15:0]
-@200
 -
 @22
 tb.cpu0.cpu0.memory_address[15:0]
 tb.cpu0.cpu0.memory_in[15:0]
 tb.cpu0.cpu0.memory_out[15:0]
 @28
-tb.cpu0.cpu0.cpu_mem0.memory_wr_mask[1:0]
 tb.cpu0.cpu0.cpu_wr0.memory_wr_mask_delayed[1:0]
 tb.cpu0.cpu0.memory_wr
 tb.cpu0.cpu0.memory_valid
 tb.cpu0.cpu0.memory_ready
-tb.cpu0.cpu0.cpu_mem0.memory_is_instruction
-tb.cpu0.cpu0.cpu_mem0.load_memory
-tb.cpu0.cpu0.cpu_mem0.store_memory
-@29
-tb.cpu0.cpu0.cpu_pip0.stall_memory_pipeline_stage3
 @200
 -
 @22
-tb.cpu0.cpu0.cpu_mem0.cpu_state_r[3:0]
-@28
-tb.cpu0.cpu0.cpu_mem0.is_executing
-tb.cpu0.cpu0.cpu_mem0.is_fetching
+tb.cpu0.cpu0.pip0.pc[14:0]
+tb.cpu0.cpu0.pip0.pc_stage0_r[14:0]
 @200
 -
-@28
-tb.cpu0.cpu0.cpu_haz0.load_pc
-tb.cpu0.cpu0.cpu_haz0.hazard
-tb.cpu0.cpu0.cpu_haz0.hazard1
-tb.cpu0.cpu0.cpu_haz0.hazard_23
 @22
-tb.cpu0.cpu0.cpu_haz0.hazard_reg0[3:0]
-tb.cpu0.cpu0.cpu_pip0.hazard_reg1[3:0]
-tb.cpu0.cpu0.cpu_pip0.hazard_reg2[3:0]
-tb.cpu0.cpu0.cpu_pip0.hazard_reg3[3:0]
-@28
-tb.cpu0.cpu0.cpu_haz0.hazard1_but_23_clear
-tb.cpu0.cpu0.cpu_pip0.alt_pip_ld_count_r_next[1:0]
+tb.cpu0.cpu0.pip0.pipeline_stage0[15:0]
+tb.cpu0.cpu0.pip0.pipeline_stage1[15:0]
+tb.cpu0.cpu0.pip0.pipeline_stage2[15:0]
+tb.cpu0.cpu0.pip0.pipeline_stage3[15:0]
+tb.cpu0.cpu0.pip0.pipeline_stage4[15:0]
 @200
 -
-@28
-tb.cpu0.cpu0.cpu_haz0.load_pc
-tb.cpu0.cpu0.cpu_haz0.prev_stall_r
-tb.cpu0.cpu0.cpu_haz0.stall
-tb.cpu0.cpu0.cpu_haz0.stall_end
-tb.cpu0.cpu0.cpu_haz0.stall_start
-tb.cpu0.cpu0.cpu_pip0.stall_mask_count_r[1:0]
-tb.cpu0.cpu0.cpu_pip0.alt_pip_ld_count_r[1:0]
-tb.cpu0.cpu0.cpu_pip0.reading_alt_pipeline
-tb.cpu0.cpu0.cpu_pip0.stall_count_r[2:0]
-tb.cpu0.cpu0.cpu_pip0.stall_read_count_r[2:0]
-@200
 -
 @28
 tb.cpu0.cpu0.cpu_exec0.memory_wr_mask[1:0]
@@ -115,17 +84,11 @@ tb.cpu0.pc0.tr0.traceVal_r[15:0]
 tb.cpu0.pc0.gfx0.spcon0.aram_WR
 @200
 -
-@22
-tb.cpu0.cpu0.cpu_pip0.pipeline_stage0[15:0]
-tb.cpu0.cpu0.cpu_pip0.pipeline_stage1[15:0]
-tb.cpu0.cpu0.cpu_pip0.pipeline_stage2[15:0]
-tb.cpu0.cpu0.cpu_pip0.pipeline_stage3[15:0]
-tb.cpu0.cpu0.cpu_pip0.pipeline_stage4[15:0]
-@200
 -
 @22
 tb.cpu0.cpu0.port_address[15:0]
 tb.cpu0.cpu0.port_in[15:0]
+@23
 tb.cpu0.cpu0.port_out[15:0]
 @28
 tb.cpu0.cpu0.port_rd
@@ -139,13 +102,12 @@ tb.cpu0.pc0.DATA_OUT[15:0]
 @28
 tb.cpu0.pc0.memRD
 tb.cpu0.pc0.memWR
+tb.cpu0.cpu0.alu0.Z
+tb.cpu0.cpu0.alu0.S
+tb.cpu0.cpu0.alu0.C
 @200
 -
 @22
-tb.cpu0.cpu0.cpu_pip0.imm_reg[15:0]
-tb.cpu0.cpu0.cpu_pip0.imm_reg[15:0]
-tb.cpu0.cpu0.cpu_pip0.imm_r[11:0]
-tb.cpu0.cpu0.cpu_pip0.imm_stage2_r[15:0]
 tb.cpu0.cpu0.reg0.\regFileA[1][15:0]
 tb.cpu0.cpu0.reg0.\regFileA[2][15:0]
 tb.cpu0.cpu0.reg0.\regFileA[3][15:0]
@@ -169,6 +131,7 @@ tb.cpu0.cpu0.cpu_exec0.regB[15:0]
 tb.cpu0.cpu0.cpu_wr0.reg_out[15:0]
 tb.cpu0.cpu0.cpu_wr0.memory_in[15:0]
 tb.cpu0.cpu0.cpu_wr0.instruction[15:0]
+tb.cpu0.cpu0.alu0.out[15:0]
 @200
 -
 @22

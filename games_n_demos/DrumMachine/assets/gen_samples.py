@@ -14,7 +14,10 @@ with open("samples.asm", "w") as asmFil:
                 dat = audioFile.read(4)
                 if dat == b'':
                     break
-                samp = struct.unpack('>hh', dat)[1] 
-                asmFil.write("\tdw %d\n" % samp)
+                samp = struct.unpack('f', dat)[0] 
+                asmFil.write("\tdw %d\n" % (samp*32768.0))
                 nsamp += 1
             print("Processed %d samples, %s bytes\n" % (nsamp, nsamp * 2))
+
+
+
