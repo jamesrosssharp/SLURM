@@ -118,8 +118,14 @@ audio_handler:
 	mov r1, 4
 	out [r0, 0x7001], r1
 
+	sub r13, 4
+	st  [r13, 2], r15
+
 	bl mix_audio
 	
+	ld r15, [r13,2]
+	add r13, 4
+
 	// Restore flags
 	ld r1, [r13, 0]
 	add r13, 2

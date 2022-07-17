@@ -149,15 +149,20 @@ mix_audio.do_mix:
 
 	ld r7, [r6, CHANNEL_STRUCT_PHASE] 
 	add r7, r8	// r7 : PHASE + delta
+
+	bc mix_audio.definitely_sub
+
 	st [r6, CHANNEL_STRUCT_PHASE], r7
 	cmp r7, AUDIO_FREQ
 
 	bc mix_audio.no_sample_inc
 
+mix_audio.definitely_sub:
+
 	sub r7, AUDIO_FREQ
 	st [r6, CHANNEL_STRUCT_PHASE], r7
 
-	add r9, 2//r10
+	add r9, r10
 	
 	ldb r7, [r6, CHANNEL_STRUCT_LOOP] // r7: loop flag
 	or  r7, r7
@@ -217,6 +222,8 @@ mix_audio.skip_channel:
 	ld r10, [r13, 16]
 	ld r11, [r13, 18]
 	ld r12, [r13, 20]
+
+//	add r13, 32
 
 	// Restore old stack pointer
 	ld r13, [r0, old_stack]
