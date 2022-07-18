@@ -165,15 +165,15 @@ Class 4: branch operation
         3  - BNS, branch if not sign
         4  - BC, BLTU branch if carry or unsigned less than
         5  - BNC, BGEU branch if not carry or unsigned greater than or equal
-	6  - BV, branch if overflow     
-	7  - BNV, branch if not overflow
-	8  - BLT, branch if (signed) less than
-	9  - BLE, branch if (signed) less than or equal
-	10 - BGT, branch if (signed) greater than
-	11 - BGE, branch if (signed) greater than or equal
-	12 - BLEU, branch if (unsigned) less than or equal
-	13 - BGTU, branch if (unsigned) greater than
-	14 - BA, branch always
+        6  - BV, branch if overflow     
+        7  - BNV, branch if not overflow
+        8  - BLT, branch if (signed) less than
+        9  - BLE, branch if (signed) less than or equal
+        10 - BGT, branch if (signed) greater than
+        11 - BGE, branch if (signed) greater than or equal
+        12 - BLEU, branch if (unsigned) less than or equal
+        13 - BGTU, branch if (unsigned) greater than
+        14 - BA, branch always
         15 - BL, branch and link
     REG: index register for register branch
     IMM LO: 4 bit immediate for immediate branch
