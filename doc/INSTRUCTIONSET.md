@@ -159,22 +159,22 @@ Class 4: branch operation
 |0  | 1  | 0  | 0  | BRNCH  |   REG   | IMM LO      |
 
     BRNCH:
-        0  - BZ, branch if zero
-        1  - BNZ, branch if not zero
+        0  - BZ, BEQ branch if zero
+        1  - BNZ, BNE branch if not zero
         2  - BS, branch if sign
         3  - BNS, branch if not sign
-        4  - BC, branch if carry
-        5  - BNC, branch if not carry
-        6  - BA, branch always
-        7  - BL, branch and link
-		8  - BEQ, branch if equal
-		9  - BNE, branch if not equal
-		10 - BGT, branch if greater than
-		11 - BGE, branch if greater than or equal
-		12 - BLT, branch if less than
-		13 - BLE, branch if less than or equal
-		14 - Reserved  
-		15 - Reserved
+        4  - BC, BLTU branch if carry or unsigned less than
+        5  - BNC, BGEU branch if not carry or unsigned greater than or equal
+	6  - BV, branch if overflow     
+	7  - BNV, branch if not overflow
+	8  - BLT, branch if (signed) less than
+	9  - BLE, branch if (signed) less than or equal
+	10 - BGT, branch if (signed) greater than
+	11 - BGE, branch if (signed) greater than or equal
+	12 - BLEU, branch if (unsigned) less than or equal
+	13 - BGTU, branch if (unsigned) greater than
+	14 - BA, branch always
+        15 - BL, branch and link
     REG: index register for register branch
     IMM LO: 4 bit immediate for immediate branch
 	PC <- [REG] + IMM

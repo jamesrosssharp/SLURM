@@ -88,13 +88,14 @@ input [15:0] ins;
 input Z_in;
 input S_in;
 input C_in;
+input V_in;
 begin
 	case(ins[11:8])
-		4'b0000:		/* 0x0 - BZ, branch if ZERO */
+		4'b0000:		/* 0x0 - BZ, BEQ branch if ZERO */
 			if (Z_in == 1'b1) branch_taken_from_ins = 1'b1;
 			else branch_taken_from_ins = 1'b0;
 	
-		4'b0001:		/* 0x1 - BNZ, branch if not ZERO */
+		4'b0001:		/* 0x1 - BNZ, BNE branch if not ZERO */
 			if (Z_in == 1'b0) branch_taken_from_ins = 1'b1;
 			else branch_taken_from_ins = 1'b0;
 	
@@ -106,35 +107,41 @@ begin
 			if (S_in == 1'b0) branch_taken_from_ins = 1'b1;
 			else branch_taken_from_ins = 1'b0;
 	
-		4'b0100:		/* 0x4 - BC, branch if CARRY */
+		4'b0100:		/* 0x4 - BC, BLTU branch if CARRY */
 			if (C_in == 1'b1) branch_taken_from_ins = 1'b1;
 			else branch_taken_from_ins = 1'b0;
 	
-		4'b0101:		/* 0x5 - BNC, branch if not CARRY */
+		4'b0101:		/* 0x5 - BNC, BGEU, branch if not CARRY */
 			if (C_in == 1'b0) branch_taken_from_ins = 1'b1;
 			else branch_taken_from_ins = 1'b0;
-		4'b0110:		/* 0x6 - BA, branch always */
-			branch_taken_from_ins = 1'b1;
-		4'b0111:		/* 0x7 - BL, branch link */
-			branch_taken_from_ins = 1'b1; 
-		4'b1000:		/* 0x8 - BEQ */
-			if (Z_in == 1'b1) branch_taken_from_ins = 1'b1;
+		4'b0110:		/* 0x6 - BV, branch if OVERFLOW */
+			if (V_in == 1'b1) branch_taken_from_ins = 1'b1;
 			else branch_taken_from_ins = 1'b0;
-		4'b1001:		/* 0x9 - BNE */
-			if (Z_in == 1'b0) branch_taken_from_ins = 1'b1;
+		4'b0111:		/* 0x6 - BNV, branch if not OVERFLOW */
+			if (V_in == 1'b0) branch_taken_from_ins = 1'b1;
+			else branch_taken_from_ins = 1'b0;
+		4'b1000:		/* 0x8 - BLT */
+			if ((S_in ^ V_in) == 1'b1) branch_taken_from_ins = 1'b1;
+			else branch_taken_from_ins = 1'b0;
+		4'b1001:		/* 0x9 - BLE */
+			if ((Z_in == 1'b1) && (S_in ^ V_in)) branch_taken_from_ins = 1'b1;
 			else branch_taken_from_ins = 1'b0;
  		4'b1010:		/* 0xa - BGT */
-			if (S_in == 1'b0 && Z_in == 1'b0) branch_taken_from_ins = 1'b1;
+			if ((S_in == V_in) && Z_in == 1'b0) branch_taken_from_ins = 1'b1;
 			else branch_taken_from_ins = 1'b0;	
 		4'b1011:		/* 0xb - BGE */
-			if (S_in == 1'b0 || Z_in == 1'b1) branch_taken_from_ins = 1'b1;
+			if (S_in == V_in) branch_taken_from_ins = 1'b1;
 			else branch_taken_from_ins = 1'b0;	
-  		4'b1100:		/* 0xc - BLT */
-			if (S_in == 1'b1 && Z_in == 1'b0) branch_taken_from_ins = 1'b1;
+  		4'b1100:		/* 0xc - BLEU */
+			if (C_in == 1'b1 || Z_in == 1'b1) branch_taken_from_ins = 1'b1;
 			else branch_taken_from_ins = 1'b0;	
-		4'b1101:		/* 0xd - BLE */
-			if (S_in == 1'b1 || Z_in == 1'b1) branch_taken_from_ins = 1'b1;
+		4'b1101:		/* 0xd - BGTU */
+			if (C_in == 1'b0 && Z_in == 1'b0) branch_taken_from_ins = 1'b1;
 			else branch_taken_from_ins = 1'b0;	
+		4'b1110:		/* 0xe - BA, branch always */
+			branch_taken_from_ins = 1'b1;
+		4'b1111:		/* 0xf - BL, branch link */
+			branch_taken_from_ins = 1'b1; 	
 		default:	
   			branch_taken_from_ins = 1'b0;
 	endcase
