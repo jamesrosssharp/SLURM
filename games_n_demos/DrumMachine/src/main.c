@@ -121,7 +121,7 @@ struct channel_t {
 
 extern struct channel_t channel_info[]; 
 
-void play_sample(short freq, short SAMPLE)
+void play_sample(short freq, short SAMPLE, short volume)
 {
 
 	//#define SAMPLE 0
@@ -134,8 +134,8 @@ void play_sample(short freq, short SAMPLE)
 	//for (CHANNEL = 0; CHANNEL < 4; CHANNEL += 2)
 	//{
 
-	//if (channel_info[CHANNEL].frequency)
-	//	return;
+	if (channel_info[CHANNEL].frequency)
+		return;
 
 	channel_info[CHANNEL].sample_start = g_samples[SAMPLE].offset;
 	channel_info[CHANNEL].sample_end   = g_samples[SAMPLE].offset + g_samples[SAMPLE].sample_len;
@@ -152,7 +152,7 @@ void play_sample(short freq, short SAMPLE)
 
 	channel_info[CHANNEL].phase = 0;
 
-	channel_info[CHANNEL].volume = 63;
+	channel_info[CHANNEL].volume = volume;
 	channel_info[CHANNEL].loop   = g_samples[SAMPLE].loop;	
 	channel_info[CHANNEL].bits   = g_samples[SAMPLE].bit_depth + 1; // 1 = 8 bit, 2 = 16 bit
 
@@ -183,7 +183,86 @@ void init_audio()
 #define A_KEY 16
 #define B_KEY 32
 
+struct note {
+	short sample;
+	short volume;
+	short freq;
+	short on;
+};
 
+struct row {
+	struct note notes[3];
+};
+
+struct row drum_pattern[] = 
+{
+	{{{0, 63, 22000, 1}, {0, 0, 0, 0}, {2, 63, 11000, 1}}},
+	{{{0, 0, 0, 0},		    {0, 0, 0, 0}, {0, 0, 0, 0}}},
+	{{{0, 0, 0, 0}, 	    {0, 0, 0, 0}, {2, 31, 11000, 1}}},
+	{{{0, 0, 0, 0},		    {0, 0, 0, 0}, {0, 0, 0, 0}}},
+	{{{0, 0, 0, 0}, 	    {1, 63, 20000, 1}, {2, 40, 11000, 1}}},
+	{{{0, 0, 0, 0},		    {0, 0, 0, 0}, {0, 0, 0, 0}}},
+	{{{0, 0, 0, 0}, 	    {0, 0, 0, 0}, {2, 31, 11000, 1}}},
+	{{{0, 0, 0, 0},		    {0, 0, 0, 0}, {0, 0, 0, 0}}},
+	{{{0, 63, 22000, 1}, {0, 0, 0, 0}, {2, 63, 11000, 1}}},
+	{{{0, 0, 0, 0},		    {0, 0, 0, 0}, {0, 0, 0, 0}}},
+	{{{0, 41, 22000, 1}, 	    {0, 0, 0, 0}, {2, 31, 11000, 1}}},
+	{{{0, 0, 0, 0},		    {0, 0, 0, 0}, {0, 0, 0, 0}}},
+	{{{0, 0, 0, 0}, 	    {1, 63, 20000, 1}, {2, 40, 11000, 1}}},
+	{{{0, 0, 0, 0},		    {0, 0, 0, 0}, {0, 0, 0, 0}}},
+	{{{0, 0, 0, 0}, 	    {0, 0, 0, 0}, {2, 31, 11000, 1}}},
+	{{{0, 0, 0, 0},		    {0, 0, 0, 0}, {0, 0, 0, 0}}},
+	{{{0, 63, 22000, 1}, {0, 0, 0, 0}, {2, 63, 11000, 1}}},
+	{{{0, 0, 0, 0},		    {0, 0, 0, 0}, {0, 0, 0, 0}}},
+	{{{0, 0, 0, 0}, 	    {0, 0, 0, 0}, {2, 31, 11000, 1}}},
+	{{{0, 0, 0, 0},		    {0, 0, 0, 0}, {0, 0, 0, 0}}},
+	{{{0, 0, 0, 0}, 	    {1, 63, 20000, 1}, {2, 40, 11000, 1}}},
+	{{{0, 0, 0, 0},		    {0, 0, 0, 0}, {0, 0, 0, 0}}},
+	{{{0, 0, 0, 0}, 	    {0, 0, 0, 0}, {2, 31, 11000, 1}}},
+	{{{0, 0, 0, 0},		    {0, 0, 0, 0}, {0, 0, 0, 0}}},
+	{{{0, 63, 22000, 1}, {0, 0, 0, 0}, {2, 63, 11000, 1}}},
+	{{{0, 0, 0, 0},		    {0, 0, 0, 0}, {0, 0, 0, 0}}},
+	{{{0, 41, 22000, 1}, 	    {0, 0, 0, 0}, {2, 31, 11000, 1}}},
+	{{{0, 0, 0, 0},		    {0, 0, 0, 0}, {0, 0, 0, 0}}},
+	{{{0, 0, 0, 0}, 	    {1, 63, 20000, 1}, {2, 40, 11000, 1}}},
+	{{{0, 0, 0, 0},		    {0, 0, 0, 0}, {0, 0, 0, 0}}},
+	{{{0, 0, 0, 0}, 	    {1, 41, 20000, 0}, {2, 31, 11000, 1}}},
+	{{{0, 0, 0, 0},		    {1, 31, 20000, 0}, {0, 0, 0, 0}}},
+};
+
+short g_playing = 0;
+
+short g_row = 0;
+
+void start_drum_machine() {
+	g_playing = 1;
+}
+
+void stop_drum_machine() {
+	g_playing = 0;
+}
+
+void update_drum_machine() {
+
+	struct row * row;
+	int i;
+
+	if (g_playing == 0)
+		return;
+
+	row = &drum_pattern[g_row];
+
+	for (i = 0; i < 3; i++)
+	{
+		//if (row->notes[i].on)
+			play_sample(row->notes[i].freq, row->notes[i].sample, row->notes[i].volume);
+	}
+
+	g_row++;
+
+	if (g_row >= COUNT_OF(drum_pattern))
+		g_row = 0;
+}
 
 int main()
 {
@@ -208,25 +287,26 @@ int main()
 	
 
 
-		if ((keys & UP_KEY) && ((keys ^ old_keys) & UP_KEY)) play_sample(24000, 0);
-		if ((keys & DOWN_KEY) && ((keys ^ old_keys) & DOWN_KEY)) play_sample(22000, 0);
-		if ((keys & LEFT_KEY) && ((keys ^ old_keys) & LEFT_KEY)) play_sample(20000, 1);
-		if ((keys & RIGHT_KEY) && ((keys ^ old_keys) & RIGHT_KEY)) play_sample(10000, 1);
-		if ((keys & A_KEY) && ((keys ^ old_keys) & A_KEY)) play_sample(8000, 2);
-		if ((keys & B_KEY) && ((keys ^ old_keys) & B_KEY)) play_sample(11000, 2);
+		if ((keys & UP_KEY) && ((keys ^ old_keys) & UP_KEY)) play_sample(24000, 0, 63);
+		if ((keys & DOWN_KEY) && ((keys ^ old_keys) & DOWN_KEY)) play_sample(22000, 0, 63);
+		if ((keys & LEFT_KEY) && ((keys ^ old_keys) & LEFT_KEY)) play_sample(20000, 1, 63);
+		if ((keys & RIGHT_KEY) && ((keys ^ old_keys) & RIGHT_KEY)) play_sample(11000, 2, 63);
+		if ((keys & A_KEY) && ((keys ^ old_keys) & A_KEY)) start_drum_machine();
+		if ((keys & B_KEY) && ((keys ^ old_keys) & B_KEY)) stop_drum_machine();
 
 		old_keys = keys;
 
 		//my_printf("Interrupt!");
 		if (vsync)
 		{
-			//vsync = 0;
-			//count += 1;
-			//if (count == 4)
-			//{
-				frame++;
-			//	count = 0;
-			//}
+			frame++;
+			vsync = 0;
+			count += 1;
+			if (count == 8)
+			{
+				update_drum_machine();
+				count = 0;
+			}
 		}
 		copperList[0] = 0x7000 | (frame & 31);
 		load_copper_list(copperList, COUNT_OF(copperList));
