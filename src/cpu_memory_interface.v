@@ -79,7 +79,7 @@ reg [1:0]		   data_wr_mask_stage_1, data_wr_mask_stage_1_next;
 reg [ADDRESS_BITS - 1 : 0] address_stage_2;
 reg [2:0] 		   flags_stage_2;
 reg [1:0]		   data_wr_mask_stage_2;
-
+reg [BITS - 1 : 0] 	   data_stage_2;
 
 assign data_out 	= data_stage_1; 
 assign wr_mask		= data_wr_mask_stage_1;
@@ -93,6 +93,7 @@ begin
 		flags_stage_2   <= 3'b000;
 		address_stage_2 <= {ADDRESS_BITS{1'b0}}; 
 		data_wr_mask_stage_2 <= 2'b00;
+		data_stage_2 <= 16'h0000;
 	end else begin	
 		// Pipeline always advances.
 		// When we are changing banks, xxx_stage_1 will be held at
@@ -100,6 +101,7 @@ begin
 		flags_stage_2   <= flags_stage_1;
 		address_stage_2 <= address_stage_1;
 		data_wr_mask_stage_2 <= data_wr_mask_stage_1;
+		data_stage_2 <= data_stage_1;
 	end
 end
 
@@ -168,7 +170,9 @@ begin
 				//flags_stage_1_next[0] 	= 1'b1; // Don't explicitly write the memory until 
 							       // we are executing again and the request comes
 							       // in again from cpu
+				data_stage_1_next = data_stage_2;
 				data_wr_mask_stage_1_next = data_wr_mask_stage_2;
+
 
 			end else if (data_memory_read_req || data_memory_write_req) begin
 				

@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Sun Jul 17 09:15:40 2022
+[*] Sun Jul 17 11:14:03 2022
 [*]
 [dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/demo_verilator/013_DRUMMACHINE/dump.vcd"
-[dumpfile_mtime] "Sun Jul 17 09:14:49 2022"
-[dumpfile_size] 1541331379
+[dumpfile_mtime] "Sun Jul 17 11:04:26 2022"
+[dumpfile_size] 1733922467
 [savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/demo_verilator/013_DRUMMACHINE/config.gtkw"
-[timestart] 17596798000
-[size] 1920 989
-[pos] -1 -1
-*-19.194408 17598600000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[timestart] 42010300000
+[size] 1381 907
+[pos] 505 46
+*-26.194408 42137400000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tb.
 [treeopen] tb.cpu0.
 [treeopen] tb.cpu0.cpu0.
@@ -20,7 +20,7 @@
 [sst_width] 290
 [signals_width] 380
 [sst_expanded] 1
-[sst_vpaned_height] 281
+[sst_vpaned_height] 247
 @28
 tb.cpu0.cpu0.CLK
 tb.cpu0.cpu0.RSTb
@@ -40,10 +40,12 @@ tb.cpu0.cpu0.cpu_wr0.memory_wr_mask_delayed[1:0]
 tb.cpu0.cpu0.memory_wr
 tb.cpu0.cpu0.memory_valid
 tb.cpu0.cpu0.memory_ready
+tb.cpu0.cpu0.mem0.data_memory_success
 @200
 -
-@22
+@23
 tb.cpu0.cpu0.pip0.pc[14:0]
+@22
 tb.cpu0.cpu0.pip0.pc_stage0_r[14:0]
 @200
 -
@@ -115,9 +117,7 @@ tb.cpu0.cpu0.reg0.\regFileA[5][15:0]
 tb.cpu0.cpu0.reg0.\regFileA[6][15:0]
 tb.cpu0.cpu0.reg0.\regFileA[7][15:0]
 tb.cpu0.cpu0.reg0.\regFileA[8][15:0]
-@23
 tb.cpu0.cpu0.reg0.\regFileA[9][15:0]
-@22
 tb.cpu0.cpu0.reg0.\regFileA[10][15:0]
 tb.cpu0.cpu0.reg0.\regFileA[11][15:0]
 tb.cpu0.cpu0.reg0.\regFileA[12][15:0]
@@ -127,12 +127,19 @@ tb.cpu0.cpu0.reg0.\regFileA[15][15:0]
 @200
 -
 @22
+tb.cpu0.cpu0.pip0.imm_reg[15:0]
 tb.cpu0.cpu0.cpu_exec0.regA[15:0]
 tb.cpu0.cpu0.cpu_exec0.regB[15:0]
 tb.cpu0.cpu0.cpu_wr0.reg_out[15:0]
 tb.cpu0.cpu0.cpu_wr0.memory_in[15:0]
 tb.cpu0.cpu0.cpu_wr0.instruction[15:0]
 tb.cpu0.cpu0.alu0.out[15:0]
+@200
+-
+@22
+tb.cpu0.cpu0.alu0.subOp[16:0]
+@28
+tb.cpu0.cpu0.alu0.C_flag_reg
 @200
 -
 @22

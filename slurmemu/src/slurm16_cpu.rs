@@ -751,9 +751,11 @@ impl Slurm16CPU {
 
     pub fn ret_op(&mut self, instruction : u16) {
         if (instruction & 1) == 1 {
+            //println!("IRET: flags {} {} {} pc {:#01x} instruction {:#01x} ilr {:#01x}", self.c, self.z, self.s, self.pc, instruction, self.get_register(14));
             self.int_flag = true;
             let addr = self.get_register(14);
             self.pc = addr - 2; // This will get incremented
+
 
         } else {
 
@@ -885,6 +887,8 @@ impl Slurm16CPU {
             {
                 self.registers[14] = self.pc;
             }
+
+            //println!("Int: flags: {} {} {}", self.c, self.z, self.s);
 
 
             self.int_flag = false;

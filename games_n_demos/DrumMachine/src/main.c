@@ -3,6 +3,27 @@
 #include <slurminterrupt.h>
 #include <slurmflash.h>
 
+extern void load_copper_list(short* list, int len);
+extern void load_palette(short* palette, int offset, int len);
+
+#define COUNT_OF(x) ((sizeof(x)) / (sizeof(x[0])))
+
+short copperList[] = {
+		0x6000,
+		0x6f00,
+		0x7007,
+		0x60f0,
+		0x7007,
+		0x600f,
+		0x7007,
+		0x60ff,
+		0x7007,
+		0x4200,
+		0x1001,
+		0x2fff		 
+};
+
+
 
 #include "printf.cc"
 
@@ -37,6 +58,8 @@ struct sample {
 };
 
 extern short Bassdrum;
+extern short Snare;
+extern short ClosedHihat;
 
 struct sample g_samples[4] = {
 	{
@@ -44,10 +67,28 @@ struct sample g_samples[4] = {
 		(char*)&Bassdrum,
 		1,
 		0,
-		20000,
+		22050,
 		0,
 		9468,
 		9468
+	},
+	{
+		(char*)&Snare,
+		1,
+		0,
+		8000,
+		0,
+		0,
+		9258
+	},
+	{
+		(char*)&ClosedHihat,
+		1,
+		0,
+		11000,
+		0,
+		0,
+		4670
 	}
 };
 
@@ -80,20 +121,21 @@ struct channel_t {
 
 extern struct channel_t channel_info[]; 
 
-void play_sample(short freq)
+void play_sample(short freq, short SAMPLE)
 {
 
-	#define SAMPLE 0
+	//#define SAMPLE 0
 	//#define CHANNEL 0
 	//#define CHANNEL2 4
+	int channels[] = {1, 4, 2};
 
-	int CHANNEL;
+	int CHANNEL = channels[SAMPLE];
 
-	for (CHANNEL = 0; CHANNEL < 4; CHANNEL += 2)
-	{
+	//for (CHANNEL = 0; CHANNEL < 4; CHANNEL += 2)
+	//{
 
-	if (channel_info[CHANNEL].frequency)
-		return;
+	//if (channel_info[CHANNEL].frequency)
+	//	return;
 
 	channel_info[CHANNEL].sample_start = g_samples[SAMPLE].offset;
 	channel_info[CHANNEL].sample_end   = g_samples[SAMPLE].offset + g_samples[SAMPLE].sample_len;
@@ -114,7 +156,7 @@ void play_sample(short freq)
 	channel_info[CHANNEL].loop   = g_samples[SAMPLE].loop;	
 	channel_info[CHANNEL].bits   = g_samples[SAMPLE].bit_depth + 1; // 1 = 8 bit, 2 = 16 bit
 
-	}
+	//}
 
 }
 
@@ -146,7 +188,14 @@ void init_audio()
 int main()
 {
 	int count = 0;
-	
+	short old_keys = 0;
+	short frame = 0;
+
+	load_copper_list(copperList, COUNT_OF(copperList));
+	__out(0x5d20, 1);
+
+
+
 	enable_interrupts();
 
 	//play_sample(22050);
@@ -156,26 +205,31 @@ int main()
 	{
 
 		short keys =  __in(0x1001);
+	
 
-		if (keys & UP_KEY) play_sample(24000);
-		if (keys & DOWN_KEY) play_sample(22000);
-		if (keys & LEFT_KEY) play_sample(20000);
-		if (keys & RIGHT_KEY) play_sample(18000);
-		if (keys & A_KEY) play_sample(15000);
-		if (keys & B_KEY) play_sample(10000);
 
+		if ((keys & UP_KEY) && ((keys ^ old_keys) & UP_KEY)) play_sample(24000, 0);
+		if ((keys & DOWN_KEY) && ((keys ^ old_keys) & DOWN_KEY)) play_sample(22000, 0);
+		if ((keys & LEFT_KEY) && ((keys ^ old_keys) & LEFT_KEY)) play_sample(20000, 1);
+		if ((keys & RIGHT_KEY) && ((keys ^ old_keys) & RIGHT_KEY)) play_sample(10000, 1);
+		if ((keys & A_KEY) && ((keys ^ old_keys) & A_KEY)) play_sample(8000, 2);
+		if ((keys & B_KEY) && ((keys ^ old_keys) & B_KEY)) play_sample(11000, 2);
+
+		old_keys = keys;
 
 		//my_printf("Interrupt!");
-		/*if (vsync)
+		if (vsync)
 		{
-			vsync = 0;
-			count += 1;
-			if (count == 100)
-			{
-				play_sample();
-				count = 0;
-			}
-		}*/
+			//vsync = 0;
+			//count += 1;
+			//if (count == 4)
+			//{
+				frame++;
+			//	count = 0;
+			//}
+		}
+		copperList[0] = 0x7000 | (frame & 31);
+		load_copper_list(copperList, COUNT_OF(copperList));
 	
 
 		__sleep();
