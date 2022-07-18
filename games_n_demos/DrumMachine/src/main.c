@@ -134,8 +134,8 @@ void play_sample(short freq, short SAMPLE, short volume)
 	//for (CHANNEL = 0; CHANNEL < 4; CHANNEL += 2)
 	//{
 
-	if (channel_info[CHANNEL].frequency)
-		return;
+	//if (channel_info[CHANNEL].frequency)
+	//	return;
 
 	channel_info[CHANNEL].sample_start = g_samples[SAMPLE].offset;
 	channel_info[CHANNEL].sample_end   = g_samples[SAMPLE].offset + g_samples[SAMPLE].sample_len;
@@ -225,9 +225,9 @@ struct row drum_pattern[] =
 	{{{0, 41, 22000, 1}, 	    {0, 0, 0, 0}, {2, 31, 11000, 1}}},
 	{{{0, 0, 0, 0},		    {0, 0, 0, 0}, {0, 0, 0, 0}}},
 	{{{0, 0, 0, 0}, 	    {1, 63, 20000, 1}, {2, 40, 11000, 1}}},
-	{{{0, 0, 0, 0},		    {0, 0, 0, 0}, {0, 0, 0, 0}}},
-	{{{0, 0, 0, 0}, 	    {1, 41, 20000, 0}, {2, 31, 11000, 1}}},
-	{{{0, 0, 0, 0},		    {1, 31, 20000, 0}, {0, 0, 0, 0}}},
+	{{{0, 0, 0, 0},		    {1, 21, 20000, 1}, {0, 0, 0, 0}}},
+	{{{0, 0, 0, 0}, 	    {1, 41, 20000, 1}, {2, 31, 11000, 1}}},
+	{{{0, 0, 0, 0},		    {1, 31, 20000, 1}, {2, 35, 11000, 1}}},
 };
 
 short g_playing = 0;
@@ -250,11 +250,13 @@ void update_drum_machine() {
 	if (g_playing == 0)
 		return;
 
+	global_interrupt_disable();
+
 	row = &drum_pattern[g_row];
 
 	for (i = 0; i < 3; i++)
 	{
-		//if (row->notes[i].on)
+		if (row->notes[i].on)
 			play_sample(row->notes[i].freq, row->notes[i].sample, row->notes[i].volume);
 	}
 
@@ -262,6 +264,8 @@ void update_drum_machine() {
 
 	if (g_row >= COUNT_OF(drum_pattern))
 		g_row = 0;
+
+	global_interrupt_enable();
 }
 
 int main()
