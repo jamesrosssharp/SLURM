@@ -6,15 +6,15 @@
 void Assembly::makeArithmeticInstructionWithImmediate(OpCode opcode, Register regDest, int32_t value, std::vector<uint16_t>& assembledWords, uint32_t lineNum)
 {
 
-	uint16_t op 	= 0;
-	uint16_t aluOp 	= 0;
+	uint16_t op		= 0;
+	uint16_t aluOp	= 0;
 
-    if ((((uint32_t)value & 0xffff) != (uint32_t)value) && (value > 0))
-    {
-        std::stringstream ss;
-        ss << "Error: expression will not fit in 16 bits on line " << lineNum << std::endl;
-        throw std::runtime_error(ss.str());
-    }
+	if ((((uint32_t)value & 0xffff) != (uint32_t)value) && (value > 0))
+	{
+		std::stringstream ss;
+		ss << "Error: expression will not fit in 16 bits on line " << lineNum << std::endl;
+		throw std::runtime_error(ss.str());
+	}
 
 	switch (opcode)
 	{
@@ -27,13 +27,13 @@ void Assembly::makeArithmeticInstructionWithImmediate(OpCode opcode, Register re
 		case OpCode::ADC:
 			aluOp = 2;
 			break;			
-    	case OpCode::SUB:
+		case OpCode::SUB:
 			aluOp = 3;
 			break;
 		case OpCode::SBB:
 			aluOp = 4;
 			break;
-    	case OpCode::AND:
+		case OpCode::AND:
 			aluOp = 5;
 			break;
 		case OpCode::OR:
@@ -56,37 +56,37 @@ void Assembly::makeArithmeticInstructionWithImmediate(OpCode opcode, Register re
 			break;
 		default:
 		{
-	        std::stringstream ss;
-            ss << "Unsupported ALU operation for reg, immediate mode on line " << lineNum << std::endl;
-            throw std::runtime_error(ss.str());  
+			std::stringstream ss;
+			ss << "Unsupported ALU operation for reg, immediate mode on line " << lineNum << std::endl;
+			throw std::runtime_error(ss.str());  
 		}
 	}
 
 
 	if (value >= 0 && value < 16)
-    {
+	{
 		op = SLRM_ALU_REG_IMM_INSTRUCTION | ((aluOp & 0xf) << 8) | ((int)regDest << 4) | ((uint16_t)value);
 
-        if (assembledWords.size() == 2)
-    	{
-		    assembledWords[0] = SLRM_IMM_INSTRUCTION;
-        	assembledWords[1] = op;
+		if (assembledWords.size() == 2)
+		{
+			assembledWords[0] = SLRM_IMM_INSTRUCTION;
+			assembledWords[1] = op;
 		}
 		else
-        	assembledWords[0] = op;
-    }
+			assembledWords[0] = op;
+	}
 	else
 	{	
-        if (assembledWords.size() != 2)
-        {
-            std::stringstream ss;
-            ss << "Error: not enough space allocated for instruction on line " << lineNum << std::endl;
-            throw std::runtime_error(ss.str());
-        }
+		if (assembledWords.size() != 2)
+		{
+			std::stringstream ss;
+			ss << "Error: not enough space allocated for instruction on line " << lineNum << std::endl;
+			throw std::runtime_error(ss.str());
+		}
 		assembledWords[0] = SLRM_IMM_INSTRUCTION | ((uint16_t)value >> 4);
 	
 		op = SLRM_ALU_REG_IMM_INSTRUCTION | ((aluOp & 0xf) << 8) | ((int)regDest << 4) | ((uint16_t)value & 0xf);
-        assembledWords[1] = op;
+		assembledWords[1] = op;
 	}
 
 }
@@ -104,13 +104,13 @@ static void get_aluOp(OpCode opcode, uint32_t lineNum, uint16_t& aluOp)
 		case OpCode::ADC:
 			aluOp = 2;
 			break;			
-    	case OpCode::SUB:
+		case OpCode::SUB:
 			aluOp = 3;
 			break;
 		case OpCode::SBB:
 			aluOp = 4;
 			break;
-    	case OpCode::AND:
+		case OpCode::AND:
 			aluOp = 5;
 			break;
 		case OpCode::OR:
@@ -125,7 +125,7 @@ static void get_aluOp(OpCode opcode, uint32_t lineNum, uint16_t& aluOp)
 		case OpCode::MULU:
 			aluOp = 9;
 			break;
-    	case OpCode::ASR:
+		case OpCode::ASR:
 			aluOp = 16;
 			break;
 		case OpCode::LSR:
@@ -140,7 +140,7 @@ static void get_aluOp(OpCode opcode, uint32_t lineNum, uint16_t& aluOp)
 		case OpCode::RORC:
 			aluOp = 20;
 			break;
-    	case OpCode::ROL:
+		case OpCode::ROL:
 			aluOp = 21;
 			break;
 		case OpCode::ROR:
@@ -183,62 +183,62 @@ static void get_aluOp(OpCode opcode, uint32_t lineNum, uint16_t& aluOp)
 			break;
 		default:
 		{
-	        std::stringstream ss;
-            ss << "Unsupported ALU operation on line " << lineNum << std::endl;
-            throw std::runtime_error(ss.str());  
+			std::stringstream ss;
+			ss << "Unsupported ALU operation on line " << lineNum << std::endl;
+			throw std::runtime_error(ss.str());  
 		}
 	}
 }
 
 void Assembly::makeThreeRegisterArithmeticInstruction(OpCode opcode,
-                                         Register regDest,
-                                         Register regSrc, Register regSrc2, std::vector<uint16_t>& assembledWords,
-                                         uint32_t lineNum)
+										 Register regDest,
+										 Register regSrc, Register regSrc2, std::vector<uint16_t>& assembledWords,
+										 uint32_t lineNum)
 {
 
-	uint16_t op 	= 0;
-	uint16_t aluOp 	= 0;
+	uint16_t op		= 0;
+	uint16_t aluOp	= 0;
 	
 	get_aluOp(opcode, lineNum, aluOp);
 
 	throw std::runtime_error("Cannot make three reg alu op");
 
-    assembledWords[0] = op;
+	assembledWords[0] = op;
 
 }
 
 void Assembly::makeExtendedArithmeticInstruction(OpCode opcode,
-                                         Register regDest, std::vector<uint16_t>& assembledWords,
-                                         uint32_t lineNum)
+										 Register regDest, std::vector<uint16_t>& assembledWords,
+										 uint32_t lineNum)
 {
 
-	uint16_t op 	= 0;
-	uint16_t aluOp 	= 0;
+	uint16_t op		= 0;
+	uint16_t aluOp	= 0;
 
 	get_aluOp(opcode, lineNum, aluOp);
 
 	op = SLRM_ALU_SINGLE_REG_INSTRUCTION | ((aluOp & 0xf) << 4) | ((int)regDest);
 
-    assembledWords[0] = op;
+	assembledWords[0] = op;
 
 }
 
 
 
 void Assembly::makeArithmeticInstruction(OpCode opcode,
-                                         Register regDest,
-                                         Register regSrc, std::vector<uint16_t>& assembledWords,
-                                         uint32_t lineNum)
+										 Register regDest,
+										 Register regSrc, std::vector<uint16_t>& assembledWords,
+										 uint32_t lineNum)
 {
 
-	uint16_t op 	= 0;
-	uint16_t aluOp 	= 0;
+	uint16_t op		= 0;
+	uint16_t aluOp	= 0;
 
 	get_aluOp(opcode, lineNum, aluOp);
 
 	op = SLRM_ALU_REG_REG_INSTRUCTION | ((aluOp & 0xf) << 8) | ((int)regDest << 4) | ((int)regSrc);
 
-    assembledWords[0] = op;
+	assembledWords[0] = op;
 
 }
 
@@ -249,9 +249,11 @@ static uint16_t get_branch(OpCode opcode, int lineNum)
 	switch (opcode)
 	{
 		case OpCode::BZ:
+		case OpCode::BEQ:
 			branch = 0;
 			break;
 		case OpCode::BNZ:
+		case OpCode::BNE:
 			branch = 1;
 			break;
 		case OpCode::BS:
@@ -261,21 +263,23 @@ static uint16_t get_branch(OpCode opcode, int lineNum)
 			branch = 3;
 			break;
 		case OpCode::BC:
+		case OpCode::BLTU:
 			branch = 4;
 			break;
 		case OpCode::BNC:
+		case OpCode::BGEU:
 			branch = 5;
 			break;
-		case OpCode::BA:
+		case OpCode::BV:
 			branch = 6;
 			break;
-		case OpCode::BL:
+		case OpCode::BNV:
 			branch = 7;
 			break;
-		case OpCode::BEQ:
+		case OpCode::BLT:
 			branch = 8;
 			break;
-		case OpCode::BNE:
+		case OpCode::BLE:
 			branch = 9;
 			break;
 		case OpCode::BGT:
@@ -284,17 +288,23 @@ static uint16_t get_branch(OpCode opcode, int lineNum)
 		case OpCode::BGE:
 			branch = 11;
 			break;
-		case OpCode::BLT:
+		case OpCode::BLEU:
 			branch = 12;
 			break;
-		case OpCode::BLE:
+		case OpCode::BGTU:
 			branch = 13;
+			break;
+		case OpCode::BA:
+			branch = 14;
+			break;
+		case OpCode::BL:
+			branch = 15;
 			break;
 		default:
 		{
-	        std::stringstream ss;
-            ss << "Unsupported branch operation on line " << lineNum << std::endl;
-            throw std::runtime_error(ss.str());  
+			std::stringstream ss;
+			ss << "Unsupported branch operation on line " << lineNum << std::endl;
+			throw std::runtime_error(ss.str());  
 		}
 	}
 
@@ -302,7 +312,7 @@ static uint16_t get_branch(OpCode opcode, int lineNum)
 }
 
 void Assembly::makeFlowControlInstruction(OpCode opcode, uint32_t address, uint32_t target, Register reg, uint32_t lineNum,
-                                       std::vector<uint16_t>& assembledWords, bool regIndirect)
+									   std::vector<uint16_t>& assembledWords, bool regIndirect)
 {
 	uint16_t branch = 0;
 	
@@ -313,33 +323,33 @@ void Assembly::makeFlowControlInstruction(OpCode opcode, uint32_t address, uint3
 	op = SLRM_BRANCH_INSTRUCTION | (branch << 8) | ((uint16_t)target & 0xf) | ((uint16_t)reg << 4);
 	
 	if (target >= 0 && target < 16)
-    {
-        if (assembledWords.size() == 2)
+	{
+		if (assembledWords.size() == 2)
 		{
-            assembledWords[0] = SLRM_IMM_INSTRUCTION;
-        	assembledWords[1] = op;
+			assembledWords[0] = SLRM_IMM_INSTRUCTION;
+			assembledWords[1] = op;
 		}
 		else
 		{
-        	assembledWords[0] = op;
+			assembledWords[0] = op;
 		}
-    }
+	}
 	else
 	{	
-        if (assembledWords.size() != 2)
-        {
-            std::stringstream ss;
-            ss << "Error: not enough space allocated for instruction on line " << lineNum << std::endl;
-            throw std::runtime_error(ss.str());
-        }
+		if (assembledWords.size() != 2)
+		{
+			std::stringstream ss;
+			ss << "Error: not enough space allocated for instruction on line " << lineNum << std::endl;
+			throw std::runtime_error(ss.str());
+		}
 		assembledWords[0] = SLRM_IMM_INSTRUCTION | ((uint32_t)target >> 4);
-        assembledWords[1] = op;
+		assembledWords[1] = op;
 	}
 
 }
 
 void Assembly::makeRelativeFlowControlInstruction(OpCode opcode, uint32_t address, uint32_t target, uint32_t lineNum,
-                                           std::vector<uint16_t>& assembledWords)
+										   std::vector<uint16_t>& assembledWords)
 {
 
 	uint16_t branch = 0;
@@ -351,7 +361,7 @@ void Assembly::makeRelativeFlowControlInstruction(OpCode opcode, uint32_t addres
 	
 	//if ((diff < -256) || (diff > 255))
 	//{
-        std::stringstream ss;
+		std::stringstream ss;
 		ss << "Error: relative branch out of range on line " << lineNum << std::endl;
 		throw std::runtime_error(ss.str());
 	//}
@@ -377,9 +387,9 @@ void Assembly::makeLoadStore(OpCode opcode, uint32_t lineNum, std::vector<uint16
 			break; 
 		default:
 		{
-	        std::stringstream ss;
-            ss << "Unsupported load store operation on line " << lineNum << std::endl;
-            throw std::runtime_error(ss.str());  
+			std::stringstream ss;
+			ss << "Unsupported load store operation on line " << lineNum << std::endl;
+			throw std::runtime_error(ss.str());  
 		}
 	}
 
@@ -390,7 +400,7 @@ void Assembly::makeLoadStore(OpCode opcode, uint32_t lineNum, std::vector<uint16
 
 
 void Assembly::makeLoadStoreWithExpression(OpCode opcode, uint32_t lineNum, std::vector<uint16_t>& assembledWords, int32_t value,
-                                           Register regDest, bool isByte)
+										   Register regDest, bool isByte)
 {
 	uint16_t LS = 0;
 
@@ -406,39 +416,39 @@ void Assembly::makeLoadStoreWithExpression(OpCode opcode, uint32_t lineNum, std:
 			break; 
 		default:
 		{
-	        std::stringstream ss;
-            ss << "Unsupported load store operation on line " << lineNum << std::endl;
-            throw std::runtime_error(ss.str());  
+			std::stringstream ss;
+			ss << "Unsupported load store operation on line " << lineNum << std::endl;
+			throw std::runtime_error(ss.str());  
 		}
 	}
 	uint16_t op = (isByte? SLRM_IMMEDIATE_PLUS_REG_MEMORY_BYTE_INSTRUCTION : SLRM_IMMEDIATE_PLUS_REG_MEMORY_INSTRUCTION) | (LS << 12) | ((uint16_t)regDest << 4) | ((uint16_t)value & 0xf) | 0<<8 /* r0 */;
 	
 	if (value >= 0 && value < 16)
-    {
+	{
 		if (assembledWords.size() == 2)
-    	{
-		    assembledWords[0] = SLRM_IMM_INSTRUCTION;
-        	assembledWords[1] = op;
+		{
+			assembledWords[0] = SLRM_IMM_INSTRUCTION;
+			assembledWords[1] = op;
 		}
-		else 	
+		else	
 			assembledWords[0] = op;
 	}
 	else
 	{
-        if (assembledWords.size() != 2)
-        {
-            std::stringstream ss;
-            ss << "Error: not enough space allocated for instruction on line " << lineNum << std::endl;
-            throw std::runtime_error(ss.str());
-        }
+		if (assembledWords.size() != 2)
+		{
+			std::stringstream ss;
+			ss << "Error: not enough space allocated for instruction on line " << lineNum << std::endl;
+			throw std::runtime_error(ss.str());
+		}
 		assembledWords[0] = SLRM_IMM_INSTRUCTION | ((uint16_t)value >> 4);
-        assembledWords[1] = op;
+		assembledWords[1] = op;
 	}
 
 }
 
 void Assembly::makeLoadStoreWithIndexAndExpression(OpCode opcode, uint32_t lineNum, std::vector<uint16_t>& assembledWords, int32_t value,
-                                           Register regDest, Register regInd, bool isByte)
+										   Register regDest, Register regInd, bool isByte)
 {
 	uint16_t LS = 0;
 
@@ -456,41 +466,41 @@ void Assembly::makeLoadStoreWithIndexAndExpression(OpCode opcode, uint32_t lineN
 			break; 
 		default:
 		{
-	        std::stringstream ss;
-            ss << "Unsupported load store operation on line " << lineNum << std::endl;
-            throw std::runtime_error(ss.str());  
+			std::stringstream ss;
+			ss << "Unsupported load store operation on line " << lineNum << std::endl;
+			throw std::runtime_error(ss.str());  
 		}
 	}
 
 	uint16_t op = (isByte? SLRM_IMMEDIATE_PLUS_REG_MEMORY_BYTE_INSTRUCTION : SLRM_IMMEDIATE_PLUS_REG_MEMORY_INSTRUCTION) 
-		| (LS << 12) | ((uint16_t)regDest << 4) | ((uint16_t)value & 0xf) | ((uint16_t)regInd << 8); 	
+		| (LS << 12) | ((uint16_t)regDest << 4) | ((uint16_t)value & 0xf) | ((uint16_t)regInd << 8);	
 	
 	if (value >= 0 && value < 16)
-    {
+	{
 		if (assembledWords.size() == 2)
-    	{
-		    assembledWords[0] = SLRM_IMM_INSTRUCTION;
-        	assembledWords[1] = op;
+		{
+			assembledWords[0] = SLRM_IMM_INSTRUCTION;
+			assembledWords[1] = op;
 		}
-		else 	
+		else	
 			assembledWords[0] = op;
 	}
 	else
 	{
-        if (assembledWords.size() != 2)
-        {
-            std::stringstream ss;
-            ss << "Error: not enough space allocated for instruction on line " << lineNum << std::endl;
-            throw std::runtime_error(ss.str());
-        }
+		if (assembledWords.size() != 2)
+		{
+			std::stringstream ss;
+			ss << "Error: not enough space allocated for instruction on line " << lineNum << std::endl;
+			throw std::runtime_error(ss.str());
+		}
 		assembledWords[0] = SLRM_IMM_INSTRUCTION | ((uint16_t)value >> 4);
-        assembledWords[1] = op;
+		assembledWords[1] = op;
 	}
 }
 
 
 void Assembly::makePortIO(OpCode opcode, uint32_t lineNum, std::vector<uint16_t>& assembledWords, int32_t value,
-                                           Register regDest, Register regInd)
+										   Register regDest, Register regInd)
 {
 	uint16_t LS = 0;
 
@@ -504,54 +514,35 @@ void Assembly::makePortIO(OpCode opcode, uint32_t lineNum, std::vector<uint16_t>
 			break; 
 		default:
 		{
-	        std::stringstream ss;
-            ss << "Upsupported load store operation on line " << lineNum << std::endl;
-            throw std::runtime_error(ss.str());  
+			std::stringstream ss;
+			ss << "Upsupported load store operation on line " << lineNum << std::endl;
+			throw std::runtime_error(ss.str());  
 		}
 	}
 
-	uint16_t op = SLRM_PORT_INSTRUCTION | (LS << 12) | ((uint16_t)regDest << 4) | ((uint16_t)value & 0xf) | ((uint16_t)regInd << 8); 	
+	uint16_t op = SLRM_PORT_INSTRUCTION | (LS << 12) | ((uint16_t)regDest << 4) | ((uint16_t)value & 0xf) | ((uint16_t)regInd << 8);	
 	
 	if (value >= 0 && value < 16)
-    {
+	{
 		if (assembledWords.size() == 2)
-    	{
-		    assembledWords[0] = SLRM_IMM_INSTRUCTION;
-        	assembledWords[1] = op;
+		{
+			assembledWords[0] = SLRM_IMM_INSTRUCTION;
+			assembledWords[1] = op;
 		}
-		else 	
+		else	
 			assembledWords[0] = op;
 	}
 	else
 	{
-        if (assembledWords.size() != 2)
-        {
-            std::stringstream ss;
-            ss << "Error: not enough space allocated for instruction on line " << lineNum << std::endl;
-            throw std::runtime_error(ss.str());
-        }
-		assembledWords[0] = SLRM_IMM_INSTRUCTION | ((uint16_t)value >> 4);
-        assembledWords[1] = op;
-	}
-}
-
-
-
-
-void Assembly::makeIncDecInstruction(OpCode opcode, std::vector<uint16_t>& assembledWords,  uint32_t lineNum, Register reg)
-{
-	uint16_t op;
-
-	switch (opcode)
-	{
-		default:
+		if (assembledWords.size() != 2)
 		{
-	        std::stringstream ss;
-            ss << "Upsupported reglist operation on line " << lineNum << std::endl;
-            throw std::runtime_error(ss.str());  
+			std::stringstream ss;
+			ss << "Error: not enough space allocated for instruction on line " << lineNum << std::endl;
+			throw std::runtime_error(ss.str());
 		}
+		assembledWords[0] = SLRM_IMM_INSTRUCTION | ((uint16_t)value >> 4);
+		assembledWords[1] = op;
 	}
-
-	assembledWords[0] = op | ((uint16_t)reg & 0x0f); 
 }
+
 

@@ -6,7 +6,7 @@
 /* verilator lint_off UNUSED */
 function is_branch_link_from_ins;
 input [15:0] ins;
-	is_branch_link_from_ins = (ins[11:8] == 4'b0111) ? 1'b1 : 1'b0;
+	is_branch_link_from_ins = (ins[11:8] == 4'hf) ? 1'b1 : 1'b0;
 endfunction
 
 function [11:0] imm_r_from_ins;
@@ -74,11 +74,10 @@ function uses_flags_for_branch;
 input [15:0] ins;
 begin
 	case(ins[11:8])
-		4'b0000, 4'b0001, 4'b0010, 4'b0011, 4'b0100, 4'b0101,
-		4'b1000, 4'b1001, 4'b1010, 4'b1011, 4'b1100, 4'b1101:
-			uses_flags_for_branch = 1'b1;
-		default:
+		4'he, 4'hf:
 			uses_flags_for_branch = 1'b0;
+		default:
+			uses_flags_for_branch = 1'b1;
 	endcase
 end
 endfunction

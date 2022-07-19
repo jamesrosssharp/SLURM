@@ -45,16 +45,16 @@ begin
 	casex (instruction)
 		INSTRUCTION_CASEX_ALUOP_SINGLE_REG : begin /* alu op reg */
 			reg_wr_addr_r 	= reg_src_from_ins(instruction);
-			reg_out_r 		= aluOut; 	
+			reg_out_r 	= aluOut; 	
 		end
 		INSTRUCTION_CASEX_ALUOP_REG_REG, INSTRUCTION_CASEX_ALUOP_REG_IMM: begin /* alu op */
 			reg_wr_addr_r 	= reg_dest_from_ins(instruction);
-			reg_out_r 		= aluOut; 	
+			reg_out_r 	= aluOut; 	
 		end
 		INSTRUCTION_CASEX_BRANCH: begin /* branch */
 			if (is_branch_link_from_ins(instruction) == 1'b1) begin
 				reg_wr_addr_r   = LINK_REGISTER; /* link register */
-				reg_out_r		= pc_stage4;
+				reg_out_r	= pc_stage4;
 			end
 		end
 		INSTRUCTION_CASEX_BYTE_LOAD_STORE: begin /* byte wise load / store */

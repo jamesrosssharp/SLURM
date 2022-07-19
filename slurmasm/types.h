@@ -87,6 +87,8 @@ enum class OpCode : uint32_t
 	BLTU,
 	BGEU,
 	BGTU,
+	BV,
+	BNV,
 	LDB,	/* Load byte */
 	STB,	/* Store byte */
 	/* Conditional move */
