@@ -15,7 +15,9 @@ module alu
 
 	output C, /* carry flag */
 	output Z, /* zero flag */
-	output S /* sign flag */
+	output S, /* sign flag */
+	output V  /* signed overflow flag */
+
 );
 
 reg C_flag_reg = 1'b0;
@@ -32,6 +34,11 @@ reg S_flag_reg = 1'b0;
 reg S_flag_reg_next;
 
 assign S = S_flag_reg;
+
+reg V_flag_reg = 1'b0;
+reg V_flag_reg_next;
+
+assign V = V_flag_reg;
 
 wire [BITS : 0] addOp = {1'b0,A} + {1'b0,B}; 
 wire [BITS : 0] subOp = {1'b0,A} - {1'b0,B}; 
@@ -65,12 +72,14 @@ begin
 		C_flag_reg <= 1'b0;
 		Z_flag_reg <= 1'b0;
 		S_flag_reg <= 1'b0;
+		V_flag_reg <= 1'b0;
 		out_r <= {BITS{1'b0}};
 	end
 	else if(execute) begin
 		C_flag_reg <= C_flag_reg_next;
 		Z_flag_reg <= Z_flag_reg_next;
 		S_flag_reg <= S_flag_reg_next;
+		V_flag_reg <= V_flag_reg_next;
 		out_r <= out;
 	end
 end
@@ -82,6 +91,7 @@ begin
 	C_flag_reg_next = C_flag_reg;
 	Z_flag_reg_next = Z_flag_reg;
 	S_flag_reg_next = S_flag_reg;
+	V_flag_reg_next = V_flag_reg;
 
 	out = 0;
 
@@ -94,24 +104,30 @@ begin
 			C_flag_reg_next = addOp[BITS];
 			Z_flag_reg_next = (addOp[BITS - 1:0] == 16'h0000 /*{BITS{1'b0}} */) ? 1'b1 : 1'b0;
 			S_flag_reg_next = addOp[BITS - 1] ? 1'b1 : 1'b0;
+			S_flag_reg_next = addOp[BITS - 1] ? 1'b1 : 1'b0;
+			V_flag_reg_next = !(A[BITS - 1] ^ B[BITS - 1]) & (B[BITS - 1] ^ addOp[BITS - 1]);
+
 		end
 		5'd2: begin /* adc */
 			out = adcOp[BITS - 1:0];
 			C_flag_reg_next = adcOp[BITS];
 			Z_flag_reg_next = (adcOp[BITS - 1:0] == 16'h0000 /*{BITS{1'b0}}*/) ? 1'b1 : 1'b0;
 			S_flag_reg_next = adcOp[BITS - 1] ? 1'b1 : 1'b0;
+			V_flag_reg_next = !(A[BITS - 1] ^ B[BITS - 1]) & (B[BITS - 1] ^ addOp[BITS - 1]);
 		end
 		5'd3: begin /* sub */ 
 			out = subOp[BITS - 1:0];
 			C_flag_reg_next = subOp[BITS];
 			Z_flag_reg_next = (subOp[BITS - 1:0] == 16'h0000/*{BITS{1'b0}}*/) ? 1'b1 : 1'b0;
 			S_flag_reg_next = subOp[BITS - 1] ? 1'b1 : 1'b0;
+			V_flag_reg_next = (A[BITS - 1] ^ B[BITS - 1]) & !(B[BITS - 1] ^ subOp[BITS - 1]);
 		end
 		5'd4: begin /* sbb */ 
 			out = sbbOp[BITS - 1:0];
 			C_flag_reg_next = sbbOp[BITS];
 			Z_flag_reg_next = (sbbOp[BITS - 1:0] == {BITS{1'b0}}) ? 1'b1 : 1'b0;
 			S_flag_reg_next = sbbOp[BITS - 1] ? 1'b1 : 1'b0;
+			V_flag_reg_next = (A[BITS - 1] ^ B[BITS - 1]) & !(B[BITS - 1] ^ subOp[BITS - 1]);
 		end
 		5'd5: begin /* and */
 			out = andOp;
