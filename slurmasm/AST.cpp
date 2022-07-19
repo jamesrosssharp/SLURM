@@ -545,7 +545,94 @@ OpCode AST::convertOpCode(char* opcode)
 	{
 		return OpCode::STB;
 	}
-
+	else if (s == "BLEU")
+	{
+		return OpCode::BLEU;
+	}
+	else if (s == "BLTU")
+	{
+		return OpCode::BLTU;
+	}
+	else if (s == "BGEU")
+	{
+		return OpCode::BGEU;
+	}
+	else if (s == "BGTU")
+	{
+		return OpCode::BGTU;
+	}
+	else if (s == "MOV.C")
+	{
+		return OpCode::MOVC;
+	}
+	else if (s == "MOV.NC")
+	{
+		return OpCode::MOVNC;
+	}
+	else if (s == "MOV.Z")
+	{
+		return OpCode::MOVZ;
+	}
+	else if (s == "MOV.NZ")
+	{
+		return OpCode::MOVNZ;
+	}
+	else if (s == "MOV.S")
+	{
+		return OpCode::MOVS;
+	}
+	else if (s == "MOV.NS")
+	{
+		return OpCode::MOVNS;
+	}
+	else if (s == "MOV.V")
+	{
+		return OpCode::MOVV;
+	}
+	else if (s == "MOV.NV")
+	{
+		return OpCode::MOVNV;
+	}
+	else if (s == "MOV.EQ")
+	{
+		return OpCode::MOVEQ;
+	}
+	else if (s == "MOV.NE")
+	{
+		return OpCode::MOVNE;
+	}
+	else if (s == "MOV.LT")
+	{
+		return OpCode::MOVLT;
+	}
+	else if (s == "MOV.LE")
+	{
+		return OpCode::MOVLE;
+	}
+	else if (s == "MOV.GT")
+	{
+		return OpCode::MOVGT;
+	}
+	else if (s == "MOV.GE")
+	{
+		return OpCode::MOVGE;
+	}
+	else if (s == "MOV.LTU")
+	{
+		return OpCode::MOVLTU;
+	}
+	else if (s == "MOV.LEU")
+	{
+		return OpCode::MOVLEU;
+	}
+	else if (s == "MOV.GTU")
+	{
+		return OpCode::MOVGTU;
+	}
+	else if (s == "MOV.GEU")
+	{
+		return OpCode::MOVGEU;
+	}
 
 	return OpCode::None;
 

@@ -34,7 +34,6 @@ $(SRCDIR)/uart_tx.v			\
 $(SRCDIR)/uart.v			\
 $(SRCDIR)/cpu_hazard.v			\
 $(SRCDIR)/cpu_pipeline.v		\
-$(SRCDIR)/cpu_program_counter.v		\
 $(SRCDIR)/cpu_top.v			\
 $(SRCDIR)/cpu_decode.v			\
 $(SRCDIR)/cpu_execute.v			\

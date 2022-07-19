@@ -44,6 +44,10 @@ begin
 			regARdAddr_r	= reg_dest_from_ins(instruction);
 			regBRdAddr_r	= reg_src_from_ins(instruction);
 		end
+		INSTRUCTION_CASEX_COND_MOV:	begin	/* conditional move, reg reg */
+			regARdAddr_r	= reg_dest_from_ins(instruction);
+			regBRdAddr_r	= reg_src_from_ins(instruction);
+		end
 		INSTRUCTION_CASEX_ALUOP_REG_IMM:	begin	/* alu op, reg imm */
 			regARdAddr_r 		= reg_dest_from_ins(instruction);	
 		end

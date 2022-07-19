@@ -5,14 +5,14 @@
 
 enum class Register : uint32_t
 {
-    r0 = 0,
-    r1,
-    r2,
-    r3,
-    r4,
-    r5,
-    r6,
-    r7,
+	r0 = 0,
+	r1,
+	r2,
+	r3,
+	r4,
+	r5,
+	r6,
+	r7,
 	r8,
 	r9,
 	r10,
@@ -21,7 +21,7 @@ enum class Register : uint32_t
 	r13,
 	r14,
 	r15,
-    None = 0xff
+	None = 0xff
 };
 
 enum class OpCode : uint32_t
@@ -73,9 +73,9 @@ enum class OpCode : uint32_t
 	CLI,
 	SLEEP,
 	STF,	/* store flags */
-	RSF,		/* restore flags */
-	MUL, /* multiply */
-	MULU, /* upper 16 bits of multiply */
+	RSF,	/* restore flags */
+	MUL, 	/* multiply */
+	MULU, 	/* upper 16 bits of multiply */
 	/* more branches */
 	BNE,
 	BEQ,
@@ -83,8 +83,31 @@ enum class OpCode : uint32_t
 	BGT,
 	BLE,
 	BLT,
+	BLEU,
+	BLTU,
+	BGEU,
+	BGTU,
 	LDB,	/* Load byte */
-	STB		/* Store byte */
+	STB,	/* Store byte */
+	/* Conditional move */
+	MOVC,
+	MOVNC,
+	MOVZ,
+	MOVNZ,
+	MOVS,
+	MOVNS,
+	MOVV,
+	MOVNV,
+	MOVEQ,
+	MOVNE,
+	MOVLT,
+	MOVLE,
+	MOVGT,
+	MOVGE,
+	MOVLTU,
+	MOVLEU,
+	MOVGTU,
+	MOVGEU
 };
 
 enum class UniqueOpCode

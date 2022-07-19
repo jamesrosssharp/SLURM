@@ -249,7 +249,7 @@ cpu_register_file
 wire Z;
 wire C;
 wire S;
-
+wire V;
 
 wire [4:0] aluOp;
 wire [BITS - 1:0] aluA;
@@ -269,6 +269,7 @@ cpu_execute #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_exec0
 	Z,
 	C,
 	S,
+	V,
 	regOutA_data,
 	regOutB_data,
 	imm_reg,
@@ -308,14 +309,12 @@ alu
 
 	C, /* carry flag */
 	Z, /* zero flag */
-	S /* sign flag */
+	S, /* sign flag */
+	V  /* signed overflow flag */
 );
 
 cpu_writeback #(.REGISTER_BITS(REGISTER_BITS), .BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_wr0
 (
-	CLK,
-	RSTb,
-
 	pipeline_stage4,		/* instruction in pipeline slot 4 */
 	aluOut,
 	memory_in, 
@@ -326,7 +325,14 @@ cpu_writeback #(.REGISTER_BITS(REGISTER_BITS), .BITS(BITS), .ADDRESS_BITS(ADDRES
 	regIn_data,
 
 	pc_stage4,
-	data_memory_wr_mask_out
+	data_memory_wr_mask_out,
+
+	C,
+	Z,
+	S,
+	V
+
+
 );
 
 cpu_port_interface #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_prt0 (

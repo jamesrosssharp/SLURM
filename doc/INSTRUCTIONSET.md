@@ -182,6 +182,17 @@ Class 4: branch operation
 Class 5:
 -------- 
 
+Conditional move reg to reg
+
+|15 | 14 | 13 | 12  | 11 - 8  | 7  - 4 | 3 - 0 |
+|---|----|----|-----|---------|--------|-------|
+| 0 | 1  | 0  |  1  |   COND  |  DEST  | SRC   |
+
+	COND: as per branch
+	
+	if COND, DEST <= SRC
+
+
 Class 6:
 --------
   

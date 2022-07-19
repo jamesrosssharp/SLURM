@@ -8,9 +8,6 @@
 
 module cpu_writeback #(parameter REGISTER_BITS = 4, BITS = 16, ADDRESS_BITS = 16)
 (
-	input CLK,
-	input RSTb,
-
 	input [BITS - 1:0] instruction,		/* instruction in pipeline slot 4 */
 	input [BITS - 1:0] aluOut,
 	input [BITS - 1:0] memory_in, 
@@ -21,7 +18,13 @@ module cpu_writeback #(parameter REGISTER_BITS = 4, BITS = 16, ADDRESS_BITS = 16
 	output [BITS - 1:0] reg_out,
 
 	input [ADDRESS_BITS - 1: 0] pc_stage4,
-	input [1:0] memory_wr_mask_delayed
+	input [1:0] memory_wr_mask_delayed,
+
+	input C,
+	input Z,
+	input S,
+	input V
+
 );
 
 `include "cpu_decode_functions.v"
@@ -84,6 +87,12 @@ begin
 		INSTRUCTION_CASEX_INTERRUPT: begin /* interrupt? */
 			reg_wr_addr_r   = INTERRUPT_LINK_REGISTER; 
 			reg_out_r		= pc_stage4;
+		end
+		INSTRUCTION_CASEX_COND_MOV: begin
+			if (branch_taken_from_ins(instruction, Z, S, C, V) == 1'b1) begin
+				reg_out_r = reg_dest_from_ins(instruction);
+				reg_out_r = aluOut;
+			end
 		end
 		default: ;
 	endcase

@@ -18,6 +18,7 @@ module cpu_execute #(parameter REGISTER_BITS = 4, BITS = 16, ADDRESS_BITS = 16)
 	input Z,
 	input C,
 	input S,
+	input V,
 
 	input [BITS - 1:0] regA,
 	input [BITS - 1:0] regB,
@@ -136,7 +137,7 @@ begin
 	if (is_executing) begin
 		casex(instruction)
 			INSTRUCTION_CASEX_BRANCH: begin
-				if (branch_taken_from_ins(instruction, Z, S, C) == 1'b1) begin
+				if (branch_taken_from_ins(instruction, Z, S, C, V) == 1'b1) begin
 						new_pc_r = regA + imm_reg;
 						load_pc_r = 1'b1;
 				end
