@@ -169,6 +169,7 @@ begin
 			C_flag_reg_next = subOp[BITS];
 			Z_flag_reg_next = (subOp[BITS - 1:0] == 16'h0000/*{BITS{1'b0}}*/) ? 1'b1 : 1'b0;
 			S_flag_reg_next = subOp[BITS - 1] ? 1'b1 : 1'b0;
+			V_flag_reg_next = (A[BITS - 1] ^ B[BITS - 1]) & !(B[BITS - 1] ^ subOp[BITS - 1]);
 		end	
 
 		5'd13: begin /* test */

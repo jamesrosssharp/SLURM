@@ -123,7 +123,7 @@ begin
 			if ((S_in ^ V_in) == 1'b1) branch_taken_from_ins = 1'b1;
 			else branch_taken_from_ins = 1'b0;
 		4'b1001:		/* 0x9 - BLE */
-			if ((Z_in == 1'b1) && (S_in ^ V_in)) branch_taken_from_ins = 1'b1;
+			if ((Z_in == 1'b1) || (S_in ^ V_in)) branch_taken_from_ins = 1'b1;
 			else branch_taken_from_ins = 1'b0;
  		4'b1010:		/* 0xa - BGT */
 			if ((S_in == V_in) && Z_in == 1'b0) branch_taken_from_ins = 1'b1;
