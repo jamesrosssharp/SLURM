@@ -90,7 +90,7 @@ begin
 		end
 		INSTRUCTION_CASEX_COND_MOV: begin
 			if (branch_taken_from_ins(instruction, Z, S, C, V) == 1'b1) begin
-				reg_out_r = reg_dest_from_ins(instruction);
+				reg_wr_addr_r = reg_dest_from_ins(instruction);
 				reg_out_r = aluOut;
 			end
 		end

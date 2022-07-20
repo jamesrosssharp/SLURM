@@ -48,7 +48,7 @@ begin
 		INSTRUCTION_CASEX_ALUOP_SINGLE_REG : begin /* alu op reg */
 			hazard_reg0_r 	= reg_src_from_ins(instruction); // source is destination in this case
 		end
-		INSTRUCTION_CASEX_ALUOP_REG_REG, INSTRUCTION_CASEX_ALUOP_REG_IMM: begin /* alu op */
+		INSTRUCTION_CASEX_COND_MOV, INSTRUCTION_CASEX_ALUOP_REG_REG, INSTRUCTION_CASEX_ALUOP_REG_IMM: begin /* alu op */
 			hazard_reg0_r 	= reg_dest_from_ins(instruction);
 		end
 		INSTRUCTION_CASEX_BRANCH: begin /* branch */

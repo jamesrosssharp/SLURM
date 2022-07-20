@@ -545,4 +545,86 @@ void Assembly::makePortIO(OpCode opcode, uint32_t lineNum, std::vector<uint16_t>
 	}
 }
 
+static uint16_t get_cond_mov(OpCode opcode, int lineNum)
+{
+	uint16_t branch = 0;
+
+	switch (opcode)
+	{
+		case OpCode::MOVZ:
+		case OpCode::MOVEQ:
+			branch = 0;
+			break;
+		case OpCode::MOVNZ:
+		case OpCode::MOVNE:
+			branch = 1;
+			break;
+		case OpCode::MOVS:
+			branch = 2;
+			break;
+		case OpCode::MOVNS:
+			branch = 3;
+			break;
+		case OpCode::MOVC:
+		case OpCode::MOVLTU:
+			branch = 4;
+			break;
+		case OpCode::MOVNC:
+		case OpCode::MOVGEU:
+			branch = 5;
+			break;
+		case OpCode::MOVV:
+			branch = 6;
+			break;
+		case OpCode::MOVNV:
+			branch = 7;
+			break;
+		case OpCode::MOVLT:
+			branch = 8;
+			break;
+		case OpCode::MOVLE:
+			branch = 9;
+			break;
+		case OpCode::MOVGT:
+			branch = 10;
+			break;
+		case OpCode::MOVGE:
+			branch = 11;
+			break;
+		case OpCode::MOVLEU:
+			branch = 12;
+			break;
+		case OpCode::MOVGTU:
+			branch = 13;
+			break;
+		default:
+		{
+			std::stringstream ss;
+			ss << "Unsupported conditional operation on line " << lineNum << std::endl;
+			throw std::runtime_error(ss.str());  
+		}
+	}
+
+	return branch;
+}
+
+
+
+void Assembly::makeConditionalMov(OpCode opcode,
+					 Register regDest,
+					 Register regSrc, std::vector<uint16_t>& assembledWords,
+					 uint32_t lineNum)
+{
+
+	uint16_t op	= 0;
+	uint16_t cond	= 0;
+
+	cond = get_cond_mov(opcode, lineNum);
+
+	op = SLRM_CONDITIONAL_MOV_INSTRUCTION | ((cond & 0xf) << 8) | ((int)regDest << 4) | ((int)regSrc);
+
+	assembledWords[0] = op;
+
+}
+
 

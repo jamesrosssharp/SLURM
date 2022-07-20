@@ -387,6 +387,27 @@ void Statement::assemble(uint32_t &curAddress)
 										 regSrc, words,
 										 lineNum);
 					break; 
+				case OpCode::MOVC:
+				case OpCode::MOVNC:
+				case OpCode::MOVZ:
+				case OpCode::MOVNZ:
+				case OpCode::MOVS:
+				case OpCode::MOVNS:
+				case OpCode::MOVV:
+				case OpCode::MOVNV:
+				case OpCode::MOVEQ:
+				case OpCode::MOVNE:
+				case OpCode::MOVLT:
+				case OpCode::MOVLE:
+				case OpCode::MOVGT:
+				case OpCode::MOVGE:
+				case OpCode::MOVLTU:
+				case OpCode::MOVLEU:
+				case OpCode::MOVGTU:
+				case OpCode::MOVGEU:
+					Assembly::makeConditionalMov(opcode, regDest, regSrc, words, lineNum);
+					break;
+
 				default:
 				{
 					std::stringstream ss;
