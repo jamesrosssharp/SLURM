@@ -81,7 +81,7 @@ impl Slurm16CPU {
 		self.v = !(((a ^ b) & 0x8000) == 0x8000) && (((b ^ sum) & 0x8000) == 0x8000);
 	}
 
-   pub fn alu_adc(&mut self, instruction : u16, src : u16) {
+	pub fn alu_adc(&mut self, instruction : u16, src : u16) {
 		let reg_dest	= ((instruction & 0xf0) >> 4) as usize;
 		
 		let a = src as u32;
@@ -117,7 +117,7 @@ impl Slurm16CPU {
 		}
 		self.c = sum > 65535;
 
-		self.v = (((a ^ b) & 0x8000) == 0x8000) && !(((b ^ sum) & 0x8000) == 0x8000);
+		self.v = (((a ^ b) & 0x8000) == 0x8000) && !(((a ^ sum) & 0x8000) == 0x8000);
 	}
 
 	pub fn alu_sbb(&mut self, instruction : u16, src : u16) {
@@ -138,7 +138,7 @@ impl Slurm16CPU {
 		}
 		self.c = sum > 65535;
 	
-		self.v = (((a ^ b) & 0x8000) == 0x8000) && !(((b ^ sum) & 0x8000) == 0x8000);
+		self.v = (((a ^ b) & 0x8000) == 0x8000) && !(((a ^ sum) & 0x8000) == 0x8000);
 	}
 
 	pub fn alu_cmp(&mut self, instruction : u16, src : u16) {
@@ -154,7 +154,7 @@ impl Slurm16CPU {
 			_ => self.s = false
 		}
 		self.c = sum > 65535;
-		self.v = (((a ^ b) & 0x8000) == 0x8000) && !(((b ^ sum) & 0x8000) == 0x8000);
+		self.v = (((a ^ b) & 0x8000) == 0x8000) && !(((a ^ sum) & 0x8000) == 0x8000);
 	}
 
 	pub fn alu_and(&mut self, instruction : u16, src : u16) {
@@ -190,9 +190,7 @@ impl Slurm16CPU {
 
 	}
 
-
-
-   pub fn alu_or(&mut self, instruction : u16, src : u16) {
+	pub fn alu_or(&mut self, instruction : u16, src : u16) {
 		let reg_dest	= ((instruction & 0xf0) >> 4) as usize;
 		
 		let a = src;
@@ -316,7 +314,7 @@ impl Slurm16CPU {
 		self.c = if src & 0x8000 == 0x8000 { true } else { false };
 	}
 
-   pub fn alu_rorc(&mut self, instruction : u16, src : u16) {
+	pub fn alu_rorc(&mut self, instruction : u16, src : u16) {
 		let reg_dest	= (instruction & 0xf) as usize;
 		
 		let a = src as u16;
@@ -348,7 +346,7 @@ impl Slurm16CPU {
 		self.c = false;
 	}
 
-   pub fn alu_ror(&mut self, instruction : u16, src : u16) {
+   	pub fn alu_ror(&mut self, instruction : u16, src : u16) {
 		let reg_dest	= (instruction & 0xf) as usize;
 		
 		let a = src as u16;
@@ -539,111 +537,46 @@ impl Slurm16CPU {
 		self.imm_hi = 0;
 	}
 
-	pub fn bz_op(&mut self, instruction : u16) {
-
-		let reg_src = ((instruction & 0xf0) >> 4) as usize;
-		let reg_addr = self.get_register(reg_src);
-
-		let target : u16 = reg_addr + self.imm_hi + (instruction & 0xf) - 2; // PC will be incremented after we return 
-
-		if self.z
-		{
-			self.pc = target;
-		}
+	pub fn cond_z_op(&mut self) -> bool
+	{
+		self.z
 	}
 
-   pub fn bnz_op(&mut self, instruction : u16) {
-
-		let reg_src = ((instruction & 0xf0) >> 4) as usize;
-		let reg_addr = self.get_register(reg_src);
-
-		let target : u16 = reg_addr + self.imm_hi + (instruction & 0xf) - 2; // PC will be incremented after we return 
-
-		if	! self.z
-		{
-			
-			self.pc = target;
-		}
+	pub fn cond_nz_op(&mut self) -> bool
+	{
+		!self.z
 	}
 
-	pub fn bs_op(&mut self, instruction : u16) {
-
-		let reg_src = ((instruction & 0xf0) >> 4) as usize;
-		let reg_addr = self.get_register(reg_src);
-
-		let target : u16 = reg_addr + self.imm_hi + (instruction & 0xf) - 2; // PC will be incremented after we return 
-
-		if	self.s
-		{
-			self.pc = target;
-		}
+	pub fn cond_s_op(&mut self) -> bool
+	{
+		self.s
 	}
 
-   pub fn bns_op(&mut self, instruction : u16) {
 
-		let reg_src = ((instruction & 0xf0) >> 4) as usize;
-		let reg_addr = self.get_register(reg_src);
-
-		let target : u16 = reg_addr + self.imm_hi + (instruction & 0xf) - 2; // PC will be incremented after we return 
-
-		if ! self.s
-		{
-			self.pc = target;
-		}
+	pub fn cond_ns_op(&mut self) -> bool
+	{
+		!self.s
 	}
 
-	pub fn bc_op(&mut self, instruction : u16) {
-
-		let reg_src = ((instruction & 0xf0) >> 4) as usize;
-		let reg_addr = self.get_register(reg_src);
-
-		let target : u16 = reg_addr + self.imm_hi + (instruction & 0xf) - 2; // PC will be incremented after we return 
-
-		if self.c
-		{
-			self.pc = target;
-		}
+	pub fn cond_c_op(&mut self) -> bool
+	{
+		self.c
 	}
 
-	pub fn bnc_op(&mut self, instruction : u16) {
-
-		let reg_src = ((instruction & 0xf0) >> 4) as usize;
-		let reg_addr = self.get_register(reg_src);
-
-		let target : u16 = reg_addr + self.imm_hi + (instruction & 0xf) - 2; // PC will be incremented after we return 
-
-		if	!self.c
-		{
-			self.pc = target;
-		}
+	pub fn cond_nc_op(&mut self) -> bool
+	{
+		!self.c
 	}
 
-	pub fn bv_op(&mut self, instruction : u16) {
-
-		let reg_src = ((instruction & 0xf0) >> 4) as usize;
-		let reg_addr = self.get_register(reg_src);
-
-		let target : u16 = reg_addr + self.imm_hi + (instruction & 0xf) - 2; // PC will be incremented after we return 
-
-		if self.v
-		{
-			self.pc = target;
-		}
+	pub fn cond_v_op(&mut self) -> bool
+	{
+		self.v
 	}
 
-	pub fn bnv_op(&mut self, instruction : u16) {
-
-		let reg_src = ((instruction & 0xf0) >> 4) as usize;
-		let reg_addr = self.get_register(reg_src);
-
-		let target : u16 = reg_addr + self.imm_hi + (instruction & 0xf) - 2; // PC will be incremented after we return 
-
-		if	!self.v
-		{
-			self.pc = target;
-		}
+	pub fn cond_nv_op(&mut self) -> bool
+	{
+		!self.v
 	}
-
 
 
 	pub fn ba_op(&mut self, instruction : u16) {
@@ -666,133 +599,126 @@ impl Slurm16CPU {
 		self.registers[15] = self.pc + 2;
 		self.pc = target;
 	}
-	pub fn bgt_op(&mut self, instruction : u16) {
 
-		let reg_src = ((instruction & 0xf0) >> 4) as usize;
-		let reg_addr = self.get_register(reg_src);
-
-		let target : u16 = reg_addr + self.imm_hi + (instruction & 0xf) - 2; // PC will be incremented after we return 
-
-		if	(self.v == self.s) && !self.z
-		{
-			self.pc = target;
-		}
+	pub fn cond_gt_op(&mut self) -> bool
+	{
+		(self.v == self.s) && !self.z
 	}
 
-	pub fn bge_op(&mut self, instruction : u16) {
-
-		let reg_src = ((instruction & 0xf0) >> 4) as usize;
-		let reg_addr = self.get_register(reg_src);
-
-		let target : u16 = reg_addr + self.imm_hi + (instruction & 0xf) - 2; // PC will be incremented after we return 
-
-		if	self.s == self.v
-		{
-			self.pc = target;
-		}
+	pub fn cond_ge_op(&mut self) -> bool
+	{
+		self.v == self.s
 	}
 
-	pub fn blt_op(&mut self, instruction : u16) {
-
-		let reg_src = ((instruction & 0xf0) >> 4) as usize;
-		let reg_addr = self.get_register(reg_src);
-
-		let target : u16 = reg_addr + self.imm_hi + (instruction & 0xf) - 2; // PC will be incremented after we return 
-
-		if	self.v != self.s
-		{
-			self.pc = target;
-		}
+	pub fn cond_lt_op(&mut self) -> bool {
+		self.v != self.s
 	}
 
-
-
-
-	pub fn ble_op(&mut self, instruction : u16) {
-
-		let reg_src = ((instruction & 0xf0) >> 4) as usize;
-		let reg_addr = self.get_register(reg_src);
-
-		let target : u16 = reg_addr + self.imm_hi + (instruction & 0xf) - 2; // PC will be incremented after we return 
-
-		if	self.z || (self.s != self.v)
-		{
-			self.pc = target;
-		}
+	pub fn cond_le_op(&mut self) -> bool {
+		self.z || (self.s != self.v)
 	}
 
-	pub fn bleu_op(&mut self, instruction : u16) {
-
-		let reg_src = ((instruction & 0xf0) >> 4) as usize;
-		let reg_addr = self.get_register(reg_src);
-
-		let target : u16 = reg_addr + self.imm_hi + (instruction & 0xf) - 2; // PC will be incremented after we return 
-
-		if	self.c && self.z
-		{
-			self.pc = target;
-		}
+	pub fn cond_leu_op(&mut self) -> bool {
+		self.c && self.z
 	}
 
-	pub fn bgtu_op(&mut self, instruction : u16) {
-
-		let reg_src = ((instruction & 0xf0) >> 4) as usize;
-		let reg_addr = self.get_register(reg_src);
-
-		let target : u16 = reg_addr + self.imm_hi + (instruction & 0xf) - 2; // PC will be incremented after we return 
-
-		if	!self.c && !self.z
-		{
-			self.pc = target;
-		}
+	pub fn cond_gtu_op(&mut self) -> bool {
+		!self.c && !self.z
 	}
 
 	pub fn branch_op(&mut self, instruction : u16) {
 
-		//println!("branch: {} {} {} {}", (instruction & 0xf00) >> 8, self.c, self.z, self.s);
-
 		match (instruction & 0x0f00) >> 8 {
 			//0  - BZ, branch if zero
-			0 => self.bz_op(instruction),
+			0 => if self.cond_z_op() { self.ba_op(instruction) },
 			//1  - BNZ, branch if not zero
-			1 => self.bnz_op(instruction),
+			1 => if self.cond_nz_op() { self.ba_op(instruction)},
 			//2  - BS, branch if sign
-			2 => self.bs_op(instruction),
+			2 => if self.cond_s_op() { self.ba_op(instruction)},
 			//3  - BNS, branch if not sign
-			3 => self.bns_op(instruction),
+			3 => if self.cond_ns_op() { self.ba_op(instruction)},
 			//4  - BC, branch if carry
-			4 => self.bc_op(instruction),
+			4 => if self.cond_c_op() { self.ba_op(instruction)},
 			//5  - BNC, branch if not carry
-			5 => self.bnc_op(instruction),
+			5 => if self.cond_nc_op() { self.ba_op(instruction)},
 			//6  - BV, branch if signed overflow
-			6 => self.bv_op(instruction),
+			6 => if self.cond_v_op() { self.ba_op(instruction)},
 			//7  - BNV, branch if not signed overflow
-			7 => self.bnv_op(instruction),
+			7 => if self.cond_nv_op() { self.ba_op(instruction)},
 		
 			//8  - BLT, branch if (signed) less than
-			8 => self.blt_op(instruction),
+			8 => if self.cond_lt_op() { self.ba_op(instruction)},
 		
 			//9  - BLE, branch if (signed) less than or equal
-			9 => self.ble_op(instruction),
+			9 => if self.cond_le_op() { self.ba_op(instruction)},
 		
 			//10 - BGT, branch if (signed) greater than
-			10 => self.bgt_op(instruction),
+			10 => if self.cond_gt_op() { self.ba_op(instruction)},
 
 			//11 - BGE, branch if (signed) greater than or equal
-			11 => self.bge_op(instruction),
+			11 => if self.cond_ge_op() { self.ba_op(instruction)},
 
 			//12 - BLEU, branch if (unsigned) less than or equal
-			12 => self.bleu_op(instruction),
+			12 => if self.cond_leu_op() { self.ba_op(instruction)},
 			//13 - BGTU, branch if (unsigned) greater than
-			13 => self.bgtu_op(instruction),
+			13 => if self.cond_gtu_op() { self.ba_op(instruction)},
 
 			//14 - BA, branch always
 			14 => self.ba_op(instruction),
 			//15 - BL, branch and link
 			15 => self.bl_op(instruction),
 
-
 			_ => self.nop()
+		}
+
+		self.imm_hi = 0;
+	}
+
+	pub fn condmov_op(&mut self, instruction : u16) {
+
+		let condtrue : bool = match (instruction & 0x0f00) >> 8 {
+			//0  - BZ, branch if zero
+			0 => self.cond_z_op(),
+			//1  - BNZ, branch if not zero
+			1 => self.cond_nz_op(),
+			//2  - BS, branch if sign
+			2 => self.cond_s_op(),
+			//3  - BNS, branch if not sign
+			3 => self.cond_ns_op(),
+			//4  - BC, branch if carry
+			4 => self.cond_c_op(),
+			//5  - BNC, branch if not carry
+			5 => self.cond_nc_op(),
+			//6  - BV, branch if signed overflow
+			6 => self.cond_v_op(),
+			//7  - BNV, branch if not signed overflow
+			7 => self.cond_nv_op(),
+		
+			//8  - BLT, branch if (signed) less than
+			8 => self.cond_lt_op(),
+		
+			//9  - BLE, branch if (signed) less than or equal
+			9 => self.cond_le_op(),
+		
+			//10 - BGT, branch if (signed) greater than
+			10 => self.cond_gt_op(),
+
+			//11 - BGE, branch if (signed) greater than or equal
+			11 => self.cond_ge_op(),
+
+			//12 - BLEU, branch if (unsigned) less than or equal
+			12 => self.cond_leu_op(),
+			//13 - BGTU, branch if (unsigned) greater than
+			13 => self.cond_gtu_op(),
+
+			_ => true,
+		};
+
+		if condtrue {
+			let reg_src = (instruction & 0xf) as usize;
+			let src_val = self.get_register(reg_src);
+			let reg_dest	= ((instruction & 0xf0) >> 4) as usize;
+			self.registers[reg_dest] = src_val;
 		}
 
 		self.imm_hi = 0;
@@ -965,6 +891,7 @@ impl Slurm16CPU {
 			"0010_????_????_????" => self.alu_op_reg_reg(instruction),
 			"0011_????_????_????" => self.alu_op_reg_imm(instruction),
 			"0100_????_????_????" => self.branch_op(instruction),
+			"0101_????_????_????" => self.condmov_op(instruction),
 			"101?_????_????_????" => self.byte_mem_op(instruction, mem),
 			"110?_????_????_????" => self.mem_op(instruction, mem),
 			"111?_????_????_????" => self.port_op(instruction, portcon),
