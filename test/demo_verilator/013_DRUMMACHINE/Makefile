@@ -9,7 +9,7 @@ include ../../common/test.mk
 
 CC=../../../slurmcc/lcc/lcc/build/rcc
 
-GAME_BIN=../../../games_n_demos/DrumMachine/build/drummachine.bin
+GAME_BIN=../../../games_n_demos/DrumMachineOptimised/build/drummachine.bin
 
 mem_init1.mem: $(GAME_BIN)
 	dd if=$(GAME_BIN) of=mem_init1 bs=1 count=32256 seek=512
