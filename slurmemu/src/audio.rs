@@ -41,9 +41,9 @@ impl AudioCore {
         if self.run {
             self.ticks += 1;
 
-            // Emit 1 sample every 512 ticks
+            // Emit 1 sample every 1024 ticks
 
-            if self.ticks == 512 {
+            if self.ticks == 1024 {
          
                 self.ticks = 0;
                 emit_audio  = true;

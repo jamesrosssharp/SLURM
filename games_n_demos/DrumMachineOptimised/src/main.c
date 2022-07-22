@@ -109,8 +109,7 @@ struct channel_t {
 
 	short phase;
 
-	char  volume;
-	char  loop;	// 1 = loop, 0 = no loop
+	short  volume;
 	char  bits;	// 1 = 16 bit, 0 = 8 bit
 	char  pad;
 };
@@ -138,7 +137,7 @@ void play_sample(short freq, short SAMPLE, short CHANNEL, short volume)
 	channel_info[CHANNEL].loop_end   = g_samples[SAMPLE].offset + g_samples[SAMPLE].loop_end;
 
 	channel_info[CHANNEL].sample_pos = g_samples[SAMPLE].offset;
-	channel_info[CHANNEL].frequency = freq; //g_samples[SAMPLE].speed;	
+	channel_info[CHANNEL].frequency = freq * 2; //g_samples[SAMPLE].speed;	
 
 	//g_samples[SAMPLE].speed += 1000;
 
@@ -146,8 +145,7 @@ void play_sample(short freq, short SAMPLE, short CHANNEL, short volume)
 
 	channel_info[CHANNEL].phase = 0;
 
-	channel_info[CHANNEL].volume = volume;
-	channel_info[CHANNEL].loop   = g_samples[SAMPLE].loop;	
+	channel_info[CHANNEL].volume = volume * 256;
 	channel_info[CHANNEL].bits   = g_samples[SAMPLE].bit_depth + 1; // 1 = 8 bit, 2 = 16 bit
 
 	//}
@@ -160,6 +158,11 @@ void init_audio()
 
 	// Clear audio buffer and enable
 
+	for (i = 0; i < 8; i++)
+	{
+		channel_info[i].loop_start = g_samples[0].offset;
+		channel_info[i].loop_end = g_samples[0].offset;
+	}
 
 	for (i = 0; i < 512; i++)
 	{		__out(0x3000 | i, 0);

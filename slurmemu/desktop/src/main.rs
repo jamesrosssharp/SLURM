@@ -123,7 +123,10 @@ fn main() -> Result<(), String> {
                 {
                     audio_buf.push(audio[0]);
                     audio_buf.push(audio[1]);
-                    if audio_buf.len() == AUDIO_BUF_SIZE {
+                    audio_buf.push(audio[0]);
+                    audio_buf.push(audio[1]);
+                    
+		    if audio_buf.len() == AUDIO_BUF_SIZE {
                     
                         audio_device.queue_audio(&audio_buf)?;
                         audio_device.resume();

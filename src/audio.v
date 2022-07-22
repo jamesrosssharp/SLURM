@@ -30,7 +30,7 @@ module audio
 );
 
 localparam MCLK_FREQ  = CLK_FREQ / 2;
-localparam LRCLK_FREQ = MCLK_FREQ / 256;
+localparam LRCLK_FREQ = MCLK_FREQ / 512;
 localparam SCLK_FREQ  = LRCLK_FREQ * 64;
 
 
@@ -46,8 +46,8 @@ reg sclk_r_next;
 
 assign sclk = sclk_r;
 
-reg [7:0] lr_clk_count_r = 0; // CLK / 256
-reg [1:0] sclk_count_r = 0;   // CLK / 8
+reg [8:0] lr_clk_count_r = 0; // CLK / 512
+reg [2:0] sclk_count_r = 0;   // CLK / 16
 
 reg [63:0] serial_data_r = {64{1'b0}};
 reg [63:0] serial_data_r_next;
@@ -111,9 +111,9 @@ always @(*)
 begin
 	lr_clk_r_next = lr_clk_r;
 	sclk_r_next = sclk_r;
-	if (lr_clk_count_r == 8'd0)
+	if (lr_clk_count_r == 9'd0)
 		lr_clk_r_next = !lr_clk_r;
-	if (sclk_count_r == 2'd0)
+	if (sclk_count_r == 3'd0)
 		sclk_r_next = !sclk_r;
 end
 

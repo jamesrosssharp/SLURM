@@ -18,8 +18,7 @@ struct channel_t {
 	
 	short phase;		// 8
 	
-	char  volume;		// 10
-	char  loop;		// 11, 1 = loop, 0 = no loop
+	short  volume;		// 10
 
 	char  bits;		// 12, 1 = 16 bit, 0 = 8 bit
 	char  pad;		// 13
@@ -111,34 +110,22 @@ mix_audio.middle_loop:
 	mov r5, 4	// r5: inner loop count 
 mix_audio.inner_loop:
 	ld r9, [r6, CHANNEL_STRUCT_SAMPLE_POS]
-	ldb r12, [r6, CHANNEL_STRUCT_VOLUME]
+	ld r12, [r6, CHANNEL_STRUCT_VOLUME]
 	ld r8, [r6, CHANNEL_STRUCT_FREQUENCY]
 	ld r10, [r6, CHANNEL_STRUCT_PHASE] 
-	nop
-	mul r12, 256
-	or r8, r8
-	nop
-	nop
-	bz mix_audio.no_note
 	ldb r7, [r9]
 	add r10, r8	// r10 : PHASE + delta
 	adc r9, 0
 	ld r8, [r6, CHANNEL_STRUCT_LOOP_END]
 	mul r7, 256
-	nop
 	st [r6, CHANNEL_STRUCT_PHASE], r10
 	ld r10, [r6, CHANNEL_STRUCT_LOOP_START]
 	mulu  r7, r12
-	nop
-	nop
-	nop
-	add  r11, r7
-
 	cmp r8, r9
 	mov.c r9, r10
 	nop
+	add  r11, r7
 	nop
-
 	st [r6, CHANNEL_STRUCT_SAMPLE_POS], r9
 mix_audio.no_note:
 	add r6, CHANNEL_STRUCT_SIZE
@@ -190,6 +177,7 @@ mix_audio.no_note:
 	// Restore old stack pointer
 	ld r13, [r0, old_stack]
 	ret
+
 
 sound_stack:
 	.times 256 dw 0
