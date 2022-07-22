@@ -110,34 +110,30 @@ mix_audio.middle_loop:
 	// Inner loop - for each of the 4 channels, mix data
 	mov r5, 4	// r5: inner loop count 
 mix_audio.inner_loop:
-
-
 	ld r9, [r6, CHANNEL_STRUCT_SAMPLE_POS]
 	ldb r12, [r6, CHANNEL_STRUCT_VOLUME]
 	ld r8, [r6, CHANNEL_STRUCT_FREQUENCY]
-	mul r12, 256
-	ldb r7, [r9]
 	ld r10, [r6, CHANNEL_STRUCT_PHASE] 
+	nop
+	mul r12, 256
 	or r8, r8
 	nop
 	nop
 	bz mix_audio.no_note
+	ldb r7, [r9]
+	add r10, r8	// r10 : PHASE + delta
+	adc r9, 0
+	ld r8, [r6, CHANNEL_STRUCT_LOOP_END]
 	mul r7, 256
 	nop
-	nop
-	nop
+	st [r6, CHANNEL_STRUCT_PHASE], r10
+	ld r10, [r6, CHANNEL_STRUCT_LOOP_START]
 	mulu  r7, r12
-	add r10, r8	// r7 : PHASE + delta
-	adc r9, 0
+	nop
+	nop
 	nop
 	add  r11, r7
-	
-	st [r6, CHANNEL_STRUCT_PHASE], r10
 
-	ld r8, [r6, CHANNEL_STRUCT_LOOP_END]
-	ld r10, [r6, CHANNEL_STRUCT_LOOP_START]
-	nop
-	nop
 	cmp r8, r9
 	mov.c r9, r10
 	nop
@@ -147,19 +143,32 @@ mix_audio.inner_loop:
 mix_audio.no_note:
 	add r6, CHANNEL_STRUCT_SIZE
 	sub r5, 1
+	nop
+	nop
 	bnz mix_audio.inner_loop
 
 	lsl r4
 	ld  r7, [r4, audio_buffer_table]
+	nop
+	nop
 	lsr r4
 	add r7, r2
+	nop
+	nop
+	nop
 	out [r7, 0], r11
 
 	sub r4, 1
+	nop
+	nop
+	nop
 	bnz mix_audio.middle_loop
 
 	add r2, 1
 	sub r3, 1
+	nop
+	nop
+	nop
 	bnz mix_audio.outer_loop
 
 	// Restore registers

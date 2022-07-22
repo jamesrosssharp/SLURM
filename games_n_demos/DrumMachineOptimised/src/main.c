@@ -118,15 +118,15 @@ struct channel_t {
 
 extern struct channel_t channel_info[]; 
 
-void play_sample(short freq, short SAMPLE, short volume)
+void play_sample(short freq, short SAMPLE, short CHANNEL, short volume)
 {
 
 	//#define SAMPLE 0
 	//#define CHANNEL 0
 	//#define CHANNEL2 4
-	int channels[] = {1, 4, 2};
+	//int channels[] = {1, 4, 2};
 
-	int CHANNEL = channels[SAMPLE];
+	//int CHANNEL = channels[SAMPLE];
 
 	//for (CHANNEL = 0; CHANNEL < 4; CHANNEL += 2)
 	//{
@@ -224,7 +224,7 @@ struct row drum_pattern[] =
 	{{{0, 0, 0, 0},		    {1, 31, 20000, 1}, {2, 35, 11000, 1}}},
 };
 
-short g_playing = 0;
+short g_playing = 1;
 
 short g_row = 0;
 
@@ -251,7 +251,7 @@ void update_drum_machine() {
 	for (i = 0; i < 3; i++)
 	{
 		if (row->notes[i].on)
-			play_sample(row->notes[i].freq, row->notes[i].sample, row->notes[i].volume);
+			play_sample(row->notes[i].freq, row->notes[i].sample, i*2, row->notes[i].volume);
 	}
 
 	g_row++;
@@ -272,6 +272,14 @@ int main()
 	__out(0x5d20, 1);
 
 
+play_sample(24000, 0, 0, 63);
+play_sample(24000, 0, 1, 63);
+play_sample(24000, 0, 2, 63);
+play_sample(24000, 0, 3, 63);
+play_sample(24000, 0, 4, 63);
+play_sample(24000, 0, 5, 63);
+play_sample(24000, 0, 6, 63);
+play_sample(24000, 0, 7, 63);
 
 	enable_interrupts();
 
@@ -285,10 +293,10 @@ int main()
 	
 
 
-		if ((keys & UP_KEY) && ((keys ^ old_keys) & UP_KEY)) play_sample(24000, 0, 63);
-		if ((keys & DOWN_KEY) && ((keys ^ old_keys) & DOWN_KEY)) play_sample(22000, 0, 63);
-		if ((keys & LEFT_KEY) && ((keys ^ old_keys) & LEFT_KEY)) play_sample(20000, 1, 63);
-		if ((keys & RIGHT_KEY) && ((keys ^ old_keys) & RIGHT_KEY)) play_sample(11000, 2, 63);
+		if ((keys & UP_KEY) && ((keys ^ old_keys) & UP_KEY)) play_sample(24000, 0, 0, 63);
+		if ((keys & DOWN_KEY) && ((keys ^ old_keys) & DOWN_KEY)) play_sample(22000, 0, 1, 63);
+		if ((keys & LEFT_KEY) && ((keys ^ old_keys) & LEFT_KEY)) play_sample(20000, 1, 2, 63);
+		if ((keys & RIGHT_KEY) && ((keys ^ old_keys) & RIGHT_KEY)) play_sample(11000, 2, 3, 63);
 		if ((keys & A_KEY) && ((keys ^ old_keys) & A_KEY)) start_drum_machine();
 		if ((keys & B_KEY) && ((keys ^ old_keys) & B_KEY)) stop_drum_machine();
 
