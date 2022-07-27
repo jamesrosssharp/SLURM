@@ -113,15 +113,14 @@ mix_audio.inner_loop:
 	ld r8, [r6, CHANNEL_STRUCT_FREQUENCY]
 	ld r10, [r6, CHANNEL_STRUCT_PHASE] 
 	ld r12, [r6, CHANNEL_STRUCT_VOLUME]
-	ldb r7, [r9]
+	ldbsx r7, [r9]
 	nop
 	add r10, r8	// r10 : PHASE + delta
 	adc r9, 0
 	ld r8, [r6, CHANNEL_STRUCT_LOOP_END]
-	mul r7, 256
 	st [r6, CHANNEL_STRUCT_PHASE], r10
 	ld r10, [r6, CHANNEL_STRUCT_LOOP_START]
-	mulu  r7, r12
+	mul  r7, r12
 	cmp r8, r9
 	nop
 	mov.c r9, r10
@@ -149,12 +148,10 @@ mix_audio.inner_loop:
 	sub r4, 1
 	nop
 	nop
-	nop
 	bnz mix_audio.middle_loop
 
 	add r2, 1
 	sub r3, 1
-	nop
 	nop
 	nop
 	bnz mix_audio.outer_loop

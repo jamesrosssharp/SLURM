@@ -71,6 +71,17 @@ begin
 				endcase
 			end	
 		end
+		INSTRUCTION_CASEX_BYTE_LOAD_SX: begin /* byte wise load with sign extend */
+				reg_wr_addr_r = reg_dest_from_ins(instruction);
+				
+				case (memory_wr_mask_delayed)
+					2'b10:
+						reg_out_r = memory_in[15] == 1 ? {8'hff, memory_in[15:8]} : {8'd0, memory_in[15:8]};
+					2'b01:
+						reg_out_r = memory_in[7] == 1 ? {8'hff, memory_in[7:0]} : {8'd0, memory_in[7:0]};
+					default:;
+				endcase
+		end
 		INSTRUCTION_CASEX_LOAD_STORE:	begin /* load store */
 			if (is_load_store_from_ins(instruction) == 1'b0) begin /* load */
 				// write back value 

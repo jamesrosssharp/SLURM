@@ -74,8 +74,8 @@ enum class OpCode : uint32_t
 	SLEEP,
 	STF,	/* store flags */
 	RSF,	/* restore flags */
-	MUL, 	/* multiply */
-	MULU, 	/* upper 16 bits of multiply */
+	MUL,	/* multiply */
+	MULU,	/* upper 16 bits of multiply */
 	/* more branches */
 	BNE,
 	BEQ,
@@ -90,6 +90,7 @@ enum class OpCode : uint32_t
 	BV,
 	BNV,
 	LDB,	/* Load byte */
+	LDBSX,	/* Load byte, sign extend */
 	STB,	/* Store byte */
 	/* Conditional move */
 	MOVC,
@@ -120,25 +121,25 @@ enum class UniqueOpCode
 
 enum class PseudoOp : uint32_t
 {
-    ORG,
-    ALIGN,
-    DW,
-    DD,
+	ORG,
+	ALIGN,
+	DW,
+	DD,
 	DB,
 	PADTO,
-    None
+	None
 };
 
 inline std::ostream& operator << (std::ostream& os, const Register& r)
 {
-    if (r == Register::None)
-        os << "nil";
-    else
-    {
-        if ((uint32_t)r < 16)
-            os << "r" << std::dec << std::setw(2) << std::setfill('0') << (uint32_t)r;
-        else
-            os << "s" << std::dec << std::setw(2) << std::setfill('0') << ((uint32_t)r - 16);
-    }
+	if (r == Register::None)
+		os << "nil";
+	else
+	{
+		if ((uint32_t)r < 16)
+			os << "r" << std::dec << std::setw(2) << std::setfill('0') << (uint32_t)r;
+		else
+			os << "s" << std::dec << std::setw(2) << std::setfill('0') << ((uint32_t)r - 16);
+	}
 	return os;
 }

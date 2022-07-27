@@ -118,6 +118,7 @@ void Statement::firstPassAssemble(uint32_t& curAddress, SymbolTable& syms)
 				case OpCode::BLT:
 				case OpCode::BLE:
 				case OpCode::LDB:
+				case OpCode::LDBSX:
 				case OpCode::STB:
 				case OpCode::BLEU:
 				case OpCode::BLTU:
@@ -534,8 +535,11 @@ void Statement::assemble(uint32_t &curAddress)
 					break;	
 				case OpCode::LDB:
 				case OpCode::STB:
+				case OpCode::LDBSX:
 					Assembly::makeLoadStore(opcode, lineNum, words, regInd, regDest, true);
-					break;		
+					break;
+
+		
 				case OpCode::BA:
 				case OpCode::BL:
 				case OpCode::BZ:
@@ -618,6 +622,7 @@ void Statement::assemble(uint32_t &curAddress)
 					break;	
 				case OpCode::LDB:
 				case OpCode::STB:
+				case OpCode::LDBSX:
 					Assembly::makeLoadStoreWithExpression(opcode, lineNum, words, expression.value, regDest, true);
 					break;	
 	
@@ -643,6 +648,7 @@ void Statement::assemble(uint32_t &curAddress)
 					Assembly::makeLoadStoreWithIndexAndExpression(opcode, lineNum, words, expression.value, regDest, regInd);
 					break;
 				case OpCode::LDB:
+				case OpCode::LDBSX:
 				case OpCode::STB:
 					Assembly::makeLoadStoreWithIndexAndExpression(opcode, lineNum, words, expression.value, regDest, regInd, true);
 					break;

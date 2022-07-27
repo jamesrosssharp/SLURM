@@ -541,6 +541,10 @@ OpCode AST::convertOpCode(char* opcode)
 	{
 		return OpCode::LDB;
 	}
+	else if (s == "LDBSX")
+	{
+		return OpCode::LDBSX;
+	}
 	else if (s == "STB")
 	{
 		return OpCode::STB;

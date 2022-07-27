@@ -202,7 +202,24 @@ Class 7:
 Reserved
 
 
-Class 8/9: Reserved
+Class 8: immediate + register byte memory operation with sign extend
+
+|15 | 14 | 13 | 12  | 11 - 8  | 7  - 4 | 3 - 0 |
+|---|----|----|-----|---------|--------|-------|
+| 1 | 0  | 0  | 0   |   IDX   |  REG   | IMM   |
+
+	Provides bytewise access. Lowest byte of a register is loaded or stored. 
+	Lowest bit of address
+	indicates either lower or upper byte in memory. Sign extends to 16 bit.
+
+    IDX: index register, holds address of memory location
+    REG: source for store, destination for load
+    IMM: immediate address of memory location, effective address = [IDX] + IMM
+
+
+
+
+Class 9: Reserved
 
 Class A/B: immediate + register byte memory operation
 -------------------------------------------------------

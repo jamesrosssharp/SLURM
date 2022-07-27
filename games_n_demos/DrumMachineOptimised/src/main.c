@@ -145,7 +145,7 @@ void play_sample(short freq, short SAMPLE, short CHANNEL, short volume)
 
 	channel_info[CHANNEL].phase = 0;
 
-	channel_info[CHANNEL].volume = volume * 256;
+	channel_info[CHANNEL].volume = volume;
 	channel_info[CHANNEL].bits   = g_samples[SAMPLE].bit_depth + 1; // 1 = 8 bit, 2 = 16 bit
 
 	//}
@@ -275,14 +275,14 @@ int main()
 	__out(0x5d20, 1);
 
 
-play_sample(24000, 0, 0, 63);
-play_sample(24000, 0, 1, 63);
-play_sample(24000, 0, 2, 63);
-play_sample(24000, 0, 3, 63);
-play_sample(24000, 0, 4, 63);
-play_sample(24000, 0, 5, 63);
-play_sample(24000, 0, 6, 63);
-play_sample(24000, 0, 7, 63);
+	play_sample(24000, 0, 0, 63);
+	play_sample(24000, 0, 1, 63);
+	play_sample(24000, 0, 2, 63);
+	play_sample(24000, 0, 3, 63);
+	play_sample(24000, 0, 4, 63);
+	play_sample(24000, 0, 5, 63);
+	play_sample(24000, 0, 6, 63);
+	play_sample(24000, 0, 7, 63);
 
 	enable_interrupts();
 
@@ -296,10 +296,10 @@ play_sample(24000, 0, 7, 63);
 	
 
 
-		if ((keys & UP_KEY) && ((keys ^ old_keys) & UP_KEY)) play_sample(24000, 0, 0, 63);
-		if ((keys & DOWN_KEY) && ((keys ^ old_keys) & DOWN_KEY)) play_sample(22000, 0, 1, 63);
-		if ((keys & LEFT_KEY) && ((keys ^ old_keys) & LEFT_KEY)) play_sample(20000, 1, 2, 63);
-		if ((keys & RIGHT_KEY) && ((keys ^ old_keys) & RIGHT_KEY)) play_sample(11000, 2, 3, 63);
+		if ((keys & UP_KEY) && ((keys ^ old_keys) & UP_KEY)) play_sample(24000, 0, 1, 63);
+		if ((keys & DOWN_KEY) && ((keys ^ old_keys) & DOWN_KEY)) play_sample(22000, 0, 3, 63);
+		if ((keys & LEFT_KEY) && ((keys ^ old_keys) & LEFT_KEY)) play_sample(20000, 1, 5, 63);
+		if ((keys & RIGHT_KEY) && ((keys ^ old_keys) & RIGHT_KEY)) play_sample(11000, 2, 7, 63);
 		if ((keys & A_KEY) && ((keys ^ old_keys) & A_KEY)) start_drum_machine();
 		if ((keys & B_KEY) && ((keys ^ old_keys) & B_KEY)) stop_drum_machine();
 

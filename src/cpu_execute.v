@@ -216,7 +216,7 @@ begin
 
 	if (is_executing) begin
 		casex(instruction)
-			INSTRUCTION_CASEX_BYTE_LOAD_STORE: begin
+			INSTRUCTION_CASEX_BYTE_LOAD_STORE, INSTRUCTION_CASEX_BYTE_LOAD_SX: begin
 				if (low_bit_of_address == 1'b1)
 					memory_wr_mask_r = 2'b10;
 				else
