@@ -842,6 +842,37 @@ impl Slurm16CPU {
 	}
 
 
+	pub fn byte_mem_op_sx(&mut self, instruction : u16, mem:  & mut Vec<u16>) {
+
+		let reg_p = ((instruction & 0xf00) >> 8) as usize;
+		let reg_addr : u16 = self.get_register(reg_p);
+
+		let imm : u16 = self.imm_hi | (instruction & 0xf);
+
+		let addr : usize = (imm + reg_addr) as usize;
+
+		let reg_src = ((instruction & 0xf0) >> 4) as usize;
+
+		if addr & 1 == 0
+		{
+			let mut val : u16 = mem[addr>>1] & 0xff; 
+			if (val & 0x80) == 0x80 {
+				val |= 0xff00;
+			}
+			self.registers[reg_src] = val;
+		}
+		else
+		{
+			let mut val : u16 = (mem[addr>>1] >> 8) & 0xff; 
+			if (val & 0x80) == 0x80 {
+				val |= 0xff00;
+			}
+			self.registers[reg_src] = val;
+		}
+
+		self.imm_hi = 0;
+	}
+
 
 
 
@@ -892,6 +923,7 @@ impl Slurm16CPU {
 			"0011_????_????_????" => self.alu_op_reg_imm(instruction),
 			"0100_????_????_????" => self.branch_op(instruction),
 			"0101_????_????_????" => self.condmov_op(instruction),
+			"1000_????_????_????" => self.byte_mem_op_sx(instruction, mem),
 			"101?_????_????_????" => self.byte_mem_op(instruction, mem),
 			"110?_????_????_????" => self.mem_op(instruction, mem),
 			"111?_????_????_????" => self.port_op(instruction, portcon),
