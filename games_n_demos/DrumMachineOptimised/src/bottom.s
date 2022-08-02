@@ -202,7 +202,7 @@ mix_audio_2:
 
 	in r2, [r0, AUDIO_LEFT_PTR]
 	and r2, 0x100
-	xor r2, 0x100 		// r2: mix index into buffer
+	//xor r2, 0x100 		// r2: mix index into buffer
 	st  [r13, 24], r2 	// sp + 24 <= audio back buffer index		
 
 	// Mix Left channel 1
@@ -348,7 +348,7 @@ mix_audio_2.channel4_loop:
 	ld  r5, [r8, CHANNEL_STRUCT_VOLUME]
 	ld  r6, [r8, CHANNEL_STRUCT_LOOP_START]
 	ld  r7, [r8, CHANNEL_STRUCT_LOOP_END]  	
-/*
+
 mix_audio_2.channel5_loop:
 	ldbsx r9, [r2]
 	add   r4, r3
@@ -463,7 +463,7 @@ mix_audio_2.channel8_loop:
 
 	st    [r8, CHANNEL_STRUCT_SAMPLE_POS], r2
 	st    [r8, CHANNEL_STRUCT_PHASE], r4
-*/	
+	
 	ld r2, [r13, 0]
 	ld r3, [r13, 2]
 	ld r4, [r13, 4]
