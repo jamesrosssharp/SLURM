@@ -121,7 +121,7 @@ audio_handler:
 	sub r13, 4
 	st  [r13, 2], r15
 
-	bl mix_audio
+	bl mix_audio_2
 	
 	ld r15, [r13,2]
 	add r13, 4

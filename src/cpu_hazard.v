@@ -49,7 +49,11 @@ begin
 			hazard_reg0_r 	= reg_src_from_ins(instruction); // source is destination in this case
 		end
 		INSTRUCTION_CASEX_COND_MOV, INSTRUCTION_CASEX_ALUOP_REG_REG, INSTRUCTION_CASEX_ALUOP_REG_IMM: begin /* alu op */
-			hazard_reg0_r 	= reg_dest_from_ins(instruction);
+			case (alu_op_from_ins(instruction))
+				5'd12, 5'd13:;	
+				default:
+					hazard_reg0_r 	= reg_dest_from_ins(instruction);
+			endcase
 		end
 		INSTRUCTION_CASEX_BRANCH: begin /* branch */
 			if (is_branch_link_from_ins(instruction) == 1'b1) begin
