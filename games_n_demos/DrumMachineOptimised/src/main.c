@@ -35,6 +35,9 @@ void enable_interrupts()
 
 volatile short flash_complete = 0;
 volatile short vsync = 0;
+volatile short audio = 0;
+
+extern void mix_audio_2();
 
 struct slurmsng_header sng_hdr;
 struct slurmsng_playlist pl_hdr;
@@ -247,7 +250,7 @@ void update_drum_machine() {
 	if (g_playing == 0)
 		return;
 
-	global_interrupt_disable();
+	//global_interrupt_disable();
 
 	row = &drum_pattern[g_row];
 
@@ -262,14 +265,26 @@ void update_drum_machine() {
 	if (g_row >= COUNT_OF(drum_pattern))
 		g_row = 0;
 
-	global_interrupt_enable();
+	//global_interrupt_enable();
 }
+
+short frame = 0;
+
+void do_vsync()
+{
+
+	frame++;
+	vsync = 0;
+	copperList[0] = 0x7000 | (frame & 31);
+	load_copper_list(copperList, COUNT_OF(copperList));
+	
+}
+
 
 int main()
 {
-	int count = 0;
 	short old_keys = 0;
-	short frame = 0;
+	short count = 0;
 
 	load_copper_list(copperList, COUNT_OF(copperList));
 	__out(0x5d20, 1);
@@ -306,7 +321,7 @@ int main()
 		old_keys = keys;
 
 		//my_printf("Interrupt!");
-		if (vsync)
+		/*if (vsync)
 		{
 			frame++;
 			vsync = 0;
@@ -319,7 +334,19 @@ int main()
 		}
 		copperList[0] = 0x7000 | (frame & 31);
 		load_copper_list(copperList, COUNT_OF(copperList));
-	
+		*/
+
+		if (audio)
+		{
+			count += 1;
+			if (count == 16)
+			{
+				update_drum_machine();
+				count = 0;
+			}
+			audio = 0;	
+			mix_audio_2();
+		}
 
 		__sleep();
 	}

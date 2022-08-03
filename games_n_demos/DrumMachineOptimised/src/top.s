@@ -102,14 +102,14 @@ flash_handler:
 	out [r0, 0x7001], r1
 	iret
 
-vsync_handler:
+vsync_handler2:
 	mov r1, 1
 	st [vsync], r1
 	mov r1, 2
 	out [r0, 0x7001], r1
 	iret
 
-audio_handler:
+audio_handler2:
 	// Store flags
 	stf r1
 	sub r13, 2
@@ -130,6 +130,56 @@ audio_handler:
 	ld r1, [r13, 0]
 	add r13, 2
 	rsf r1
+	iret
+
+vsync_handler:
+	// Store flags
+	
+	stf r1
+	sub r13, 2
+	st [r13, 0], r1	
+
+	mov r1, 2
+	out [r0, 0x7001], r1
+
+	sub r13, 32
+	st  [r13, 2], r15
+	st  [r13, 4], r2
+	st  [r13, 6], r4
+	st  [r13, 8], r5
+	st  [r13, 10], r6
+	st  [r13, 12], r7
+	st  [r13, 14], r8
+	st  [r13, 16], r9
+	st  [r13, 18], r10
+	st  [r13, 20], r11
+
+	bl do_vsync
+	
+	ld r15, [r13,2]
+	ld r2,  [r13,4]
+	ld r4,  [r13, 6]
+	ld r5,  [r13, 8]
+	ld r6,  [r13, 10]
+	ld r7,  [r13, 12]
+	ld r8,  [r13, 14]
+	ld r9,  [r13, 16]
+	ld r10,  [r13, 18]
+	ld r11,  [r13, 20]
+	
+	add r13, 32
+
+	// Restore flags
+	ld r1, [r13, 0]
+	add r13, 2
+	rsf r1
+	iret
+
+audio_handler:
+	mov r1, 1
+	st [audio], r1
+	mov r1, 4
+	out [r0, 0x7001], r1
 	iret
 
 

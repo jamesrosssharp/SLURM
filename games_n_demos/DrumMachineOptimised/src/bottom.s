@@ -195,14 +195,13 @@ mix_audio_2:
 	st [r13, 16], r10
 	st [r13, 18], r11
 	st [r13, 20], r12
-	st [r13, 22], r1
 
 	// Find out which half of the buffer the audio read pointer is in
 	// And set mix address
 
-	in r2, [r0, AUDIO_LEFT_PTR]
+	in r2, [r0, AUDIO_RIGHT_PTR]
 	and r2, 0x100
-	//xor r2, 0x100 		// r2: mix index into buffer
+	xor r2, 0x100 		// r2: mix index into buffer
 	st  [r13, 24], r2 	// sp + 24 <= audio back buffer index		
 
 	// Mix Left channel 1
@@ -218,7 +217,7 @@ mix_audio_2:
 	//	r9 : sample
 
 	mov r8, channel_info
-	mov r1, 256
+	mov r12, 256
 	ld  r2, [r8, CHANNEL_STRUCT_SAMPLE_POS]
 	ld  r3, [r8, CHANNEL_STRUCT_FREQUENCY]
 	ld  r4, [r8, CHANNEL_STRUCT_PHASE]
@@ -230,13 +229,13 @@ mix_audio_2.channel1_loop:
 	ldbsx r9, [r2]
 	add   r4, r3
 	adc   r2, 0
-	sub   r1, 1
+	sub   r12, 1
 	mul   r9, r5
 	nop
 	cmp   r7, r2
 	mov.c r2, r6
-	test  r1, 0xffff
-	out   [r1, SCRATCH_PAD], r9
+	test  r12, 0xffff
+	out   [r12, SCRATCH_PAD], r9
 	bnz   mix_audio_2.channel1_loop
 
 	st    [r8, CHANNEL_STRUCT_SAMPLE_POS], r2
@@ -245,7 +244,7 @@ mix_audio_2.channel1_loop:
 
 
 	// Mix left channel 2
-	mov r1, 255
+	mov r12, 255
 	ld  r2, [r8, CHANNEL_STRUCT_SAMPLE_POS]
 	ld  r3, [r8, CHANNEL_STRUCT_FREQUENCY]
 	ld  r4, [r8, CHANNEL_STRUCT_PHASE]
@@ -257,8 +256,8 @@ mix_audio_2.channel2_loop:
 	ldbsx r9, [r2]
 	add   r4, r3
 	adc   r2, 0
-	in    r10, [r1, SCRATCH_PAD]
-	sub   r1, 1
+	in    r10, [r12, SCRATCH_PAD]
+	sub   r12, 1
 	mul   r9, r5
 	cmp   r7, r2
 	mov.c r2, r6
@@ -267,8 +266,8 @@ mix_audio_2.channel2_loop:
 	nop
 	nop
 	nop
-	test  r1, 0x8000
-	out   [r1, SCRATCH_PAD + 1], r10
+	test  r12, 0x8000
+	out   [r12, SCRATCH_PAD + 1], r10
 	bz   mix_audio_2.channel2_loop
 
 	st    [r8, CHANNEL_STRUCT_SAMPLE_POS], r2
@@ -278,7 +277,7 @@ mix_audio_2.channel2_loop:
 
 
 	// Mix left channel 3
-	mov r1, 255
+	mov r12, 255
 	ld  r2, [r8, CHANNEL_STRUCT_SAMPLE_POS]
 	ld  r3, [r8, CHANNEL_STRUCT_FREQUENCY]
 	ld  r4, [r8, CHANNEL_STRUCT_PHASE]
@@ -290,15 +289,15 @@ mix_audio_2.channel3_loop:
 	ldbsx r9, [r2]
 	add   r4, r3
 	adc   r2, 0
-	in    r10, [r1, SCRATCH_PAD]
+	in    r10, [r12, SCRATCH_PAD]
 	mul   r9, r5
-	sub   r1, 1
+	sub   r12, 1
 	cmp   r7, r2
 	mov.c r2, r6
 	add   r10, r9
 	nop
-	test r1, 0x8000
-	out   [r1, SCRATCH_PAD + 1], r10
+	test r12, 0x8000
+	out   [r12, SCRATCH_PAD + 1], r10
 	bz   mix_audio_2.channel3_loop
 
 	st    [r8, CHANNEL_STRUCT_SAMPLE_POS], r2
@@ -309,7 +308,7 @@ mix_audio_2.channel3_loop:
 
 	// r10: in mix val
 	// r11: out ptr 
-	mov r1, 255
+	mov r12, 255
 	ld  r2, [r8, CHANNEL_STRUCT_SAMPLE_POS]
 	ld  r3, [r8, CHANNEL_STRUCT_FREQUENCY]
 	ld  r4, [r8, CHANNEL_STRUCT_PHASE]
@@ -322,7 +321,7 @@ mix_audio_2.channel4_loop:
 	ldbsx r9, [r2]
 	add   r4, r3
 	adc   r2, 0
-	in    r10, [r1, SCRATCH_PAD]
+	in    r10, [r12, SCRATCH_PAD]
 	mul   r9, r5
 	nop
 	cmp   r7, r2
@@ -330,7 +329,7 @@ mix_audio_2.channel4_loop:
 	add   r11, 1
 	add   r10, r9
 	nop
-	sub   r1, 1
+	sub   r12, 1
 	nop
 	out   [r11, AUDIO_LEFT_CHANNEL_BRAM_LO - 1], r10
 	bns   mix_audio_2.channel4_loop
@@ -341,7 +340,7 @@ mix_audio_2.channel4_loop:
 
 
 	// Mix right channel 1 (5)
-	mov r1, 255
+	mov r12, 255
 	ld  r2, [r8, CHANNEL_STRUCT_SAMPLE_POS]
 	ld  r3, [r8, CHANNEL_STRUCT_FREQUENCY]
 	ld  r4, [r8, CHANNEL_STRUCT_PHASE]
@@ -353,13 +352,13 @@ mix_audio_2.channel5_loop:
 	ldbsx r9, [r2]
 	add   r4, r3
 	adc   r2, 0
-	sub   r1, 1
+	sub   r12, 1
 	mul   r9, r5
 	nop
 	cmp   r7, r2
 	mov.c r2, r6
-	test  r1, 0x8000
-	out   [r1, SCRATCH_PAD + 1], r9
+	test  r12, 0x8000
+	out   [r12, SCRATCH_PAD + 1], r9
 	bz   mix_audio_2.channel5_loop
 
 	st    [r8, CHANNEL_STRUCT_SAMPLE_POS], r2
@@ -369,7 +368,7 @@ mix_audio_2.channel5_loop:
 
 	// Mix right channel 2 (6) 
 
-	mov r1, 255
+	mov r12, 255
 	ld  r2, [r8, CHANNEL_STRUCT_SAMPLE_POS]
 	ld  r3, [r8, CHANNEL_STRUCT_FREQUENCY]
 	ld  r4, [r8, CHANNEL_STRUCT_PHASE]
@@ -381,8 +380,8 @@ mix_audio_2.channel6_loop:
 	ldbsx r9, [r2]
 	add   r4, r3
 	adc   r2, 0
-	in    r10, [r1, SCRATCH_PAD]
-	sub   r1, 1
+	in    r10, [r12, SCRATCH_PAD]
+	sub   r12, 1
 	mul   r9, r5
 	cmp   r7, r2
 	mov.c r2, r6
@@ -391,8 +390,8 @@ mix_audio_2.channel6_loop:
 	nop
 	nop
 	nop
-	test  r1, 0x8000
-	out   [r1, SCRATCH_PAD + 1], r10
+	test  r12, 0x8000
+	out   [r12, SCRATCH_PAD + 1], r10
 	bz   mix_audio_2.channel6_loop
 
 	st    [r8, CHANNEL_STRUCT_SAMPLE_POS], r2
@@ -402,7 +401,7 @@ mix_audio_2.channel6_loop:
 
 	// Mix right channel 3 (7)
 
-	mov r1, 255
+	mov r12, 255
 	ld  r2, [r8, CHANNEL_STRUCT_SAMPLE_POS]
 	ld  r3, [r8, CHANNEL_STRUCT_FREQUENCY]
 	ld  r4, [r8, CHANNEL_STRUCT_PHASE]
@@ -415,8 +414,8 @@ mix_audio_2.channel7_loop:
 	ldbsx r9, [r2]
 	add   r4, r3
 	adc   r2, 0
-	in    r10, [r1, SCRATCH_PAD]
-	sub   r1, 1
+	in    r10, [r12, SCRATCH_PAD]
+	sub   r12, 1
 	mul   r9, r5
 	cmp   r7, r2
 	mov.c r2, r6
@@ -425,8 +424,8 @@ mix_audio_2.channel7_loop:
 	nop
 	nop
 	nop
-	test  r1, 0x8000
-	out   [r1, SCRATCH_PAD + 1], r10
+	test  r12, 0x8000
+	out   [r12, SCRATCH_PAD + 1], r10
 	bz   mix_audio_2.channel7_loop
 
 	st    [r8, CHANNEL_STRUCT_SAMPLE_POS], r2
@@ -435,7 +434,7 @@ mix_audio_2.channel7_loop:
 
 	// Mix right channel 4 + output (8)
 
-	mov r1, 255
+	mov r12, 255
 	ld  r2, [r8, CHANNEL_STRUCT_SAMPLE_POS]
 	ld  r3, [r8, CHANNEL_STRUCT_FREQUENCY]
 	ld  r4, [r8, CHANNEL_STRUCT_PHASE]
@@ -448,7 +447,7 @@ mix_audio_2.channel8_loop:
 	ldbsx r9, [r2]
 	add   r4, r3
 	adc   r2, 0
-	in    r10, [r1, SCRATCH_PAD]
+	in    r10, [r12, SCRATCH_PAD]
 	mul   r9, r5
 	nop
 	cmp   r7, r2
@@ -457,7 +456,7 @@ mix_audio_2.channel8_loop:
 	add   r10, r9
 	nop
 	nop
-	sub   r1, 1
+	sub   r12, 1
 	out   [r11, AUDIO_RIGHT_CHANNEL_BRAM_LO - 1], r10
 	bns   mix_audio_2.channel8_loop
 
@@ -475,7 +474,6 @@ mix_audio_2.channel8_loop:
 	ld r10, [r13, 16]
 	ld r11, [r13, 18]
 	ld r12, [r13, 20]
-	ld r1,  [r13, 22]
 
 //	add r13, 32
 
