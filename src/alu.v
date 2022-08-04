@@ -59,7 +59,12 @@ wire [BITS - 1 : 0] lsrOp = {1'b0, B[BITS - 1:1]};
 
 wire [2*BITS - 1 : 0] mulOp;
 
+// signed mult
 mult m0 (A, B, mulOp);
+
+
+wire [2*BITS - 1 : 0] umulOp;
+unsigned_mult m1 (A, B, umulOp);
 
 
 reg [BITS - 1 : 0] out;
@@ -177,8 +182,13 @@ begin
 			Z_flag_reg_next = (andOp[BITS - 1:0] == {BITS{1'b0}}) ? 1'b1 : 1'b0;	
 		end
 
-		/* 14 - 15 reserved */
-
+		5'd14: begin /* umulu */
+			out = umulOp[2*BITS - 1:BITS];
+			Z_flag_reg_next = (umulOp[2*BITS - 1:BITS] == {BITS{1'b0}}) ? 1'b1 : 1'b0;
+			C_flag_reg_next = 1'b0;
+			S_flag_reg_next = umulOp[2*BITS - 1] ? 1'b1 : 1'b0;
+		end
+		/* 15 reserved */
 
 		/* extended ADC operations  - single register only (no immediate) */
 		5'd16: begin /* asr */

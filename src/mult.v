@@ -5,9 +5,9 @@
  */
 
 module mult (
-	input [15:0] A,
-	input [15:0] B,
-	output [31:0] out
+	input signed [15:0] A,
+	input signed [15:0] B,
+	output signed [31:0] out
 );
 
 assign out = A*B;

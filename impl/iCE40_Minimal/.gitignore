@@ -1,0 +1,7 @@
+*.json
+*.asc
+*.rpt
+*.bin
+slurm16_ice40.h
+rom_image
+rom_image.mem

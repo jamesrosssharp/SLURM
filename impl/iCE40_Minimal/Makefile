@@ -25,6 +25,7 @@ $(SRCDIR)/memory_arbiter.v		\
 $(SRCDIR)/memory_controller.v		\
 memory.v				\
 mult.v					\
+unsigned_mult.v				\
 pwm_led.v				\
 boot_memory.v				\
 $(SRCDIR)/spi_flash.v			\
