@@ -328,8 +328,8 @@ begin
 		y_flip <= 10'd0;
 		x_pan <= 10'd0;
 		y_flip_en <= 1'b0;
-		alpha_override <= 1'b0;
-		alpha <= 4'd0;	
+		alpha_override <= 1'b1;
+		alpha <= 4'd15;	
 	end else begin
 		background_color_r <= background_color_r_next;
 		copper_list_pc 	   <= copper_list_pc_next;

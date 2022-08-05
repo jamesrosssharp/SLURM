@@ -107,7 +107,8 @@ yram
 //	16 bits.
 //
 //	Bit 0 - 9: Y coord end
-//	Bit 10 - 15: reserved
+//	Bit 10 - 14: reserved
+//	Bit 15: sprite depth (0 = 4 bpp, 1 = 5 bpp)
 
 wire [7:0]  hram_rd_addr;
 
@@ -281,6 +282,10 @@ localparam r_blit_1			  = 4'd7;
 localparam r_blit_2			  = 4'd8;
 localparam r_blit_3			  = 4'd9;
 localparam r_finish			  = 4'd10;
+localparam r_blit_5_0			  = 4'd11;
+localparam r_blit_5_1			  = 4'd12;
+localparam r_blit_5_2			  = 4'd13;
+
 
 reg [7:0] cur_sprite_r, cur_sprite_r_next;
 
@@ -398,7 +403,10 @@ begin
 			r_wait_mem_1: begin
 				rvalid_r = 1'b1;
 				if (rready == 1'b1) begin
-					r_state_next = r_blit_0;
+					if (hram_out[15] == 1'b1)
+						r_state_next = r_blit_5_0;
+					else
+						r_state_next = r_blit_0;
 					cur_sprite_data_next = memory_data;
 				end
 			end	
@@ -468,6 +476,51 @@ begin
 					r_state_next = r_idle;
 				else
 					r_state_next = r_begin;
+			end
+			/* 5 bpp packed into 16 bits (with highest bit unused) */
+			r_blit_5_0: begin
+				cur_sprite_x_next = cur_sprite_x + 1;
+				cur_sprite_x_count_next = cur_sprite_x_count + 1;
+
+				scanline_wr[active_buffer] = cur_sprite_data[4:0] != 5'b00000;
+			
+				if (cur_sprite_data[4:0] != 5'd0)
+					scanline_wr_data[active_buffer] = {cur_sprite_palette[3:1], cur_sprite_data[4:0]};			
+
+				if (cur_sprite_x_count == yram_out[15:10])
+					r_state_next = r_finish;
+				else
+					r_state_next = r_blit_5_1;
+			end	
+			r_blit_5_1: begin
+				cur_sprite_x_next = cur_sprite_x + 1;
+				cur_sprite_x_count_next = cur_sprite_x_count + 1;
+
+				scanline_wr[active_buffer] = cur_sprite_data[9:5] != 5'b00000;
+	
+				if (cur_sprite_data[9:5] != 5'd0)
+					scanline_wr_data[active_buffer] = {cur_sprite_palette[3:1], cur_sprite_data[9:5]};			
+
+				if (cur_sprite_x_count == yram_out[15:10])
+					r_state_next = r_finish;
+				else
+					r_state_next = r_blit_5_2;
+			end
+			r_blit_5_2: begin
+
+				cur_sprite_x_next = cur_sprite_x + 1;
+				cur_sprite_x_count_next = cur_sprite_x_count + 1;
+
+				scanline_wr[active_buffer] = cur_sprite_data[14:10] != 5'b00000;
+				
+				if (cur_sprite_data[14:10] != 5'd0)
+					scanline_wr_data[active_buffer] = {cur_sprite_palette[3:1], cur_sprite_data[14:10]};			
+
+				if (cur_sprite_x_count == yram_out[15:10])
+					r_state_next = r_finish;
+				else
+					r_state_next = r_load_mem_addr;
+		
 			end
 			default: ;
 		endcase

@@ -149,6 +149,8 @@ localparam f_fetch_tile_data = 4'd4;
 localparam f_wait_td_mem     = 4'd5;
 localparam f_wait_td_mem2    = 4'd6;
 localparam f_begin2			 = 4'd7;
+localparam f_prebegin			 = 4'd8;
+localparam f_prebegin2			 = 4'd9;
 
 reg [3:0] f_state_r;
 reg [3:0] f_state_r_next;
@@ -156,7 +158,9 @@ reg [3:0] f_state_r_next;
 reg [7:0] cur_tile;
 reg [7:0] cur_tile_next;
 
-wire [15:0] tilemap_y_disp = (layer == 1'b0 ? tile_map_y : tile_map_y2) + {6'd0, display_y} ;
+reg [15:0] tilemap_y_disp;
+
+always @(posedge CLK) tilemap_y_disp <= (layer == 1'b0 ? tile_map_y : tile_map_y2) + {6'd0, display_y} ;
 
 reg [1:0] fetch_count;
 reg [1:0] fetch_count_next;
@@ -267,7 +271,7 @@ begin
 
 	if (H_tick == 1'b1 && bg_enable == 1'b1)
 	begin
-		f_state_r_next = f_begin;
+		f_state_r_next = f_prebegin;
 		fetch_count_next = 2'd0;
 		active_buffer_next = display_buffer;
 		layer_next = 1'b0;
@@ -275,6 +279,8 @@ begin
 	else begin
 		case (f_state_r)
 			f_idle:	;
+			f_prebegin: 
+				f_state_r_next = f_begin;
 			f_begin: begin
 
 				if (bg_tile_size == 1'b0) begin // 16x16
@@ -304,6 +310,8 @@ begin
 				f_state_r_next 		 = f_fetch_tile;
 				cur_render_x_next    = 10'd16; 
 			end
+			f_prebegin2: 
+				f_state_r_next = f_begin2;
 			f_begin2: begin
 				
 				if (bg_tile_size2 == 1'b0) begin // 16x16
@@ -336,7 +344,7 @@ begin
 			f_fetch_tile: begin
 				if (cur_render_x == 10'd720)
 					if (layer == 1'b0 && bg_enable2 == 1'b1) begin
-						f_state_r_next = f_begin2;
+						f_state_r_next = f_prebegin2;
 						layer_next = 1'b1; 
 					end
 					else 

@@ -1,7 +1,7 @@
 /*
  *	Background renderer
  *
- *  Fixed tile size 16x16 - 256 16x16x4bpp tiles will fit in a 32kB SPRAM
+ *	Fixed tile size 16x16 - 256 16x16x4bpp tiles will fit in a 32kB SPRAM
  *
  */
 
@@ -28,7 +28,7 @@ module background_controller
 	/* display uses this channel to read scanline block RAM */
 	input [9:0]   display_x_,
 	input [9:0]   display_y,
-	input         re,	// render enable
+	input		  re,	// render enable
 	output [7:0] color_index,
 
 	/* memory channel to memory arbiter */
@@ -68,7 +68,7 @@ genvar j;
 reg [7:0]  scanline_rd_addr[1:0];
 reg [7:0]  scanline_wr_addr[1:0];
 wire [15:0] scanline_rd_data[1:0];
-reg [15:0]  scanline_wr_data[1:0];
+reg [15:0]	scanline_wr_data[1:0];
 
 reg scanline_wr[1:0];
 reg active_buffer;
@@ -105,13 +105,13 @@ reg [9:0] cur_render_x_next;
 assign memory_address = memory_address_r;
 assign rvalid = rvalid_r;
 
-localparam f_idle 			 = 4'd0;
-localparam f_begin			 = 4'd1;
-localparam f_fetch_tile 	 = 4'd2;
-localparam f_wait_tile_mem   = 4'd3;
-localparam f_fetch_tile_data = 4'd4;
-localparam f_wait_td_mem     = 4'd5;
-localparam f_wait_td_mem2    = 4'd6;
+localparam f_idle		= 4'd0;
+localparam f_begin		= 4'd1;
+localparam f_fetch_tile		= 4'd2;
+localparam f_wait_tile_mem	= 4'd3;
+localparam f_fetch_tile_data	= 4'd4;
+localparam f_wait_td_mem	= 4'd5;
+localparam f_wait_td_mem2	= 4'd6;
 
 reg [3:0] f_state_r;
 reg [3:0] f_state_r_next;
@@ -128,10 +128,10 @@ reg [17:0] tile_lookup;
 
 always @(*)
 begin
-	tile_lookup = {10'd0, cur_tile[3:0], 4'd0}	+ 
-				  {2'd0, cur_tile[7:4], 12'd0}   +
-				{6'd0, tilemap_y_disp[3:0], 8'd0} +  
-				{14'd0, cur_render_x[3:0]} + {tile_set_address, 2'd0};
+	tile_lookup = 	{10'd0, cur_tile[3:0], 4'd0}	+ 
+			{2'd0, cur_tile[7:4], 12'd0}		+
+			{6'd0, tilemap_y_disp[3:0], 8'd0}	+  
+			{14'd0, cur_render_x[3:0]} + {tile_set_address, 2'd0};
 end
 
 
@@ -142,10 +142,10 @@ begin
 
 	// Fetcher process: fetch tile pixels into a 64 bit shift register
 
-	f_state_r_next 			= f_state_r;
-	tilemap_index_r_next 	= tilemap_index_r;
-	memory_address_r_next 	= memory_address_r;
-	cur_tile_next 			= cur_tile;
+	f_state_r_next			= f_state_r;
+	tilemap_index_r_next		= tilemap_index_r;
+	memory_address_r_next		= memory_address_r;
+	cur_tile_next			= cur_tile;
 	fetch_count_next		= fetch_count;
 
 	rvalid_r = 1'b0;
@@ -153,18 +153,18 @@ begin
 	scanline_wr_addr[0] = 8'd0;
 	scanline_wr_addr[1] = 8'd0;
 
-	scanline_wr[0] 		= 1'b0;
-	scanline_wr[1] 		= 1'b0;
+	scanline_wr[0]		= 1'b0;
+	scanline_wr[1]		= 1'b0;
 
 	scanline_wr_data[0] = 16'h0000;	
 	scanline_wr_data[1] = 16'h0000;	
 
 	scanline_wr_addr[active_buffer] = cur_render_x[9:2];
-	scanline_wr[active_buffer] 		= 1'b0;
+	scanline_wr[active_buffer]		= 1'b0;
 	scanline_wr_data[active_buffer] = 16'h0000;	
 
 	// Clear display buffer as it is read		
-	scanline_wr[display_buffer] 	= 1'b1;
+	scanline_wr[display_buffer]		= 1'b1;
 	scanline_wr_addr[display_buffer] = display_x[9:2] - 8'd1;
 	scanline_wr_data[display_buffer] = 16'h0000;	
 
@@ -183,15 +183,15 @@ begin
 			f_idle:	;
 			f_begin: begin
 				tilemap_index_r_next = {tile_map_address, 1'd0} + {3'd0, tilemap_y_disp[10:4], tile_map_x[10:4]}; 
-				f_state_r_next 		 = f_fetch_tile;
-				cur_render_x_next    = 10'd32; 
+				f_state_r_next		 = f_fetch_tile;
+				cur_render_x_next	 = 10'd32; 
 			end
 			f_fetch_tile: begin
 				if (cur_render_x == 10'd720)
 					f_state_r_next = f_idle;
 				else
-					f_state_r_next 			= f_wait_tile_mem;
-				memory_address_r_next   = tilemap_index_r[16:1]; // word address
+					f_state_r_next			= f_wait_tile_mem;
+				memory_address_r_next	= tilemap_index_r[16:1]; // word address
 			end
 			f_wait_tile_mem: begin
 				rvalid_r = 1'b1;
@@ -224,7 +224,7 @@ begin
 			f_wait_td_mem2: begin
 				rvalid_r = 1'b1;
 				memory_address_r_next = memory_address_r + 1;
-				scanline_wr[active_buffer] 		= 1'b1;
+				scanline_wr[active_buffer]		= 1'b1;
 				scanline_wr_data[active_buffer] = memory_data;
 				cur_render_x_next = cur_render_x + 4;
 				fetch_count_next = fetch_count + 1;
@@ -260,10 +260,10 @@ end
 always @(*)
 begin
 	scanline_rd_addr[0]  = 10'd0;
- 	scanline_rd_addr[1]  = 10'd0;
-  	
+	scanline_rd_addr[1]  = 10'd0;
+	
 	scanline_rd_addr[active_buffer]  = 10'd0;
-  	scanline_rd_addr[display_buffer] = display_x[9:2];
+	scanline_rd_addr[display_buffer] = display_x[9:2];
 
 	case (display_x_reg[1:0])
 		2'b00:
@@ -282,12 +282,12 @@ end
 always @(*)
 begin
 
-	bg_enable_next 		  = bg_enable;
-	tile_map_x_next 	  = tile_map_x;
-	tile_map_y_next 	  = tile_map_y;
+	bg_enable_next		  = bg_enable;
+	tile_map_x_next		  = tile_map_x;
+	tile_map_y_next		  = tile_map_y;
 	tile_map_address_next = tile_map_address;
 	tile_set_address_next = tile_set_address;
-	pal_hi_next 		  = pal_hi;	
+	pal_hi_next			  = pal_hi;	
 
 	if (WR == 1'b1)
 	begin
@@ -296,8 +296,8 @@ begin
 				/* bit 0: enable (1 = enable)
 				   bit 7-4: palette hi
 				*/
-				bg_enable_next 		 = DATA_IN[0];
-				pal_hi_next 		 = DATA_IN[7:4];
+				bg_enable_next		 = DATA_IN[0];
+				pal_hi_next			 = DATA_IN[7:4];
 			end
 			4'd1: /* tile map x register */
 				tile_map_x_next = DATA_IN;
@@ -318,35 +318,35 @@ end
 always @(posedge CLK)
 begin
 	if (RSTb == 1'b0) begin
-		bg_enable 		 <= 1'b0;
-		tile_map_x 		 <= 16'h0000;
-		tile_map_y 		 <= 16'h0000;
-		tile_map_address <= 16'h0000;
-		tile_set_address <= 16'h0000;	
-		pal_hi 			 <= 4'd0;
-		active_buffer 	 <= 1'b0;
-		tilemap_index_r  <= 21'd0;
-		memory_address_r <= 16'd0;
-		f_state_r 		 <= f_idle;
-		cur_render_x 	 <= 10'd0;
-		cur_tile		 <= 8'd0;
+		bg_enable		<= 1'b0;
+		tile_map_x		<= 16'h0000;
+		tile_map_y		<= 16'h0000;
+		tile_map_address 	<= 16'h0000;
+		tile_set_address 	<= 16'h0000;	
+		pal_hi			<= 4'd0;
+		active_buffer	 	<= 1'b0;
+		tilemap_index_r  	<= 21'd0;
+		memory_address_r 	<= 16'd0;
+		f_state_r		<= f_idle;
+		cur_render_x	 	<= 10'd0;
+		cur_tile		<= 8'd0;
 		fetch_count		<= 2'd0;
-		color_index_r   <= 8'd0;
+		color_index_r		<= 8'd0;
 	end else begin
-		bg_enable 		 <= bg_enable_next;
-		tile_map_x 		 <= tile_map_x_next;
-		tile_map_y 		 <= tile_map_y_next;
-		tile_map_address <= tile_map_address_next;
-		tile_set_address <= tile_set_address_next;	
-		pal_hi 			 <= pal_hi_next;
-		active_buffer 	 <= active_buffer_next;
-		tilemap_index_r  <= tilemap_index_r_next;
-		memory_address_r <= memory_address_r_next;
-		f_state_r 		 <= f_state_r_next;
-		cur_render_x	 <= cur_render_x_next;
-		cur_tile		 <= cur_tile_next;
+		bg_enable		<= bg_enable_next;
+		tile_map_x		<= tile_map_x_next;
+		tile_map_y		<= tile_map_y_next;
+		tile_map_address 	<= tile_map_address_next;
+		tile_set_address 	<= tile_set_address_next;	
+		pal_hi			<= pal_hi_next;
+		active_buffer	 	<= active_buffer_next;
+		tilemap_index_r  	<= tilemap_index_r_next;
+		memory_address_r 	<= memory_address_r_next;
+		f_state_r		<= f_state_r_next;
+		cur_render_x	 	<= cur_render_x_next;
+		cur_tile		<= cur_tile_next;
 		fetch_count		<= fetch_count_next;
-		color_index_r <= color_index_r_next;
+		color_index_r 		<= color_index_r_next;
 	end
 end
 

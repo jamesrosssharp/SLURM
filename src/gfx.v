@@ -266,15 +266,12 @@ reg [7:0] color_index_r;
 
 always @(*)
 begin
-	if (spcon_color_index[3:0] == 4'd0) 
-		// if (bg1_color_index[3:0] == 4'd0)
+	if (spcon_color_index == 8'd0) begin 
 			if (bg0_color_index[3:0] == 4'd0)
 					color_index = 0;
 			else
 				color_index = bg0_color_index;
-		//else
-		//	color_index = bg1_color_index;
-	else
+	end else
 		color_index = spcon_color_index;
 end
 
@@ -296,7 +293,7 @@ begin
 	color_index_r = color_index;
 end
 
-wire [11:0] theColor = color_index_r[3:0] == 4'h0 ? background_color : color;
+wire [11:0] theColor = color_index_r == 8'h00 ? background_color : color;
 
 wire [3:0] rout;
 wire [3:0] bout;
@@ -307,13 +304,13 @@ reg [3:0] bout_r;
 reg [3:0] gout_r;
 
 alpha a0 (
+	background_color[11:8],
+	background_color[7:4],
+	background_color[3:0],
 	theColor[11:8],
 	theColor[7:4],
 	theColor[3:0],
-	fb_color[11:8],
-	fb_color[7:4],
-	fb_color[3:0],
-	alpha_override_out ? alpha_out : fb_color[15:12],
+	alpha_override_out ? alpha_out : theColor[15:12],
 	rout,
 	bout,
 	gout

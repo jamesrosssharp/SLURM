@@ -94,6 +94,7 @@ wave_phase:
 
 
 bloodlust_copper_list:
+		dw 0xd00f
 		dw 0xb001
 		dw 0x6000
 		dw 0x7008
@@ -130,6 +131,7 @@ bloodlust_copper_list:
 		dw 0x2096
 		
 start_mirror:
+		dw 0xd007
 		dw 0xc055
 		dw 0x40f0 // skip if v > 240
 		dw 0xc655
