@@ -57,7 +57,9 @@ module cpu_pipeline #(parameter REGISTER_BITS = 4, BITS = 16, ADDRESS_BITS = 16)
 	input	load_store_req,
 
 	/* cpu state */
-	output  is_executing
+	output  is_executing,
+
+	output imm_reg_stage4
 
 );
 
@@ -560,9 +562,10 @@ reg [BITS - 1:0] imm_stage2_r_next;
 
 assign imm_reg = imm_stage2_r;
 
-
 reg [BITS - 1:0] imm_stage3_r;
 reg [BITS - 1:0] imm_stage4_r;
+
+assign imm_reg_stage4 = imm_stage4_r;
 
 always @(posedge CLK)
 begin

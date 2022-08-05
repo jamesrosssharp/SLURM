@@ -76,6 +76,8 @@ wire bank_switch;
 
 wire is_executing;
 
+wire [15:0] imm_reg_stage4;
+
 cpu_pipeline #(.REGISTER_BITS(REGISTER_BITS), .BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) pip0
 (
 	CLK,
@@ -123,7 +125,9 @@ cpu_pipeline #(.REGISTER_BITS(REGISTER_BITS), .BITS(BITS), .ADDRESS_BITS(ADDRESS
 	bank_switch,
 	load_memory | store_memory,
 
-	is_executing
+	is_executing,
+
+	imm_reg_stage4
 );
 
 wire [14:0] instruction_memory_address;
@@ -330,9 +334,9 @@ cpu_writeback #(.REGISTER_BITS(REGISTER_BITS), .BITS(BITS), .ADDRESS_BITS(ADDRES
 	C,
 	Z,
 	S,
-	V
+	V,
 
-
+	imm_reg_stage4
 );
 
 cpu_port_interface #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_prt0 (

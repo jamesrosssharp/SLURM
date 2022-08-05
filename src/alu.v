@@ -53,6 +53,9 @@ wire [BITS - 1 : 0] xorOp = A ^ B;
 wire [BITS - 1 : 0] rolcOp = {B[BITS - 2:0],C};
 wire [BITS - 1 : 0] rorcOp = {C, B[BITS - 1:1]};
 
+wire [BITS - 1 : 0] rolOp = {B[BITS - 2:0],B[BITS - 1]};
+wire [BITS - 1 : 0] rorOp = {B[0], B[BITS - 1:1]};
+
 wire [BITS - 1 : 0] lslOp = {B[BITS - 2:0],1'b0};
 wire [BITS - 1 : 0] asrOp = {B[BITS-1], B[BITS - 1:1]};
 wire [BITS - 1 : 0] lsrOp = {1'b0, B[BITS - 1:1]};
@@ -62,10 +65,17 @@ wire [2*BITS - 1 : 0] mulOp;
 // signed mult
 mult m0 (A, B, mulOp);
 
-
 wire [2*BITS - 1 : 0] umulOp;
 unsigned_mult m1 (A, B, umulOp);
 
+// Rotate - left nibble
+wire [BITS - 1 : 0] rlnOp = {A[BITS - 5 : 0], A[BITS - 1 : BITS - 4]};
+
+// Rotate - right nibble
+wire [BITS - 1 : 0] rrnOp = {A[3 : 0], A[BITS - 1 : 4]};
+
+// byte swap 
+wire [BITS - 1 : 0] bswapOp = {A[7:0], A[BITS - 1:8]};
 
 reg [BITS - 1 : 0] out;
 reg [BITS - 1 : 0] out_r;
@@ -165,9 +175,11 @@ begin
 			C_flag_reg_next = 1'b0;
 			S_flag_reg_next = mulOp[2*BITS - 1] ? 1'b1 : 1'b0;
 		end
-		/* barrel shifter? */
-		5'd10: ; /* bsr */
-		5'd11: ; /* bsl */
+		5'd10:  /* rrn */
+			out = rrnOp;	
+
+		5'd11:  /* rln */
+			out = rlnOp;
 
 		5'd12: begin /* cmp */
 			out = A;
@@ -188,8 +200,9 @@ begin
 			C_flag_reg_next = 1'b0;
 			S_flag_reg_next = umulOp[2*BITS - 1] ? 1'b1 : 1'b0;
 		end
-		/* 15 reserved */
-
+		5'd15: begin /* bswap */
+			out = bswapOp;
+		end
 		/* extended ADC operations  - single register only (no immediate) */
 		5'd16: begin /* asr */
 			out = asrOp;	
@@ -211,8 +224,10 @@ begin
 			out = rorcOp;
 			C_flag_reg_next = B[0];	
 		end
-		5'd21: ; // rol
-		5'd22: ; // ror	
+		5'd21:  // rol
+			out = rolOp;
+		5'd22: // ror	
+			out = rorOp;
 		5'd23:	begin // clear carry
 			out = 0;		
 			C_flag_reg_next = 1'b0;

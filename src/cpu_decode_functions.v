@@ -23,6 +23,13 @@ begin
 end
 endfunction
 
+function [4:0] alu_op_from_imm;
+input [15:0] imm;
+begin
+	alu_op_from_imm = {1'b0, imm[7:4]}; 
+end
+endfunction
+
 function [4:0] single_reg_alu_op_from_ins;
 input [15:0] ins;
 begin
@@ -36,6 +43,15 @@ begin
 	reg_dest_from_ins = ins[7:4];
 end
 endfunction
+
+function [3:0] reg_3dest_from_ins;
+input [15:0] ins;
+begin
+	reg_3dest_from_ins = ins[11:8];
+end
+endfunction
+
+
 
 function [3:0] reg_src_from_ins;
 input [15:0] ins;

@@ -23,7 +23,9 @@ module cpu_writeback #(parameter REGISTER_BITS = 4, BITS = 16, ADDRESS_BITS = 16
 	input C,
 	input Z,
 	input S,
-	input V
+	input V,
+
+	input imm_reg_stage4
 
 );
 
@@ -103,6 +105,12 @@ begin
 			if (branch_taken_from_ins(instruction, Z, S, C, V) == 1'b1) begin
 				reg_wr_addr_r = reg_dest_from_ins(instruction);
 				reg_out_r = aluOut;
+			end
+		end
+		INSTRUCTION_CASEX_THREE_REG_COND_ALU: begin
+			if (branch_taken_from_ins(imm_reg_stage4, Z, S, C, V) == 1'b1) begin
+				reg_wr_addr_r = reg_3dest_from_ins(instruction);
+				reg_out_r = aluOut;	
 			end
 		end
 		default: ;

@@ -40,7 +40,7 @@ begin
 		INSTRUCTION_CASEX_ALUOP_SINGLE_REG: begin /* alu op reg */
 			regBRdAddr_r	= reg_src_from_ins(instruction);
 		end
-		INSTRUCTION_CASEX_ALUOP_REG_REG:	begin	/* alu op, reg reg */
+		INSTRUCTION_CASEX_ALUOP_REG_REG, INSTRUCTION_CASEX_THREE_REG_COND_ALU:	begin	/* alu op, reg reg */
 			regARdAddr_r	= reg_dest_from_ins(instruction);
 			regBRdAddr_r	= reg_src_from_ins(instruction);
 		end

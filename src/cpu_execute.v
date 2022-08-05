@@ -116,6 +116,9 @@ begin
 					aluB_r_next 	= imm_reg;
 					alu_op_r_next 	= alu_op_from_ins(instruction);
 				end
+				INSTRUCTION_CASEX_THREE_REG_COND_ALU:	begin /* 3 reg alu op */
+					alu_op_r_next 	= alu_op_from_imm(imm_reg);
+				end
 				default: ;
 			endcase
 	end

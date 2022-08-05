@@ -33,10 +33,10 @@ Class 0 has 4 sub-classes, bits 9 - 8 of the opcode.
     |---|----|----|----|----|----|---|---|-------|-------|
     |0  | 0  | 0  | 0  | 0  | 1  | 0 | 0 | ALU OP| REG   |
 
-	ALU OP:
-		ALU Op is 5 bits, with MSB set to 1
+        ALU OP:
+        ALU Op is 5 bits, with MSB set to 1
 
- 		16 - asr : arithmetic shift right REG
+        16 - asr : arithmetic shift right REG
         17 - lsr : logical shift right REG
         18 - lsl : logical shift left REG
         19 - rolc
@@ -51,7 +51,7 @@ Class 0 has 4 sub-classes, bits 9 - 8 of the opcode.
         28 - ss : set sign
         29 - stf : store flags
         30 - rsf: restore flags
-		31 : reserved
+        31 : reserved
 
 5. Interrupt
 
@@ -104,7 +104,7 @@ Class 2: Register to register ALU operation
 |0  | 0  | 1  | 0  | ALU OP |  DEST  |   SRC  |
 
 
-    ALU OP + ALU OP HI: 5 bits ALU operation
+    ALU OP: 4 bits ALU operation
         0 - mov : DEST <- SRC
         1 - add : DEST <- DEST + SRC
         2 - adc : DEST <- DEST + SRC + Carry
@@ -114,14 +114,15 @@ Class 2: Register to register ALU operation
         6 - or  : DEST <- DEST | SRC
         7 - xor : DEST <- DEST ^ SRC
     	8 - mul : DEST <- DEST * SRC (LO)
-		9 - mulu : DEST <- DEST * SRC (HI)
-		10 - 11 : reserved
-		12: cmp 
-		13: test
-		14 - 15 - reserved
+        9 - mulu : DEST <- DEST * SRC (HI)
+        10 - 11 : reserved
+        12: cmp 
+        13: test
+        14 - umulu : DEST <- (UNSIGNED) DEST * (UNSIGNED) SRC (HI) 
+        15 - reserved
  
-	DEST: destination and operand (alu A input)
-    SRC:  source and second operand (alu B input)
+        DEST: destination and operand (alu A input)
+        SRC:  source and second operand (alu B input)
 
 Class 3: immediate to register ALU operation
 -------------------------------------------
@@ -141,11 +142,12 @@ Class 3: immediate to register ALU operation
         6 - or  : DEST <- DEST | IMM
         7 - xor : DEST <- DEST ^ IMM
         8 - mul : DEST <- DEST * IMM (LO)
-		9 - mulu : DEST <- DEST * IMM (HI)
-		10 - 11 : reserved
-		12: cmp 
-		13: test
-		14 - 15 - reserved
+        9 - mulu : DEST <- DEST * IMM (HI)
+        10 - 11 : reserved
+        12 - cmp : compare
+        13 - test : bit test
+        14 - umulu : DEST <- (UNSIGNED) DEST * (UNSIGNED) IMM (HI)
+        15 - reserved
   
     DEST: destination and operand (alu A input)
     IMM LO : 4 bit immediate which can be combined with the immediate register to produce a 
@@ -219,7 +221,38 @@ Class 8: immediate + register byte memory operation with sign extend
 
 
 
-Class 9: Reserved
+Class 9: three register conditional ALU operation
+
+Encoded as two words, first word being an immediate value
+
+|31 | 30 | 29 | 28  | 27 - 24 | 23 - 20 | 19 - 16  |
+|---|----|----|-----|---------|---------|----------|
+| 0 | 0  | 0  | 1   |   COND  | ALU OP  |    x     |
+
+|15 | 14 | 13 | 12  | 11 - 8  | 7  - 4 | 3 - 0 |
+|---|----|----|-----|---------|--------|-------|
+| 1 | 0  | 0  | 1   |   DEST  |  SRC1  | SRC2  |
+
+    ALU OP: 4 bits ALU operation
+        0 - mov : DEST <- SRC
+        1 - add : DEST <- SRC1 + SRC2
+        2 - adc : DEST <- SRC1 + SRC2 + Carry
+        3 - sub : DEST <- SRC1 - SRC2
+        4 - sbb : DEST <- SRC1 - SRC2 - Carry
+        5 - and : DEST <- SRC1 & SRC2
+        6 - or  : DEST <- SRC1 | SRC2
+        7 - xor : DEST <- SRC1 ^ SRC2
+    	8 - mul : DEST <- SRC1 * SRC2 (LO)
+        9 - mulu : DEST <- SRC1 * SRC2 (HI)
+        10 - 11 : reserved
+        12: cmp 
+        13: test
+        14 - umulu : DEST <- (UNSIGNED) SRC1 * (UNSIGNED) SRC2 (HI) 
+        15 - reserved
+ 
+    COND as per branch
+    Result is stored if COND, flags set regardless 
+
 
 Class A/B: immediate + register byte memory operation
 -------------------------------------------------------

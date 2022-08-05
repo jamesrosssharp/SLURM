@@ -71,6 +71,9 @@ begin
 				hazard_reg0_r = reg_dest_from_ins(instruction);
 			end
 		end
+		INSTRUCTION_CASEX_THREE_REG_COND_ALU: begin
+			hazard_reg0_r 	= reg_3dest_from_ins(instruction);
+		end	
 		default: ;
 	endcase
 end
