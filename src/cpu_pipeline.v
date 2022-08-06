@@ -59,7 +59,8 @@ module cpu_pipeline #(parameter REGISTER_BITS = 4, BITS = 16, ADDRESS_BITS = 16)
 	/* cpu state */
 	output  is_executing,
 
-	output imm_reg_stage4
+	input cond_pass_stage2,
+	output cond_pass_stage4
 
 );
 
@@ -567,6 +568,11 @@ reg [BITS - 1:0] imm_stage4_r;
 
 assign imm_reg_stage4 = imm_stage4_r;
 
+reg cond_pass_stage3_r;
+reg cond_pass_stage4_r;
+
+assign cond_pass_stage4 = cond_pass_stage4_r;
+
 always @(posedge CLK)
 begin
 	if (RSTb == 1'b0) begin
@@ -581,6 +587,8 @@ begin
 		if (state != st_halt) begin
 			imm_stage3_r 	<= imm_stage2_r;
 			imm_stage4_r 	<= imm_stage3_r;
+			cond_pass_stage3_r <= cond_pass_stage2;
+			cond_pass_stage4_r <= cond_pass_stage3_r;
 		end
 	end
 end

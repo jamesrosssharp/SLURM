@@ -51,8 +51,6 @@ begin
 end
 endfunction
 
-
-
 function [3:0] reg_src_from_ins;
 input [15:0] ins;
 begin

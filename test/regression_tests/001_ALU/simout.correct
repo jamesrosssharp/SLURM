@@ -26,5 +26,13 @@ XOR:
 ff00^00ff=ffffS
 aa55^ffee=55bbS
 
+Rotate nibble left:
+1234->2341
+Rotate nibble right:
+1234->4123
+Bswap:
+1234->3412
+Conditional add:
+-dead-0019
 
 see you!

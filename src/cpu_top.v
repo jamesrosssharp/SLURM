@@ -78,6 +78,9 @@ wire is_executing;
 
 wire [15:0] imm_reg_stage4;
 
+wire cond_pass_stage2;
+wire cond_pass_stage4;
+
 cpu_pipeline #(.REGISTER_BITS(REGISTER_BITS), .BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) pip0
 (
 	CLK,
@@ -127,7 +130,8 @@ cpu_pipeline #(.REGISTER_BITS(REGISTER_BITS), .BITS(BITS), .ADDRESS_BITS(ADDRESS
 
 	is_executing,
 
-	imm_reg_stage4
+	cond_pass_stage2,
+	cond_pass_stage4
 );
 
 wire [14:0] instruction_memory_address;
@@ -293,7 +297,8 @@ cpu_execute #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_exec0
 	new_pc,
 	interrupt_flag_set,
 	interrupt_flag_clear,
-	halt
+	halt,
+	cond_pass_stage2
 );
 
 wire [BITS - 1:0] aluOut;
@@ -336,7 +341,7 @@ cpu_writeback #(.REGISTER_BITS(REGISTER_BITS), .BITS(BITS), .ADDRESS_BITS(ADDRES
 	S,
 	V,
 
-	imm_reg_stage4
+	cond_pass_stage4
 );
 
 cpu_port_interface #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_prt0 (

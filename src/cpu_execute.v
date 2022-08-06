@@ -51,7 +51,9 @@ module cpu_execute #(parameter REGISTER_BITS = 4, BITS = 16, ADDRESS_BITS = 16)
 	output interrupt_flag_set,
 	output interrupt_flag_clear,
 
-	output halt
+	output halt,
+
+	output cond_pass
 
 );
 
@@ -93,12 +95,16 @@ end
 
 /* determine ALU operation */
 
+reg cond_pass_r;
+assign cond_pass = cond_pass_r;
+
 always @(*)
 begin
 
 	aluA_r_next = aluA_r;
 	aluB_r_next = aluB_r;
 	alu_op_r_next = alu_op_r; 
+	cond_pass_r = 1'b0;
 	
 	if (is_executing) begin	
 			aluA_r_next = regA;
@@ -117,7 +123,11 @@ begin
 					alu_op_r_next 	= alu_op_from_ins(instruction);
 				end
 				INSTRUCTION_CASEX_THREE_REG_COND_ALU:	begin /* 3 reg alu op */
-					alu_op_r_next 	= alu_op_from_imm(imm_reg);
+					
+					if (branch_taken_from_ins(imm_reg, Z, S, C, V) == 1'b1) begin
+						alu_op_r_next 	= alu_op_from_imm(imm_reg);
+						cond_pass_r = 1'b1;
+					end
 				end
 				default: ;
 			endcase

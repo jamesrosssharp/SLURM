@@ -69,13 +69,13 @@ wire [2*BITS - 1 : 0] umulOp;
 unsigned_mult m1 (A, B, umulOp);
 
 // Rotate - left nibble
-wire [BITS - 1 : 0] rlnOp = {A[BITS - 5 : 0], A[BITS - 1 : BITS - 4]};
+wire [BITS - 1 : 0] rlnOp = {B[BITS - 5 : 0], B[BITS - 1 : BITS - 4]};
 
 // Rotate - right nibble
-wire [BITS - 1 : 0] rrnOp = {A[3 : 0], A[BITS - 1 : 4]};
+wire [BITS - 1 : 0] rrnOp = {B[3 : 0], B[BITS - 1 : 4]};
 
 // byte swap 
-wire [BITS - 1 : 0] bswapOp = {A[7:0], A[BITS - 1:8]};
+wire [BITS - 1 : 0] bswapOp = {B[7:0], B[BITS - 1:8]};
 
 reg [BITS - 1 : 0] out;
 reg [BITS - 1 : 0] out_r;

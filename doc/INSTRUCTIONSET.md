@@ -115,11 +115,12 @@ Class 2: Register to register ALU operation
         7 - xor : DEST <- DEST ^ SRC
     	8 - mul : DEST <- DEST * SRC (LO)
         9 - mulu : DEST <- DEST * SRC (HI)
-        10 - 11 : reserved
+        10: - rrn : rotate nibble right
+	11: - rln : rotate nibble left
         12: cmp 
         13: test
         14 - umulu : DEST <- (UNSIGNED) DEST * (UNSIGNED) SRC (HI) 
-        15 - reserved
+        15 - bswap : DEST <- bytes swapped SRC
  
         DEST: destination and operand (alu A input)
         SRC:  source and second operand (alu B input)
@@ -227,7 +228,7 @@ Encoded as two words, first word being an immediate value
 
 |31 | 30 | 29 | 28  | 27 - 24 | 23 - 20 | 19 - 16  |
 |---|----|----|-----|---------|---------|----------|
-| 0 | 0  | 0  | 1   |   COND  | ALU OP  |    x     |
+| 0 | 0  | 0  | 1   |   x     |  COND   |  ALU OP  |
 
 |15 | 14 | 13 | 12  | 11 - 8  | 7  - 4 | 3 - 0 |
 |---|----|----|-----|---------|--------|-------|
@@ -251,7 +252,7 @@ Encoded as two words, first word being an immediate value
         15 - reserved
  
     COND as per branch
-    Result is stored if COND, flags set regardless 
+    Result is stored / flags changed if COND
 
 
 Class A/B: immediate + register byte memory operation

@@ -72,7 +72,7 @@ end
 initial begin
     $dumpfile("cpu_mem_stall_test.vcd");
     $dumpvars(0, alu_tb);
-	# 1000000 $finish;
+	# 1500000 $finish;
 end
 
 genvar j;
