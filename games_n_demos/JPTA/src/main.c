@@ -23,10 +23,10 @@ struct Sprite {
 	short vx;
 	short vy;
 	short frame;
-	unsigned short frames[4];
-	unsigned short width[4];
-	unsigned short height[4];
-	short xofs[4];
+	unsigned short frames[8];
+	unsigned short width[8];
+	unsigned short height[8];
+	short xofs[8];
 };
 
 struct Sprite sprites[] =  {
@@ -38,10 +38,10 @@ struct Sprite sprites[] =  {
 		0,
 		0,
 		0,
-		{0, 11, 22, 33},
-		{43,43,43,43},
-		{43,43,43,43},
-		{0,0,0,0},
+		{0, 9, 19, 29, 38, 48, 2816, 2826},
+		{35,39,39,35, 39, 39, 39, 39},
+		{43,43,43,43, 43, 43, 43, 43},
+		{2,2,0,0,0,0,0,0},
 	},
 };
 
@@ -49,7 +49,7 @@ void update_sprite(struct Sprite* sp)
 {
 	short x, y, h, a, frame;
 	
-	frame = ((sp->frame) & 63) >> 4;
+	frame = ((sp->frame) & 31) >> 2;
 	
 	x = MAKE_SPRITE_X(sp->x + sp->xofs[frame], sp->enabled, 0, 1);
 	y = MAKE_SPRITE_Y(sp->y, sp->width[frame] - 1);
