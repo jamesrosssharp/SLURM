@@ -60,6 +60,7 @@ MANDEL_BIN=../../games_n_demos/Mandelbrot/build/mandelbrot.bin
 CAPTOR_BIN=../../games_n_demos/Captor/build/captor.bin
 CHIPTUNE_BIN=../../games_n_demos/ChipTune/build/chiptune.bin
 DRUM_BIN=../../games_n_demos/DrumMachineOptimised/build/drummachine.bin
+JPTA_BIN=../../games_n_demos/JPTA/build/jpta.bin
 
 GAME_BIN=$(BLOODLIST_BIN)
 
@@ -141,6 +142,11 @@ chiptune: $(PROJ).bin
 drum: $(PROJ).bin
 	$(ICEPROG) $(PROJ).bin
 	$(ICEPROG) -o 1M  $(DRUM_BIN) 
+
+.PHONY: jpta
+jpta: $(PROJ).bin
+	$(ICEPROG) $(PROJ).bin
+	$(ICEPROG) -o 1M  $(JPTA_BIN) 
 
 
 

@@ -509,7 +509,7 @@ begin
 			r_blit_5_2: begin
 
 				cur_sprite_x_next = cur_sprite_x + 1;
-				cur_sprite_x_count_next = cur_sprite_x_count + 1;
+				cur_sprite_x_count_next = cur_sprite_x_count + 2;
 
 				scanline_wr[active_buffer] = cur_sprite_data[14:10] != 5'b00000;
 				
