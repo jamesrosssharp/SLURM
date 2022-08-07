@@ -248,7 +248,23 @@ impl Slurm16CPU {
 		let mul = ((b * a) >> 16) & 0xffff;
 
 		self.registers[reg_dest] = mul as u16;
-		self.z = mul & 65535 == 0;
+		self.z = mul & 0xffff == 0;
+		match mul & 0x8000 {
+			0x8000 => self.s = true,
+			_ => self.s = false
+		}
+		self.c = false;
+	}
+ 
+	pub fn alu_umulu(&mut self, instruction : u16, src : u16) {
+		let reg_dest	= ((instruction & 0xf0) >> 4) as usize;
+		
+		let a = (src as u16) as u32;
+		let b = (self.get_register(reg_dest) as u16) as u32;
+		let mul = ((b * a) >> 16) & 0xffff;
+
+		self.registers[reg_dest] = mul as u16;
+		self.z = mul & 0xffff == 0;
 		match mul & 0x8000 {
 			0x8000 => self.s = true,
 			_ => self.s = false
@@ -267,6 +283,35 @@ impl Slurm16CPU {
 		self.s = shift > 0;
 		self.c = false;
 	}
+
+	pub fn alu_rrn(&mut self, instruction : u16, src : u16) {
+		let reg_dest	= (instruction & 0xf) as usize;
+		
+		let a = src as u16;
+		let shift = (a >> 4) | ((a & 0xf) << 12);
+
+		self.registers[reg_dest] = shift as u16;
+	}
+
+	pub fn alu_rln(&mut self, instruction : u16, src : u16) {
+		let reg_dest	= (instruction & 0xf) as usize;
+		
+		let a = src as u16;
+		let shift = (a << 4) | ((a & 0xf000) >> 12);
+
+		self.registers[reg_dest] = shift as u16;
+	}
+
+	pub fn alu_bswap(&mut self, instruction : u16, src : u16) {
+		let reg_dest	= (instruction & 0xf) as usize;
+		
+		let a = src as u16;
+		let shift = (a >> 8) | ((a & 0xff) << 8);
+
+		self.registers[reg_dest] = shift as u16;
+	}
+
+
 
 	pub fn alu_lsr(&mut self, instruction : u16, src : u16) {
 		let reg_dest	= (instruction & 0xf) as usize;
@@ -308,8 +353,8 @@ impl Slurm16CPU {
 		self.registers[reg_dest] = rolc as u16;
 		self.z = rolc == 0;
 		match rolc & 0x8000 {
-			0x8000 => self.s = true,
-			_ => self.s = false
+			0x8000 	=> self.s = true,
+			_ 	=> self.s = false
 		}
 		self.c = if src & 0x8000 == 0x8000 { true } else { false };
 	}
@@ -325,7 +370,7 @@ impl Slurm16CPU {
 		self.z = rorc == 0;
 		match rorc & 0x8000 {
 			0x8000	=> self.s = true,
-			_		=> self.s = false
+			_	=> self.s = false
 		}
 		self.c = if src & 0x0001 == 0x0001 { true } else { false };
 	}
@@ -340,8 +385,8 @@ impl Slurm16CPU {
 		self.registers[reg_dest] = rol as u16;
 		self.z = rol == 0;
 		match rol & 0x8000 {
-			0x8000 => self.s = true,
-			_ => self.s = false
+			0x8000 	=> self.s = true,
+			_ 	=> self.s = false
 		}
 		self.c = false;
 	}
@@ -357,7 +402,7 @@ impl Slurm16CPU {
 		self.z = ror == 0;
 		match ror & 0x8000 {
 			0x8000	=> self.s = true,
-			_		=> self.s = false
+			_	=> self.s = false
 		}
 		self.c = false;
 	}
@@ -446,10 +491,18 @@ impl Slurm16CPU {
 			8 => self.alu_mul(instruction, imm), 
 		//9 - mulu : DEST <- DEST * IMM (HI)
 			9 => self.alu_mulu(instruction, imm),
-		// 10 - 11 reserved for barrel shifter 
+		//10 - rrn (rotate right nibble)
+			10 => self.alu_rrn(instruction, imm),
+ 		//11 - rln (rotate left nibble)
+			11 => self.alu_rln(instruction, imm),	
+		//12 - cmp
 			12 => self.alu_cmp(instruction, imm),
+		//13 - test
 			13 => self.alu_test(instruction, imm),
-		// 14 - 15 - reserved
+		// 14 - umulu
+			14 => self.alu_umulu(instruction, imm),
+		// 15 - bswap
+			15 => self.alu_bswap(instruction, imm),
 			_ => self.nop()
 		}
 
@@ -483,10 +536,16 @@ impl Slurm16CPU {
 			8 => self.alu_mul(instruction, src_val), 
 		//9 - mulu : DEST <- DEST * IMM (HI)
 			9 => self.alu_mulu(instruction, src_val),
-		// 10 - 11 reserved for barrel shifter 
+		//10 - rrn (rotate right nibble)
+			10 => self.alu_rrn(instruction, src_val),
+ 		//11 - rln (rotate left nibble)
+			11 => self.alu_rln(instruction, src_val),	
 			12 => self.alu_cmp(instruction, src_val),
 			13 => self.alu_test(instruction, src_val),
-		// 14 - 15 - reserved
+		// 14 - umulu
+			14 => self.alu_umulu(instruction, src_val),
+		// 15 - bswap
+			15 => self.alu_bswap(instruction, src_val),
 			_ => self.nop()
 		}
 
