@@ -58,16 +58,16 @@ impl Slurm16CPU {
 		self.imm_hi = (instruction & 0xfff) << 4;
 	}
 
-	pub fn alu_mov(&mut self, instruction : u16, src: u16) {
-		let reg_dest	= ((instruction & 0xf0) >> 4) as usize;
-		self.registers[reg_dest] = src;
+	/* ------------- ALU Operations 0 - 15 ----------------- */
+
+	pub fn alu_mov(&mut self, reg_dest: usize, _src1: u16, src2: u16) {
+		self.registers[reg_dest] = src2;
 	}
 
-	pub fn alu_add(&mut self, instruction : u16, src : u16) {
-		let reg_dest	= ((instruction & 0xf0) >> 4) as usize;
+	pub fn alu_add(&mut self, reg_dest: usize, src1_a : u16, src2_b : u16) {
 		
-		let a = src as u32;
-		let b = self.get_register(reg_dest) as u32;
+		let a = src1_a as u32;
+		let b = src2_b as u32;
 
 		let sum = a.wrapping_add(b);
 
@@ -81,11 +81,10 @@ impl Slurm16CPU {
 		self.v = !(((a ^ b) & 0x8000) == 0x8000) && (((b ^ sum) & 0x8000) == 0x8000);
 	}
 
-	pub fn alu_adc(&mut self, instruction : u16, src : u16) {
-		let reg_dest	= ((instruction & 0xf0) >> 4) as usize;
+	pub fn alu_adc(&mut self, reg_dest: usize, src1_a : u16, src2_b : u16) {
 		
-		let a = src as u32;
-		let b = self.get_register(reg_dest) as u32;
+		let a = src1_a as u32;
+		let b = src2_b as u32;
 		let c : u32 = if self.c { 1 } else { 0 };
 
 		let sum = a.wrapping_add(b).wrapping_add(c);
@@ -100,14 +99,11 @@ impl Slurm16CPU {
 		self.v = !(((a ^ b) & 0x8000) == 0x8000) && (((b ^ sum) & 0x8000) == 0x8000);
 	}
 
-	pub fn alu_sub(&mut self, instruction : u16, src : u16) {
-		let reg_dest	= ((instruction & 0xf0) >> 4) as usize;
+	pub fn alu_sub(&mut self, reg_dest: usize, src1_a : u16, src2_b: u16) {
 		
-		let a = src as u32;
-		let b = self.get_register(reg_dest) as u32;
-		let sum = b.wrapping_sub(a);
-
-		//println!("Subtract: {} {} {}", a, b, sum);
+		let a = src1_a as u32;
+		let b = src2_b as u32;
+		let sum = a.wrapping_sub(b);
 
 		self.registers[reg_dest] = sum as u16;
 		self.z = sum & 65535 == 0;
@@ -120,15 +116,12 @@ impl Slurm16CPU {
 		self.v = (((a ^ b) & 0x8000) == 0x8000) && !(((a ^ sum) & 0x8000) == 0x8000);
 	}
 
-	pub fn alu_sbb(&mut self, instruction : u16, src : u16) {
-		let reg_dest	= ((instruction & 0xf0) >> 4) as usize;
+	pub fn alu_sbb(&mut self, reg_dest: usize, src1_a : u16, src2_b : u16) {
 		
-		let a = src as u32;
-		let b = self.get_register(reg_dest) as u32;
+		let a = src1_a as u32;
+		let b = src2_b as u32;
 		let c = if self.c { 1 } else { 0 };
-		let sum = b.wrapping_sub(a).wrapping_sub(c);
-
-		//println!("Subtract: {} {} {}", a, b, sum);
+		let sum = a.wrapping_sub(b).wrapping_sub(c);
 
 		self.registers[reg_dest] = sum as u16;
 		self.z = sum & 65535 == 0;
@@ -141,12 +134,11 @@ impl Slurm16CPU {
 		self.v = (((a ^ b) & 0x8000) == 0x8000) && !(((a ^ sum) & 0x8000) == 0x8000);
 	}
 
-	pub fn alu_cmp(&mut self, instruction : u16, src : u16) {
-		let reg_dest	= ((instruction & 0xf0) >> 4) as usize;
+	pub fn alu_cmp(&mut self, _reg_dest: usize, src1_a : u16, src2_b : u16) {
 		
-		let a = src as u32;
-		let b = self.get_register(reg_dest) as u32;
-		let sum = b.wrapping_sub(a);
+		let a = src1_a as u32;
+		let b = src2_b as u32;
+		let sum = a.wrapping_sub(b);
 
 		self.z = sum & 65535 == 0;
 		match sum & 0x8000 {
@@ -157,11 +149,10 @@ impl Slurm16CPU {
 		self.v = (((a ^ b) & 0x8000) == 0x8000) && !(((a ^ sum) & 0x8000) == 0x8000);
 	}
 
-	pub fn alu_and(&mut self, instruction : u16, src : u16) {
-		let reg_dest	= ((instruction & 0xf0) >> 4) as usize;
+	pub fn alu_and(&mut self, reg_dest: usize, src1_a : u16, src2_b : u16) {
 		
-		let a = src;
-		let b = self.get_register(reg_dest);
+		let a = src1_a;
+		let b = src2_b;
 		let andop = b & a;
 
 		self.registers[reg_dest] = andop;
@@ -174,12 +165,11 @@ impl Slurm16CPU {
 
 	}
 
-	pub fn alu_test(&mut self, instruction : u16, src : u16) {
-		let reg_dest	= ((instruction & 0xf0) >> 4) as usize;
+	pub fn alu_test(&mut self, _reg_dest: usize, src1_a : u16, src2_b : u16) {
 		
-		let a = src;
-		let b = self.get_register(reg_dest);
-		let andop = b & a;
+		let a = src1_a;
+		let b = src2_b;
+		let andop = a & b;
 
 		self.z = andop == 0;
 		match andop & 0x8000 {
@@ -187,14 +177,12 @@ impl Slurm16CPU {
 			_ => self.s = false
 		}
 		self.c = false;
-
 	}
 
-	pub fn alu_or(&mut self, instruction : u16, src : u16) {
-		let reg_dest	= ((instruction & 0xf0) >> 4) as usize;
+	pub fn alu_or(&mut self, reg_dest: usize, src1_a : u16, src2_b : u16) {
 		
-		let a = src;
-		let b = self.get_register(reg_dest);
+		let a = src1_a;
+		let b = src2_b;
 		let orop = b | a;
 
 		self.registers[reg_dest] = orop;
@@ -204,14 +192,12 @@ impl Slurm16CPU {
 			_ => self.s = false
 		}
 		self.c = false;
-
 	}
 
-	pub fn alu_xor(&mut self, instruction : u16, src : u16) {
-		let reg_dest	= ((instruction & 0xf0) >> 4) as usize;
+	pub fn alu_xor(&mut self, reg_dest: usize, src1_a : u16, src2_b : u16) {
 		
-		let a = src;
-		let b = self.get_register(reg_dest);
+		let a = src1_a;
+		let b = src2_b;
 		let xorop = b ^ a;
 
 		self.registers[reg_dest] = xorop;
@@ -221,14 +207,12 @@ impl Slurm16CPU {
 			_ => self.s = false
 		}
 		self.c = false;
-
 	}
 
-	 pub fn alu_mul(&mut self, instruction : u16, src : u16) {
-		let reg_dest	= ((instruction & 0xf0) >> 4) as usize;
+	 pub fn alu_mul(&mut self, reg_dest: usize, src1_a : u16, src2_b : u16) {
 		
-		let a = src as i32;
-		let b = self.get_register(reg_dest) as i32;
+		let a = src1_a as i32;
+		let b = src2_b as i32;
 		let mul = b * a;
 
 		self.registers[reg_dest] = mul as u16;
@@ -240,11 +224,10 @@ impl Slurm16CPU {
 		self.c = false;
 	}
 
-	pub fn alu_mulu(&mut self, instruction : u16, src : u16) {
-		let reg_dest	= ((instruction & 0xf0) >> 4) as usize;
+	pub fn alu_mulu(&mut self, reg_dest: usize, src1_a : u16, src2_b : u16) {
 		
-		let a = (src as i16) as i32;
-		let b = (self.get_register(reg_dest) as i16) as i32;
+		let a = (src1_a as i16) as i32;
+		let b = (src2_b as i16) as i32;
 		let mul = ((b * a) >> 16) & 0xffff;
 
 		self.registers[reg_dest] = mul as u16;
@@ -255,12 +238,28 @@ impl Slurm16CPU {
 		}
 		self.c = false;
 	}
- 
-	pub fn alu_umulu(&mut self, instruction : u16, src : u16) {
-		let reg_dest	= ((instruction & 0xf0) >> 4) as usize;
+
+ 	pub fn alu_rrn(&mut self, reg_dest: usize, _src1_a : u16, src2_b : u16) {
 		
-		let a = (src as u16) as u32;
-		let b = (self.get_register(reg_dest) as u16) as u32;
+		let b = src2_b as u16;
+		let shift = (b >> 4) | ((b & 0xf) << 12);
+
+		self.registers[reg_dest] = shift as u16;
+	}
+
+	pub fn alu_rln(&mut self, reg_dest: usize, _src1_a : u16, src2_b : u16) {
+		
+		let b = src2_b as u16;
+		let shift = (b << 4) | ((b & 0xf000) >> 12);
+
+		self.registers[reg_dest] = shift as u16;
+	}
+
+
+	pub fn alu_umulu(&mut self, reg_dest: usize, src1_a : u16, src2_b : u16) {
+		
+		let a = (src1_a as u16) as u32;
+		let b = (src2_b as u16) as u32;
 		let mul = ((b * a) >> 16) & 0xffff;
 
 		self.registers[reg_dest] = mul as u16;
@@ -271,6 +270,17 @@ impl Slurm16CPU {
 		}
 		self.c = false;
 	}
+
+	pub fn alu_bswap(&mut self, reg_dest: usize, _src1_a : u16, src2_b : u16) {
+		
+		let b = src2_b as u16;
+		let shift = (b >> 8) | ((b & 0xff) << 8);
+
+		self.registers[reg_dest] = shift as u16;
+	}
+
+
+	/* ------------- ALU Operations 16 - 31 ----------------- */
  
 	pub fn alu_asr(&mut self, instruction : u16, src : u16) {
 		let reg_dest	= (instruction & 0xf) as usize;
@@ -283,35 +293,6 @@ impl Slurm16CPU {
 		self.s = shift > 0;
 		self.c = false;
 	}
-
-	pub fn alu_rrn(&mut self, instruction : u16, src : u16) {
-		let reg_dest	= (instruction & 0xf) as usize;
-		
-		let a = src as u16;
-		let shift = (a >> 4) | ((a & 0xf) << 12);
-
-		self.registers[reg_dest] = shift as u16;
-	}
-
-	pub fn alu_rln(&mut self, instruction : u16, src : u16) {
-		let reg_dest	= (instruction & 0xf) as usize;
-		
-		let a = src as u16;
-		let shift = (a << 4) | ((a & 0xf000) >> 12);
-
-		self.registers[reg_dest] = shift as u16;
-	}
-
-	pub fn alu_bswap(&mut self, instruction : u16, src : u16) {
-		let reg_dest	= (instruction & 0xf) as usize;
-		
-		let a = src as u16;
-		let shift = (a >> 8) | ((a & 0xff) << 8);
-
-		self.registers[reg_dest] = shift as u16;
-	}
-
-
 
 	pub fn alu_lsr(&mut self, instruction : u16, src : u16) {
 		let reg_dest	= (instruction & 0xf) as usize;
@@ -449,6 +430,8 @@ impl Slurm16CPU {
 
 	}
 
+	/* end alu operations */
+
 	pub fn int(&mut self, _instruction : u16 ) {
 		// TODO: Interrupt
 
@@ -469,40 +452,42 @@ impl Slurm16CPU {
 
 	pub fn alu_op_reg_imm(&mut self, instruction : u16) {
 		let imm			= self.imm_hi | (instruction & 0xf);
-		
+		let reg_dest : usize	= ((instruction & 0xf0) >> 4) as usize;
+		let src1_a : u16 = self.registers[reg_dest];
+	
 		match (instruction & 0x0f00) >> 8 {
 		//0 - mov : DEST <- IMM
-			0 => self.alu_mov(instruction, imm), 
+			0 => self.alu_mov(reg_dest, src1_a, imm), 
 		//1 - add : DEST <- DEST + IMM
-			1 => self.alu_add(instruction, imm),
+			1 => self.alu_add(reg_dest, src1_a,  imm),
 		//2 - adc : DEST <- DEST + IMM + Carry
-			2 => self.alu_adc(instruction, imm), 
+			2 => self.alu_adc(reg_dest, src1_a,  imm), 
 		//3 - sub : DEST <- DEST - IMM 
-			3 => self.alu_sub(instruction, imm),
+			3 => self.alu_sub(reg_dest, src1_a,  imm),
 		//4 - sbb : DEST <- DEST - IMM - Carry
-			4 => self.alu_sbb(instruction, imm), 
+			4 => self.alu_sbb(reg_dest, src1_a,  imm), 
 		//5 - and : DEST <- DEST & IMM
-			5 => self.alu_and(instruction, imm),
+			5 => self.alu_and(reg_dest, src1_a,  imm),
 		//6 - or  : DEST <- DEST | IMM
-			6 => self.alu_or(instruction, imm), 
+			6 => self.alu_or(reg_dest, src1_a,  imm), 
 		//7 - xor : DEST <- DEST ^ IMM
-			7 => self.alu_xor(instruction, imm), 
+			7 => self.alu_xor(reg_dest, src1_a,  imm), 
 		//8 - mul : DEST <- DEST * IMM (LO)
-			8 => self.alu_mul(instruction, imm), 
+			8 => self.alu_mul(reg_dest, src1_a,  imm), 
 		//9 - mulu : DEST <- DEST * IMM (HI)
-			9 => self.alu_mulu(instruction, imm),
+			9 => self.alu_mulu(reg_dest, src1_a,  imm),
 		//10 - rrn (rotate right nibble)
-			10 => self.alu_rrn(instruction, imm),
+			10 => self.alu_rrn(reg_dest, src1_a,  imm),
  		//11 - rln (rotate left nibble)
-			11 => self.alu_rln(instruction, imm),	
+			11 => self.alu_rln(reg_dest, src1_a,  imm),	
 		//12 - cmp
-			12 => self.alu_cmp(instruction, imm),
+			12 => self.alu_cmp(reg_dest, src1_a,  imm),
 		//13 - test
-			13 => self.alu_test(instruction, imm),
+			13 => self.alu_test(reg_dest, src1_a,  imm),
 		// 14 - umulu
-			14 => self.alu_umulu(instruction, imm),
+			14 => self.alu_umulu(reg_dest, src1_a,  imm),
 		// 15 - bswap
-			15 => self.alu_bswap(instruction, imm),
+			15 => self.alu_bswap(reg_dest, src1_a,  imm),
 			_ => self.nop()
 		}
 
@@ -513,39 +498,41 @@ impl Slurm16CPU {
 
 	pub fn alu_op_reg_reg(&mut self, instruction : u16) {
 		let reg_src = (instruction & 0xf) as usize;
-		let src_val = self.get_register(reg_src);
+		let reg_dest : usize	= ((instruction & 0xf0) >> 4) as usize;
+		let src1_a : u16 = self.registers[reg_dest];
+		let src2_b = self.get_register(reg_src);
 		
 		match (instruction & 0x0f00) >> 8 {
 		//0 - mov : DEST <- IMM
-			0 => self.alu_mov(instruction, src_val), 
+			0 => self.alu_mov(reg_dest, src1_a, src2_b), 
 		//1 - add : DEST <- DEST + IMM
-			1 => self.alu_add(instruction, src_val),
+			1 => self.alu_add(reg_dest, src1_a, src2_b),
 		//2 - adc : DEST <- DEST + IMM + Carry
-			2 => self.alu_adc(instruction, src_val), 
+			2 => self.alu_adc(reg_dest, src1_a, src2_b), 
 		//3 - sub : DEST <- DEST - IMM 
-			3 => self.alu_sub(instruction, src_val),
+			3 => self.alu_sub(reg_dest, src1_a, src2_b),
 		//4 - sbb : DEST <- DEST - IMM - Carry
-			4 => self.alu_sbb(instruction, src_val), 
+			4 => self.alu_sbb(reg_dest, src1_a, src2_b), 
 		//5 - and : DEST <- DEST & IMM
-			5 => self.alu_and(instruction, src_val),
+			5 => self.alu_and(reg_dest, src1_a, src2_b),
 		//6 - or  : DEST <- DEST | IMM
-			6 => self.alu_or(instruction, src_val), 
+			6 => self.alu_or(reg_dest, src1_a, src2_b), 
 		//7 - xor : DEST <- DEST ^ IMM
-			7 => self.alu_xor(instruction, src_val), 
+			7 => self.alu_xor(reg_dest, src1_a, src2_b), 
 		//8 - mul : DEST <- DEST * IMM (LO)
-			8 => self.alu_mul(instruction, src_val), 
+			8 => self.alu_mul(reg_dest, src1_a, src2_b), 
 		//9 - mulu : DEST <- DEST * IMM (HI)
-			9 => self.alu_mulu(instruction, src_val),
+			9 => self.alu_mulu(reg_dest, src1_a, src2_b),
 		//10 - rrn (rotate right nibble)
-			10 => self.alu_rrn(instruction, src_val),
+			10 => self.alu_rrn(reg_dest, src1_a, src2_b),
  		//11 - rln (rotate left nibble)
-			11 => self.alu_rln(instruction, src_val),	
-			12 => self.alu_cmp(instruction, src_val),
-			13 => self.alu_test(instruction, src_val),
+			11 => self.alu_rln(reg_dest, src1_a, src2_b),	
+			12 => self.alu_cmp(reg_dest, src1_a, src2_b),
+			13 => self.alu_test(reg_dest, src1_a, src2_b),
 		// 14 - umulu
-			14 => self.alu_umulu(instruction, src_val),
+			14 => self.alu_umulu(reg_dest, src1_a, src2_b),
 		// 15 - bswap
-			15 => self.alu_bswap(instruction, src_val),
+			15 => self.alu_bswap(reg_dest, src1_a, src2_b),
 			_ => self.nop()
 		}
 
