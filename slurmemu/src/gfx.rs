@@ -143,19 +143,54 @@ impl Gfx {
 		let mut r : u8 = bg_r;
 		let mut g : u8 = bg_g;
 		let mut b : u8 = bg_b;
+		let mut a : u8 = 15;
 
-		if (sprite_idx & 0xf) != 0
+		if (sprite_idx) != 0
 		{
 			r = ((self.palette[sprite_idx as usize] & 0xf00) >> 4) as u8;
 			g = (self.palette[sprite_idx as usize] & 0xf0) as u8;
 			b = ((self.palette[sprite_idx as usize] & 0xf) << 4) as u8;
+			a = ((self.palette[sprite_idx as usize] & 0xf000) >> 8) as u8;
 		} 
 		else if (bg_idx & 0xf) != 0
 		{
 			r = ((self.palette[bg_idx as usize] & 0xf00) >> 4) as u8;
 			g = (self.palette[bg_idx as usize] & 0xf0) as u8;
 			b = ((self.palette[bg_idx as usize] & 0xf) << 4) as u8; 
+			a = ((self.palette[sprite_idx as usize] & 0xf000) >> 8) as u8;
 		}
+
+		let (alpha_override, mut alpha) = self.copper.get_alpha();
+
+		if !alpha_override {
+			alpha = a >> 4;
+		}
+
+		alpha = match alpha {
+			0 => 0,
+			1 => 1,
+			2 => 2,
+			3 => 3,
+			4 => 4,
+			5 => 6,
+			6 => 7,
+			7 => 8,
+			8 => 9,
+			9 => 10,
+			10 => 11,
+			11 => 12,
+			12 => 13,
+			13 => 14,
+			14 => 15,
+			15 => 16,
+			_ => 0,
+		};
+
+		let one_minus_alpha : u8 = 16 - alpha;
+
+		r = (r >> 4) * alpha + (bg_r >> 4) * one_minus_alpha;
+		g = (g >> 4) * alpha + (bg_g >> 4) * one_minus_alpha;
+		b = (b >> 4) * alpha + (bg_b >> 4) * one_minus_alpha;
 
 		if (self.x >= H_BACK_PORCH) && (self.x < H_BACK_PORCH + VISIBLE_SCREEN_WIDTH as u16) && (self.y >= V_BACK_PORCH) && (self.y < V_BACK_PORCH + VISIBLE_SCREEN_HEIGHT as u16)
 		{

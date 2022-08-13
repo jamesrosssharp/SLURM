@@ -271,15 +271,15 @@ end
 
 always @(*)
 begin
-	background_color_r_next = background_color_r;
+	background_color_r_next 	= background_color_r;
 	copper_list_WR 			= 1'b0;
 	cpr_en_next 			= cpr_en;
-	x_pan_next				= x_pan;
-	y_flip_next				= y_flip;
+	x_pan_next			= x_pan;
+	y_flip_next			= y_flip;
 	y_flip_en_next			= y_flip_en;
 
 	alpha_override_next		= alpha_override;
-	alpha_next				= alpha;
+	alpha_next			= alpha;
 
 	if (WR == 1'b1) begin
 		casex (ADDRESS)
