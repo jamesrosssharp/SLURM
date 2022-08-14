@@ -1,0 +1,7 @@
+dump.vcd 
+chiptune_design
+rom_image*
+mem_init*
+*.txt
+main.asm
+main.c1

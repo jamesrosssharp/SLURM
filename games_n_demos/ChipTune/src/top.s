@@ -91,22 +91,31 @@ __sleep:
 	ret	
 
 dummy_handler:
+	st [r13, -2], r1
+
 	mov r1, 0xffff
 	out [r0, 0x7001], r1
+
+	ld r1, [r13, -2]
 	iret
 
 flash_handler:
+	st [r13, -2], r1
+
 	mov r1, 1
 	st [flash_complete], r1
 	mov r1, 8
 	out [r0, 0x7001], r1
+	
+	ld r1, [r13, -2]
 	iret
 
 vsync_handler:
 	// Store flags
+	st [r13, -2], r1
 	
 	stf r1
-	sub r13, 2
+	sub r13, 4
 	st [r13, 0], r1	
 
 	mov r1, 2
@@ -141,15 +150,32 @@ vsync_handler:
 
 	// Restore flags
 	ld r1, [r13, 0]
-	add r13, 2
+	add r13, 4
 	rsf r1
+
+	ld r1, [r13, -2]
 	iret
 
 audio_handler:
+	st [r13, -2], r1
+
 	mov r1, 1
 	st [audio], r1
 	mov r1, 4
 	out [r0, 0x7001], r1
+	
+	ld r1, [r13, -2]
+	iret
+
+vsync_handler_2:
+	st [r13, -2], r1
+
+	mov r1, 1
+	st [vsync], r1
+	mov r1, 2
+	out [r0, 0x7001], r1
+	
+	ld r1, [r13, -2]
 	iret
 
 

@@ -258,6 +258,7 @@ void play_sample(short channel, short volume, short note_lo, short note_hi, shor
 
 	channel_info[channel].sample_pos = g_samples[SAMPLE].offset;
 	channel_info[channel].frequency =  note_mul_asm(note_lo, note_hi, g_samples[SAMPLE].speed);	
+	channel_info[channel].frequency_hi =  note_mul_asm_hi(note_lo, note_hi, g_samples[SAMPLE].speed);	
 	channel_info[channel].phase = 0;
 
 	if (volume < 64)
@@ -281,68 +282,76 @@ void init_audio()
 
 }
 
-int count = 0;
-int row = 0;
-
 void do_vsync()
 {
-	char* row_offset;
-	int i;
-
-	count += 1;
-	if (count == 8)
-	{
-		row_offset = (char*)&pattern_A + row*32;	
-
-		for (i = 0; i < 8; i++)
-		{
-			char note;
-			char volume;
-			char sample;
-			char effect;
-			char effect_param;	
-
-			note = *row_offset++;
-			volume = *row_offset++;			
-			sample = *row_offset++;
-			effect = sample & 0xf;
-			sample >>= 4;
-			effect_param = *row_offset++;
-	
-			if (note)
-			{
-				short note_lo, note_hi;
-				note --;
-
-				note_lo = note_table_lo[note];
-				note_hi = note_table_hi[note];
-
-				play_sample(i, volume, note_lo, note_hi, --sample);
-			
-			}
-			else
-				play_sample(i, volume, 0, 0, 0);
-		}
-
-		row += 1;	
-		if (row == 64)
-			row = 0;
-		count = 0;
-	}
 }
 
 int main()
 {
-	
+	int i;
+	int count = 0;
+	int row = 0;
+
+
 	enable_interrupts();
 	load_slurm_sng();
 
+	for (i = 0; i < 8; i++)
+		play_sample(i, 0, 0, 0, 0);
+
 	init_audio();
 
+	i = 0;
 	while(1)
 	{
 		if (audio)
 		{
+
+			char* row_offset;
+			int i;
+
+			count += 1;
+			if (count == 10)
+			{
+				row_offset = (char*)&pattern_A + row*32;	
+
+				for (i = 0; i < 8; i++)
+				{
+					char note;
+					char volume;
+					char sample;
+					char effect;
+					char effect_param;	
+
+					note = *row_offset++;
+					volume = *row_offset++;			
+					sample = *row_offset++;
+					effect = sample & 0xf;
+					sample >>= 4;
+					effect_param = *row_offset++;
+			
+					if (note)
+					{
+						short note_lo, note_hi;
+						note --;
+
+						note_lo = note_table_lo[note];
+						note_hi = note_table_hi[note];
+
+						play_sample(i, volume, note_lo, note_hi, --sample);
+					
+					}
+					else
+						play_sample(i, volume, 0, 0, 0);
+				}
+
+				row += 1;	
+				if (row == 64)
+					row = 0;
+				count = 0;
+			}
+
+
 			audio = 0;
 			mix_audio_2();
 
