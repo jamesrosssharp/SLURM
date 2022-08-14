@@ -111,6 +111,7 @@ void Statement::firstPassAssemble(uint32_t& curAddress, SymbolTable& syms)
 				case OpCode::TEST:
 				case OpCode::MUL:
 				case OpCode::MULU:
+				case OpCode::UMULU:
 				case OpCode::BNE:
 				case OpCode::BEQ:
 				case OpCode::BGT:
@@ -383,6 +384,7 @@ void Statement::assemble(uint32_t &curAddress)
 				case OpCode::TEST:
 				case OpCode::MUL:
 				case OpCode::MULU:
+				case OpCode::UMULU:
 					Assembly::makeArithmeticInstruction(opcode,
 										 regDest,
 										 regSrc, words,
@@ -460,6 +462,7 @@ void Statement::assemble(uint32_t &curAddress)
 				case OpCode::TEST:
 				case OpCode::MUL:
 				case OpCode::MULU:
+				case OpCode::UMULU:
 					Assembly::makeArithmeticInstructionWithImmediate(opcode,
 										 regDest,
 										 expression.value, words,

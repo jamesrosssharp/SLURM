@@ -76,6 +76,7 @@ enum class OpCode : uint32_t
 	RSF,	/* restore flags */
 	MUL,	/* multiply */
 	MULU,	/* upper 16 bits of multiply */
+	UMULU,  /* unsigned upper 16 bits of multiply */
 	/* more branches */
 	BNE,
 	BEQ,

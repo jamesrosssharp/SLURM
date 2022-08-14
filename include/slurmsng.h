@@ -36,3 +36,5 @@ struct slurmsng_sample {
 	unsigned short sample_len;
 };
 
+#define SLURM_PATTERN_SIZE 2048
+

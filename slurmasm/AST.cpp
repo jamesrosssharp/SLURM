@@ -513,6 +513,10 @@ OpCode AST::convertOpCode(char* opcode)
 	{
 		return OpCode::MULU;
 	}
+	else if (s == "UMULU")
+	{
+		return OpCode::UMULU;
+	}
 	else if (s == "BEQ")
 	{
 		return OpCode::BEQ;

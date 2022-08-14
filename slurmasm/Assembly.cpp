@@ -54,6 +54,8 @@ void Assembly::makeArithmeticInstructionWithImmediate(OpCode opcode, Register re
 		case OpCode::TEST:
 			aluOp = 13;
 			break;
+		case OpCode::UMULU:
+			aluOp = 14; 
 		default:
 		{
 			std::stringstream ss;
@@ -125,6 +127,9 @@ static void get_aluOp(OpCode opcode, uint32_t lineNum, uint16_t& aluOp)
 		case OpCode::MULU:
 			aluOp = 9;
 			break;
+		case OpCode::UMULU:
+			aluOp = 14;
+			break;
 		case OpCode::ASR:
 			aluOp = 16;
 			break;
@@ -165,7 +170,7 @@ static void get_aluOp(OpCode opcode, uint32_t lineNum, uint16_t& aluOp)
 			aluOp = 27;
 			break;
 		case OpCode::BSWAP:
-			aluOp = 28;
+			aluOp = 15;
 			break;
 		case OpCode::CMP:
 			aluOp = 12;
