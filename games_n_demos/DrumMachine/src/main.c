@@ -35,6 +35,9 @@ void enable_interrupts()
 
 volatile short flash_complete = 0;
 volatile short vsync = 0;
+volatile short audio = 0;
+
+extern void mix_audio_2();
 
 struct slurmsng_header sng_hdr;
 struct slurmsng_playlist pl_hdr;
@@ -65,30 +68,30 @@ struct sample g_samples[4] = {
 	{
 		// Kick drum
 		(char*)&Bassdrum,
-		1,
+		0,
 		0,
 		22050,
-		0,
-		9468,
-		9468
+		4734,
+		4734,
+		4734
 	},
 	{
 		(char*)&Snare,
-		1,
+		0,
 		0,
 		8000,
-		0,
-		0,
-		9258
+		4629,
+		4629,
+		4629
 	},
 	{
 		(char*)&ClosedHihat,
-		1,
+		0,
 		0,
 		11000,
-		0,
-		0,
-		4670
+		2335,
+		2335,
+		2335
 	}
 };
 
@@ -101,9 +104,6 @@ extern char pattern_A;
 extern char pattern_B;
 
 struct channel_t {
-	char* sample_start;
-	char* sample_end;
-
 	char* loop_start;
 	char* loop_end;
 
@@ -112,8 +112,7 @@ struct channel_t {
 
 	short phase;
 
-	char  volume;
-	char  loop;	// 1 = loop, 0 = no loop
+	short  volume;
 	char  bits;	// 1 = 16 bit, 0 = 8 bit
 	char  pad;
 };
@@ -121,15 +120,15 @@ struct channel_t {
 
 extern struct channel_t channel_info[]; 
 
-void play_sample(short freq, short SAMPLE, short volume)
+void play_sample(short freq, short SAMPLE, short CHANNEL, short volume)
 {
 
 	//#define SAMPLE 0
 	//#define CHANNEL 0
 	//#define CHANNEL2 4
-	int channels[] = {1, 4, 2};
+	//int channels[] = {1, 4, 2};
 
-	int CHANNEL = channels[SAMPLE];
+	//int CHANNEL = channels[SAMPLE];
 
 	//for (CHANNEL = 0; CHANNEL < 4; CHANNEL += 2)
 	//{
@@ -137,14 +136,11 @@ void play_sample(short freq, short SAMPLE, short volume)
 	//if (channel_info[CHANNEL].frequency)
 	//	return;
 
-	channel_info[CHANNEL].sample_start = g_samples[SAMPLE].offset;
-	channel_info[CHANNEL].sample_end   = g_samples[SAMPLE].offset + g_samples[SAMPLE].sample_len;
-
 	channel_info[CHANNEL].loop_start = g_samples[SAMPLE].offset + g_samples[SAMPLE].loop_start;
 	channel_info[CHANNEL].loop_end   = g_samples[SAMPLE].offset + g_samples[SAMPLE].loop_end;
 
 	channel_info[CHANNEL].sample_pos = g_samples[SAMPLE].offset;
-	channel_info[CHANNEL].frequency = freq; //g_samples[SAMPLE].speed;	
+	channel_info[CHANNEL].frequency = freq * 2; //g_samples[SAMPLE].speed;	
 
 	//g_samples[SAMPLE].speed += 1000;
 
@@ -153,7 +149,6 @@ void play_sample(short freq, short SAMPLE, short volume)
 	channel_info[CHANNEL].phase = 0;
 
 	channel_info[CHANNEL].volume = volume;
-	channel_info[CHANNEL].loop   = g_samples[SAMPLE].loop;	
 	channel_info[CHANNEL].bits   = g_samples[SAMPLE].bit_depth + 1; // 1 = 8 bit, 2 = 16 bit
 
 	//}
@@ -166,6 +161,11 @@ void init_audio()
 
 	// Clear audio buffer and enable
 
+	for (i = 0; i < 8; i++)
+	{
+		channel_info[i].loop_start = g_samples[0].offset;
+		channel_info[i].loop_end = g_samples[0].offset;
+	}
 
 	for (i = 0; i < 512; i++)
 	{		__out(0x3000 | i, 0);
@@ -230,7 +230,7 @@ struct row drum_pattern[] =
 	{{{0, 0, 0, 0},		    {1, 31, 20000, 1}, {2, 35, 11000, 1}}},
 };
 
-short g_playing = 0;
+short g_playing = 1;
 
 short g_row = 0;
 
@@ -250,14 +250,14 @@ void update_drum_machine() {
 	if (g_playing == 0)
 		return;
 
-	global_interrupt_disable();
+	//global_interrupt_disable();
 
 	row = &drum_pattern[g_row];
 
 	for (i = 0; i < 3; i++)
 	{
 		if (row->notes[i].on)
-			play_sample(row->notes[i].freq, row->notes[i].sample, row->notes[i].volume);
+			play_sample(row->notes[i].freq, row->notes[i].sample, i*2, row->notes[i].volume);
 	}
 
 	g_row++;
@@ -265,19 +265,39 @@ void update_drum_machine() {
 	if (g_row >= COUNT_OF(drum_pattern))
 		g_row = 0;
 
-	global_interrupt_enable();
+	//global_interrupt_enable();
 }
+
+short frame = 0;
+
+void do_vsync()
+{
+
+	frame++;
+	vsync = 0;
+	copperList[0] = 0x7000 | (frame & 31);
+	load_copper_list(copperList, COUNT_OF(copperList));
+	
+}
+
 
 int main()
 {
-	int count = 0;
 	short old_keys = 0;
-	short frame = 0;
+	short count = 0;
 
 	load_copper_list(copperList, COUNT_OF(copperList));
 	__out(0x5d20, 1);
 
 
+	play_sample(24000, 0, 0, 63);
+	play_sample(24000, 0, 1, 63);
+	play_sample(24000, 0, 2, 63);
+	play_sample(24000, 0, 3, 63);
+	play_sample(24000, 0, 4, 63);
+	play_sample(24000, 0, 5, 63);
+	play_sample(24000, 0, 6, 63);
+	play_sample(24000, 0, 7, 63);
 
 	enable_interrupts();
 
@@ -291,17 +311,17 @@ int main()
 	
 
 
-		if ((keys & UP_KEY) && ((keys ^ old_keys) & UP_KEY)) play_sample(24000, 0, 63);
-		if ((keys & DOWN_KEY) && ((keys ^ old_keys) & DOWN_KEY)) play_sample(22000, 0, 63);
-		if ((keys & LEFT_KEY) && ((keys ^ old_keys) & LEFT_KEY)) play_sample(20000, 1, 63);
-		if ((keys & RIGHT_KEY) && ((keys ^ old_keys) & RIGHT_KEY)) play_sample(11000, 2, 63);
+		if ((keys & UP_KEY) && ((keys ^ old_keys) & UP_KEY)) play_sample(24000, 0, 1, 63);
+		if ((keys & DOWN_KEY) && ((keys ^ old_keys) & DOWN_KEY)) play_sample(22000, 0, 3, 63);
+		if ((keys & LEFT_KEY) && ((keys ^ old_keys) & LEFT_KEY)) play_sample(20000, 1, 5, 63);
+		if ((keys & RIGHT_KEY) && ((keys ^ old_keys) & RIGHT_KEY)) play_sample(11000, 2, 7, 63);
 		if ((keys & A_KEY) && ((keys ^ old_keys) & A_KEY)) start_drum_machine();
 		if ((keys & B_KEY) && ((keys ^ old_keys) & B_KEY)) stop_drum_machine();
 
 		old_keys = keys;
 
 		//my_printf("Interrupt!");
-		if (vsync)
+		/*if (vsync)
 		{
 			frame++;
 			vsync = 0;
@@ -314,7 +334,19 @@ int main()
 		}
 		copperList[0] = 0x7000 | (frame & 31);
 		load_copper_list(copperList, COUNT_OF(copperList));
-	
+		*/
+
+		if (audio)
+		{
+			count += 1;
+			if (count == 16)
+			{
+				update_drum_machine();
+				count = 0;
+			}
+			audio = 0;	
+			mix_audio_2();
+		}
 
 		__sleep();
 	}
