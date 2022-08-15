@@ -11,8 +11,8 @@ pattern_A:
 pattern_B:
 	.times 64*8*4 db 0
 
-	dw 0
-	dw 0
+	//dw 0
+	//dw 0
 // Buffer for samples - 24k
 music_heap:
 	.times 24*1024 db 0
@@ -35,12 +35,19 @@ struct channel_t {
 	
 	short  volume;		// 14
 
+	short  effect;		// 16
+	char   base_note;	// 17
+	char   note_deviation;  // 18 fine note slide in 4.4 format
+	short  volume_effect;	// 20
+	short  pad;		// 22
+
+
 };
 
 We store 8 channels worth of channel_t here to tell us what to mix.
 */
 
-CHANNEL_STRUCT_SIZE equ 16
+CHANNEL_STRUCT_SIZE equ 24
 
 CHANNEL_STRUCT_LOOP_START   equ 0
 CHANNEL_STRUCT_LOOP_END	    equ 2
@@ -55,7 +62,7 @@ old_stack:	// We save the previous stack here, and substitute to our own stack
 	dw 0
 
 channel_info:
-	.times 8*8 dw 0 
+	.times 8*12 dw 0 
 
 pad:
 	.times 20 dw 0
@@ -82,10 +89,8 @@ AUDIO_FREQ equ (25125000 / 512)
 
 SCRATCH_PAD equ	0x8000 
 
-audio_buffer_table:
-	dw 0
-	dw AUDIO_RIGHT_CHANNEL_BRAM_LO
-	dw AUDIO_LEFT_CHANNEL_BRAM_LO
+
+.align 0x100
 
 mix_audio_2:
 	st [r0, old_stack], r13

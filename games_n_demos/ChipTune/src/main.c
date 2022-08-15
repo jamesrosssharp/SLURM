@@ -7,6 +7,30 @@
 
 #include "printf.cc"
 
+#define MIX_CHANNELS 8
+
+extern void load_copper_list(short* list, int len);
+extern void load_palette(short* palette, int offset, int len);
+
+#define COUNT_OF(x) ((sizeof(x)) / (sizeof(x[0])))
+
+short copperList[] = {
+		0x6000,
+		0x6f00,
+		0x7007,
+		0x60f0,
+		0x7007,
+		0x600f,
+		0x7007,
+		0x60ff,
+		0x7007,
+		0x4200,
+		0x1001,
+		0x2fff		 
+};
+
+
+
 short note_table_hi[] = {
 	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
 	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
@@ -84,6 +108,15 @@ struct channel_t {
 	short phase_hi;
 
 	short  volume;
+
+	char   effect;
+	char   param;
+	char   base_note;
+	char   note_deviation;  // fine note slide in 4.4 format
+	short  volume_effect;
+	char   sample;
+	char   pad;
+	
 };
 
 extern struct channel_t channel_info[]; 
@@ -199,7 +232,7 @@ int load_slurm_sng()
 
 	pattern = pl.pl[0];
 
-	my_printf("Loading pattern %d\n", pattern);
+	my_printf("Loading pattern %d\r\n", pattern);
 
 	offset_lo = sng_hdr.pattern_offset_lo;
 	offset_hi = sng_hdr.pattern_offset_hi;
@@ -216,7 +249,7 @@ int load_slurm_sng()
 
 	pattern = pl.pl[1];
 
-	my_printf("Loading pattern %d\n", pattern);
+	my_printf("Loading pattern %d\r\n", pattern);
 
 	offset_lo = sng_hdr.pattern_offset_lo;
 	offset_hi = sng_hdr.pattern_offset_hi;
@@ -231,7 +264,7 @@ int load_slurm_sng()
 
 
 
-	for (i = 0; i < 8; i ++)
+	for (i = 0; i < MIX_CHANNELS; i ++)
 	{
 		char note;
 		char volume;
@@ -250,14 +283,14 @@ int load_slurm_sng()
 	}
 
 
-	my_printf("Pattern loaded\n");
+	my_printf("Pattern loaded\r\n");
 
 	// Test note_mul_asm
 
-	my_printf("Note_mul_asm: %x\n", note_mul_asm(note_table_lo[107], note_table_hi[107], 21367));
-	my_printf("Note_mul_asm_hi: %x\n", note_mul_asm_hi(note_table_lo[107], note_table_hi[107], 21367));
+	my_printf("Note_mul_asm: %x\r\n", note_mul_asm(note_table_lo[107], note_table_hi[107], 21367));
+	my_printf("Note_mul_asm_hi: %x\r\n", note_mul_asm_hi(note_table_lo[107], note_table_hi[107], 21367));
 
-	my_printf("c5speed: %d\n", g_samples[0].speed);
+	my_printf("c5speed: %d\r\n", g_samples[0].speed);
 
 	return 0;
 
@@ -266,7 +299,7 @@ int load_slurm_sng()
 short note_mul_asm(short lo, short hi, short c5speed);
 short note_mul_asm_hi(short lo, short hi, short c5speed);
 
-void play_sample(short channel, short volume, short note_lo, short note_hi, short SAMPLE)
+void play_sample(short channel, short volume, short note_lo, short note_hi, short SAMPLE, char effect, char param, char note)
 {
 
 
@@ -282,14 +315,64 @@ void play_sample(short channel, short volume, short note_lo, short note_hi, shor
 	}
 
 	channel_info[channel].sample_pos = g_samples[SAMPLE].offset;
-	channel_info[channel].frequency =  note_mul_asm(note_lo, note_hi, g_samples[SAMPLE].speed);	
-	channel_info[channel].frequency_hi =  note_mul_asm_hi(note_lo, note_hi, g_samples[SAMPLE].speed);	
+	channel_info[channel].frequency  = note_mul_asm(note_lo, note_hi, g_samples[SAMPLE].speed);	
+	channel_info[channel].frequency_hi = note_mul_asm_hi(note_lo, note_hi, g_samples[SAMPLE].speed);	
 	channel_info[channel].phase = 0;
+
+	channel_info[channel].effect = effect;
+	channel_info[channel].param = param;
+
+	channel_info[channel].base_note = note;
+
+	channel_info[channel].sample = SAMPLE;
 
 	if (volume < 64)
 	{
 		channel_info[channel].volume = volume >> 1;
 	}
+}
+
+void arpeggiate(short tick, int channel)
+{
+	short dev = 0;
+	short sample = channel_info[channel].sample;
+	short note_hi, note_lo;
+
+	if (tick == 1 || tick == 3)
+	{
+		dev = ((channel_info[channel].param & 0xf0) >> 4);
+	}
+	else if (tick == 2)
+	{
+		dev = (channel_info[channel].param & 0xf);
+	}
+
+	dev += channel_info[channel].base_note;
+
+	note_lo = note_table_lo[dev];
+	note_hi = note_table_hi[dev];
+
+	channel_info[channel].frequency  = note_mul_asm(note_lo, note_hi, g_samples[sample].speed);	
+	channel_info[channel].frequency_hi = note_mul_asm_hi(note_lo, note_hi, g_samples[sample].speed);	
+	
+}
+
+void update_tick(short tick)
+{
+	int i = 0;
+
+	for (i = 0; i < MIX_CHANNELS; i++)
+	{
+		switch (channel_info[i].effect)
+		{
+			case 2:	/* arpeggio */
+				arpeggiate(tick & 3, i);
+				break;			
+			default: 
+				break;
+		}
+	}		
+	
 }
 
 void set_volume(short channel, short volume)
@@ -300,7 +383,6 @@ void set_volume(short channel, short volume)
 	}
 	
 }
-
 
 void init_audio()
 {
@@ -317,9 +399,19 @@ void init_audio()
 
 }
 
+short frame = 0;
+
 void do_vsync()
 {
+
+	frame++;
+	vsync = 0;
+	copperList[0] = 0x7000 | (frame & 31);
+	load_copper_list(copperList, COUNT_OF(copperList));
+	
 }
+
+short channels[] = {0,4,1,5,2,6,3,7};
 
 int main()
 {
@@ -329,11 +421,13 @@ int main()
 	int cur_patt_buf = 0;
 	int ord = 2;
 
+	__out(0x5d20, 1);
+	
 	enable_interrupts();
 	load_slurm_sng();
 
-	for (i = 0; i < 8; i++)
-		play_sample(i, 0, 0, 0, 0);
+	for (i = 0; i < MIX_CHANNELS; i++)
+		play_sample(i, 0, 0, 0, 0, 0, 0, 0);
 
 	init_audio();
 
@@ -349,9 +443,11 @@ int main()
 			count += 1;
 			if (count == 5)
 			{
+
 				row_offset = (cur_patt_buf ? &pattern_B : &pattern_A) + row*32;	
 
-				for (i = 0; i < 8; i++)
+
+				for (i = 0; i < MIX_CHANNELS; i++)
 				{
 					char note;
 					char volume;
@@ -374,11 +470,11 @@ int main()
 						note_lo = note_table_lo[note];
 						note_hi = note_table_hi[note];
 
-						play_sample(i, volume, note_lo, note_hi, --sample);
+						play_sample(channels[i], volume, note_lo, note_hi, --sample, effect, effect_param, note);
 					
 					}
 					else
-						set_volume(i, volume);
+						set_volume(channels[i], volume);
 				}
 
 				row += 1;	
@@ -394,16 +490,16 @@ int main()
 
 					pattern = pl.pl[ord++];
 
-					my_printf("Pattern: %d ord: %d len: %d\n", pattern, ord, pl.pl_len);
+					my_printf("Pattern: %d ord: %d len: %d\r\n", pattern, ord, pl.pl_len);
 
 					if (pattern == 0xff)
 					{
 						ord = 1;
 						pattern = pl.pl[0];
-						my_printf("Now -> Pattern: %d ord: %d len: %d\n", pattern, ord, pl.pl_len);
+						my_printf("Now -> Pattern: %d ord: %d len: %d\r\n", pattern, ord, pl.pl_len);
 					}
 
-					my_printf("Loading pattern %d\n", pattern);
+					my_printf("Loading pattern %d\r\n", pattern);
 
 					offset_lo = sng_hdr.pattern_offset_lo;
 					offset_hi = sng_hdr.pattern_offset_hi;
@@ -419,7 +515,10 @@ int main()
 				}
 				count = 0;
 			}
-
+			else
+			{
+				update_tick(count);
+			}
 
 			audio = 0;
 			mix_audio_2();

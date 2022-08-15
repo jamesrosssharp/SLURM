@@ -99,6 +99,8 @@ dummy_handler:
 	ld r1, [r13, -2]
 	iret
 
+	.align 0x100
+
 flash_handler:
 	st [r13, -2], r1
 
@@ -109,6 +111,8 @@ flash_handler:
 	
 	ld r1, [r13, -2]
 	iret
+
+	.align 0x100
 
 vsync_handler_2:
 	// Store flags
@@ -132,6 +136,7 @@ vsync_handler_2:
 	st  [r13, 16], r9
 	st  [r13, 18], r10
 	st  [r13, 20], r11
+	st  [r13, 22], r12
 
 	bl do_vsync
 	
@@ -145,6 +150,7 @@ vsync_handler_2:
 	ld r9,  [r13, 16]
 	ld r10,  [r13, 18]
 	ld r11,  [r13, 20]
+	ld r12,  [r13, 22]
 	
 	add r13, 32
 
@@ -156,6 +162,8 @@ vsync_handler_2:
 	ld r1, [r13, -2]
 	iret
 
+	.align 0x100
+
 audio_handler:
 	st [r13, -2], r1
 
@@ -166,6 +174,8 @@ audio_handler:
 	
 	ld r1, [r13, -2]
 	iret
+
+	.align 0x100
 
 vsync_handler:
 	st [r13, -2], r1
