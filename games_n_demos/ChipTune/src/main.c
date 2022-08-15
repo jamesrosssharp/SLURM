@@ -90,7 +90,7 @@ extern struct channel_t channel_info[];
 
 #define MUSIC_HEAP_SIZE_BYTES 24*1024
 
-void do_flash_dma(short base_lo, short base_hi, short offset_lo, short offset_hi, void* address, short count)
+void _do_flash_dma(short base_lo, short base_hi, short offset_lo, short offset_hi, void* address, short count, short wait)
 {
 	short lo = calculate_flash_offset_lo(base_lo, base_hi, offset_lo, offset_hi);
 	short hi = calculate_flash_offset_hi(base_lo, base_hi, offset_lo, offset_hi);
@@ -107,8 +107,14 @@ void do_flash_dma(short base_lo, short base_hi, short offset_lo, short offset_hi
 	flash_complete = 0;
 	__out(SPI_FLASH_CMD, 1);
 
-	while (!flash_complete)
-		__sleep();
+	if (wait)
+		while (!flash_complete)
+			__sleep();
+}
+
+void do_flash_dma(short base_lo, short base_hi, short offset_lo, short offset_hi, void* address, short count)
+{
+	_do_flash_dma(base_lo, base_hi, offset_lo, offset_hi, address, count, 1);
 }
 
 short my_add(short a, short b)
@@ -126,7 +132,7 @@ int load_slurm_sng()
 	short offset_lo = 0;
 	short offset_hi = 0;
 	short pattern = 0;
-	char* row_offset = (char*)&pattern_A;	
+	char* row_offset = (char*)&pattern_B;	
 
 	my_printf("Hello world! %d\r\n", 22);		
 
@@ -204,7 +210,26 @@ int load_slurm_sng()
 	for (i = 0; i < pattern; i++)
 		add_offset(&offset_lo, &offset_hi, SLURM_PATTERN_SIZE, 0);
 	
-	do_flash_dma(chiptune_rom_offset_lo, chiptune_rom_offset_hi, offset_lo, offset_hi, (void*)&pattern_A, SLURM_PATTERN_SIZE >> 1);
+	do_flash_dma(chiptune_rom_offset_lo, chiptune_rom_offset_hi, offset_lo, offset_hi, (void*)&pattern_A, (SLURM_PATTERN_SIZE >> 1) - 1);
+
+	// Preload next pattern
+
+	pattern = pl.pl[1];
+
+	my_printf("Loading pattern %d\n", pattern);
+
+	offset_lo = sng_hdr.pattern_offset_lo;
+	offset_hi = sng_hdr.pattern_offset_hi;
+
+	// Skip magic
+	add_offset(&offset_lo, &offset_hi, 4, 0);
+	
+	for (i = 0; i < pattern; i++)
+		add_offset(&offset_lo, &offset_hi, SLURM_PATTERN_SIZE, 0);
+	
+	do_flash_dma(chiptune_rom_offset_lo, chiptune_rom_offset_hi, offset_lo, offset_hi, (void*)&pattern_B, (SLURM_PATTERN_SIZE >> 1) - 1);
+
+
 
 	for (i = 0; i < 8; i ++)
 	{
@@ -267,6 +292,16 @@ void play_sample(short channel, short volume, short note_lo, short note_hi, shor
 	}
 }
 
+void set_volume(short channel, short volume)
+{
+	if (volume < 64)
+	{
+		channel_info[channel].volume = volume >> 1;
+	}
+	
+}
+
+
 void init_audio()
 {
 	int i;
@@ -291,7 +326,8 @@ int main()
 	int i;
 	int count = 0;
 	int row = 0;
-
+	int cur_patt_buf = 0;
+	int ord = 2;
 
 	enable_interrupts();
 	load_slurm_sng();
@@ -311,9 +347,9 @@ int main()
 			int i;
 
 			count += 1;
-			if (count == 10)
+			if (count == 5)
 			{
-				row_offset = (char*)&pattern_A + row*32;	
+				row_offset = (cur_patt_buf ? &pattern_B : &pattern_A) + row*32;	
 
 				for (i = 0; i < 8; i++)
 				{
@@ -342,12 +378,45 @@ int main()
 					
 					}
 					else
-						play_sample(i, volume, 0, 0, 0);
+						set_volume(i, volume);
 				}
 
 				row += 1;	
 				if (row == 64)
+				{
+					char pattern;
+					short offset_lo;
+					short offset_hi;
+					int i;
+
+					cur_patt_buf = !cur_patt_buf;
 					row = 0;
+
+					pattern = pl.pl[ord++];
+
+					my_printf("Pattern: %d ord: %d len: %d\n", pattern, ord, pl.pl_len);
+
+					if (pattern == 0xff)
+					{
+						ord = 1;
+						pattern = pl.pl[0];
+						my_printf("Now -> Pattern: %d ord: %d len: %d\n", pattern, ord, pl.pl_len);
+					}
+
+					my_printf("Loading pattern %d\n", pattern);
+
+					offset_lo = sng_hdr.pattern_offset_lo;
+					offset_hi = sng_hdr.pattern_offset_hi;
+
+					// Skip magic
+					add_offset(&offset_lo, &offset_hi, 4, 0);
+					
+					for (i = 0; i < pattern; i++)
+						add_offset(&offset_lo, &offset_hi, SLURM_PATTERN_SIZE, 0);
+					
+					_do_flash_dma(chiptune_rom_offset_lo, chiptune_rom_offset_hi, offset_lo, offset_hi, cur_patt_buf ? &pattern_B : &pattern_A, (SLURM_PATTERN_SIZE >> 1) - 1, 0);
+
+				}
 				count = 0;
 			}
 
@@ -358,6 +427,6 @@ int main()
 		}
 
 		__sleep();
-		//my_printf("Interrupt!");
+		//my_printf("!");
 	}
 }

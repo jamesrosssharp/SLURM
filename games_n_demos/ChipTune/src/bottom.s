@@ -11,6 +11,8 @@ pattern_A:
 pattern_B:
 	.times 64*8*4 db 0
 
+	dw 0
+	dw 0
 // Buffer for samples - 24k
 music_heap:
 	.times 24*1024 db 0
@@ -400,6 +402,6 @@ mix_audio_2.channel8_loop:
 
 
 sound_stack:
-	.times 256 dw 0
+	.times 1024 dw 0
 sound_stack_end:
 

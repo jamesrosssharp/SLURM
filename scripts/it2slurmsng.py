@@ -319,11 +319,13 @@ def load_pattern(filep, offset):
 			note = struct.unpack('b', binf.read(1))[0]
 			patt.note[chan][cur_row] = note
 			patt.last_note[chan] = note
+			patt.volume[chan][cur_row] = 31
 
 		if maskvar & ITNOTE_SAMPLE:
 			sample = struct.unpack('b', binf.read(1))[0]
 			patt.sample[chan][cur_row] = sample
 			patt.last_sample[chan] = sample
+			patt.volume[chan][cur_row] = 31
 
 		if maskvar & ITNOTE_VOLUME:
 			volume = struct.unpack('b', binf.read(1))[0]
@@ -342,8 +344,10 @@ def load_pattern(filep, offset):
 
 		if maskvar & ITNOTE_SAME_NOTE:
 			patt.note[chan][cur_row] = patt.last_note[chan]
+			patt.volume[chan][cur_row] = 31
 		if maskvar & ITNOTE_SAME_SAMPLE:
 			patt.sample[chan][cur_row] = patt.last_sample[chan]
+			patt.volume[chan][cur_row] = 31
 		if maskvar & ITNOTE_SAME_VOLUME:
 			patt.volume[chan][cur_row] = patt.last_volume[chan]
 		if maskvar & ITNOTE_SAME_EFFECT:

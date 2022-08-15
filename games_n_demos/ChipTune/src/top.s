@@ -110,7 +110,7 @@ flash_handler:
 	ld r1, [r13, -2]
 	iret
 
-vsync_handler:
+vsync_handler_2:
 	// Store flags
 	st [r13, -2], r1
 	
@@ -167,7 +167,7 @@ audio_handler:
 	ld r1, [r13, -2]
 	iret
 
-vsync_handler_2:
+vsync_handler:
 	st [r13, -2], r1
 
 	mov r1, 1
