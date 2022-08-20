@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Wed Aug  3 20:48:38 2022
+[*] Sat Aug 20 09:36:08 2022
 [*]
-[dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/demo_verilator/013_DRUMMACHINE/dump.vcd"
-[dumpfile_mtime] "Wed Aug  3 20:43:51 2022"
-[dumpfile_size] 914742605
-[savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/demo_verilator/013_DRUMMACHINE/config.gtkw"
-[timestart] 30007500000
+[dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/demo_verilator/014_CHIPTUNE/dump.vcd"
+[dumpfile_mtime] "Sat Aug 20 09:26:07 2022"
+[dumpfile_size] 2290850405
+[savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/demo_verilator/014_CHIPTUNE/config.gtkw"
+[timestart] 125893606000
 [size] 1381 907
 [pos] 505 46
-*-27.194408 30208600000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-19.194408 125894100000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tb.
 [treeopen] tb.cpu0.
 [treeopen] tb.cpu0.cpu0.
@@ -30,6 +30,11 @@ tb.UART_BYTE[7:0]
 tb.UART_BYTE_DISPLAY[7:0]
 @200
 -
+@22
+tb.cpu0.cpu0.pip0.state[3:0]
+@28
+tb.cpu0.cpu0.pip0.cache_miss
+@200
 -
 @22
 tb.cpu0.cpu0.memory_address[15:0]
@@ -58,6 +63,8 @@ tb.cpu0.cpu0.pip0.pipeline_stage1[15:0]
 tb.cpu0.cpu0.pip0.pipeline_stage2[15:0]
 tb.cpu0.cpu0.pip0.pipeline_stage3[15:0]
 tb.cpu0.cpu0.pip0.pipeline_stage4[15:0]
+@29
+tb.cpu0.cpu0.pip0.interrupt_flag_r
 @200
 -
 -
@@ -181,7 +188,6 @@ tb.cpu0.pc0.aud0.RSTb
 tb.cpu0.pc0.aud0.control_run
 @22
 tb.cpu0.pc0.aud0.left_rd_addr[8:0]
-@23
 tb.cpu0.pc0.aud0.right_rd_addr[8:0]
 @200
 -

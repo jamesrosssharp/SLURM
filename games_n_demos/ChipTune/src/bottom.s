@@ -93,8 +93,8 @@ SCRATCH_PAD equ	0x8000
 .align 0x100
 
 mix_audio_2:
-	st [r0, old_stack], r13
-	mov r13, sound_stack_end
+	//st [r0, old_stack], r13
+	//mov r13, sound_stack_end
 	sub r13, 32
 
 	// Preserve registers
@@ -398,10 +398,10 @@ mix_audio_2.channel8_loop:
 	ld r12, [r13, 20]
 	ld r1, [r13, 22]
 
-//	add r13, 32
+	add r13, 32
 
 	// Restore old stack pointer
-	ld r13, [r0, old_stack]
+//	ld r13, [r0, old_stack]
 	ret
 
 

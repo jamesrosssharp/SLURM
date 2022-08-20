@@ -31,7 +31,7 @@ short copperList[] = {
 
 
 
-short note_table_hi[] = {
+unsigned short note_table_hi[] = {
 	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
 	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
 	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
@@ -43,7 +43,7 @@ short note_table_hi[] = {
 	8,	8,	8,	9,	10,	10,	11,	11,	12,	13,	14,	15
 };
 
-short note_table_lo[] = {
+unsigned short note_table_lo[] = {
 	2004,	2130,	2255,	2380,	2506,	2631,	2882,	3007,	3132,	3383,	3633,	3759,
 	4009,	4260,	4511,	4761,	5137,	5388,	5764,	6140,	6390,	6891,	7267,	7643,
 	8145,	8646,	9147,	9648,	10275,	10901,	11528,	12280,	12906,	13783,	14535,	15412,
@@ -120,15 +120,13 @@ short my_add(short a, short b)
 
 extern char song_data;
 
-void do_vsync()
-{
-
-}
+char *patterns[2];
 
 int load_slurm_sng()
 {
 	int i;
 	struct sample* samp;
+	char *pattern;
 
 	sng_hdr = (struct slurmsng_header*)&song_data; 
 	
@@ -163,8 +161,134 @@ int load_slurm_sng()
 
 	// Get patterns
 
-	while (1) ;
+	pattern = ((char*)&song_data + sng_hdr->pattern_offset_lo + 4);
+
+	for (i = 0; i < 2; i++)
+	{
+		patterns[i] = pattern;
+		my_printf("Pattern: %d %x\n", i, pattern);
+		pattern += 64*8*4;
+	}
+
+	return 0;
 }
+
+short note_mul_asm(short lo, short hi, short c5speed);
+short note_mul_asm_hi(short lo, short hi, short c5speed);
+
+void play_sample(short channel, short volume, short note_lo, short note_hi, short SAMPLE, char effect, char param, char note)
+{
+
+
+	if (g_samples[SAMPLE]->loop != 0)
+	{
+		channel_info[channel].loop_start = g_samples[SAMPLE]->offset + g_samples[SAMPLE]->loop_start;
+		channel_info[channel].loop_end   = g_samples[SAMPLE]->offset + g_samples[SAMPLE]->loop_end;
+	}
+	else
+	{
+		channel_info[channel].loop_start = g_samples[SAMPLE]->offset + g_samples[SAMPLE]->sample_len;
+		channel_info[channel].loop_end   = g_samples[SAMPLE]->offset + g_samples[SAMPLE]->sample_len;
+	}
+
+	channel_info[channel].sample_pos = g_samples[SAMPLE]->offset;
+	channel_info[channel].frequency  = note_mul_asm(note_lo, note_hi, g_samples[SAMPLE]->speed);	
+	channel_info[channel].frequency_hi = note_mul_asm_hi(note_lo, note_hi, g_samples[SAMPLE]->speed);	
+	channel_info[channel].phase = 0;
+
+	channel_info[channel].effect = effect;
+	channel_info[channel].param = param;
+
+	channel_info[channel].base_note = note;
+
+	channel_info[channel].sample = SAMPLE;
+
+	if (volume < 64)
+	{
+		channel_info[channel].volume = volume >> 1;
+	}
+}
+
+void arpeggiate(short tick, int channel)
+{
+	short dev = 0;
+	short sample = channel_info[channel].sample;
+	short note_hi, note_lo;
+
+	if (tick == 1 || tick == 3)
+	{
+		dev = ((channel_info[channel].param & 0xf0) >> 4);
+	}
+	else if (tick == 2)
+	{
+		dev = (channel_info[channel].param & 0xf);
+	}
+
+	dev += channel_info[channel].base_note;
+
+	note_lo = note_table_lo[dev];
+	note_hi = note_table_hi[dev];
+
+	channel_info[channel].frequency  = note_mul_asm(note_lo, note_hi, g_samples[sample]->speed);	
+	channel_info[channel].frequency_hi = note_mul_asm_hi(note_lo, note_hi, g_samples[sample]->speed);	
+	
+}
+
+void update_tick(short tick)
+{
+	int i = 0;
+
+	for (i = 0; i < MIX_CHANNELS; i++)
+	{
+		switch (channel_info[i].effect)
+		{
+			case 2:	/* arpeggio */
+				arpeggiate(tick & 3, i);
+				break;			
+			default: 
+				break;
+		}
+	}		
+	
+}
+
+void set_volume(short channel, short volume)
+{
+	if (volume < 64)
+	{
+		channel_info[channel].volume = volume >> 1;
+	}
+	
+}
+
+void init_audio()
+{
+	int i;
+
+	// Clear audio buffer and enable
+
+
+	for (i = 0; i < 512; i++)
+	{		__out(0x3000 | i, 0);
+			__out(0x3200 | i, 0);
+	}
+	__out(0x3400, 1);
+
+}
+
+short frame = 0;
+
+void do_vsync()
+{
+
+	frame++;
+	vsync = 0;
+	copperList[0] = 0x7000 | (frame & 31);
+	load_copper_list(copperList, COUNT_OF(copperList));
+	
+}
+
+short channels[] = {0,4,1,5,2,6,3,7};
 
 int main()
 {
@@ -179,10 +303,81 @@ int main()
 	enable_interrupts();
 	load_slurm_sng();
 
+	for (i = 0; i < MIX_CHANNELS; i++)
+		play_sample(i, 0, 0, 0, 0, 0, 0, 0);
+
+	init_audio();
+
+	i = 0;
+	
 	while(1)
 	{
 		if (audio)
 		{
+			char* row_offset;
+			int i;
+
+			count += 1;
+			if (count == 5)
+			{
+
+				row_offset = (cur_patt_buf ? patterns[1] : patterns[0]) + row*32;	
+
+
+				for (i = 0; i < MIX_CHANNELS; i++)
+				{
+					char note;
+					char volume;
+					char sample;
+					char effect;
+					char effect_param;	
+
+					note = *row_offset++;
+					volume = *row_offset++;			
+					sample = *row_offset++;
+					effect = sample & 0xf;
+					sample >>= 4;
+					effect_param = *row_offset++;
+			
+					if (note)
+					{
+						short note_lo, note_hi;
+						note --;
+
+						note_lo = note_table_lo[note];
+						note_hi = note_table_hi[note];
+
+						play_sample(channels[i], volume, note_lo, note_hi, --sample, effect, effect_param, note);
+					
+					}
+					else
+						set_volume(channels[i], volume);
+				}
+
+				row += 1;	
+				if (row == 64)
+				{
+					char pattern;
+					short offset_lo;
+					short offset_hi;
+					int i;
+
+					cur_patt_buf = !cur_patt_buf;
+					row = 0;
+
+				}
+				count = 0;
+			}
+			else
+			{
+				update_tick(count);
+			}
+
+			audio = 0;
+	
+			//print_channel_ptrs();
+			mix_audio_2();
+
 
 		}
 

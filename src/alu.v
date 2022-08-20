@@ -253,12 +253,13 @@ begin
 			S_flag_reg_next = 1'b1;
 		end
 		5'd29: begin	// Store flags
-			out = {13'h0000, S, C, Z};
+			out = {12'h000, V, S, C, Z};
 		end
 		5'd30: begin // Restore flags
 			C_flag_reg_next = B[1];
 			S_flag_reg_next = B[2];
 			Z_flag_reg_next = B[0];
+			V_flag_reg_next = B[3];
 		end
 		5'd31: ; 
 		default: ; /* reserved */	

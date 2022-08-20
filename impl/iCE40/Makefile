@@ -59,6 +59,7 @@ SIEVE_BIN=../../games_n_demos/Sieve/build/sieve.bin
 MANDEL_BIN=../../games_n_demos/Mandelbrot/build/mandelbrot.bin
 CAPTOR_BIN=../../games_n_demos/Captor/build/captor.bin
 CHIPTUNE_BIN=../../games_n_demos/ChipTune/build/chiptune.bin
+CHIPTUNEMEM_BIN=../../games_n_demos/ChipTuneMem/build/chiptunemem.bin
 DRUM_BIN=../../games_n_demos/DrumMachine/build/drummachine.bin
 JPTA_BIN=../../games_n_demos/JPTA/build/jpta.bin
 
@@ -137,6 +138,11 @@ captor: $(PROJ).bin
 chiptune: $(PROJ).bin
 	$(ICEPROG) $(PROJ).bin
 	$(ICEPROG) -o 1M  $(CHIPTUNE_BIN) 
+
+.PHONY: chiptunemem
+chiptunemem: $(PROJ).bin
+	$(ICEPROG) $(PROJ).bin
+	$(ICEPROG) -o 1M  $(CHIPTUNEMEM_BIN) 
 
 .PHONY: drum
 drum: $(PROJ).bin

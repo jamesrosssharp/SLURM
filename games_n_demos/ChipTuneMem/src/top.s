@@ -119,6 +119,10 @@ vsync_handler:
 	st [r13, -2], r1
 	
 	stf r1
+	nop
+	nop
+	nop
+
 	sub r13, 4
 	st [r13, 0], r1	
 
@@ -138,7 +142,7 @@ vsync_handler:
 	st  [r13, 20], r11
 	st  [r13, 22], r12
 	st  [r13, 24], r3
-	nop	
+	//nop
 
 	bl do_vsync
 	
@@ -154,13 +158,16 @@ vsync_handler:
 	ld r11,  [r13, 20]
 	ld r12,  [r13, 22]
 	ld r3,  [r13, 24]
-	nop	
+	//nop
 
 	add r13, 32
 
 	// Restore flags
 	ld r1, [r13, 0]
 	add r13, 4
+	nop
+	nop
+	nop
 	rsf r1
 
 	ld r1, [r13, -2]
