@@ -411,6 +411,17 @@ void do_vsync()
 	
 }
 
+void print_channel_ptrs()
+{
+	int i;
+
+	for (i = 0; i < MIX_CHANNELS; i++)
+	{
+		my_printf("Ch %d: %x\r\n", i, channel_info[i].sample_pos);
+	}
+
+}
+
 short channels[] = {0,4,1,5,2,6,3,7};
 
 int main()
@@ -521,6 +532,8 @@ int main()
 			}
 
 			audio = 0;
+	
+			//print_channel_ptrs();
 			mix_audio_2();
 
 		}
