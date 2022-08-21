@@ -1,7 +1,7 @@
 TESTS := $(filter-out Makefile, $(wildcard *))
 TESTCLEAN=$(addsuffix clean,$(TESTS))
 
-.PHONY: clean all 
+.PHONY: all 
 all: $(TESTS)
 	@echo "-------------------"
 	@echo "All tests passed.  "
@@ -12,8 +12,4 @@ $(TESTS):
 	@echo "Running test: $@"
 	@make -C $@
 
-%clean: %
-	@make -C $< clean
-
-clean: $(TESTCLEAN) 
 

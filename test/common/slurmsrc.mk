@@ -3,7 +3,6 @@ SOURCE= $(SRCDIR)/alpha.v		\
 $(SRCDIR)/alu.v				\
 $(SRCDIR)/audio.v			\
 $(SRCDIR)/background_controller2.v	\
-$(SRCDIR)/background_controller.v	\
 $(SRCDIR)/baudgen.v			\
 $(SRCDIR)/bram_mask.v			\
 $(SRCDIR)/bram.v			\

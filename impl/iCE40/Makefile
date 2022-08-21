@@ -98,7 +98,7 @@ $(PROJ).json: $(SOURCE) rom_image.mem
 
 
 %.asc: $(PIN_DEF) %.json
-	nextpnr-ice40 --freq 25.125 --up5k --json $(PROJ).json --pcf $(PROJ).pcf --asc $@
+	nextpnr-ice40 --randomize-seed --freq 25.125 --up5k --json $(PROJ).json --pcf $(PROJ).pcf --asc $@
 
 %.bin: %.asc
 	$(ICEPACK) $< $@

@@ -566,8 +566,6 @@ assign imm_reg = imm_stage2_r;
 reg [BITS - 1:0] imm_stage3_r;
 reg [BITS - 1:0] imm_stage4_r;
 
-assign imm_reg_stage4 = imm_stage4_r;
-
 reg cond_pass_stage3_r;
 reg cond_pass_stage4_r;
 

@@ -161,6 +161,10 @@ vsync_handler:
 	// Restore flags
 	ld r1, [r13, 0]
 	add r13, 4
+	nop
+	nop
+	nop
+	nop
 	rsf r1
 
 	ld r1, [r13, -2]

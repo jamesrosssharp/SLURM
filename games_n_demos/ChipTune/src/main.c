@@ -406,7 +406,7 @@ void do_vsync()
 
 	frame++;
 	vsync = 0;
-	copperList[0] = 0x7000 | (frame & 31);
+	//copperList[0] = 0x7000 | (frame & 31);
 	load_copper_list(copperList, COUNT_OF(copperList));
 	
 }
