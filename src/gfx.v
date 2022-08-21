@@ -293,7 +293,7 @@ begin
 	color_index_r = color_index;
 end
 
-wire [11:0] theColor = color_index_r == 8'h00 ? background_color : color;
+wire [15:0] theColor = color_index_r == 8'h00 ? {4'd0, background_color} : color;
 
 wire [3:0] rout;
 wire [3:0] bout;
