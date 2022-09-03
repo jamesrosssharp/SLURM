@@ -1365,3 +1365,23 @@ void AST::printAssembly()
 	}
 
 }
+
+void AST::printSymbols()
+{
+	std::map<unsigned short, std::string> mm;
+
+
+	for (auto const& x : m_symbolTable)
+	{
+		//std::cout << x.first << " : " << std::hex << std::setfill('0') << std::setw(4) << x.second.value << std::endl;
+		mm.insert({x.second.value, x.first});
+	}
+
+	for (auto const& x : mm)
+	{
+		std::cout << x.second << " : " << std::hex << std::setfill('0') << std::setw(4) << x.first << std::endl;
+	}
+
+
+
+}

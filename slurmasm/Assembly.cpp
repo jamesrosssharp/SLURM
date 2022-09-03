@@ -469,7 +469,7 @@ void Assembly::makeLoadStoreWithIndexAndExpression(OpCode opcode, uint32_t lineN
 {
 	uint16_t LS = 0;
 
-	std::cout << "Expression: " << value << std::endl;
+	//std::cout << "Expression: " << value << std::endl;
 
 	uint16_t op;
 	switch (opcode)

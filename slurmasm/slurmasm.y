@@ -19,7 +19,7 @@
   %}
 
 // Bison fundamentally works by asking flex to get the next token, which it
-// returns as an object of type "yystype".  But tokens could be of any
+// returns as an object of type "yystype".	But tokens could be of any
 // arbitrary data type!  So we deal with that in Bison by defining a C union
 // holding each of the types of tokens that Flex could return, and have Bison
 // use that union instead of "int" for the definition of "yystype":
@@ -77,7 +77,7 @@ op_code_8 : OPCODE OPEN_SQUARE_BRACKET REG CLOSE_SQUARE_BRACKET COMMA REG ENDL {
 op_code_9 : OPCODE REG COMMA OPEN_SQUARE_BRACKET REG CLOSE_SQUARE_BRACKET ENDL { g_ast.addIndirectAddressingOpcodeWithRegister(line_num - 1, $1, $5, $2); }
 op_code_10 : OPCODE OPEN_SQUARE_BRACKET REG PLUS CLOSE_SQUARE_BRACKET COMMA REG ENDL { g_ast.addIndirectAddressingOpcodeWithPostincrement(line_num - 1, $1, $3, $7); }
 op_code_11 : OPCODE OPEN_SQUARE_BRACKET REG MINUS CLOSE_SQUARE_BRACKET COMMA REG ENDL { g_ast.addIndirectAddressingOpcodeWithPostdecrement(line_num - 1, $1, $3, $7); }
-op_code_12: OPCODE REG COMMA OPEN_SQUARE_BRACKET REG PLUS CLOSE_SQUARE_BRACKET  ENDL { g_ast.addIndirectAddressingOpcodeWithPostincrement(line_num - 1, $1, $5, $2); }
+op_code_12: OPCODE REG COMMA OPEN_SQUARE_BRACKET REG PLUS CLOSE_SQUARE_BRACKET	ENDL { g_ast.addIndirectAddressingOpcodeWithPostincrement(line_num - 1, $1, $5, $2); }
 op_code_13 : OPCODE REG COMMA OPEN_SQUARE_BRACKET REG MINUS CLOSE_SQUARE_BRACKET ENDL { g_ast.addIndirectAddressingOpcodeWithPostdecrement(line_num - 1, $1, $5, $2); }
 op_code_14 : OPCODE REG COMMA OPEN_SQUARE_BRACKET expressions CLOSE_SQUARE_BRACKET ENDL { g_ast.addIndirectAddressingOpcodeWithExpression(line_num - 1, $1, $2); }
 op_code_15 : OPCODE OPEN_SQUARE_BRACKET expressions CLOSE_SQUARE_BRACKET COMMA REG ENDL { g_ast.addIndirectAddressingOpcodeWithExpression(line_num - 1, $1, $6); }
@@ -86,26 +86,26 @@ op_code_17 : OPCODE OPEN_SQUARE_BRACKET REG COMMA expressions CLOSE_SQUARE_BRACK
 
 expressions: expressions expression | expression ;
 expression: hexval | integer | open_parenthesis | close_parenthesis | plus | minus|
-            mult | div | and | or | shl | shr | not | xor | string | str_literal | ch_literal;
+			mult | div | and | or | shl | shr | not | xor | string | str_literal | ch_literal;
 
 
-str_literal:            STR_LITERAL         { g_ast.addStringLiteralToCurrentStatementExpression($1); }
-ch_literal:             CH_LITERAL          { g_ast.addCharLiteralToCurrentStatementExpression($1); }
-string:                 STRING              { g_ast.addStringToCurrentStatementExpression($1); }
-open_parenthesis:       OPEN_PARENTHESIS    { g_ast.addLeftParenthesisToCurrentStatementExpression(); }
-close_parenthesis:      CLOSE_PARENTHESIS   { g_ast.addRightParenthesisToCurrentStatementExpression(); }
-plus :                  PLUS                { g_ast.addPlusToCurrentStatementExpression(); }
-minus :                 MINUS               { g_ast.addMinusToCurrentStatementExpression(); }
-mult:                   MULT                { g_ast.addMultToCurrentStatementExpression(); }
-div:                    DIV                 { g_ast.addDivToCurrentStatementExpression(); }
-and :                   AND                 { g_ast.addAndToCurrentStatementExpression(); }
-or :                    OR                  { g_ast.addOrToCurrentStatementExpression(); }
-not :                   NOT                 { g_ast.addNotToCurrentStatementExpression(); }
-xor :                   XOR                 { g_ast.addXorToCurrentStatementExpression(); }
-shl :                   SHL                 { g_ast.addShiftLeftToCurrentStatementExpression();}
-shr :                   SHR                 { g_ast.addShiftRightToCurrentStatementExpression();}
-hexval:                 HEXVAL              { g_ast.addUIntToCurrentStatementExpresion($1);}
-integer:                INT                 { g_ast.addIntToCurrentStatementExpression($1); }
+str_literal:			STR_LITERAL			{ g_ast.addStringLiteralToCurrentStatementExpression($1); }
+ch_literal:				CH_LITERAL			{ g_ast.addCharLiteralToCurrentStatementExpression($1); }
+string:					STRING				{ g_ast.addStringToCurrentStatementExpression($1); }
+open_parenthesis:		OPEN_PARENTHESIS	{ g_ast.addLeftParenthesisToCurrentStatementExpression(); }
+close_parenthesis:		CLOSE_PARENTHESIS	{ g_ast.addRightParenthesisToCurrentStatementExpression(); }
+plus :					PLUS				{ g_ast.addPlusToCurrentStatementExpression(); }
+minus :					MINUS				{ g_ast.addMinusToCurrentStatementExpression(); }
+mult:					MULT				{ g_ast.addMultToCurrentStatementExpression(); }
+div:					DIV					{ g_ast.addDivToCurrentStatementExpression(); }
+and :					AND					{ g_ast.addAndToCurrentStatementExpression(); }
+or :					OR					{ g_ast.addOrToCurrentStatementExpression(); }
+not :					NOT					{ g_ast.addNotToCurrentStatementExpression(); }
+xor :					XOR					{ g_ast.addXorToCurrentStatementExpression(); }
+shl :					SHL					{ g_ast.addShiftLeftToCurrentStatementExpression();}
+shr :					SHR					{ g_ast.addShiftRightToCurrentStatementExpression();}
+hexval:					HEXVAL				{ g_ast.addUIntToCurrentStatementExpresion($1);}
+integer:				INT					{ g_ast.addIntToCurrentStatementExpression($1); }
 
 equ: STRING EQU expressions ENDL {g_ast.addEqu(line_num - 1, $1); } ;
 
@@ -130,108 +130,106 @@ ENDLS: ENDLS ENDL | ENDL ;
 
 void printUsage(char *arg0)
 {
-    std::cout << "Usage: " << arg0 << " [-t <bin|slmobj>] [-o <output.o>] <file.asm>" << std::endl;
-    std::cout << std::endl;
-    std::cout << "      options: " << std::endl;
-    std::cout << "          -t: type (bin / slmobj): write flat binary (bin), or slurm object file (slmobj) " << std::endl;
+	std::cout << "Usage: " << arg0 << " [-t <bin|slmobj>] [-o <output.o>] <file.asm>" << std::endl;
+	std::cout << std::endl;
+	std::cout << "		options: " << std::endl;
+	std::cout << "			-t: type (bin / slmobj): write flat binary (bin), or slurm object file (slmobj) " << std::endl;
 
 }
 
 int main(int argc, char** argv) {
 
-    if (argc == 1)
-    {
-        printUsage(argv[0]);
-        exit(EXIT_FAILURE);
-    }
+	if (argc == 1)
+	{
+		printUsage(argv[0]);
+		exit(EXIT_FAILURE);
+	}
 
-    char *outputFile = nullptr;
-    char *type = nullptr;
-    char c;
+	char *outputFile = nullptr;
+	char *type = nullptr;
+	char c;
 
-    while ((c = getopt (argc, argv, "t:o:")) != -1)
-    switch (c)
-    {
-        case 't':
-            type = strdup(optarg);
-            break;
-        case 'o':
-            outputFile = strdup(optarg);
-            break;
-        default:
-            printUsage(argv[0]);
-            exit(EXIT_FAILURE);
-    }
+	while ((c = getopt (argc, argv, "t:o:")) != -1)
+	switch (c)
+	{
+		case 't':
+			type = strdup(optarg);
+			break;
+		case 'o':
+			outputFile = strdup(optarg);
+			break;
+		default:
+			printUsage(argv[0]);
+			exit(EXIT_FAILURE);
+	}
 
-    if (optind == argc)
-    {
-        std::cout << "ERROR: no input files" << std::endl;
-    }
+	if (optind == argc)
+	{
+		std::cout << "ERROR: no input files" << std::endl;
+	}
 
-    // open a file handle to a particular file:
-    FILE *myfile = fopen(argv[optind], "r");
-    // make sure it's valid:
-    if (!myfile) {
-    cout << "I can't open Test.asm file!" << endl;
-    return -1;
-    }
-    // set lex to read from it instead of defaulting to STDIN:
-    yyin = myfile;
+	// open a file handle to a particular file:
+	FILE *myfile = fopen(argv[optind], "r");
+	// make sure it's valid:
+	if (!myfile) {
+	cout << "I can't open Test.asm file!" << endl;
+	return -1;
+	}
+	// set lex to read from it instead of defaulting to STDIN:
+	yyin = myfile;
 
-    // parse through the input until there is no more:
+	// parse through the input until there is no more:
 
-    do {
-    yyparse();
-    } while (!feof(yyin));
+	do {
+	yyparse();
+	} while (!feof(yyin));
 
-    //cout << g_ast << endl;
+	//cout << g_ast << endl;
 
-    // build symbol table
+	// build symbol table
 
-    cout << "Building symbol table..." << endl;
+	cout << "Building symbol table..." << endl;
 
-    g_ast.buildSymbolTable();
+	g_ast.buildSymbolTable();
 
-    // first pass assemble
+	// first pass assemble
 
-    cout << "First pass assembly..." << endl;
+	cout << "First pass assembly..." << endl;
 
-    g_ast.firstPassAssemble();
+	g_ast.firstPassAssemble();
 
-    // resolve symbols
+	// resolve symbols
 
-    cout << "Resolving symbols..." << endl;
+	cout << "Resolving symbols..." << endl;
 
-    g_ast.resolveSymbols();
+	g_ast.resolveSymbols();
 
-    // evaluate expressions
+	// evaluate expressions
 
-    cout << "Evaluating expressions..." << endl;
+	cout << "Evaluating expressions..." << endl;
 
-    g_ast.evaluateExpressions();
+	g_ast.evaluateExpressions();
 
-    // generate assembly
+	// generate assembly
 
-    cout << "Assembling..." << endl;
+	cout << "Assembling..." << endl;
 
-    g_ast.assemble();
+	g_ast.assemble();
 
-    g_ast.printAssembly();
+	//g_ast.printAssembly();
 
-    // TODO: relaxation to remove unnecessary NOPs introduced when assembling
-    // after symbols are known - how to do this?
+	g_ast.printSymbols();
 
+	// output binary file
 
-    // output binary file
+	cout << "Writing output..." << endl;
 
-    cout << "Writing output..." << endl;
-
-    g_ast.writeBinOutput(outputFile == nullptr ? "out.bin" : outputFile);
+	g_ast.writeBinOutput(outputFile == nullptr ? "out.bin" : outputFile);
 
 }
 
 void yyerror(const char *s) {
-    cout << "Parse error on line " << line_num << ": " << s << endl;
-    // might as well halt now:
-    exit(-1);
+	cout << "Parse error on line " << line_num << ": " << s << endl;
+	// might as well halt now:
+	exit(-1);
 }

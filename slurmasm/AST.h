@@ -75,6 +75,7 @@ public:
     void writeBinOutput(std::string path);
 
     void printAssembly();
+    void printSymbols();
 
     friend std::ostream& operator << (std::ostream&, const AST&);
 
