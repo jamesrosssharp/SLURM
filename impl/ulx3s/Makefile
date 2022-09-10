@@ -52,7 +52,7 @@ SLURM_FILES := $(SOURCE)
 
 VERILOG_FILES += $(DVI_FILES) $(PLL_FILES) $(SLURM_FILES)
 
-TOP_MODULE = top_vgatest
+TOP_MODULE = slurm16_top
 
 PROJECT = slurm16
 BOARD = ulx3s
@@ -82,7 +82,11 @@ all: $(BOARD)_$(FPGA_SIZE)f_$(PROJECT).bit
 # App
 
 #GAME_BIN=../../games_n_demos/Mandelbrot/build/mandelbrot.bin
-GAME_BIN=../../games_n_demos/BloodLust/build/bloodlust.bin
+#GAME_BIN=../../games_n_demos/BloodLust/build/bloodlust.bin
+GAME_BIN=../../games_n_demos/PoCman/build/pocman.bin
+#GAME_BIN=../../games_n_demos/ChipTuneMem/build/chiptune.bin
+#GAME_BIN=../../games_n_demos/DrumMachine/build/drummachine.bin
+
 
 mem_init1.mem: $(GAME_BIN)
 	dd if=$(GAME_BIN) of=mem_init1 bs=1 count=32256 seek=512

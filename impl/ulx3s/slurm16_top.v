@@ -1,4 +1,4 @@
-module top_vgatest
+module slurm16_top
 #(
   //  modes tested on lenovo monitor
   //  640x400  @50Hz
@@ -30,7 +30,13 @@ module top_vgatest
   output [3:0] gpdi_dp,
   output       user_programn,
   output       wifi_gpio0,
-  output       gp0
+  output       gp0,
+  output       gp1,
+  output       gp2,
+  output       gp3,
+  output       gp4,
+  output [3:0] audio_l,
+  output [3:0] audio_r
 );
 
   function integer F_find_next_f(input integer f);
@@ -262,6 +268,32 @@ assign vga_b = {vid_b, 4'd0};
 assign vga_vsync = !vid_vsync;
 assign vga_hsync = !vid_hsync;
 assign vga_blank = /*!vid_vsync || !vid_hsync;*/ vid_blank;
+
+assign gp1 = i2s_mclk;
+assign gp2 = i2s_lrclk;
+assign gp3 = i2s_sclk;
+assign gp4 = i2s_data;
+
+/*LOCATE COMP "btn[1]" SITE "R1";  # FIRE1
+LOCATE COMP "btn[2]" SITE "T1";  # FIRE2
+LOCATE COMP "btn[3]" SITE "R18"; # UP
+LOCATE COMP "btn[4]" SITE "V1";  # DOWN
+LOCATE COMP "btn[5]" SITE "U1";  # LEFT
+LOCATE COMP "btn[6]" SITE "H16"; # RIGHT*/
+
+/*assign gpio_in[0] = UP_BUTTON;
+assign gpio_in[1] = DOWN_BUTTON;
+assign gpio_in[2] = LEFT_BUTTON;
+assign gpio_in[3] = RIGHT_BUTTON;
+assign gpio_in[4] = A_BUTTON;
+assign gpio_in[5] = B_BUTTON;*/
+
+assign gpio_in[0] = btn[3];
+assign gpio_in[1] = btn[4];
+assign gpio_in[2] = btn[5];
+assign gpio_in[3] = btn[6];
+assign gpio_in[4] = btn[1];
+assign gpio_in[5] = btn[2];
 
 // DEBUG : Instantiate UART
 /*
