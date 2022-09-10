@@ -214,6 +214,8 @@ int main()
 	load_palette(&bloodlust_tiles_palette, 16, 16);
 	enable_interrupts();
 
+	trace_hex(0x666);
+
 	while (1)
 	{
 		int i;
@@ -221,6 +223,8 @@ int main()
 		update_bl_copper_list();
 		for (i = 0; i < COUNT_OF(sprites); i++)
 			update_sprite(&sprites[i]);
+
+		trace_hex(0x667);
 		__sleep();
 	}
 	putc('!');

@@ -406,7 +406,7 @@ void do_vsync()
 
 	frame++;
 	vsync = 0;
-	//copperList[0] = 0x7000 | (frame & 31);
+	copperList[0] = 0x7000 | (frame & 31);
 	load_copper_list(copperList, COUNT_OF(copperList));
 	
 }
@@ -457,7 +457,10 @@ int main()
 
 				row_offset = (cur_patt_buf ? &pattern_B : &pattern_A) + row*32;	
 
-
+				//my_printf("row: %d patt: %d\r\n", row, ord);
+	
+				//trace_dec(ord*64 + row);
+			
 				for (i = 0; i < MIX_CHANNELS; i++)
 				{
 					char note;

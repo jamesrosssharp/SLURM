@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Sat Sep  3 02:59:54 2022
+[*] Sun Sep  4 02:44:42 2022
 [*]
 [dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/demo_verilator/010_BLOODLUST/dump.vcd"
-[dumpfile_mtime] "Sat Sep  3 02:37:07 2022"
-[dumpfile_size] 2207857957
+[dumpfile_mtime] "Sun Sep  4 02:39:27 2022"
+[dumpfile_size] 2210923627
 [savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/demo_verilator/010_BLOODLUST/config.gtkw"
-[timestart] 41799155000
+[timestart] 887237000
 [size] 1920 992
 [pos] -1 -1
-*-19.194408 41840000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-19.194408 889700000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tb.
 [treeopen] tb.cpu0.
 [treeopen] tb.cpu0.cpu0.
@@ -71,6 +71,17 @@ tb.cpu0.pc0.tr0.traceVal_r[15:0]
 tb.cpu0.pc0.gfx0.spcon0.aram_WR
 @200
 -
+@28
+tb.cpu0.cpu0.pip0.halt
+@22
+tb.cpu0.cpu0.pip0.state[3:0]
+@28
+tb.cpu0.cpu0.pip0.hazard_1
+tb.cpu0.cpu0.pip0.hazard_2
+tb.cpu0.cpu0.pip0.hazard_3
+@29
+tb.cpu0.cpu0.pip0.cache_miss
+@200
 -
 @22
 tb.cpu0.cpu0.port_address[15:0]
@@ -90,9 +101,8 @@ tb.cpu0.pc0.memRD
 tb.cpu0.pc0.memWR
 @200
 -
-@23
-tb.cpu0.cpu0.pip0.pc[14:0]
 @22
+tb.cpu0.cpu0.pip0.pc[14:0]
 tb.cpu0.cpu0.pip0.pipeline_stage0[15:0]
 tb.cpu0.cpu0.pip0.pipeline_stage1[15:0]
 tb.cpu0.cpu0.pip0.pipeline_stage2[15:0]

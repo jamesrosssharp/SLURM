@@ -126,19 +126,33 @@ begin
 			else if (halt == 1'b1)
 				next_state = st_halt;
 		end
-		st_wait_cache1:
+		st_wait_cache1: begin
 			// Wait state while PC returns to previous value
 			next_state = st_wait_cache2;	
-			
-		st_wait_cache2:
+			if (halt == 1'b1)
+				next_state = st_halt;
+		end
+		st_wait_cache2: begin
 			if (cache_miss == 1'b0)	
 				next_state = st_execute;
-		st_stall_2:
+			if (halt == 1'b1)
+				next_state = st_halt;
+		end
+		st_stall_2: begin
 			next_state = st_stall_3;
-		st_stall_3:
+			if (halt == 1'b1)
+				next_state = st_halt;
+		end
+		st_stall_3: begin
 			next_state = st_stall_4;
-		st_stall_4:
+			if (halt == 1'b1)
+				next_state = st_halt;
+		end
+		st_stall_4: begin
 			next_state = st_execute;
+			if (halt == 1'b1)
+				next_state = st_halt;
+		end
 		st_mem_stall1:
 			// Wait state while PC returns to previous value
 			next_state = st_mem_stall2;
@@ -164,8 +178,12 @@ begin
 		st_mem_stall4:
 			if (load_store_req4 && (data_memory_success == 1'b0))
 				next_state = st_mem_stall1;
+			//else if (halt == 1'b1)
+			//	next_state = st_halt;
 		default: ;
 	endcase
+
+
 end
 
 // Interrupt flag
@@ -179,7 +197,7 @@ begin
 	else begin
 		if (interrupt_flag_set)
 			interrupt_flag_r <= 1'b1;
-		else if (interrupt_flag_clear)
+		else if (interrupt_flag_clear && (next_state == st_execute))
 			interrupt_flag_r <= 1'b0;	
 	end
 end
