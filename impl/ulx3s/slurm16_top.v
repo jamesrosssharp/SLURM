@@ -107,7 +107,7 @@ module top_vgatest
   // VGA signal generator
   wire [7:0] vga_r, vga_g, vga_b;
   wire vga_hsync, vga_vsync, vga_blank;
-  vga
+  /*vga
   #(
     .c_resolution_x(x),
     .c_hsync_front_porch(hsync_front_porch),
@@ -131,7 +131,7 @@ module top_vgatest
     .vga_hsync(vga_hsync),
     .vga_vsync(vga_vsync),
     .vga_blank(vga_blank)
-  );
+  );*/
 
   // LED blinky
   assign led[7:6] = 0;
@@ -254,6 +254,13 @@ slurm16 #(
 // Assign to ULX3S pads
 assign gp0 = uart_tx;
 
+assign vga_r = {vid_r, 4'd0};
+assign vga_g = {vid_g, 4'd0};
+assign vga_b = {vid_b, 4'd0};
+ 
+assign vga_vsync = !vid_vsync;
+assign vga_hsync = !vid_hsync;
+assign vga_blank = !vid_vsync || !vid_hsync;
 
 // DEBUG : Instantiate UART
 /*
