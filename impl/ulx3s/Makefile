@@ -79,9 +79,35 @@ YOSYS_OPTIONS =
 
 all: $(BOARD)_$(FPGA_SIZE)f_$(PROJECT).bit
 
+# App
+
+#GAME_BIN=../../games_n_demos/Mandelbrot/build/mandelbrot.bin
+GAME_BIN=../../games_n_demos/BloodLust/build/bloodlust.bin
+
+mem_init1.mem: $(GAME_BIN)
+	dd if=$(GAME_BIN) of=mem_init1 bs=1 count=32256 seek=512
+	python3 ../../scripts/genmem.py mem_init1 mem_init1.mem
+
+mem_init2.mem: $(GAME_BIN)
+	dd if=$(GAME_BIN) of=mem_init2 bs=1 count=32768 skip=32256
+	python3 ../../scripts/genmem.py mem_init2 mem_init2.mem
+
+mem_init3.mem: $(GAME_BIN)
+	dd if=$(GAME_BIN) of=mem_init3 bs=1 count=32768 skip=65024
+	python3 ../../scripts/genmem.py mem_init3 mem_init3.mem
+
+mem_init4.mem: $(GAME_BIN)
+	dd if=$(GAME_BIN) of=mem_init4 bs=1 count=32768 skip=97792
+	python3 ../../scripts/genmem.py mem_init4 mem_init4.mem
+
+# Bootloader
+
+bootloader/boot_memory.v: bootloader/Bootloader.asm
+	make -C bootloader
+
 # Yosys synth
 
-$(PROJECT).json: $(VERILOG_FILES)
+$(PROJECT).json: $(VERILOG_FILES) mem_init1.mem mem_init2.mem mem_init3.mem mem_init4.mem
 	$(YOSYS) \
 	-p "read -sv $(VERILOG_FILES)" \
 	-p "hierarchy -top $(TOP_MODULE)" \
@@ -109,6 +135,7 @@ JUNK = *~
 JUNK += $(PROJECT).json
 JUNK += $(BOARD)_$(FPGA_SIZE)f_$(PROJECT).config
 JUNK += $(BOARD)_$(FPGA_SIZE)f_$(PROJECT).bit
+JUNK += mem_init* 
 
 clean:
 	rm -f $(JUNK)

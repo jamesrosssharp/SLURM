@@ -233,6 +233,7 @@ slurm16 #(
     vid_b,
     vid_hsync,
     vid_vsync,
+    vid_blank,
 
     uart_tx,
     
@@ -260,7 +261,7 @@ assign vga_b = {vid_b, 4'd0};
  
 assign vga_vsync = !vid_vsync;
 assign vga_hsync = !vid_hsync;
-assign vga_blank = !vid_vsync || !vid_hsync;
+assign vga_blank = /*!vid_vsync || !vid_hsync;*/ vid_blank;
 
 // DEBUG : Instantiate UART
 /*

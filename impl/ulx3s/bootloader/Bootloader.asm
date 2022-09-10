@@ -37,7 +37,7 @@ VECTORS:
 	.times 20 dw 0x0000
 
 start:
-		mov r1, cpr_list_1
+/*		mov r1, cpr_list_1
 		mov r2, cpr_list_1_end - cpr_list_1
 		mov r6, r0
 cpr_loop:
@@ -48,8 +48,8 @@ cpr_loop:
 		sub r2, 1
 		bnz cpr_loop
 
-		//mov r4, 0x1
-		//out [r0, GFX_CPR_ENABLE], r4
+		mov r4, 0x1
+		out [r0, GFX_CPR_ENABLE], r4
 
 		mov r4, 1
 		out [r0, PWM_RED], r4
@@ -73,6 +73,7 @@ cpr_list_1:
 		dw 0x7064
 		dw 0x1001
 cpr_list_1_end:
+*/
 
 		mov r2, banner
 loop:
@@ -88,12 +89,18 @@ test_loop:
 
 		ba loop
 
+
 die:
+
+	ba 0x200
+
 	// Write copper list
 
 	/* enable hblank interrupt in interrupt controller */
 	mov r1, 1<<4 | 1 | 2
 	out [r0, INTERRUPT_ENABLE_PORT], r1
+
+	mov r11,0
 
 	/* enable interrupts */
 	sti
@@ -141,7 +148,8 @@ done_flags:
 		or  r10, r10
 		iret
 vs_handler:
-		//mov r7, 0
+		mov r7, r11
+		add r11, 1
 		mov r9, 0xffff
 		out [r0, 0x7001], r9
 		iret

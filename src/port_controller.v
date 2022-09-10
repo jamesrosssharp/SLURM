@@ -36,6 +36,7 @@ module port_controller
 	output [3:0] vid_b,
 	output vid_hsync,
 	output vid_vsync,
+	output vid_blank,
 
 	output uart_tx,
 
@@ -309,6 +310,7 @@ gfx #(.BITS(BITS), .BANK_ADDRESS_BITS(14), .ADDRESS_BITS(12)) gfx0
 	.BB(vid_b),
 	.RR(vid_r),
 	.GG(vid_g),
+	.BLANK(vid_blank),
 	.spcon_memory_address(spcon_memory_address),
 	.spcon_memory_data(spcon_memory_data),
 	.spcon_rvalid(spcon_rvalid),

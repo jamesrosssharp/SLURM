@@ -19,6 +19,7 @@ module slurm16 #(
 	output [3:0] vid_b,
 	output vid_hsync,
 	output vid_vsync,
+	output vid_blank,
 
 	output uart_tx,
 
@@ -132,6 +133,7 @@ pc0
 	.vid_b(vid_b),
 	.vid_hsync(vid_hsync),
 	.vid_vsync(vid_vsync),
+	.vid_blank(vid_blank),
 	.uart_tx(uart_tx),
 	.led_r(led_r),
 	.led_g(led_g),

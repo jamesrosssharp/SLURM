@@ -2,3 +2,4 @@
 *.config
 *.json
 attic
+mem_init*

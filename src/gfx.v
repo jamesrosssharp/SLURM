@@ -15,6 +15,8 @@ module gfx #(parameter BITS = 16, parameter BANK_ADDRESS_BITS = 14, parameter AD
 	output [3:0] RR,
 	output [3:0] GG,
 
+	output BLANK,
+
 	// Memory ports (read only):
 
 	//  sprite controller
@@ -60,13 +62,13 @@ reg [5:0] frameCount = 6'd0;
 
 localparam H_FRONT_PORCH = 16;
 localparam H_SYNC_PULSE  = 96;
-localparam H_BACK_PORCH  = 48;
+localparam H_BACK_PORCH  = 48 /*44*/;
 localparam H_TOTAL_PORCH = H_FRONT_PORCH + H_SYNC_PULSE + H_BACK_PORCH;
 localparam H_PIXELS = 640;
 
 localparam V_FRONT_PORCH = 10;
 localparam V_SYNC_PULSE  = 2;
-localparam V_BACK_PORCH  = 33;
+localparam V_BACK_PORCH  = 33 /*31*/;
 localparam V_TOTAL_PORCH = V_FRONT_PORCH + V_SYNC_PULSE + V_BACK_PORCH;
 localparam V_DISPLAY_LINES = 480;
 localparam V_LINES = V_DISPLAY_LINES + V_TOTAL_PORCH;
@@ -84,6 +86,27 @@ wire H_tick_next = (hcount == 10'd0) ? 1'b1 : 1'b0;
 
 reg V_tick;
 reg H_tick;
+
+reg vblank_r, blank_r;
+
+assign BLANK = blank_r;
+
+always @(posedge CLK)
+begin
+	if (hcount == H_PIXELS + H_BACK_PORCH - 1)
+		blank_r <= 1'b1;
+	if (hcount == H_BACK_PORCH - 1)
+		blank_r <= vblank_r;
+end
+
+always @(posedge CLK)
+begin
+	if (vcount == V_DISPLAY_LINES + V_BACK_PORCH - 1)
+		vblank_r <= 1'b1;
+	if (vcount == V_BACK_PORCH - 1)
+		vblank_r <= 1'b0;
+end
+
 
 reg video_mode_r, video_mode_r_next; /* 0 = 640 x 480, 1 = 320 x 240 */
 
