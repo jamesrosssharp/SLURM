@@ -190,9 +190,9 @@ wire [5:0] Z;
       R_vga_b <= {8{1'b0}};
     end
     else begin
-      R_vga_r <= (({(CounterX[7:2]) & Z,2'b00}) | W) &  ~A;
-      R_vga_g <= (((CounterX[9:2]) & T) | W) &  ~A;
-      R_vga_b <= (CounterY[9:2]) | W | A;
+      R_vga_r <= 8'hff;
+      R_vga_g <= CounterX[5] ^ CounterY[5] ? 8'hff : 8'h00;
+      R_vga_b <= CounterX[7] ^ CounterY[7] ? 8'hff : 8'h00;
     end
     R_blank <= R_blank_early;
     R_disp <= R_disp_early;
