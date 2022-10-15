@@ -47,6 +47,7 @@ $(SRCDIR)/cpu_writeback.v		\
 $(SRCDIR)/slurm16_soc.v			\
 $(SRCDIR)/interrupt_controller.v	\
 $(SRCDIR)/cpu_instruction_cache.v	\
+picorv32/picorv32-master/picorv32.v	
 
 SLURM_FILES := $(SOURCE)
 
@@ -83,8 +84,8 @@ all: $(BOARD)_$(FPGA_SIZE)f_$(PROJECT).bit
 
 #GAME_BIN=../../games_n_demos/Mandelbrot/build/mandelbrot.bin
 #GAME_BIN=../../games_n_demos/BloodLust/build/bloodlust.bin
-GAME_BIN=../../games_n_demos/PoCman/build/pocman.bin
-#GAME_BIN=../../games_n_demos/ChipTuneMem/build/chiptune.bin
+#GAME_BIN=../../games_n_demos/PoCman/build/pocman.bin
+GAME_BIN=../../games_n_demos/ChipTuneMem/build/chiptune.bin
 #GAME_BIN=../../games_n_demos/DrumMachine/build/drummachine.bin
 
 
@@ -108,6 +109,12 @@ mem_init4.mem: $(GAME_BIN)
 
 bootloader/boot_memory.v: bootloader/Bootloader.asm
 	make -C bootloader
+
+# picorv32
+
+picorv32/picorv32-master/picorv32.v: get_picorv32.sh
+	./get_picorv32.sh 
+
 
 # Yosys synth
 
@@ -133,6 +140,10 @@ prog: program
 program: $(BOARD)_$(FPGA_SIZE)f_$(PROJECT).bit
 	$(UJPROG) $<
 
+# program FLASH over US1 port with ujprog (permanently)
+flash: $(BOARD)_$(FPGA_SIZE)f_$(PROJECT).bit
+	$(UJPROG) -j flash $<
+
 # Clean
 
 JUNK = *~
@@ -140,8 +151,9 @@ JUNK += $(PROJECT).json
 JUNK += $(BOARD)_$(FPGA_SIZE)f_$(PROJECT).config
 JUNK += $(BOARD)_$(FPGA_SIZE)f_$(PROJECT).bit
 JUNK += mem_init* 
+JUNK += picorv32
 
 clean:
-	rm -f $(JUNK)
+	rm -rf $(JUNK)
 	
 

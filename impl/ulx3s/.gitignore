@@ -3,3 +3,4 @@
 *.json
 attic
 mem_init*
+picorv32
