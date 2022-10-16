@@ -50,6 +50,7 @@
 
 %left SHL SHR
 %left PLUS MINUS
+%left MULT DIV
 %left NEG
 
  // define the "terminal symbol" token types I'm going to use (in CAPS
@@ -73,8 +74,13 @@ expressions: expression ;
 expression: 
 	INT    { g_ast.push_number($1); 	} |
 	HEXVAL { g_ast.push_number($1); 	} |	
+	expression SHL expression	{ g_ast.push_lshift(); } |
+	expression SHR expression	{ g_ast.push_rshift(); } |
 	expression PLUS expression	{ g_ast.push_add(); }	 |	
 	expression MINUS expression	{ g_ast.push_subtract(); }  |
+	expression MULT expression	{ g_ast.push_mult(); } |
+	expression DIV expression	{ g_ast.push_div(); } |
+	OPEN_PARENTHESIS expression CLOSE_PARENTHESIS | 
 	MINUS expression %prec NEG 	{ g_ast.push_unary_neg(); }
 	;
 
@@ -86,7 +92,7 @@ body_lines: body_lines body_line | body_line ;
 
 body_line: equ | blank_line;
 
-blank_line: ENDLS;
+blank_line: ENDL;
 
 footer: END ENDLS;
 ENDLS: ENDLS ENDL | ENDL ;

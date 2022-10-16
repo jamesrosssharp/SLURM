@@ -1,3 +1,3 @@
-SOME_EQU equ -2 + 1024 + 512 - 3
+SOME_EQU equ (-2 + 1024 + 512 - (3 << 2)) / 2
 
 .end
