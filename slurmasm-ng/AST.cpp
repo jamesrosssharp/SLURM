@@ -13,12 +13,12 @@ AST::~AST()
 
 }
 	
-void AST::push_stack(StackItem* item)
+void AST::push_stack(ExpressionNode* item)
 {
 	m_stack.push_back(item);	
 }
 
-bool AST::pop_stack(StackItem** item)
+bool AST::pop_stack(ExpressionNode** item)
 {
 	if (m_stack.empty()) return false;
 	*item = m_stack.back();
@@ -28,7 +28,7 @@ bool AST::pop_stack(StackItem** item)
 
 void AST::push_number(int number)
 {
-	StackItem* item = new StackItem();
+	ExpressionNode* item = new ExpressionNode();
 	item->type = ITEM_NUMBER;
 	item->value = number;
 	item->left = item->right = NULL;
@@ -38,7 +38,7 @@ void AST::push_number(int number)
 
 void AST::push_binary(enum ItemType type)
 {
-	StackItem* item = new StackItem();
+	ExpressionNode* item = new ExpressionNode();
 	item->type = type;
 
 	if (!pop_stack(&item->right))
@@ -82,7 +82,7 @@ void AST::push_div()
 
 void AST::push_unary_neg()
 {
-	StackItem* item = new StackItem();
+	ExpressionNode* item = new ExpressionNode();
 	item->type = ITEM_UNARY_NEG;
 
 	if (!pop_stack(&item->left))
@@ -94,7 +94,7 @@ void AST::push_unary_neg()
 
 }
 
-static int recurse_items(struct StackItem* item)
+static int recurse_items(struct ExpressionNode* item)
 {
 	switch (item->type)
 	{
@@ -140,4 +140,8 @@ void AST::addEqu(int linenum, char* name)
 	eval_stack();
 
 }
-	
+
+void AST::addLabel(int linenum, char* name)
+{
+	printf("Adding Label line %d %s\n", linenum, name);
+}	

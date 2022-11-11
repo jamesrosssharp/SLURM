@@ -85,8 +85,8 @@ all: $(BOARD)_$(FPGA_SIZE)f_$(PROJECT).bit
 #GAME_BIN=../../games_n_demos/Mandelbrot/build/mandelbrot.bin
 #GAME_BIN=../../games_n_demos/BloodLust/build/bloodlust.bin
 #GAME_BIN=../../games_n_demos/PoCman/build/pocman.bin
-GAME_BIN=../../games_n_demos/ChipTuneMem/build/chiptune.bin
-#GAME_BIN=../../games_n_demos/DrumMachine/build/drummachine.bin
+#GAME_BIN=../../games_n_demos/ChipTuneMem/build/chiptune.bin
+GAME_BIN=../../games_n_demos/DrumMachine/build/drummachine.bin
 
 
 mem_init1.mem: $(GAME_BIN)

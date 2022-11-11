@@ -90,7 +90,9 @@ equ: STRING EQU expressions ENDL {g_ast.addEqu(line_num, $1); } ;
 body_section: body_lines ;
 body_lines: body_lines body_line | body_line ;
 
-body_line: equ | blank_line;
+body_line: equ | blank_line | label;
+
+label: STRING LABEL ENDL { g_ast.addLabel(line_num, $1); } ;
 
 blank_line: ENDL;
 
