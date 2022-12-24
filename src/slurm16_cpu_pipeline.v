@@ -66,7 +66,7 @@ module slurm16_cpu_pipeline #(parameter REGISTER_BITS = 4, BITS = 16, ADDRESS_BI
 
 	input halt_request,		/* Sleep instruction requests CPU halt - must latch */
 
-	input interrupt,		/* Interrupt request from interrupt controller */
+	input interrupt_req,		/* Interrupt request from interrupt controller */
 	input [3:0] irq,		/* IRQ from interrupt controller */ 
 
 	input load_pc_request,		/* Branch instruction */
@@ -90,7 +90,7 @@ module slurm16_cpu_pipeline #(parameter REGISTER_BITS = 4, BITS = 16, ADDRESS_BI
 );
 
 `include "cpu_decode_functions.v"
-`include "cpu_defs.v"
+`include "slurm16_cpu_defs.v"
 
 
 /* Pipeline state vectors */
@@ -210,7 +210,7 @@ assign pipeline_stage_2 = pip2[INS_MSB : INS_LSB];
 assign pipeline_stage_3 = pip3[INS_MSB : INS_LSB];
 assign pipeline_stage_4 = pip4[INS_MSB : INS_LSB];
 
-assign pc_stage_4 = {pip4[PC_MSB : PC_LSB], 2'b00};
+assign pc_stage_4 = {pip4[PC_MSB : PC_LSB], 1'b0};
 
 assign hazard_reg1 = pip1[HAZ_REG_MSB:HAZ_REG_LSB]; 
 assign hazard_reg2 = pip2[HAZ_REG_MSB:HAZ_REG_LSB];
@@ -258,7 +258,7 @@ begin
 				 *
 				 */ 
 
-				if (interrupt)
+				if (interrupt_req)
 					state_r <= st_execute;
 			end
 			st_execute: begin
@@ -267,7 +267,7 @@ begin
  				 * initiate interrupt. pip3 will => pip4, where we will fetch return address,
  				 * imm_reg, and flags from.
 				 */
-				if (interrupt && interrupt_flag_r && pip3[NOP_BIT] == 1'b0)
+				if (interrupt_req && interrupt_flag_r && pip3[NOP_BIT] == 1'b0)
 					state_r <= st_interrupt;
 				else if (mem_exception)				
 					state_r <= st_mem_except1;
@@ -278,11 +278,11 @@ begin
  				 *	pip0 is valid.
  				 *
  				 */ 
-				else if (hazard_1 && !load_pc_request && pip0[NOP_BIT] == 1'b0)
+				else if (hazard_1 && !load_pc_request && pip0[NOP_BIT] == 1'b0 && pip1[NOP_BIT] == 1'b0)
 					state_r <= st_stall1;
-				else if (hazard_2 && !load_pc_request && pip0[NOP_BIT] == 1'b0)
+				else if (hazard_2 && !load_pc_request && pip0[NOP_BIT] == 1'b0 && pip2[NOP_BIT] == 1'b0)
 					state_r <= st_stall2;
-				else if (hazard_3 && !load_pc_request && pip0[NOP_BIT] == 1'b0)
+				else if (hazard_3 && !load_pc_request && pip0[NOP_BIT] == 1'b0 && pip3[NOP_BIT] == 1'b0)
 					state_r <= st_stall3;
 				else if (halt_request_lat_r)
 					state_r <= st_halt; 
@@ -345,8 +345,8 @@ always @(posedge CLK)
 begin
 	case (state_r)
 		st_reset: begin
-			pc_r <= {(ADDRESS_BITS - 3){1'b0}};
-			prev_pc_r <= {(ADDRESS_BITS - 3){1'b0}};
+			pc_r <= {(ADDRESS_BITS - 1){1'b0}};
+			prev_pc_r <= {(ADDRESS_BITS - 1){1'b0}};
 		end
 		st_pre_execute: begin
 			pc_r <= pc_r + 1;
@@ -354,27 +354,27 @@ begin
 		end
 		st_halt:	
 			if (load_pc_request == 1'b1) begin
-				pc_r <= load_pc_address[ADDRESS_BITS - 1 : 2];
+				pc_r <= load_pc_address[ADDRESS_BITS - 1 : 1];
 			end 
 		st_execute: begin
 			if (load_pc_request == 1'b1) begin
 				prev_pc_r <= pc_r;			
-				pc_r <= load_pc_address[ADDRESS_BITS - 1 : 2];
+				pc_r <= load_pc_address[ADDRESS_BITS - 1 : 1];
 			end else begin
 				pc_r <= pc_r + 1;
 				prev_pc_r <= pc_r;
 			end			
 		end
 		st_interrupt: 	
-			pc_r <= {irq,1'b0};
+			pc_r <= {10'd0, irq,1'b0};
 		st_stall1, st_stall2, st_stall3, st_ins_stall1:
 			if (load_pc_request == 1'b1) begin
-				pc_r <= load_pc_address[ADDRESS_BITS - 1 : 2];
+				pc_r <= load_pc_address[ADDRESS_BITS - 1 : 1];
 			end else 
 				pc_r <= prev_pc_r;
 		st_ins_stall2:
 			if (load_pc_request == 1'b1) begin
-				pc_r <= load_pc_address[ADDRESS_BITS - 1 : 2];
+				pc_r <= load_pc_address[ADDRESS_BITS - 1 : 1];
 			end 
 		st_mem_except1:
 			pc_r <= pip5[PC_MSB:PC_LSB]; 
@@ -489,7 +489,7 @@ end
 always @(posedge CLK)
 begin
 
-	pip3[FLAGS_MSB : INS_LSB] 	<= pip2[COND_PASS_BIT : INS_LSB];
+	pip3[FLAGS_MSB : INS_LSB] 	<= pip2[FLAGS_MSB : INS_LSB];
 	pip3[MEM_RQ_BIT]		<= is_mem_request;
 	pip3[COND_PASS_BIT] 		<= cond_pass_in;
 
@@ -554,10 +554,10 @@ begin
 		else if (pip1[INS_MSB:INS_LSB] == IRET_INSTRUCTION)
 			imm_r <= int_imm_r; 
 		// If there is an un-NOP'ed imm instruction in slot 1, set imm reg
-		else if (pip1[INS_MSB:INS_MSB - 4] == 4'h1 && pip1[NOP_BIT] == 1'b0)
+		else if (pip1[INS_MSB:INS_MSB - 3] == 4'h1 && pip1[NOP_BIT] == 1'b0)
 			imm_r <= pip1[INS_MSB - 4: INS_LSB];
 		// Else if the instruction is not a nop, clear the imm register
-		else if (pip1 != NOP_INSTRUCTION && pip1[NOP_BIT] == 1'b0)
+		else if (pip1[INS_MSB:INS_LSB] != NOP_INSTRUCTION && pip1[NOP_BIT] == 1'b0)
 			imm_r <= {IMM_BITS{1'b0}};		
 
 	end
