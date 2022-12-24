@@ -11,10 +11,10 @@ end
 
 
 wire instruction_request;
-reg instruction_valid = 1'b0;
+reg  instruction_valid = 1'b0;
 wire [14:0] instruction_address;
-reg [15:0] instruction_in = 32'd0;
-reg [14:0] instruction_address_in = 30'd0;
+reg  [15:0] instruction_in = 32'd0;
+reg  [14:0] instruction_address_in = 30'd0;
 
 wire [15:0] pipeline_stage_0;
 wire [15:0] pipeline_stage_1;
@@ -340,15 +340,14 @@ slurm16_cpu_registers reg0
 /*	Create an instruction memory for tests 		*/
 
 reg [15:0] memory [127:0];
-integer i;
 
-initial begin
-	memory[0] = 16'h3013;		/* mov r1, 3 */
-	memory[1] = 16'h3027;		/* mov r2, 7 */
-	memory[2] = 16'h2112;		/* add r1, r2 */
-	for (i = 3; i < 128; i = i + 1)
-		memory[i] = 16'h0000; 
-end
+//initial begin
+//	memory[0] = 16'h3013;		/* mov r1, 3 */
+//	memory[1] = 16'h3027;		/* mov r2, 7 */
+//	memory[2] = 16'h2112;		/* add r1, r2 */
+//	for (i = 3; i < 128; i = i + 1)
+//		memory[i] = 16'h0000; 
+//end
 
 always @(posedge CLK)
 begin
@@ -359,11 +358,13 @@ end
 
 /* instruction memory interface */
 
-
-//initial begin
-//        $display("Loading rom.");
-//        $readmemh("prog.mem", memory);
-//end
+integer i;
+initial begin
+	for (i = 0; i < 128; i = i + 1)
+		memory[i] = 16'h0000; 
+        $display("Loading rom.");
+        $readmemh("ram_image.mem", memory);
+end
 
 /* 		Run some tests on the modules 		*/
 
@@ -402,7 +403,7 @@ end
 initial begin
 	$dumpfile("dump.vcd");
 	$dumpvars(0, tb);
-	# 5000 $finish;
+	# 10000 $finish;
 end
 
 genvar j;

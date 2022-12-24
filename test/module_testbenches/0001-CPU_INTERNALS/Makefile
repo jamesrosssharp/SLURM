@@ -13,11 +13,17 @@ SOURCE= $(SRCDIR)/mult.v			\
  
 PROJECT=cpu_internals
 
+MEMCONV=../../../scripts/genmem.py
+
 all: sim
 
 .PHONY: sim
 
-sim: $(SOURCE) tb.sv 
+ram_image.mem: App.asm
+	../../../slurmasm/slurmasm App.asm -o ram_image
+	python3 $(MEMCONV) ram_image ram_image.mem
+
+sim: $(SOURCE) tb.sv ram_image.mem 
 	iverilog  -g2012 -grelative-include -o $(PROJECT)_design -D SIM -Winfloop tb.sv $(SOURCE)
 	vvp      -n $(PROJECT)_design
 	gtkwave   dump.vcd config.gtkw 

@@ -151,16 +151,12 @@ begin
 		casez(instruction)
 			INSTRUCTION_CASEX_BRANCH: begin
 				if (branch_taken_from_ins(instruction, Z, S, C, V) == 1'b1) begin
-						new_pc_r = regA + imm_reg;
+						new_pc_r = regA + {imm_reg, instruction[3:0]};
 						load_pc_r = 1'b1;
 				end
 			end
 			INSTRUCTION_CASEX_RET_IRET: begin
 				new_pc_r = regA;
-				load_pc_r = 1'b1;
-			end
-			INSTRUCTION_CASEX_INTERRUPT: begin
-				new_pc_r = {10'b0, instruction[3:0], 2'b0};
 				load_pc_r = 1'b1;
 			end
 			default: ;

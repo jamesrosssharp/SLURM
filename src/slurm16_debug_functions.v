@@ -107,7 +107,44 @@ begin
 				ALU5_BSWAP: 
 					disassemble = "bswap";
 			endcase
-		INSTRUCTION_CASEX_BRANCH:;
+		INSTRUCTION_CASEX_BRANCH:
+			case (ins[11:8])
+				COND_EQ:
+					disassemble = "beq";
+				COND_NZ: 
+					disassemble = "bnz";
+				COND_NE: 
+					disassemble = "bne";
+				COND_S:
+					disassemble = "bs";
+				COND_NS: 
+					disassemble = "bns";
+				COND_C:
+					disassemble = "bc";
+				COND_NC: 
+					disassemble = "bnc";
+				COND_V:  
+					disassemble = "bv";
+				COND_NV:  
+					disassemble = "bnv";
+				COND_LT:
+					disassemble = "blt";
+				COND_LE:
+					disassemble = "ble";
+				COND_GT: 
+					disassemble = "bgt";
+				COND_GE:
+					disassemble = "bge";
+				COND_LEU: 
+					disassemble = "bleu";
+				COND_GTU: 
+					disassemble = "bgtu";
+				COND_A:  
+					disassemble = "ba";
+				COND_L: 
+					disassemble = "bl";
+			endcase
+
 		INSTRUCTION_CASEX_LOAD_STORE:
 				disassemble = "ld";
 	endcase

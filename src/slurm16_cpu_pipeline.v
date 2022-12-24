@@ -285,7 +285,9 @@ begin
 				else if (hazard_3 && !load_pc_request && pip0[NOP_BIT] == 1'b0 && pip3[NOP_BIT] == 1'b0)
 					state_r <= st_stall3;
 				else if (halt_request_lat_r)
-					state_r <= st_halt; 
+					state_r <= st_halt;
+				else if (load_pc_request)
+					state_r <= st_pre_execute; 
 			end
 			st_interrupt: begin
 				state_r <= st_execute;	
@@ -476,7 +478,10 @@ begin
 		st_reset, st_pre_execute, st_halt, st_interrupt, st_mem_except1, st_stall1, st_stall2, st_stall3:
 			pip2[NOP_BIT] <= 1'b1;
 		default:
-			pip2[NOP_BIT] <= pip1[NOP_BIT];
+			if (load_pc_request)
+				pip2[NOP_BIT] <= 1'b1;
+			else
+				pip2[NOP_BIT] <= pip1[NOP_BIT];
 	endcase
 end
 
@@ -729,6 +734,8 @@ wire [15:0] debug_op1 = pip1[INS_MSB : INS_LSB];
 wire [15:0] debug_op2 = pip2[INS_MSB : INS_LSB];
 wire [15:0] debug_op3 = pip3[INS_MSB : INS_LSB];
 wire [15:0] debug_op4 = pip4[INS_MSB : INS_LSB];
+
+wire [15:0] debug_pc = {pc_r, 1'b0};
 
 `endif
 
