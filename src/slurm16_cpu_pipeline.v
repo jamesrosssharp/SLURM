@@ -672,6 +672,64 @@ begin
 	endcase
 end
 
+`include "slurm16_debug_functions.v"
+
+reg [135:0] ascii_instruction0;
+reg [135:0] ascii_instruction1;
+reg [135:0] ascii_instruction2;
+reg [135:0] ascii_instruction3;
+reg [135:0] ascii_instruction4;
+
+always @(*)
+begin
+	if (pip0[NOP_BIT])
+		ascii_instruction0[7:0] = "*";
+	else
+		ascii_instruction0[7:0] = " ";
+	ascii_instruction0[135:8] = disassemble(pip0[INS_MSB:INS_LSB]);
+
+	if (pip1[NOP_BIT])
+		ascii_instruction1[7:0] = "*";
+	else
+		ascii_instruction1[7:0] = " ";
+	ascii_instruction1[135:8] = disassemble(pip1[INS_MSB:INS_LSB]);
+
+	if (pip2[NOP_BIT])
+		ascii_instruction2[7:0] = "*";
+	else
+		ascii_instruction2[7:0] = " ";
+	
+	ascii_instruction2[135:8] = disassemble(pip2[INS_MSB:INS_LSB]);
+
+	if (pip3[NOP_BIT])
+		ascii_instruction3[7:0] = "*";
+	else
+		ascii_instruction3[7:0] = " ";
+	
+	ascii_instruction3[135:8] = disassemble(pip3[INS_MSB:INS_LSB]);
+
+	if (pip4[NOP_BIT])
+		ascii_instruction4[7:0] = "*";
+	else
+		ascii_instruction4[7:0] = " ";
+	
+	ascii_instruction4[135:8] = disassemble(pip4[INS_MSB:INS_LSB]);
+end
+
+/* Break up pipeline into debuggable sections */
+
+wire [15:0] debug_pc0 = {pip0[PC_MSB : PC_LSB], 1'b0};
+wire [15:0] debug_pc1 = {pip1[PC_MSB : PC_LSB], 1'b0};
+wire [15:0] debug_pc2 = {pip2[PC_MSB : PC_LSB], 1'b0};
+wire [15:0] debug_pc3 = {pip3[PC_MSB : PC_LSB], 1'b0};
+wire [15:0] debug_pc4 = {pip4[PC_MSB : PC_LSB], 1'b0};
+
+wire [15:0] debug_op0 = pip0[INS_MSB : INS_LSB];
+wire [15:0] debug_op1 = pip1[INS_MSB : INS_LSB];
+wire [15:0] debug_op2 = pip2[INS_MSB : INS_LSB];
+wire [15:0] debug_op3 = pip3[INS_MSB : INS_LSB];
+wire [15:0] debug_op4 = pip4[INS_MSB : INS_LSB];
+
 `endif
 
 endmodule
