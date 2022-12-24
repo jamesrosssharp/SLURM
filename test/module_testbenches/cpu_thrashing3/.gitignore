@@ -1,3 +1,4 @@
 *.vcd
 *_design
 *.mem
+ram_image
