@@ -22,11 +22,6 @@ module slurm16_cpu_writeback #(parameter REGISTER_BITS = 4, BITS = 16, ADDRESS_B
 	input [ADDRESS_BITS - 1: 0] pc_stage4,
 	input [1:0] memory_wr_mask_delayed,
 
-	input C,
-	input Z,
-	input S,
-	input V,
-
 	input load_interrupt_return_address,
 
 	/* conditional instruction passed in stage2 */
@@ -112,7 +107,7 @@ begin
 				reg_out_r		= pc_stage4;
 			end
 			INSTRUCTION_CASEX_COND_MOV: begin
-				if (branch_taken_from_ins(instruction, Z, S, C, V) == 1'b1) begin
+				if (cond_pass == 1'b1) begin
 					reg_wr_addr_r = reg_dest_from_ins(instruction);
 					reg_out_r = aluOut;
 				end

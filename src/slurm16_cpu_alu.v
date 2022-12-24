@@ -1,6 +1,6 @@
 /* alu.v : ALU */
 
-module alu
+module slurm16_cpu_alu
 #(parameter BITS = 16)
 (
 	input CLK,	/* ALU has memory for flags */
@@ -11,12 +11,18 @@ module alu
 	input [4:0]       aluOp,
 	output [BITS-1:0] aluOut,
 
-	input execute,
-
 	output C, /* carry flag */
 	output Z, /* zero flag */
 	output S, /* sign flag */
-	output V  /* signed overflow flag */
+	output V,  /* signed overflow flag */
+
+	input C_in,
+	input Z_in,
+	input S_in,
+	input V_in,
+
+	input load_flags
+
 
 );
 
@@ -90,11 +96,18 @@ begin
 		V_flag_reg <= 1'b0;
 		out_r <= {BITS{1'b0}};
 	end
-	else if(execute) begin
-		C_flag_reg <= C_flag_reg_next;
-		Z_flag_reg <= Z_flag_reg_next;
-		S_flag_reg <= S_flag_reg_next;
-		V_flag_reg <= V_flag_reg_next;
+	else begin
+		if (load_flags == 1'b1) begin
+			C_flag_reg <= C_in;
+			Z_flag_reg <= Z_in;
+			S_flag_reg <= S_in;
+			V_flag_reg <= V_in;
+		end else begin	
+			C_flag_reg <= C_flag_reg_next;
+			Z_flag_reg <= Z_flag_reg_next;
+			S_flag_reg <= S_flag_reg_next;
+			V_flag_reg <= V_flag_reg_next;
+		end
 		out_r <= out;
 	end
 end

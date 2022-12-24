@@ -395,7 +395,7 @@ begin
 	pip0[INS_MSB : INS_LSB] 	<= instruction_in;
 	pip0[PC_MSB : PC_LSB] 		<= instruction_address_in;
 	pip0[IMM_MSB : IMM_LSB] 	<= 12'h000;
-	pip0[HAZ_REG_MSB : HAZ_REG_LSB] <= 4'h00;
+	pip0[HAZ_REG_MSB : HAZ_REG_LSB] <= 4'h0;
 	pip0[HAZ_FLAG_BIT] 		<= 1'b0;
 	pip0[FLAGS_MSB : FLAGS_LSB]	<= { FLAGS_BITS {1'b0}}; 
 	pip0[MEM_RQ_BIT]		<= 1'b0;

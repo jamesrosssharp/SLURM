@@ -24,12 +24,12 @@ module slurm16_cpu_execute #(parameter REGISTER_BITS = 4, BITS = 16, ADDRESS_BIT
 	input [BITS - 1:0] regB,
 
 	/* immediate register */
-	input [BITS - 1:0] imm_reg,
+	input [11:0] imm_reg,
 
 	/* memory op */
 	output load_memory,
 	output store_memory,
-	output [ADDRESS_BITS - 1:0] load_store_address,
+	output [ADDRESS_BITS - 2:0] load_store_address,
 	output [BITS - 1:0] memory_out,
 	output [1:0] memory_wr_mask,
 
@@ -60,19 +60,19 @@ module slurm16_cpu_execute #(parameter REGISTER_BITS = 4, BITS = 16, ADDRESS_BIT
 `include "cpu_decode_functions.v"
 `include "slurm16_cpu_defs.v"
 
-reg [4:0] 		alu_op_r, alu_op_r_next;
+reg [4:0] 		alu_op_r = 5'd0, alu_op_r_next;
 assign aluOp  = alu_op_r;
 
-reg [BITS - 1:0] aluA_r, aluA_r_next;
-reg [BITS - 1:0] aluB_r, aluB_r_next;
+reg [BITS - 1:0] aluA_r = {BITS{1'b0}}, aluA_r_next;
+reg [BITS - 1:0] aluB_r = {BITS{1'b0}}, aluB_r_next;
 
 assign aluA = aluA_r;
 assign aluB = aluB_r;
 
-reg interrupt_flag_set_r, interrupt_flag_set_r_a, interrupt_flag_set_r_b;
+reg interrupt_flag_set_r = 1'b0;
 assign interrupt_flag_set = interrupt_flag_set_r;
 
-reg interrupt_flag_clear_r, interrupt_flag_clear_r_a, interrupt_flag_clear_r_b;
+reg interrupt_flag_clear_r = 1'b0;
 assign interrupt_flag_clear = interrupt_flag_clear_r;
 
 
@@ -95,7 +95,7 @@ end
 
 /* determine ALU operation */
 
-reg cond_pass_r;
+reg cond_pass_r = 1'b0;
 assign cond_pass = cond_pass_r;
 
 always @(*)
@@ -119,7 +119,7 @@ begin
 					alu_op_r_next 	= alu_op_from_ins(instruction);
 				end
 				INSTRUCTION_CASEX_ALUOP_REG_IMM:	begin	/* alu op, reg imm */
-					aluB_r_next 	= imm_reg;
+					aluB_r_next 	= {imm_reg, instruction[3:0]};
 					alu_op_r_next 	= alu_op_from_ins(instruction);
 				end
 				INSTRUCTION_CASEX_THREE_REG_COND_ALU:	begin /* 3 reg alu op */
@@ -204,8 +204,8 @@ end
 
 /* determine load / store */
 
-reg load_memory_r;
-reg store_memory_r;
+reg load_memory_r = 1'b0;
+reg store_memory_r = 1'b0;
 reg [ADDRESS_BITS - 1:0] load_store_address_r;
 reg [BITS - 1:0] memory_out_r;
 
@@ -223,7 +223,7 @@ wire low_bit_of_address = regB[0] ^ imm_reg[0];
 
 always @(*)
 begin
-	load_store_address_r = load_store_addr_w;
+	load_store_address_r = load_store_addr_w[15:1];
 	memory_out_r 		 = {BITS{1'b0}};
 	load_memory_r 		 = 1'b0;
 	store_memory_r 		 = 1'b0;
@@ -291,7 +291,7 @@ end
 
 /* sleep ? */
 
-reg halt_r;
+reg halt_r = 1'b0;
 assign halt = halt_r;
 
 always @(*)

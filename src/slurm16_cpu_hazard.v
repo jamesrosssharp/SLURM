@@ -5,7 +5,7 @@
  *
  */
 
-module cpu_hazard #(parameter BITS = 16, REGISTER_BITS = 4) 
+module slurm16_cpu_hazard #(parameter BITS = 16, REGISTER_BITS = 4) 
 (
 	input [BITS - 1:0] instruction, /* p0 pipeline slot instruction*/
 
@@ -28,14 +28,14 @@ module cpu_hazard #(parameter BITS = 16, REGISTER_BITS = 4)
 );
 
 `include "cpu_decode_functions.v"
-`include "cpu_defs.v"
+`include "slurm16_cpu_defs.v"
 
 // Determine hazard registers to propagate from p0
 
-reg [REGISTER_BITS - 1:0] hazard_reg0_r;
+reg [REGISTER_BITS - 1:0] hazard_reg0_r = {REGISTER_BITS {1'b0}};
 assign 	hazard_reg0 = hazard_reg0_r;
 
-reg 	modifies_flags0_r;
+reg 	modifies_flags0_r = 1'b0;
 assign  modifies_flags0 = modifies_flags0_r;
 
 always @(*)
