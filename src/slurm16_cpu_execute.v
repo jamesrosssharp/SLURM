@@ -4,14 +4,14 @@
  *
  */
 
-module cpu_execute #(parameter REGISTER_BITS = 4, BITS = 16, ADDRESS_BITS = 16)
+module slurm16_cpu_execute #(parameter REGISTER_BITS = 4, BITS = 16, ADDRESS_BITS = 16)
 (
 	input CLK,
 	input RSTb,
 
 	input [BITS - 1:0] instruction,		/* instruction in pipeline slot 2 */
 
-	input is_executing,
+	input is_nop,
 
 	/* flags (for branches) */
 
@@ -58,7 +58,7 @@ module cpu_execute #(parameter REGISTER_BITS = 4, BITS = 16, ADDRESS_BITS = 16)
 );
 
 `include "cpu_decode_functions.v"
-`include "cpu_defs.v"
+`include "slurm16_cpu_defs.v"
 
 reg [4:0] 		alu_op_r, alu_op_r_next;
 assign aluOp  = alu_op_r;
@@ -106,12 +106,12 @@ begin
 	alu_op_r_next = alu_op_r; 
 	cond_pass_r = 1'b0;
 	
-	if (is_executing) begin	
+	if (!is_nop) begin	
 			aluA_r_next = regA;
 			aluB_r_next = regB;
 			alu_op_r_next = 5'd0; /* mov - noop */
 
-			casex (instruction)
+			casez (instruction)
 				INSTRUCTION_CASEX_ALUOP_SINGLE_REG:	begin /* alu op, reg */
 					alu_op_r_next 	= single_reg_alu_op_from_ins(instruction);
 				end
@@ -147,8 +147,8 @@ begin
 	load_pc_r = 1'b0;
 	new_pc_r = {ADDRESS_BITS{1'b0}};
 
-	if (is_executing) begin
-		casex(instruction)
+	if (! is_nop) begin
+		casez(instruction)
 			INSTRUCTION_CASEX_BRANCH: begin
 				if (branch_taken_from_ins(instruction, Z, S, C, V) == 1'b1) begin
 						new_pc_r = regA + imm_reg;
@@ -163,6 +163,7 @@ begin
 				new_pc_r = {10'b0, instruction[3:0], 2'b0};
 				load_pc_r = 1'b1;
 			end
+			default: ;
 		endcase
 	end
 end
@@ -186,8 +187,8 @@ begin
 	port_rd_r = 1'b0;
 	port_wr_r = 1'b0;
 
-	if (is_executing) begin
-		casex(instruction)
+	if (! is_nop) begin
+		casez(instruction)
 			INSTRUCTION_CASEX_PEEK_POKE: begin
 				port_address_r = regB + imm_reg;
 				if (is_io_poke_from_ins(instruction) == 1'b1) begin
@@ -196,6 +197,7 @@ begin
 				end else
 					port_rd_r = 1'b1;
 			end
+			default: ;
 		endcase
 	end
 end
@@ -227,8 +229,8 @@ begin
 	store_memory_r 		 = 1'b0;
 	memory_wr_mask_r	 = 2'b11;
 
-	if (is_executing) begin
-		casex(instruction)
+	if (! is_nop) begin
+		casez(instruction)
 			INSTRUCTION_CASEX_BYTE_LOAD_STORE, INSTRUCTION_CASEX_BYTE_LOAD_SX: begin
 				if (low_bit_of_address == 1'b1)
 					memory_wr_mask_r = 2'b10;
@@ -253,6 +255,7 @@ begin
 				end else
 					load_memory_r = 1'b1;
 			end
+			default: ;
 		endcase
 	end
 end
@@ -264,25 +267,26 @@ begin
 	interrupt_flag_set_r = 1'b0;
 	interrupt_flag_clear_r = 1'b0;
 
-	casex (instruction) 
-		INSTRUCTION_CASEX_INTERRUPT_EN: begin
-			if (is_interrupt_enable_disable(instruction) == 1'b0)
-				interrupt_flag_clear_r = 1'b1;
-			else 
+	if (! is_nop)
+		casez (instruction) 
+			INSTRUCTION_CASEX_INTERRUPT_EN: begin
+				if (is_interrupt_enable_disable(instruction) == 1'b0)
+					interrupt_flag_clear_r = 1'b1;
+				else 
+					interrupt_flag_set_r = 1'b1;
+			end
+			INSTRUCTION_CASEX_RET_IRET:	begin	/* iret? */
+				if (is_ret_or_iret(instruction) == 1'b1)
+					interrupt_flag_set_r = 1'b1; // set on iret
+			end
+			INSTRUCTION_CASEX_SLEEP: begin
 				interrupt_flag_set_r = 1'b1;
-		end
-		INSTRUCTION_CASEX_RET_IRET:	begin	/* iret? */
-			if (is_ret_or_iret(instruction) == 1'b1)
-				interrupt_flag_set_r = 1'b1; // set on iret
-		end
-		INSTRUCTION_CASEX_SLEEP: begin
-			interrupt_flag_set_r = 1'b1;
-		end
-		INSTRUCTION_CASEX_INTERRUPT: begin
-			interrupt_flag_clear_r = 1'b1;
-		end
-		default: ;
-	endcase
+			end
+			INSTRUCTION_CASEX_INTERRUPT: begin
+				interrupt_flag_clear_r = 1'b1;
+			end
+			default: ;
+		endcase
 end
 
 /* sleep ? */
@@ -294,11 +298,13 @@ always @(*)
 begin
 	halt_r = 1'b0;
 
-	casex(instruction)
-		INSTRUCTION_CASEX_SLEEP: begin
-			halt_r = 1'b1;	
-		end
-	endcase
+	if (! is_nop)
+		casez(instruction)
+			INSTRUCTION_CASEX_SLEEP: begin
+				halt_r = 1'b1;	
+			end
+			default: ;
+		endcase
 end
 
 endmodule
