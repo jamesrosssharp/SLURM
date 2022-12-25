@@ -149,7 +149,7 @@ reg [ADDRESS_BITS - 2 : 0] prev_pc_r = {(ADDRESS_BITS - 1){1'b0}};
 
 reg [IMM_BITS - 1 : 0] imm_r = {IMM_BITS{1'b0}};
 
-assign imm_reg = imm_r;
+assign imm_reg = pip2[IMM_MSB : IMM_LSB];
 
 reg halt_request_lat_r;
 
@@ -454,7 +454,7 @@ begin
 		st_stall1, st_stall2, st_stall3:	;	// Hold instruction in the slot
 		default: begin
 			pip1[PC_MSB : INS_LSB] 		<= pip0[PC_MSB : INS_LSB];
-			pip1[IMM_MSB : IMM_LSB] 	<= imm_r;
+			//pip1[IMM_MSB : IMM_LSB] 	<= imm_r;
 			pip1[HAZ_REG_MSB : HAZ_REG_LSB] <= hazard_reg0;
 			pip1[HAZ_FLAG_BIT] 		<= modifies_flags0;
 		end
@@ -496,6 +496,7 @@ begin
 	pip2[FLAG_V]			<= V_in;
 	pip2[MEM_RQ_BIT]		<= 1'b0;
 	pip2[COND_PASS_BIT] 		<= 1'b0;
+	pip2[IMM_MSB : IMM_LSB] 	<= imm_r;
 
 	// Nop out instruction in st_reset, st_halt, st_interrupt, st_mem_except1, st_stall{x}
 	case (state_r)
@@ -522,9 +523,9 @@ begin
 	pip3[MEM_RQ_BIT]		<= is_mem_request;
 	pip3[COND_PASS_BIT] 		<= cond_pass_in;
 
-	// Nop out instruction in st_reset, st_interrupt, st_mem_except1
+	// Nop out instruction in st_reset, st_interrupt, st_mem_except1, st_halt
 	case (state_r)
-		st_reset, st_pre_execute, st_interrupt, st_mem_except1:
+		st_reset, st_pre_execute, st_interrupt, st_mem_except1, st_halt:
 			pip3[NOP_BIT] <= 1'b1;
 		default:
 			pip3[NOP_BIT] <= pip2[NOP_BIT];
@@ -543,7 +544,7 @@ begin
 
 	// Nop out instruction in st_reset, st_interrupt, st_mem_except1
 	case (state_r)
-		st_reset, st_pre_execute, st_interrupt, st_mem_except1:
+		st_reset, st_pre_execute, st_interrupt, st_mem_except1, st_halt:
 			pip4[NOP_BIT] <= 1'b1;
 		default:
 			pip4[NOP_BIT] <= pip3[NOP_BIT];
@@ -580,7 +581,7 @@ begin
 		if (state_r == st_mem_except1)
 			imm_r <= pip5[IMM_MSB:IMM_LSB];
 		// Else if we have an iret, reload the imm reg
-		else if (pip1[INS_MSB:INS_LSB] == IRET_INSTRUCTION)
+		else if (pip2[INS_MSB:INS_LSB] == IRET_INSTRUCTION && pip2[NOP_BIT] == 1'b0)
 			imm_r <= int_imm_r; 
 		// If there is an un-NOP'ed imm instruction in slot 1, set imm reg
 		else if (pip1[INS_MSB:INS_MSB - 3] == 4'h1 && pip1[NOP_BIT] == 1'b0)
@@ -639,7 +640,7 @@ begin
 	S_out = int_S_r;
 
 	// If IRET, reload flags from shadow set
-	if (pip2[INS_MSB : INS_LSB] == IRET_INSTRUCTION) begin
+	if (pip2[INS_MSB : INS_LSB] == IRET_INSTRUCTION && !pip2[NOP_BIT]) begin
 		flags_load = 1'b1;
 	end
  	// If mem except, reload flags from preserved flags in pip5
