@@ -271,8 +271,6 @@ begin
 					state_r <= st_interrupt;
 				else if (mem_exception)				
 					state_r <= st_mem_except1;
-				else if (instruction_valid == 1'b0)
-					state_r <= st_ins_stall1;
 				/*
  				 *	Stall on hazard, iff we are not taking a branch and the instruction in
  				 *	pip0 is valid.
@@ -284,6 +282,8 @@ begin
 					state_r <= st_stall2;
 				else if (hazard_3 && !load_pc_request && pip0[NOP_BIT] == 1'b0 && pip3[NOP_BIT] == 1'b0)
 					state_r <= st_stall3;
+				else if (instruction_valid == 1'b0)
+					state_r <= st_ins_stall1;
 				else if (halt_request_lat_r)
 					state_r <= st_halt;
 				else if (load_pc_request)
@@ -357,11 +357,18 @@ begin
 		st_halt:	
 			if (load_pc_request == 1'b1) begin
 				pc_r <= load_pc_address[ADDRESS_BITS - 1 : 1];
+				prev_pc_r <= load_pc_address[ADDRESS_BITS - 1 : 1]; 
 			end 
 		st_execute: begin
 			if (load_pc_request == 1'b1) begin
-				prev_pc_r <= pc_r;			
 				pc_r <= load_pc_address[ADDRESS_BITS - 1 : 1];
+				prev_pc_r <= load_pc_address[ADDRESS_BITS - 1 : 1]; 
+			end 
+			else if (instruction_valid == 1'b0 ||
+				(hazard_1 && !load_pc_request && pip0[NOP_BIT] == 1'b0 && pip1[NOP_BIT] == 1'b0) ||
+				(hazard_2 && !load_pc_request && pip0[NOP_BIT] == 1'b0 && pip2[NOP_BIT] == 1'b0) ||
+				(hazard_3 && !load_pc_request && pip0[NOP_BIT] == 1'b0 && pip3[NOP_BIT] == 1'b0)) begin
+				pc_r <= prev_pc_r;
 			end else begin
 				pc_r <= pc_r + 1;
 				prev_pc_r <= pc_r;
@@ -369,18 +376,35 @@ begin
 		end
 		st_interrupt: 	
 			pc_r <= {10'd0, irq,1'b0};
-		st_stall1, st_stall2, st_stall3, st_ins_stall1:
+		st_stall1, st_stall2, st_ins_stall1:
 			if (load_pc_request == 1'b1) begin
 				pc_r <= load_pc_address[ADDRESS_BITS - 1 : 1];
-			end else 
-				pc_r <= prev_pc_r;
+				prev_pc_r <= load_pc_address[ADDRESS_BITS - 1 : 1]; 
+			end
+		st_stall3:
+			if (load_pc_request == 1'b1) begin
+				pc_r <= load_pc_address[ADDRESS_BITS - 1 : 1];
+				prev_pc_r <= load_pc_address[ADDRESS_BITS - 1 : 1]; 
+			end 
+			else begin
+				pc_r <= pc_r + 1;
+				prev_pc_r <= pc_r;
+			end
 		st_ins_stall2:
 			if (load_pc_request == 1'b1) begin
 				pc_r <= load_pc_address[ADDRESS_BITS - 1 : 1];
+				prev_pc_r <= load_pc_address[ADDRESS_BITS - 1 : 1]; 
 			end 
+			else if (instruction_valid && !mem_exception) begin
+				pc_r <= pc_r + 1;
+				prev_pc_r <= pc_r;
+			end
 		st_mem_except1:
 			pc_r <= pip5[PC_MSB:PC_LSB]; 
-		st_mem_except2:;
+		st_mem_except2: begin
+			pc_r <= pc_r + 1;
+			prev_pc_r <= pc_r;
+		end
 		default:;
 	endcase
 end

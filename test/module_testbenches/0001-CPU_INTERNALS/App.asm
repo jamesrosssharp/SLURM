@@ -7,6 +7,7 @@
 loop:
 	add r1, r2
 	sub r3, 1
+	nop
 	bnz loop
 
 	sleep	

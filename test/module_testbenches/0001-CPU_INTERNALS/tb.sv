@@ -351,7 +351,7 @@ reg [15:0] memory [127:0];
 
 always @(posedge CLK)
 begin
-	instruction_valid <= instruction_request;
+	//instruction_valid <= instruction_request;
 	instruction_in <= memory[instruction_address[6:0]];
 	instruction_address_in <= instruction_address;
 end
@@ -373,6 +373,8 @@ reg [63:0] pass_fail = "";
 
 initial begin
 	
+	instruction_valid <= 1'b1;
+
 	#200
 	
 	/* 1. Pass in add r3, r4, r5 
@@ -387,7 +389,14 @@ initial begin
 	test_name <= "Test 1";
 
 
-	# 100;
+	# 3000;
+	
+	instruction_valid <= 1'b0;
+
+	# 500;
+	
+	instruction_valid <= 1'b1;
+
 	//assert(aluOut == 32'd7) else $fatal;
 
 	//if (aluOut == 32'd7 && C == 1'b0 && Z == 1'b0 && V == 1'b0 && S == 1'b0)
