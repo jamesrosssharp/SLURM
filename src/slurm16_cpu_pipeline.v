@@ -149,9 +149,11 @@ reg [ADDRESS_BITS - 2 : 0] prev_pc_r = {(ADDRESS_BITS - 1){1'b0}};
 
 reg [IMM_BITS - 1 : 0] imm_r = {IMM_BITS{1'b0}};
 
-assign imm_reg = pip2[IMM_MSB : IMM_LSB];
+assign imm_reg = imm_r;
 
 reg halt_request_lat_r;
+wire halt = halt_request_lat_r || halt_request;
+
 
 /*
  *	
@@ -159,11 +161,11 @@ reg halt_request_lat_r;
  *
  */
 
-reg [IMM_BITS - 1 : 0] int_imm_r;
-reg int_C_r;
-reg int_S_r;
-reg int_Z_r;
-reg int_V_r;
+reg [IMM_BITS - 1 : 0] int_imm_r = {IMM_BITS{1'b0}};
+reg int_C_r = 1'b0;
+reg int_S_r = 1'b0;
+reg int_Z_r = 1'b0;
+reg int_V_r = 1'b0;
 
 /*
  *	Combinational logic
@@ -188,6 +190,7 @@ localparam st_ins_stall2 = 4'd8;
 localparam st_mem_except1 = 4'd9;
 localparam st_mem_except2 = 4'd10;
 localparam st_pre_execute = 4'd11;
+localparam st_halt2 = 4'd12;
 
 reg [3:0] state_r;
 
@@ -224,7 +227,7 @@ assign load_return_address = (state_r == st_interrupt);
 assign cond_pass_stage4 = pip4[COND_PASS_BIT];
 
 assign nop_stage_2 = pip2[NOP_BIT];
-assign nop_stage_4 = pip4[NOP_BIT];
+assign nop_stage_4 = pip4[NOP_BIT] || mem_exception;
 
 /*	
  *	Pipeline state machine 		
@@ -247,8 +250,9 @@ begin
 			st_pre_execute: begin
 				state_r <= st_execute;
 			end	
-			st_halt: begin
-
+			st_halt: 
+				state_r <= st_halt2;
+			st_halt2: begin
 				/*
 				 *	We could have a memory exception when in state halt.
 				 *	We will ignore this corner case and make sure that we
@@ -259,7 +263,7 @@ begin
 				 */ 
 
 				if (interrupt_req)
-					state_r <= st_execute;
+					state_r <= st_pre_execute;
 			end
 			st_execute: begin
 				
@@ -284,7 +288,7 @@ begin
 					state_r <= st_stall3;
 				else if (instruction_valid == 1'b0)
 					state_r <= st_ins_stall1;
-				else if (halt_request_lat_r)
+				else if (halt)
 					state_r <= st_halt;
 				else if (load_pc_request)
 					state_r <= st_pre_execute; 
@@ -354,11 +358,11 @@ begin
 			pc_r <= pc_r + 1;
 			prev_pc_r <= pc_r;
 		end
-		st_halt:	
-			if (load_pc_request == 1'b1) begin
-				pc_r <= load_pc_address[ADDRESS_BITS - 1 : 1];
-				prev_pc_r <= load_pc_address[ADDRESS_BITS - 1 : 1]; 
-			end 
+		st_halt: begin	
+			pc_r <= pip2[PC_MSB : PC_LSB];
+			prev_pc_r <= pip2[PC_MSB : PC_LSB];
+		end
+		st_halt2:	; 
 		st_execute: begin
 			if (load_pc_request == 1'b1) begin
 				pc_r <= load_pc_address[ADDRESS_BITS - 1 : 1];
@@ -374,8 +378,10 @@ begin
 				prev_pc_r <= pc_r;
 			end			
 		end
-		st_interrupt: 	
+		st_interrupt: begin	
 			pc_r <= {10'd0, irq,1'b0};
+			prev_pc_r <= {10'd0, irq, 1'b0};
+		end
 		st_stall1, st_stall2, st_ins_stall1:
 			if (load_pc_request == 1'b1) begin
 				pc_r <= load_pc_address[ADDRESS_BITS - 1 : 1];
@@ -399,8 +405,10 @@ begin
 				pc_r <= pc_r + 1;
 				prev_pc_r <= pc_r;
 			end
-		st_mem_except1:
-			pc_r <= pip5[PC_MSB:PC_LSB]; 
+		st_mem_except1: begin
+			pc_r <= pip5[PC_MSB:PC_LSB];
+			prev_pc_r <= pip5[PC_MSB:PC_LSB]; 
+		end
 		st_mem_except2: begin
 			pc_r <= pc_r + 1;
 			prev_pc_r <= pc_r;
@@ -429,7 +437,7 @@ begin
 
 	// We nop out pip0 in every state except execute
 	case (state_r)
-		st_reset, st_pre_execute, st_halt, st_stall1, st_stall2, st_stall3, st_ins_stall1, st_mem_except1, st_mem_except2, st_interrupt, st_ins_stall2:
+		st_reset, st_pre_execute, st_halt, st_halt2, st_stall1, st_stall2, st_stall3, st_ins_stall1, st_mem_except1, st_mem_except2, st_interrupt, st_ins_stall2:
 			pip0[NOP_BIT] <= 1'b1;
 		default:
 			if (load_pc_request)
@@ -466,7 +474,7 @@ begin
 
 	// We nop out pip1 in st_reset, st_halt, st_interrupt, st_mem_except1 and st_ins_stall1 (because instruction coming in from pip0 is invalid if cache missed)
 	case (state_r)
-		st_reset, st_pre_execute, st_halt, st_interrupt, st_mem_except1, st_ins_stall1:
+		st_reset, st_pre_execute, st_halt, st_halt2, st_interrupt, st_mem_except1, st_ins_stall1:
 			pip1[NOP_BIT] <= 1'b1;
 		/* preserve nop bit in stall states unless branch taken */
 		st_stall1, st_stall2, st_stall3: 
@@ -496,11 +504,10 @@ begin
 	pip2[FLAG_V]			<= V_in;
 	pip2[MEM_RQ_BIT]		<= 1'b0;
 	pip2[COND_PASS_BIT] 		<= 1'b0;
-	pip2[IMM_MSB : IMM_LSB] 	<= imm_r;
 
-	// Nop out instruction in st_reset, st_halt, st_interrupt, st_mem_except1, st_stall{x}
+	// Nop out instruction in st_reset, st_halt, st_halt2, st_interrupt, st_mem_except1, st_stall{x}
 	case (state_r)
-		st_reset, st_pre_execute, st_halt, st_interrupt, st_mem_except1, st_stall1, st_stall2, st_stall3:
+		st_reset, st_pre_execute, st_halt, st_halt2, st_interrupt, st_mem_except1, st_stall1, st_stall2, st_stall3:
 			pip2[NOP_BIT] <= 1'b1;
 		default:
 			if (load_pc_request)
@@ -522,10 +529,11 @@ begin
 	pip3[FLAGS_MSB : INS_LSB] 	<= pip2[FLAGS_MSB : INS_LSB];
 	pip3[MEM_RQ_BIT]		<= is_mem_request;
 	pip3[COND_PASS_BIT] 		<= cond_pass_in;
-
-	// Nop out instruction in st_reset, st_interrupt, st_mem_except1, st_halt
+	pip3[IMM_MSB : IMM_LSB] 	<= imm_r;
+	
+	// Nop out instruction in st_reset, st_interrupt, st_mem_except1, st_halt, st_halt2
 	case (state_r)
-		st_reset, st_pre_execute, st_interrupt, st_mem_except1, st_halt:
+		st_reset, st_pre_execute, st_interrupt, st_mem_except1, st_halt, st_halt2:
 			pip3[NOP_BIT] <= 1'b1;
 		default:
 			pip3[NOP_BIT] <= pip2[NOP_BIT];
@@ -544,7 +552,7 @@ begin
 
 	// Nop out instruction in st_reset, st_interrupt, st_mem_except1
 	case (state_r)
-		st_reset, st_pre_execute, st_interrupt, st_mem_except1, st_halt:
+		st_reset, st_pre_execute, st_interrupt, st_mem_except1, st_halt, st_halt2:
 			pip4[NOP_BIT] <= 1'b1;
 		default:
 			pip4[NOP_BIT] <= pip3[NOP_BIT];
@@ -583,11 +591,11 @@ begin
 		// Else if we have an iret, reload the imm reg
 		else if (pip2[INS_MSB:INS_LSB] == IRET_INSTRUCTION && pip2[NOP_BIT] == 1'b0)
 			imm_r <= int_imm_r; 
-		// If there is an un-NOP'ed imm instruction in slot 1, set imm reg
-		else if (pip1[INS_MSB:INS_MSB - 3] == 4'h1 && pip1[NOP_BIT] == 1'b0)
-			imm_r <= pip1[INS_MSB - 4: INS_LSB];
+		// If there is an un-NOP'ed imm instruction in slot 2, set imm reg
+		else if (pip2[INS_MSB:INS_MSB - 3] == 4'h1 && pip2[NOP_BIT] == 1'b0)
+			imm_r <= pip2[INS_MSB - 4: INS_LSB];
 		// Else if the instruction is not a nop, clear the imm register
-		else if (pip1[INS_MSB:INS_LSB] != NOP_INSTRUCTION && pip1[NOP_BIT] == 1'b0)
+		else if (pip2[INS_MSB:INS_LSB] != NOP_INSTRUCTION && pip2[NOP_BIT] == 1'b0)
 			imm_r <= {IMM_BITS{1'b0}};		
 
 	end

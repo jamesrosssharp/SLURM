@@ -356,6 +356,20 @@ begin
 	instruction_address_in <= instruction_address;
 end
 
+reg [14:0] load_store_address_x;
+reg [14:0] load_memory_x;
+
+always @(posedge CLK)
+begin
+	load_store_address_x <= load_store_address;
+	load_memory_x <= load_memory;
+
+	if (load_memory_x) begin
+		memory_in <= memory[load_store_address_x];		
+	end		
+
+end
+
 /* instruction memory interface */
 
 integer i;
@@ -374,6 +388,7 @@ reg [63:0] pass_fail = "";
 initial begin
 	
 	instruction_valid <= 1'b1;
+	memory_request_successful <= 1'b0;
 
 	#200
 	
@@ -388,6 +403,9 @@ initial begin
 	pass_fail <= "CHK";
 	test_name <= "Test 1";
 
+	# 2000;
+	
+	memory_request_successful <= 1'b1;
 
 	# 3000;
 	
@@ -396,6 +414,15 @@ initial begin
 	# 500;
 	
 	instruction_valid <= 1'b1;
+
+	#1000;
+
+	interrupt <= 1'b1;
+	irq <= 4'd1;
+
+	#1000;
+	interrupt <= 1'b0;
+
 
 	//assert(aluOut == 32'd7) else $fatal;
 
@@ -412,7 +439,7 @@ end
 initial begin
 	$dumpfile("dump.vcd");
 	$dumpvars(0, tb);
-	# 10000 $finish;
+	# 15000 $finish;
 end
 
 genvar j;

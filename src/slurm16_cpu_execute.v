@@ -213,8 +213,8 @@ assign store_memory = store_memory_r;
 assign load_store_address = load_store_address_r;
 assign memory_out = memory_out_r;
 
-wire [15:0] load_store_addr_w = regB + imm_reg;
-wire low_bit_of_address = regB[0] ^ imm_reg[0];
+wire [15:0] load_store_addr_w = regB + {imm_reg, instruction[3:0]};
+wire low_bit_of_address = regB[0] ^ instruction[0];
 
 
 always @(*)
