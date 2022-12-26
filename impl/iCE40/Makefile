@@ -8,7 +8,7 @@ AS=../../slurmasm/slurmasm
 CC=../../slurmcc/lcc/lcc/build/rcc
 
 SOURCE=$(SRCDIR)/alpha.v		\
-$(SRCDIR)/alu.v				\
+$(SRCDIR)/slurm16_cpu_alu.v				\
 $(SRCDIR)/audio.v			\
 $(SRCDIR)/background_controller2.v	\
 $(SRCDIR)/baudgen.v			\
@@ -22,7 +22,6 @@ $(SRCDIR)/memory_controller.v		\
 memory.v				\
 mult.v					\
 unsigned_mult.v				\
-$(SRCDIR)/port_controller.v		\
 pwm_led.v				\
 boot_memory.v				\
 $(SRCDIR)/spi_flash.v			\
@@ -30,19 +29,24 @@ $(SRCDIR)/sprite_controller.v		\
 trace.v					\
 $(SRCDIR)/uart_tx.v			\
 $(SRCDIR)/uart.v			\
-$(SRCDIR)/cpu_hazard.v			\
-$(SRCDIR)/cpu_pipeline.v		\
-$(SRCDIR)/cpu_top.v			\
-$(SRCDIR)/cpu_decode.v			\
-$(SRCDIR)/cpu_execute.v			\
+$(SRCDIR)/slurm16_cpu_hazard.v			\
+$(SRCDIR)/slurm16_cpu_pipeline.v		\
+$(SRCDIR)/slurm16_cpu_top.v			\
+$(SRCDIR)/slurm16_cpu_decode.v			\
+$(SRCDIR)/slurm16_cpu_execute.v			\
 $(SRCDIR)/cpu_memory_interface.v	\
 $(SRCDIR)/cpu_port_interface.v		\
-$(SRCDIR)/cpu_register_file.v		\
-$(SRCDIR)/cpu_writeback.v		\
+$(SRCDIR)/slurm16_cpu_registers.v		\
+$(SRCDIR)/slurm16_cpu_writeback.v		\
 $(SRCDIR)/slurm16_soc.v			\
 $(SRCDIR)/interrupt_controller.v	\
 $(SRCDIR)/cpu_instruction_cache.v	\
+$(SRCDIR)/port_controller.v		\
 slurm16_ice40.v 
+
+
+
+
 
 ICEPACK = icepack
 ICETIME = icetime

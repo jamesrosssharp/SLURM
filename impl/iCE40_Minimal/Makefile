@@ -86,7 +86,7 @@ boot_memory.v: rom_image.mem
 	xxd -i $< > $@
 
 $(PROJ).json: $(SOURCE) rom_image.mem
-	yosys -p 'verilog_defines -DWITHOUT_UART -DWITHOUT_GFX -DWITHOUT_AUDIO -DWITHOUT_PWM -DWITHOUT_INTERRUPT_CONTROLLER -DWITHOUT_SPI_FLASH -DWITHOUT_SCRATCH_PAD; verilog_defines -list; read_verilog $(SRCDIR)/port_controller.v; debug synth_ice40 -top top -json $@' $(SOURCE)
+	yosys -p 'verilog_defines   -DWITHOUT_GFX -DWITHOUT_AUDIO -DWITHOUT_PWM -DWITHOUT_INTERRUPT_CONTROLLER -DWITHOUT_SPI_FLASH -DWITHOUT_SCRATCH_PAD; verilog_defines -list; read_verilog $(SRCDIR)/port_controller.v; debug synth_ice40 -top top -json $@' $(SOURCE)
 
 #.PHONY: SCC
 #SCC:	$(SOURCE) rom_image.mem
