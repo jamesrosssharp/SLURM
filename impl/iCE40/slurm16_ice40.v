@@ -134,9 +134,9 @@ assign flash_miso = SPI_FLASH_MISO;
 
 assign UART_TX = uart_tx;
 
-assign RED_LED   = led_r;
-assign GREEN_LED = led_g;
-assign BLUE_LED  = led_b;
+assign RED_LED   = 1'b1; //led_r;
+assign GREEN_LED = 1'b1; //led_g;
+assign BLUE_LED  = 1'b1; //led_b;
 
 assign BB = vid_b;
 assign RR = vid_r;
@@ -152,6 +152,5 @@ assign DAC_SDIN = i2s_data;
 assign SPI_FLASH_MOSI = flash_mosi;
 assign SPI_FLASH_SCK = flash_sclk;
 assign SPI_FLASH_CSb = flash_csb;
-
 
 endmodule

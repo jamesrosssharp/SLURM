@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Mon Dec 26 02:13:52 2022
+[*] Mon Dec 26 04:24:02 2022
 [*]
 [dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/004_GFX/dump.vcd"
-[dumpfile_mtime] "Mon Dec 26 02:12:54 2022"
-[dumpfile_size] 81963362
+[dumpfile_mtime] "Mon Dec 26 04:20:21 2022"
+[dumpfile_size] 81874886
 [savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/004_GFX/config.gtkw"
-[timestart] 50586000
+[timestart] 2644687300
 [size] 1920 992
 [pos] 0 0
-*-18.194408 52210000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-15.194408 2644900000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tb.
 [treeopen] tb.cpu0.
 [treeopen] tb.cpu0.cpu0.
@@ -81,7 +81,7 @@ tb.cpu0.cpu0.pip0.debug_pc[15:0]
 tb.cpu0.cpu0.pip0.imm_r[11:0]
 @200
 -
-@29
+@28
 tb.cpu0.cpu0.pip0.load_pc_request
 @200
 -
@@ -168,6 +168,16 @@ tb.cpu0.cpu0.alu0.aluOp[4:0]
 tb.cpu0.cpu0.pip0.cond_pass_stage4
 @200
 -
+@29
+tb.vid_vsync
+@28
+tb.vid_hsync
+tb.vid_blank
+@22
+tb.vid_b[3:0]
+tb.vid_g[3:0]
+tb.vid_r[3:0]
+@200
 -
 [pattern_trace] 1
 [pattern_trace] 0

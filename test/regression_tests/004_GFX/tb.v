@@ -82,7 +82,7 @@ end
 
 integer k;
 initial begin
-	#2644800; 
+	#2644900; 
 	for (k = 0; k < 10; k += 1) begin
 			$fwrite(f, "%0x", vid_r);
 			$fwrite(f, "%0x", vid_g);

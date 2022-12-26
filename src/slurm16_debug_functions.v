@@ -144,7 +144,11 @@ begin
 				COND_L: 
 					disassemble = "bl";
 			endcase
-
+		INSTRUCTION_CASEX_BYTE_LOAD_STORE:	
+			if (ins[12] == 1'b0)
+				disassemble = "ldb";
+			else
+				disassemble = "stb";
 		INSTRUCTION_CASEX_LOAD_STORE:
 			if (ins[12] == 1'b0)
 				disassemble = "ld";

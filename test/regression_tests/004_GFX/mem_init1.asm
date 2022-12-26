@@ -61,7 +61,7 @@ GFX_COLLISION_LIST equ GFX_BASE + 0x0700
 		// Code
 
 		mov r1, cpr_list_1
-		mov r2, cpr_list_1_end - cpr_list_1
+		mov r2, (cpr_list_1_end - cpr_list_1) / 2
 		mov r6, r0
 cpr_loop:
 		ld r3, [r1, 0]
