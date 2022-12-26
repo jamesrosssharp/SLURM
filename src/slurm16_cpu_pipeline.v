@@ -11,9 +11,9 @@ module slurm16_cpu_pipeline #(parameter REGISTER_BITS = 4, BITS = 16, ADDRESS_BI
 	input RSTb,
 
 	/* Instruction input */
-	output reg 	instruction_request,	/* asserted if the pipeline is fetching instructions */
+	output 	instruction_request,	/* asserted if the pipeline is fetching instructions */
 	input 		instruction_valid,	/* asserted if the instruction requested was fetched from memory. deasserted on e.g. cache miss */
-	output reg [ADDRESS_BITS - 2 : 0] 	instruction_address, /* the address to fetch the next instruction from */
+	output [ADDRESS_BITS - 2 : 0] 	instruction_address, /* the address to fetch the next instruction from */
 	input  [BITS - 1 : 0] 			instruction_in,
 	input  [ADDRESS_BITS - 2 : 0]		instruction_address_in,
 
@@ -294,7 +294,7 @@ begin
 					state_r <= st_pre_execute; 
 			end
 			st_interrupt: begin
-				state_r <= st_execute;	
+				state_r <= st_pre_execute;	
 			end
 			st_stall1: begin
 				if (mem_exception)

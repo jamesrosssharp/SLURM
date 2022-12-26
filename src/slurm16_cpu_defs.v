@@ -11,21 +11,21 @@ localparam R0 				= {REGISTER_BITS{1'b0}};
 localparam IRET_INSTRUCTION		= 16'h0101;
 
 localparam INSTRUCTION_CASEX_NOP			= NOP_INSTRUCTION;
-localparam INSTRUCTION_CASEX_RET_IRET			= 16'h01??;
-localparam INSTRUCTION_CASEX_ALUOP_SINGLE_REG		= 16'h04??;
-localparam INSTRUCTION_CASEX_INTERRUPT			= 16'h05??;
-localparam INSTRUCTION_CASEX_INTERRUPT_EN		= 16'h06??;
-localparam INSTRUCTION_CASEX_SLEEP			= 16'h07??;
-localparam INSTRUCTION_CASEX_IMM			= 16'h1???;
-localparam INSTRUCTION_CASEX_ALUOP_REG_REG		= 16'h2???;
-localparam INSTRUCTION_CASEX_ALUOP_REG_IMM		= 16'h3???;
-localparam INSTRUCTION_CASEX_BRANCH			= 16'h4???;
-localparam INSTRUCTION_CASEX_COND_MOV			= 16'h5???;
-localparam INSTRUCTION_CASEX_BYTE_LOAD_SX		= 16'h8???;
-localparam INSTRUCTION_CASEX_THREE_REG_COND_ALU		= 16'h9???;
-localparam INSTRUCTION_CASEX_BYTE_LOAD_STORE		= 16'b101?????????????;
-localparam INSTRUCTION_CASEX_LOAD_STORE			= 16'b110?????????????;
-localparam INSTRUCTION_CASEX_PEEK_POKE			= 16'b111?????????????;
+localparam INSTRUCTION_CASEX_RET_IRET			= 16'h01xx;
+localparam INSTRUCTION_CASEX_ALUOP_SINGLE_REG		= 16'h04xx;
+localparam INSTRUCTION_CASEX_INTERRUPT			= 16'h05xx;
+localparam INSTRUCTION_CASEX_INTERRUPT_EN		= 16'h06xx;
+localparam INSTRUCTION_CASEX_SLEEP			= 16'h07xx;
+localparam INSTRUCTION_CASEX_IMM			= 16'h1xxx;
+localparam INSTRUCTION_CASEX_ALUOP_REG_REG		= 16'h2xxx;
+localparam INSTRUCTION_CASEX_ALUOP_REG_IMM		= 16'h3xxx;
+localparam INSTRUCTION_CASEX_BRANCH			= 16'h4xxx;
+localparam INSTRUCTION_CASEX_COND_MOV			= 16'h5xxx;
+localparam INSTRUCTION_CASEX_BYTE_LOAD_SX		= 16'h8xxx;
+localparam INSTRUCTION_CASEX_THREE_REG_COND_ALU		= 16'h9xxx;
+localparam INSTRUCTION_CASEX_BYTE_LOAD_STORE		= 16'b101xxxxxxxxxxxxx;
+localparam INSTRUCTION_CASEX_LOAD_STORE			= 16'b110xxxxxxxxxxxxx;
+localparam INSTRUCTION_CASEX_PEEK_POKE			= 16'b111xxxxxxxxxxxxx;
 
 // Conditionals
 

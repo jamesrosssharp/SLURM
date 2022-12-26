@@ -111,6 +111,8 @@ banner:
 dummy_handler:
 		mov r7, '!'	
 		out [r0, UART_TX_REG], r7
+		//mov r7, 0x666
+		//out [r0, 0x6002], r7
 		//add r7, 0x1
 		//mov r8, r7
 		//and r8, 1

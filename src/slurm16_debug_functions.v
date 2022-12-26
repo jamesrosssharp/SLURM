@@ -12,7 +12,7 @@
 function [127:0] disassemble;
 input [31:0] ins;
 begin
-	casez (ins)
+	casex (ins)
 		INSTRUCTION_CASEX_NOP:
 			disassemble = "nop"; 
 		INSTRUCTION_CASEX_RET_IRET:

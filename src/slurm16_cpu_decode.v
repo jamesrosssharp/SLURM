@@ -26,7 +26,7 @@ begin
 	regB_sel = 4'd0;	// ...
 
 	
-	casez (instruction)
+	casex (instruction)
 		INSTRUCTION_CASEX_NOP:	;	/* nop */
 		INSTRUCTION_CASEX_RET_IRET:	begin	/* ret / iret */
 			if (is_ret_or_iret(instruction) == 1'b0)

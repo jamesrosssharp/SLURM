@@ -49,7 +49,7 @@ begin
 		reg_out_r	= pc_stage4;
 	end
 	else if (!is_nop)
-		casez (instruction)
+		casex (instruction)
 			INSTRUCTION_CASEX_ALUOP_SINGLE_REG : begin /* alu op reg */
 				reg_wr_addr_r 	= reg_src_from_ins(instruction);
 				reg_out_r 	= aluOut; 	

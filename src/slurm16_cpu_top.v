@@ -76,7 +76,7 @@ reg modifies_flags2;
 reg modifies_flags3;
 
 wire [3:0]  hazard_reg0;
-wire modifies_flag0;
+wire modifies_flags0;
 
 wire hazard_1;
 wire hazard_2;
@@ -105,6 +105,8 @@ wire [11:0] imm_reg;
 
 wire load_memory;
 wire store_memory;
+
+wire data_memory_success;
 
 slurm16_cpu_pipeline pip0 (
 	CLK,
@@ -215,7 +217,7 @@ wire [1:0] store_memory_wr_mask;
 wire [15:0] data_memory_data_out;
 wire [1:0] data_memory_wr_mask_out;
 
-
+wire bank_switch;
 
 cpu_memory_interface mem0 (
 	CLK,
@@ -249,7 +251,7 @@ cpu_memory_interface mem0 (
 	memory_valid,		
 	memory_ready,
 
-	halt	
+	halt_request	
 );
 
 wire [REGISTER_BITS - 1:0] regA_sel;
@@ -382,7 +384,7 @@ slurm16_cpu_alu alu0
 	S_out,
 	V_out,
 
-	load_flags
+	flags_load
 
 );
 

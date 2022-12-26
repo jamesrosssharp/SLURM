@@ -15,7 +15,7 @@ UART_TX_STATUS 	equ 	0x0001
 INTERRUPT_ENABLE_PORT equ 0x7000
 
 RESET_VEC:
-	ba start
+	ba my_loop
 HSYNC_VEC:
 	ba dummy_handler
 VSYNC_VEC:
@@ -30,9 +30,15 @@ VECTORS:
 	.times 20 dw 0x0000
 
 my_loop:
-	mov r1, 0x41
+	mov r1, 0x61
+	nop
+	nop
+	nop
 	out [r0, 0], r1
 	ba my_loop
+	nop
+	nop
+	nop
 
 
 start:	

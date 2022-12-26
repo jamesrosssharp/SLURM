@@ -111,7 +111,7 @@ begin
 			aluB_r_next = regB;
 			alu_op_r_next = 5'd0; /* mov - noop */
 
-			casez (instruction)
+			casex (instruction)
 				INSTRUCTION_CASEX_ALUOP_SINGLE_REG:	begin /* alu op, reg */
 					alu_op_r_next 	= single_reg_alu_op_from_ins(instruction);
 				end
@@ -128,6 +128,11 @@ begin
 						alu_op_r_next 	= alu_op_from_imm({imm_reg, instruction[3:0]});
 						cond_pass_r = 1'b1;
 					end
+				end
+				INSTRUCTION_CASEX_COND_MOV: begin
+					if (branch_taken_from_ins({imm_reg, instruction[3:0]}, Z, S, C, V) == 1'b1) begin
+						cond_pass_r = 1'b1;
+					end	
 				end
 				default: ;
 			endcase
@@ -148,7 +153,7 @@ begin
 	new_pc_r = {ADDRESS_BITS{1'b0}};
 
 	if (! is_nop) begin
-		casez(instruction)
+		casex(instruction)
 			INSTRUCTION_CASEX_BRANCH: begin
 				if (branch_taken_from_ins(instruction, Z, S, C, V) == 1'b1) begin
 						new_pc_r = regA + {imm_reg, instruction[3:0]};
@@ -184,7 +189,7 @@ begin
 	port_wr_r = 1'b0;
 
 	if (! is_nop) begin
-		casez(instruction)
+		casex(instruction)
 			INSTRUCTION_CASEX_PEEK_POKE: begin
 				port_address_r = regB + {imm_reg, instruction[3:0]};
 				if (is_io_poke_from_ins(instruction) == 1'b1) begin
@@ -226,7 +231,7 @@ begin
 	memory_wr_mask_r	 = 2'b11;
 
 	if (! is_nop) begin
-		casez(instruction)
+		casex(instruction)
 			INSTRUCTION_CASEX_BYTE_LOAD_STORE, INSTRUCTION_CASEX_BYTE_LOAD_SX: begin
 				if (low_bit_of_address == 1'b1)
 					memory_wr_mask_r = 2'b10;
@@ -264,7 +269,7 @@ begin
 	interrupt_flag_clear_r = 1'b0;
 
 	if (! is_nop)
-		casez (instruction) 
+		casex (instruction) 
 			INSTRUCTION_CASEX_INTERRUPT_EN: begin
 				if (is_interrupt_enable_disable(instruction) == 1'b0)
 					interrupt_flag_clear_r = 1'b1;
@@ -295,7 +300,7 @@ begin
 	halt_r = 1'b0;
 
 	if (! is_nop)
-		casez(instruction)
+		casex(instruction)
 			INSTRUCTION_CASEX_SLEEP: begin
 				halt_r = 1'b1;	
 			end

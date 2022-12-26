@@ -10,7 +10,7 @@ entry:
 	/* install our interrupt handler in vector table */
 	mov r1, (interrupt_handler >> 4) | 0x1000
 	st [r0, HBLANK_INT_VECTOR], r1
-	mov r1, (interrupt_handler & 0xf) | 0x4600
+	mov r1, (interrupt_handler & 0xf) | 0x4e00
 	st [r0, HBLANK_INT_VECTOR + 2], r1	
 
 	/* enable hblank interrupt in interrupt controller */
