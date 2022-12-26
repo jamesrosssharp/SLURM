@@ -88,6 +88,9 @@ __in:
 
 __sleep:
 	sleep
+	nop
+	nop	
+	nop
 	ret	
 
 dummy_handler:

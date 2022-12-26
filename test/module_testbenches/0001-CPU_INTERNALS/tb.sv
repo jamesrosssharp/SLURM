@@ -427,6 +427,10 @@ initial begin
 	interrupt <= 1'b1;
 	irq <= 4'd1;
 
+	#2000;
+
+	irq <= 4'd2;
+
 	#1000;
 	interrupt <= 1'b0;
 

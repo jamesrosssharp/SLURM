@@ -286,12 +286,13 @@ begin
 					state_r <= st_stall2;
 				else if (hazard_3 && !load_pc_request && pip0[NOP_BIT] == 1'b0 && pip3[NOP_BIT] == 1'b0)
 					state_r <= st_stall3;
-				else if (instruction_valid == 1'b0)
-					state_r <= st_ins_stall1;
 				else if (halt)
 					state_r <= st_halt;
 				else if (load_pc_request)
 					state_r <= st_pre_execute; 
+				else if (instruction_valid == 1'b0)
+					state_r <= st_ins_stall1;
+				
 			end
 			st_interrupt: begin
 				state_r <= st_pre_execute;	
@@ -444,7 +445,7 @@ begin
 		st_reset, st_pre_execute, st_halt, st_halt2, st_stall1, st_stall2, st_stall3, st_ins_stall1, st_mem_except1, st_mem_except2, st_interrupt, st_ins_stall2:
 			pip0[NOP_BIT] <= 1'b1;
 		default:
-			if (load_pc_request)
+			if (load_pc_request || halt)
 				pip0[NOP_BIT] <= 1'b1;
 			else
 				pip0[NOP_BIT] <= 1'b0;	
@@ -482,10 +483,10 @@ begin
 			pip1[NOP_BIT] <= 1'b1;
 		/* preserve nop bit in stall states unless branch taken */
 		st_stall1, st_stall2, st_stall3: 
-			if (load_pc_request)
+			if (load_pc_request || halt)
 				pip1[NOP_BIT] <= 1'b1;
 		default:
-			if (load_pc_request)
+			if (load_pc_request || halt)
 				pip1[NOP_BIT] <= 1'b1;
 			else
 				pip1[NOP_BIT] <= pip0[NOP_BIT];
@@ -514,7 +515,7 @@ begin
 		st_reset, st_pre_execute, st_halt, st_halt2, st_interrupt, st_mem_except1, st_stall1, st_stall2, st_stall3:
 			pip2[NOP_BIT] <= 1'b1;
 		default:
-			if (load_pc_request)
+			if (load_pc_request || halt)
 				pip2[NOP_BIT] <= 1'b1;
 			else
 				pip2[NOP_BIT] <= pip1[NOP_BIT];

@@ -6,7 +6,7 @@ RESET_VEC:
 HSYNC_VEC:
 	ba interrupter
 VSYNC_VEC:
-	ba test2
+	ba interrupter
 AUDIO_VEC:
 	ba test3
 SPI_FLASH:
