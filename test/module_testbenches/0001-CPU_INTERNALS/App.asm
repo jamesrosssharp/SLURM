@@ -2,35 +2,59 @@
 	.org 0
 
 RESET_VEC:
-	ba start
+	ba test1
 HSYNC_VEC:
-	ba dummy_handler
+	ba interrupter
 VSYNC_VEC:
-	ba dummy_handler
+	ba test2
 AUDIO_VEC:
-	ba dummy_handler
+	ba test3
 SPI_FLASH:
-	ba dummy_handler
+	ba test4
 GPIO_VEC:
-	ba dummy_handler
+	ba test5
 VECTORS:
 	.times 20 dw 0x0000
 
-
-start:
+/* Simple test loop */
+test1:
 	sti
 	ld  r1, [some_bytes + 2]
 	ld  r2, [some_bytes + 4]
 	mov r3, 5
+	st [some_bytes + 6], r1
 loop:
+	ld r1, [some_bytes + 6]
 	add r1, r2
 	sub r3, 1
+	st [some_bytes + 6], r1
 	nop
 	bnz loop
 
 	sleep	
 
-dummy_handler:
+/* Peasant multiply? */
+test2:
+	sti
+	sleep
+
+/* Sqrt using Newton's method? */	
+test3:
+	sti
+	sleep
+
+/* Don't know what to test here? */
+test4:
+	sti
+	sleep
+
+/* Don't know what to test here? */
+test5:
+	sti
+	sleep
+	
+
+interrupter:
 	mov r7, 0xaa55
 	iret
 
@@ -38,5 +62,6 @@ some_bytes:
 	dw 0x6969
 	dw 0x0003
 	dw 0x0004
+	dw 0x0000
 
 	.end

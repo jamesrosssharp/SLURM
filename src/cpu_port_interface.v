@@ -9,8 +9,6 @@ module cpu_port_interface #(parameter BITS = 16, ADDRESS_BITS = 16)  (
 	input CLK,
 	input RSTb,
 
-	input is_executing,
-
 	input [ADDRESS_BITS - 1:0] port_address_in,
 	input [BITS - 1:0] port_data_in,
 	input port_rd_in,
@@ -39,7 +37,7 @@ begin
 		port_data_r <= {BITS{1'b0}};
 		port_rd_r   <= 1'b0;
 		port_wr_r   <= 1'b0;		
-	end else if (is_executing) begin
+	end else begin
 		port_address_r <= port_address_in;
 		port_data_r <= port_data_in;
 		port_rd_r   <= port_rd_in;

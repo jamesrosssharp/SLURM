@@ -6,7 +6,7 @@ all: sim
 AS=../../../slurmasm/slurmasm
 MEMCONV=../../../scripts/genmem.py
 
-IVERILOG_RUN=@iverilog -pfileline=1  -grelative-include -o $(PROJECT)_design -D SIM -Winfloop tb.v $(SOURCE) 2>&1 >sim_wrn.txt &&	\
+IVERILOG_RUN=@iverilog -g2012 -pfileline=1  -grelative-include -o $(PROJECT)_design -D SIM -Winfloop tb.v $(SOURCE) 2>&1 >sim_wrn.txt &&	\
 			 vvp   -n $(PROJECT)_design 2>&1 >>sim_wrn.txt 
 	
 MEM_INIT=mem_init1.mem mem_init2.mem mem_init3.mem mem_init4.mem

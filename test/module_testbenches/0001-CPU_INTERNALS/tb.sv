@@ -357,16 +357,23 @@ begin
 end
 
 reg [14:0] load_store_address_x;
-reg [14:0] load_memory_x;
+reg [15:0] memory_out_x;
+reg load_memory_x;
+reg store_memory_x;
 
 always @(posedge CLK)
 begin
 	load_store_address_x <= load_store_address;
 	load_memory_x <= load_memory;
+	store_memory_x <= store_memory;
+	memory_out_x <= memory_out;
 
 	if (load_memory_x) begin
 		memory_in <= memory[load_store_address_x];		
 	end		
+	if (store_memory_x) begin
+		memory[load_store_address_x] <= memory_out_x;
+	end
 
 end
 

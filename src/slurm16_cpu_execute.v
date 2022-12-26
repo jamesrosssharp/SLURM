@@ -124,8 +124,8 @@ begin
 				end
 				INSTRUCTION_CASEX_THREE_REG_COND_ALU:	begin /* 3 reg alu op */
 					
-					if (branch_taken_from_ins(imm_reg, Z, S, C, V) == 1'b1) begin
-						alu_op_r_next 	= alu_op_from_imm(imm_reg);
+					if (branch_taken_from_ins({imm_reg, instruction[3:0]}, Z, S, C, V) == 1'b1) begin
+						alu_op_r_next 	= alu_op_from_imm({imm_reg, instruction[3:0]});
 						cond_pass_r = 1'b1;
 					end
 				end
@@ -186,7 +186,7 @@ begin
 	if (! is_nop) begin
 		casez(instruction)
 			INSTRUCTION_CASEX_PEEK_POKE: begin
-				port_address_r = regB + imm_reg;
+				port_address_r = regB + {imm_reg, instruction[3:0]};
 				if (is_io_poke_from_ins(instruction) == 1'b1) begin
 					port_wr_r = 1'b1;
 					port_out_r = regA;

@@ -17,7 +17,7 @@ module slurm16_cpu_registers
 	input [REG_BITS - 1 : 0] regOutB,	
 	output reg [BITS - 1 : 0] regOutA_data,
 	output reg [BITS - 1 : 0] regOutB_data,
-	input  reg [BITS - 1 : 0] regIn_data
+	input  [BITS - 1 : 0] regIn_data
 );
 
 reg [BITS - 1: 0] regFileA [2**REG_BITS - 1 : 0];

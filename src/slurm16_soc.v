@@ -85,7 +85,7 @@ wire cpu_debug_pin;
 
 // CPU Top level
 
-cpu_top cpu0
+slurm16_cpu_top cpu0
 (
 	CLK,
 	RSTb,

@@ -306,13 +306,15 @@ begin
 				if (mem_exception)
 					state_r <= st_mem_except1;
 				else if (load_pc_request)
-					state_r <= st_execute;	
+					state_r <= st_pre_execute;	
 				else
 					state_r <= st_stall3;
 			end
 			st_stall3: begin
 				if (mem_exception)
 					state_r <= st_mem_except1;
+				else if (load_pc_request)
+					state_r <= st_pre_execute;
 				else
 					state_r <= st_execute;
 			end
@@ -533,7 +535,7 @@ begin
 	
 	// Nop out instruction in st_reset, st_interrupt, st_mem_except1, st_halt, st_halt2
 	case (state_r)
-		st_reset, st_pre_execute, st_interrupt, st_mem_except1, st_halt, st_halt2:
+		st_reset, st_interrupt, st_mem_except1, st_halt, st_halt2:
 			pip3[NOP_BIT] <= 1'b1;
 		default:
 			pip3[NOP_BIT] <= pip2[NOP_BIT];
@@ -552,7 +554,7 @@ begin
 
 	// Nop out instruction in st_reset, st_interrupt, st_mem_except1
 	case (state_r)
-		st_reset, st_pre_execute, st_interrupt, st_mem_except1, st_halt, st_halt2:
+		st_reset, st_interrupt, st_mem_except1, st_halt, st_halt2:
 			pip4[NOP_BIT] <= 1'b1;
 		default:
 			pip4[NOP_BIT] <= pip3[NOP_BIT];
@@ -707,6 +709,10 @@ begin
 			ascii_state = "mexcpt1";
 		st_mem_except2:
 			ascii_state = "mexcpt2";
+		st_pre_execute:
+			ascii_state = "prexec";
+		st_halt2:
+			ascii_state = "halt2";
 	endcase
 end
 

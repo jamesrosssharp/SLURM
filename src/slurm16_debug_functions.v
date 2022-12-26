@@ -146,7 +146,17 @@ begin
 			endcase
 
 		INSTRUCTION_CASEX_LOAD_STORE:
+			if (ins[12] == 1'b0)
 				disassemble = "ld";
+			else
+				disassemble = "st";
+		INSTRUCTION_CASEX_PEEK_POKE:	
+			if (ins[12] == 1'b0)
+				disassemble = "in";
+			else
+				disassemble = "out";
+
+
 	endcase
 end
 endfunction

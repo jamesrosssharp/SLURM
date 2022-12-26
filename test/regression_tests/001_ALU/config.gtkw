@@ -1,19 +1,18 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Sat Aug  6 08:21:23 2022
+[*] Mon Dec 26 01:28:06 2022
 [*]
 [dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/001_ALU/dump.vcd"
-[dumpfile_mtime] "Sat Aug  6 08:14:49 2022"
-[dumpfile_size] 21737887
+[dumpfile_mtime] "Mon Dec 26 01:21:48 2022"
+[dumpfile_size] 31259072
 [savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/001_ALU/config.gtkw"
-[timestart] 575299000
+[timestart] 608544000
 [size] 1920 992
 [pos] 0 0
-*-19.194408 577500000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-18.194408 618100000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] alu_tb.
 [treeopen] alu_tb.cpu0.
 [treeopen] alu_tb.cpu0.cpu0.
-[treeopen] alu_tb.cpu0.cpu0.cpu_exec0.
 [treeopen] alu_tb.cpu0.pc0.
 [sst_width] 290
 [signals_width] 383
@@ -36,34 +35,76 @@ alu_tb.cpu0.cpu0.memory_ready
 alu_tb.cpu0.cpu0.mem0.state[1:0]
 @200
 -
-@22
-alu_tb.cpu0.cpu0.cpu_exec0.load_store_address[15:0]
-@200
 -
-@28
-alu_tb.cpu0.cpu0.pip0.load_pc
 @22
-alu_tb.cpu0.cpu0.pip0.new_pc[15:0]
 alu_tb.cpu0.cpu0.cache0.data_out[31:0]
 @28
 alu_tb.cpu0.cpu0.cache0.cache_miss
+@200
+-
+@23
+alu_tb.cpu0.cpu0.alu0.aluOp[4:0]
 @22
-alu_tb.cpu0.cpu0.pip0.state[3:0]
-alu_tb.cpu0.cpu0.pip0.pipeline_stage0[15:0]
-alu_tb.cpu0.cpu0.pip0.pipeline_stage1[15:0]
-alu_tb.cpu0.cpu0.pip0.pipeline_stage2[15:0]
-alu_tb.cpu0.cpu0.pip0.pipeline_stage3[15:0]
-alu_tb.cpu0.cpu0.pip0.pipeline_stage4[15:0]
+alu_tb.cpu0.cpu0.alu0.A[15:0]
+alu_tb.cpu0.cpu0.alu0.B[15:0]
+alu_tb.cpu0.cpu0.alu0.aluOut[15:0]
 @200
 -
 @22
-alu_tb.cpu0.cpu0.pip0.pc[14:0]
+alu_tb.cpu0.cpu0.pip0.debug_op0[15:0]
+alu_tb.cpu0.cpu0.pip0.debug_op1[15:0]
+alu_tb.cpu0.cpu0.pip0.debug_op2[15:0]
+alu_tb.cpu0.cpu0.pip0.debug_op3[15:0]
+alu_tb.cpu0.cpu0.pip0.debug_op4[15:0]
+@200
+-
+@820
+alu_tb.cpu0.cpu0.pip0.ascii_instruction0[135:0]
+alu_tb.cpu0.cpu0.pip0.ascii_instruction1[135:0]
+alu_tb.cpu0.cpu0.pip0.ascii_instruction2[135:0]
+alu_tb.cpu0.cpu0.pip0.ascii_instruction3[135:0]
+alu_tb.cpu0.cpu0.pip0.ascii_instruction4[135:0]
+@200
+-
+@22
+alu_tb.cpu0.cpu0.pip0.debug_pc0[15:0]
+alu_tb.cpu0.cpu0.pip0.debug_pc1[15:0]
+alu_tb.cpu0.cpu0.pip0.debug_pc2[15:0]
+alu_tb.cpu0.cpu0.pip0.debug_pc3[15:0]
+alu_tb.cpu0.cpu0.pip0.debug_pc4[15:0]
+@200
+-
+@22
+alu_tb.cpu0.cpu0.pip0.debug_pc[15:0]
+@200
+-
+@22
+alu_tb.cpu0.cpu0.pip0.imm_r[11:0]
+@200
+-
+@820
+alu_tb.cpu0.cpu0.pip0.ascii_state[63:0]
+@200
+-
+@22
+alu_tb.cpu0.cpu0.cache0.cache_request_address[14:0]
+alu_tb.cpu0.cpu0.cache0.data_out[31:0]
+@28
+alu_tb.cpu0.cpu0.cache0.cache_miss
+@200
+-
+@22
+alu_tb.cpu0.cpu0.ex_port_out[15:0]
+@28
+alu_tb.cpu0.cpu0.ex_port_wr
+alu_tb.cpu0.cpu0.ex_port_rd
 @200
 -
 @820
 alu_tb.cpu0.pc0.tr0.traceChar_r[7:0]
 @22
 alu_tb.cpu0.pc0.tr0.traceHex_r[15:0]
+@24
 alu_tb.cpu0.pc0.tr0.traceVal_r[15:0]
 @200
 -
@@ -78,6 +119,12 @@ alu_tb.cpu0.cpu0.port_out[15:0]
 @28
 alu_tb.cpu0.cpu0.port_rd
 alu_tb.cpu0.cpu0.port_wr
+@22
+alu_tb.cpu0.pc0.tr0.traceHex_r[15:0]
+@24
+alu_tb.cpu0.pc0.tr0.traceVal_r[15:0]
+@820
+alu_tb.cpu0.pc0.tr0.traceChar_r[7:0]
 @200
 -
 @22
@@ -107,10 +154,6 @@ alu_tb.cpu0.cpu0.reg0.\regFileA[14][15:0]
 alu_tb.cpu0.cpu0.reg0.\regFileA[15][15:0]
 @200
 -
-@22
-alu_tb.cpu0.cpu0.cpu_exec0.regA[15:0]
-alu_tb.cpu0.cpu0.cpu_exec0.regB[15:0]
-@200
 -
 @22
 alu_tb.cpu0.cpu0.alu0.A[15:0]
@@ -119,19 +162,9 @@ alu_tb.cpu0.cpu0.alu0.out[15:0]
 alu_tb.cpu0.cpu0.alu0.out_r[15:0]
 alu_tb.cpu0.cpu0.alu0.aluOp[4:0]
 @28
-alu_tb.cpu0.cpu0.pip0.cond_pass_stage2
-alu_tb.cpu0.cpu0.pip0.cond_pass_stage3_r
-@29
 alu_tb.cpu0.cpu0.pip0.cond_pass_stage4
 @200
 -
-@22
-alu_tb.cpu0.cpu0.cpu_exec0.load_store_address[15:0]
-alu_tb.cpu0.cpu0.pip0.imm_stage2_r[15:0]
-@28
-alu_tb.cpu0.cpu0.pip0.load_pc
-alu_tb.cpu0.cpu0.pip0.load_pc_r
-@200
 -
 [pattern_trace] 1
 [pattern_trace] 0

@@ -32,6 +32,8 @@ wire  flash_miso;
 wire flash_sclk;
 wire flash_csb;
 
+wire vid_blank;
+
 slurm16 #(
 .CLOCK_FREQ(10000000)
 ) cpu0 (
@@ -45,6 +47,7 @@ slurm16 #(
     vid_b,
     vid_hsync,
     vid_vsync,
+    vid_blank,
 
     uart_tx,
     

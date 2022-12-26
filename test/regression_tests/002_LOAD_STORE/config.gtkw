@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Fri Jul 15 06:38:11 2022
+[*] Mon Dec 26 01:32:16 2022
 [*]
 [dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/002_LOAD_STORE/dump.vcd"
-[dumpfile_mtime] "Fri Jul 15 06:37:34 2022"
-[dumpfile_size] 15935355
+[dumpfile_mtime] "Mon Dec 26 01:29:34 2022"
+[dumpfile_size] 20611826
 [savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/002_LOAD_STORE/config.gtkw"
-[timestart] 146270000
-[size] 1920 996
+[timestart] 0
+[size] 1920 992
 [pos] -1 -1
-*-18.194408 147500000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-23.194408 6200000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tb.
 [treeopen] tb.cpu0.
 [treeopen] tb.cpu0.cpu0.
@@ -52,12 +52,8 @@ tb.cpu0.mem0.ma0.B2_WR
 tb.cpu0.mem0.mb2.MASK[1:0]
 @200
 -
-@22
-tb.cpu0.cpu0.pip0.pc[14:0]
-@200
 -
 @28
-tb.cpu0.cpu0.mem0.data_memory_was_requested
 tb.cpu0.cpu0.mem0.data_memory_success
 @200
 -
@@ -80,23 +76,7 @@ tb.cpu0.cpu0.mem0.data_wr_mask_stage_1[1:0]
 tb.cpu0.cpu0.mem0.data_wr_mask_stage_2[1:0]
 @200
 -
-@22
-tb.cpu0.cpu0.cpu_exec0.load_store_address[15:0]
-@200
 -
-@22
-tb.cpu0.cpu0.pip0.state[3:0]
-tb.cpu0.cpu0.pip0.pipeline_stage0[15:0]
-tb.cpu0.cpu0.pip0.pipeline_stage1[15:0]
-tb.cpu0.cpu0.pip0.pipeline_stage2[15:0]
-tb.cpu0.cpu0.pip0.pipeline_stage3[15:0]
-tb.cpu0.cpu0.pip0.pipeline_stage4[15:0]
-tb.cpu0.cpu0.pip0.pc_stage0_r[14:0]
-tb.cpu0.cpu0.pip0.pc_stage1_r[14:0]
-tb.cpu0.cpu0.pip0.pc_stage2_r[14:0]
-tb.cpu0.cpu0.pip0.pc_stage3_r[14:0]
-tb.cpu0.cpu0.pip0.pc_stage4[15:0]
-@200
 -
 -
 @820
@@ -126,9 +106,7 @@ tb.cpu0.pc0.memWR
 @200
 -
 @22
-tb.cpu0.cpu0.pip0.imm_stage2_r_next[15:0]
 tb.cpu0.cpu0.pip0.imm_r[11:0]
-tb.cpu0.cpu0.pip0.imm_r_next[11:0]
 tb.cpu0.cpu0.reg0.\regFileA[1][15:0]
 tb.cpu0.cpu0.reg0.\regFileA[2][15:0]
 tb.cpu0.cpu0.reg0.\regFileA[3][15:0]
@@ -146,14 +124,7 @@ tb.cpu0.cpu0.reg0.\regFileA[14][15:0]
 tb.cpu0.cpu0.reg0.\regFileA[15][15:0]
 @200
 -
-@22
-tb.cpu0.cpu0.cpu_exec0.regA[15:0]
-tb.cpu0.cpu0.cpu_exec0.regB[15:0]
-@200
 -
-@22
-tb.cpu0.cpu0.cpu_exec0.load_store_address[15:0]
-@200
 -
 @22
 tb.cpu0.mem0.mb2.\RAM[0][15:0]
