@@ -19,6 +19,7 @@ wire [3:0] vid_g;
 wire [3:0] vid_b;
 wire vid_hsync;
 wire vid_vsync;
+wire vid_blank;
 
 wire uart_tx;
 
@@ -49,6 +50,7 @@ slurm16 #(
     vid_b,
     vid_hsync,
     vid_vsync,
+    vid_blank,
 
     uart_tx,
     

@@ -59,7 +59,8 @@ CHIPTUNE_BIN=../../games_n_demos/ChipTune/build/chiptune.bin
 
 GAME_BIN=$(BLOODLIST_BIN)
 
-BOOTLOADER_ASM=../../games_n_demos/bootloader/src/Bootloader.asm
+#BOOTLOADER_ASM=../../games_n_demos/bootloader/src/Bootloader.asm
+BOOTLOADER_ASM=Bootloader.asm
 
 rom_image.mem: $(BOOTLOADER_ASM) 
 	$(AS) $(BOOTLOADER_ASM) -o rom_image

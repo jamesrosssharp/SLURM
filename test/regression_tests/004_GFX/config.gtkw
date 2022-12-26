@@ -1,32 +1,28 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Wed Jan 12 09:02:54 2022
+[*] Mon Dec 26 02:13:52 2022
 [*]
 [dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/004_GFX/dump.vcd"
-[dumpfile_mtime] "Wed Jan 12 09:02:43 2022"
-[dumpfile_size] 72584158
+[dumpfile_mtime] "Mon Dec 26 02:12:54 2022"
+[dumpfile_size] 81963362
 [savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/004_GFX/config.gtkw"
-[timestart] 867000000
-[size] 1920 996
-[pos] -1 -1
-*-29.194408 2724700000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[timestart] 50586000
+[size] 1920 992
+[pos] 0 0
+*-18.194408 52210000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tb.
 [treeopen] tb.cpu0.
 [treeopen] tb.cpu0.cpu0.
 [treeopen] tb.cpu0.pc0.
-[treeopen] tb.cpu0.pc0.gfx0.
 [sst_width] 290
 [signals_width] 383
 [sst_expanded] 1
-[sst_vpaned_height] 281
+[sst_vpaned_height] 291
 @28
 tb.cpu0.cpu0.CLK
 tb.cpu0.cpu0.RSTb
 @200
 -
-@22
-tb.cpu0.cpu0.cpu_pc0.pc[15:0]
-@200
 -
 @22
 tb.cpu0.cpu0.memory_address[15:0]
@@ -36,64 +32,102 @@ tb.cpu0.cpu0.memory_out[15:0]
 tb.cpu0.cpu0.memory_wr
 tb.cpu0.cpu0.memory_valid
 tb.cpu0.cpu0.memory_ready
-tb.cpu0.cpu0.cpu_mem0.memory_is_instruction
+tb.cpu0.cpu0.mem0.state[1:0]
 @200
 -
+-
+@22
+tb.cpu0.cpu0.cache0.data_out[31:0]
 @28
-tb.cpu0.pc0.u0.TX
+tb.cpu0.cpu0.cache0.cache_miss
 @200
 -
 @22
-tb.cpu0.cpu0.cpu_mem0.cpu_state_r[3:0]
-@28
-tb.cpu0.cpu0.cpu_mem0.is_executing
-tb.cpu0.cpu0.cpu_mem0.is_fetching
+tb.cpu0.cpu0.alu0.aluOp[4:0]
+tb.cpu0.cpu0.alu0.A[15:0]
+tb.cpu0.cpu0.alu0.B[15:0]
+tb.cpu0.cpu0.alu0.aluOut[15:0]
 @200
 -
-@28
-tb.cpu0.cpu0.cpu_haz0.load_pc
-tb.cpu0.cpu0.cpu_haz0.hazard
-tb.cpu0.cpu0.cpu_haz0.hazard1
-tb.cpu0.cpu0.cpu_haz0.hazard_23
+@22
+tb.cpu0.cpu0.pip0.debug_op0[15:0]
+tb.cpu0.cpu0.pip0.debug_op1[15:0]
+tb.cpu0.cpu0.pip0.debug_op2[15:0]
+tb.cpu0.cpu0.pip0.debug_op3[15:0]
+tb.cpu0.cpu0.pip0.debug_op4[15:0]
 @200
 -
-@28
-tb.cpu0.cpu0.cpu_haz0.stall
-tb.cpu0.cpu0.cpu_haz0.stall_end
-tb.cpu0.cpu0.cpu_haz0.stall_start
-tb.cpu0.cpu0.cpu_pip0.stall_mask_count_r[1:0]
-tb.cpu0.cpu0.cpu_pip0.alt_pip_ld_count_r[1:0]
-tb.cpu0.cpu0.cpu_pip0.reading_alt_pipeline
-tb.cpu0.cpu0.cpu_pip0.stall_count_r[2:0]
-tb.cpu0.cpu0.cpu_pip0.stall_read_count_r[2:0]
+@820
+tb.cpu0.cpu0.pip0.ascii_instruction0[135:0]
+tb.cpu0.cpu0.pip0.ascii_instruction1[135:0]
+tb.cpu0.cpu0.pip0.ascii_instruction2[135:0]
+tb.cpu0.cpu0.pip0.ascii_instruction3[135:0]
+tb.cpu0.cpu0.pip0.ascii_instruction4[135:0]
 @200
 -
+@22
+tb.cpu0.cpu0.pip0.debug_pc0[15:0]
+tb.cpu0.cpu0.pip0.debug_pc1[15:0]
+tb.cpu0.cpu0.pip0.debug_pc2[15:0]
+tb.cpu0.cpu0.pip0.debug_pc3[15:0]
+tb.cpu0.cpu0.pip0.debug_pc4[15:0]
+@200
+-
+@22
+tb.cpu0.cpu0.pip0.debug_pc[15:0]
+@200
+-
+@22
+tb.cpu0.cpu0.pip0.imm_r[11:0]
+@200
+-
+@29
+tb.cpu0.cpu0.pip0.load_pc_request
+@200
+-
+@820
+tb.cpu0.cpu0.pip0.ascii_state[63:0]
+@200
+-
+@22
+tb.cpu0.cpu0.cache0.cache_request_address[14:0]
+tb.cpu0.cpu0.cache0.data_out[31:0]
+@28
+tb.cpu0.cpu0.cache0.cache_miss
+@200
+-
+@22
+tb.cpu0.cpu0.ex_port_out[15:0]
+@28
+tb.cpu0.cpu0.ex_port_wr
+tb.cpu0.cpu0.ex_port_rd
+@200
 -
 @820
 tb.cpu0.pc0.tr0.traceChar_r[7:0]
 @22
 tb.cpu0.pc0.tr0.traceHex_r[15:0]
+@24
 tb.cpu0.pc0.tr0.traceVal_r[15:0]
 @200
 -
-@22
-tb.cpu0.cpu0.cpu_pip0.pipeline_stage0[15:0]
-tb.cpu0.cpu0.cpu_pip0.pipeline_stage1[15:0]
-tb.cpu0.cpu0.cpu_pip0.pipeline_stage2[15:0]
-tb.cpu0.cpu0.cpu_pip0.pipeline_stage3[15:0]
-tb.cpu0.cpu0.cpu_pip0.pipeline_stage4[15:0]
+@28
+tb.cpu0.cpu0.mem0.data_memory_success
 @200
 -
 @22
 tb.cpu0.cpu0.port_address[15:0]
 tb.cpu0.cpu0.port_in[15:0]
-@820
 tb.cpu0.cpu0.port_out[15:0]
-@200
--
 @28
 tb.cpu0.cpu0.port_rd
 tb.cpu0.cpu0.port_wr
+@22
+tb.cpu0.pc0.tr0.traceHex_r[15:0]
+@24
+tb.cpu0.pc0.tr0.traceVal_r[15:0]
+@820
+tb.cpu0.pc0.tr0.traceChar_r[7:0]
 @200
 -
 @22
@@ -106,7 +140,6 @@ tb.cpu0.pc0.memWR
 @200
 -
 @22
-tb.cpu0.cpu0.cpu_pip0.imm_reg[15:0]
 tb.cpu0.cpu0.reg0.\regFileA[1][15:0]
 tb.cpu0.cpu0.reg0.\regFileA[2][15:0]
 tb.cpu0.cpu0.reg0.\regFileA[3][15:0]
@@ -124,30 +157,15 @@ tb.cpu0.cpu0.reg0.\regFileA[14][15:0]
 tb.cpu0.cpu0.reg0.\regFileA[15][15:0]
 @200
 -
-@22
-tb.cpu0.cpu0.cpu_exec0.regA[15:0]
-tb.cpu0.cpu0.cpu_exec0.regB[15:0]
-@200
 -
 @22
-tb.cpu0.cpu0.cpu_exec0.load_store_address[15:0]
-@200
--
-@22
-tb.R[3:0]
-tb.G[3:0]
-tb.B[3:0]
+tb.cpu0.cpu0.alu0.A[15:0]
+tb.cpu0.cpu0.alu0.B[15:0]
+tb.cpu0.cpu0.alu0.out[15:0]
+tb.cpu0.cpu0.alu0.out_r[15:0]
+tb.cpu0.cpu0.alu0.aluOp[4:0]
 @28
-tb.HS
-tb.VS
-@22
-tb.cpu0.pc0.gfx0.x[9:0]
-tb.cpu0.pc0.gfx0.y[9:0]
-tb.cpu0.pc0.gfx0.cpr0.copper_list_pc[8:0]
-@23
-tb.cpu0.pc0.gfx0.cpr0.copper_list_pc_next[8:0]
-@22
-tb.cpu0.pc0.gfx0.cpr0.copper_list_ins[15:0]
+tb.cpu0.cpu0.pip0.cond_pass_stage4
 @200
 -
 -

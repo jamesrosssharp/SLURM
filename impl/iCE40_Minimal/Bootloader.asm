@@ -30,6 +30,11 @@ VECTORS:
 	.times 20 dw 0x0000
 
 start:	
+	mov r1, 0x41
+	out [r0, UART_TX_REG], r1
+	ba start
+
+
 	// Wake up spi flash
 	mov r1, 2
 	out [r0, SPI_FLASH_CMD], r1

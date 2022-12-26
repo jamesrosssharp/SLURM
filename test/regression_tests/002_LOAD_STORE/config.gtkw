@@ -1,24 +1,23 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Mon Dec 26 01:32:16 2022
+[*] Mon Dec 26 02:09:49 2022
 [*]
 [dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/002_LOAD_STORE/dump.vcd"
 [dumpfile_mtime] "Mon Dec 26 01:29:34 2022"
 [dumpfile_size] 20611826
 [savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/002_LOAD_STORE/config.gtkw"
-[timestart] 0
+[timestart] 5159000
 [size] 1920 992
-[pos] -1 -1
-*-23.194408 6200000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[pos] 0 0
+*-18.194408 6300000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tb.
 [treeopen] tb.cpu0.
 [treeopen] tb.cpu0.cpu0.
-[treeopen] tb.cpu0.mem0.
 [treeopen] tb.cpu0.pc0.
 [sst_width] 290
 [signals_width] 383
 [sst_expanded] 1
-[sst_vpaned_height] 281
+[sst_vpaned_height] 291
 @28
 tb.cpu0.cpu0.CLK
 tb.cpu0.cpu0.RSTb
@@ -33,59 +32,88 @@ tb.cpu0.cpu0.memory_out[15:0]
 tb.cpu0.cpu0.memory_wr
 tb.cpu0.cpu0.memory_valid
 tb.cpu0.cpu0.memory_ready
-@22
-tb.cpu0.cpu0.mem0.address_stage_1[14:0]
-@28
 tb.cpu0.cpu0.mem0.state[1:0]
-@22
-tb.cpu0.cpu0.mem0.address_stage_2[14:0]
-@200
--
-@28
-tb.cpu0.mem0.ma0.state_r_0[2:0]
-tb.cpu0.mem0.ma0.state_r_1[2:0]
-@22
-tb.cpu0.mem0.ma0.B2_ADDR[13:0]
-tb.cpu0.mem0.ma0.B2_DIN[15:0]
-@28
-tb.cpu0.mem0.ma0.B2_WR
-tb.cpu0.mem0.mb2.MASK[1:0]
 @200
 -
 -
+@22
+tb.cpu0.cpu0.cache0.data_out[31:0]
 @28
-tb.cpu0.cpu0.mem0.data_memory_success
+tb.cpu0.cpu0.cache0.cache_miss
 @200
 -
 @22
-tb.cpu0.cpu0.mem0.data_memory_address[14:0]
-tb.cpu0.cpu0.mem0.data_memory_in[15:0]
-tb.cpu0.cpu0.mem0.data_out[15:0]
-tb.cpu0.cpu0.mem0.data_memory_data_out[15:0]
-@28
-tb.cpu0.cpu0.mem0.data_memory_read_req
+tb.cpu0.cpu0.alu0.aluOp[4:0]
+tb.cpu0.cpu0.alu0.A[15:0]
+tb.cpu0.cpu0.alu0.B[15:0]
+tb.cpu0.cpu0.alu0.aluOut[15:0]
+@200
+-
 @22
-tb.cpu0.cpu0.mem0.address_stage_1[14:0]
-tb.cpu0.cpu0.mem0.address_stage_2[14:0]
-@28
-tb.cpu0.cpu0.mem0.data_memory_wr_mask[1:0]
-tb.cpu0.cpu0.mem0.data_memory_write_req
-tb.cpu0.cpu0.mem0.mem_wr
-tb.cpu0.cpu0.mem0.data_wr_mask_stage_1[1:0]
+tb.cpu0.cpu0.pip0.debug_op0[15:0]
+tb.cpu0.cpu0.pip0.debug_op1[15:0]
+tb.cpu0.cpu0.pip0.debug_op2[15:0]
+tb.cpu0.cpu0.pip0.debug_op3[15:0]
+tb.cpu0.cpu0.pip0.debug_op4[15:0]
+@200
+-
+@820
+tb.cpu0.cpu0.pip0.ascii_instruction0[135:0]
+tb.cpu0.cpu0.pip0.ascii_instruction1[135:0]
+tb.cpu0.cpu0.pip0.ascii_instruction2[135:0]
+tb.cpu0.cpu0.pip0.ascii_instruction3[135:0]
+tb.cpu0.cpu0.pip0.ascii_instruction4[135:0]
+@200
+-
+@22
+tb.cpu0.cpu0.pip0.debug_pc0[15:0]
+tb.cpu0.cpu0.pip0.debug_pc1[15:0]
+tb.cpu0.cpu0.pip0.debug_pc2[15:0]
+tb.cpu0.cpu0.pip0.debug_pc3[15:0]
+tb.cpu0.cpu0.pip0.debug_pc4[15:0]
+@200
+-
+@22
+tb.cpu0.cpu0.pip0.debug_pc[15:0]
+@200
+-
+@22
+tb.cpu0.cpu0.pip0.imm_r[11:0]
+@200
+-
 @29
-tb.cpu0.cpu0.mem0.data_wr_mask_stage_2[1:0]
+tb.cpu0.cpu0.pip0.load_pc_request
 @200
 -
+@820
+tb.cpu0.cpu0.pip0.ascii_state[63:0]
+@200
 -
+@22
+tb.cpu0.cpu0.cache0.cache_request_address[14:0]
+tb.cpu0.cpu0.cache0.data_out[31:0]
+@28
+tb.cpu0.cpu0.cache0.cache_miss
+@200
 -
+@22
+tb.cpu0.cpu0.ex_port_out[15:0]
+@28
+tb.cpu0.cpu0.ex_port_wr
+tb.cpu0.cpu0.ex_port_rd
+@200
 -
 @820
 tb.cpu0.pc0.tr0.traceChar_r[7:0]
 @22
 tb.cpu0.pc0.tr0.traceHex_r[15:0]
+@24
 tb.cpu0.pc0.tr0.traceVal_r[15:0]
 @200
 -
+@28
+tb.cpu0.cpu0.mem0.data_memory_success
+@200
 -
 @22
 tb.cpu0.cpu0.port_address[15:0]
@@ -94,6 +122,12 @@ tb.cpu0.cpu0.port_out[15:0]
 @28
 tb.cpu0.cpu0.port_rd
 tb.cpu0.cpu0.port_wr
+@22
+tb.cpu0.pc0.tr0.traceHex_r[15:0]
+@24
+tb.cpu0.pc0.tr0.traceVal_r[15:0]
+@820
+tb.cpu0.pc0.tr0.traceChar_r[7:0]
 @200
 -
 @22
@@ -106,7 +140,6 @@ tb.cpu0.pc0.memWR
 @200
 -
 @22
-tb.cpu0.cpu0.pip0.imm_r[11:0]
 tb.cpu0.cpu0.reg0.\regFileA[1][15:0]
 tb.cpu0.cpu0.reg0.\regFileA[2][15:0]
 tb.cpu0.cpu0.reg0.\regFileA[3][15:0]
@@ -125,12 +158,16 @@ tb.cpu0.cpu0.reg0.\regFileA[15][15:0]
 @200
 -
 -
--
 @22
-tb.cpu0.mem0.mb2.\RAM[0][15:0]
-tb.cpu0.mem0.mb2.\RAM[1][15:0]
-tb.cpu0.mem0.mb2.\RAM[2][15:0]
+tb.cpu0.cpu0.alu0.A[15:0]
+tb.cpu0.cpu0.alu0.B[15:0]
+tb.cpu0.cpu0.alu0.out[15:0]
+tb.cpu0.cpu0.alu0.out_r[15:0]
+tb.cpu0.cpu0.alu0.aluOp[4:0]
+@28
+tb.cpu0.cpu0.pip0.cond_pass_stage4
 @200
+-
 -
 [pattern_trace] 1
 [pattern_trace] 0

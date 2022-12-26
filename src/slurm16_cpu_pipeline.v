@@ -327,6 +327,8 @@ begin
 			st_ins_stall2: begin
 				if (mem_exception)
 					state_r <= st_mem_except1;
+				else if (load_pc_request)
+					state_r <= st_pre_execute;
 				else if (instruction_valid == 1'b1)
 					state_r <= st_execute;
 			end
