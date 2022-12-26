@@ -142,7 +142,7 @@ reg [TOTAL_PIPELINE_SV_BITS - 1:0] pip3 = {TOTAL_PIPELINE_SV_BITS{1'b0}};	// Mem
 reg [TOTAL_PIPELINE_SV_BITS - 1:0] pip4 = {TOTAL_PIPELINE_SV_BITS{1'b0}};	// Write back
 reg [TOTAL_PIPELINE_SV_BITS - 1:0] pip5 = {TOTAL_PIPELINE_SV_BITS{1'b0}};	// Final
 
-reg interrupt_flag_r = 1'b1;
+reg interrupt_flag_r = 1'b0;
 
 reg [ADDRESS_BITS - 2 : 0] pc_r = {(ADDRESS_BITS - 1){1'b0}};
 reg [ADDRESS_BITS - 2 : 0] prev_pc_r = {(ADDRESS_BITS - 1){1'b0}};
@@ -204,7 +204,7 @@ reg [3:0] state_r;
 /* We will stop requesting instructions in the halt state, freeing up instruction memory (which may be shared)
  * for use by other perhiperals 
  */
-assign instruction_request = (state_r != st_halt);
+assign instruction_request = (state_r != st_halt) && (state_r != st_halt2);
 assign instruction_address = pc_r;
 
 assign pipeline_stage_0 = pip0[INS_MSB : INS_LSB];

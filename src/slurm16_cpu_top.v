@@ -251,7 +251,7 @@ cpu_memory_interface mem0 (
 	memory_valid,		
 	memory_ready,
 
-	halt_request	
+	! instruction_request	
 );
 
 wire [REGISTER_BITS - 1:0] regA_sel;
