@@ -54,9 +54,9 @@ void set_up_sprites()
 short col = 0x12;
 void clear_screen()
 {
-	int i;
-	char* ptr = (char*)0x8000;
-	for (i = 0; i < (256*120); i++)
+	unsigned short i;
+	short* ptr = (short*)0x8000;
+	for (i = 0; i < (unsigned short)(256*120); i++)
 	//for (i = 0; i < (256*4); i++)
 	{
 		*ptr++ = col++;
@@ -152,11 +152,11 @@ int main()
 		__sleep();
 	}
 
-	render_mandelbrot();
+	//render_mandelbrot();
 	
 	while (1)
 	{
-		cycle_palette();
+		//cycle_palette();
 		//clear_screen();
 		__sleep();
 	}
