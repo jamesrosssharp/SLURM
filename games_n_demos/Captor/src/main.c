@@ -300,8 +300,8 @@ void load_background()
 	flash_complete = 0;
 	__out(SPI_FLASH_CMD, 1);
 
-	while (!flash_complete)
-		__sleep();
+	while (!flash_complete);
+	//	__sleep();
 
 	__subtract32(&bg_hi, &bg_lo, 32);
 

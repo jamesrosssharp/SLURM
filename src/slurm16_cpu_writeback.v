@@ -102,10 +102,6 @@ begin
 					reg_out_r = port_in;
 				end
 			end
-			INSTRUCTION_CASEX_INTERRUPT: begin /* interrupt? */
-				reg_wr_addr_r   = INTERRUPT_LINK_REGISTER; 
-				reg_out_r		= pc_stage4;
-			end
 			INSTRUCTION_CASEX_COND_MOV: begin
 				if (cond_pass == 1'b1) begin
 					reg_wr_addr_r = reg_dest_from_ins(instruction);

@@ -194,7 +194,7 @@ void update_background()
 
 }
 
-
+short int_flag = 1;
 
 int main()
 {
@@ -218,6 +218,8 @@ int main()
 
 	while (1)
 	{
+		if (int_flag == 0)
+		{
 		int i;
 		update_background();
 		update_bl_copper_list();
@@ -225,6 +227,8 @@ int main()
 			update_sprite(&sprites[i]);
 
 		trace_hex(0x667);
+		int_flag = 1;
+		}
 		__sleep();
 	}
 	putc('!');

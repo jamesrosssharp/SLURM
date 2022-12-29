@@ -51,29 +51,29 @@ wire [15:0] pc_stage_4;
 
 wire halt_request;
 
-reg [15:0] load_pc_address;
-reg load_pc_request;
+wire [15:0] load_pc_address;
+wire load_pc_request;
 
 wire interrupt_flag_clear;
 wire interrupt_flag_set;
 
-reg memory_request_successful = 1'b1;
+wire memory_request_successful = 1'b1;
 
-reg [1:0] memory_mask_delayed = 2'd0;
+wire [1:0] memory_mask_delayed = 2'd0;
 
-reg nop_stage4;
+wire nop_stage4;
 
-reg load_interrupt_return_address;
+wire load_interrupt_return_address;
 
 wire cond_pass_in;
 
-reg [3:0] hazard_reg1;
-reg [3:0] hazard_reg2;
-reg [3:0] hazard_reg3;
+wire [3:0] hazard_reg1;
+wire [3:0] hazard_reg2;
+wire [3:0] hazard_reg3;
 
-reg modifies_flags1;
-reg modifies_flags2;
-reg modifies_flags3;
+wire modifies_flags1;
+wire modifies_flags2;
+wire modifies_flags3;
 
 wire [3:0]  hazard_reg0;
 wire modifies_flags0;

@@ -229,6 +229,41 @@ assign cond_pass_stage4 = pip4[COND_PASS_BIT];
 assign nop_stage_2 = pip2[NOP_BIT];
 assign nop_stage_4 = pip4[NOP_BIT] || mem_exception;
 
+reg pipeline_can_interrupt;
+
+reg [ADDRESS_BITS - 2:0] halt_pc = 15'd0;
+
+always @(posedge CLK)
+begin
+	if (halt_request)
+		halt_pc <= pip2[PC_MSB:PC_LSB] + 15'd1;
+end
+
+always @(*)
+begin
+	
+	pipeline_can_interrupt = 1'b1;
+
+	if (pip1[NOP_BIT] == 1'b0)
+	casex(pip1[INS_MSB:INS_LSB])
+		INSTRUCTION_CASEX_BYTE_LOAD_STORE, INSTRUCTION_CASEX_LOAD_STORE, INSTRUCTION_CASEX_PEEK_POKE:
+			pipeline_can_interrupt = 1'b0;
+		default: ;
+	endcase
+	if (pip2[NOP_BIT] == 1'b0)
+	casex(pip2[INS_MSB:INS_LSB])
+		INSTRUCTION_CASEX_BYTE_LOAD_STORE, INSTRUCTION_CASEX_LOAD_STORE, INSTRUCTION_CASEX_PEEK_POKE:
+			pipeline_can_interrupt = 1'b0;
+		default: ;
+	endcase
+	if (pip3[NOP_BIT] == 1'b0)
+	casex(pip3[INS_MSB:INS_LSB])
+		INSTRUCTION_CASEX_BYTE_LOAD_STORE, INSTRUCTION_CASEX_LOAD_STORE, INSTRUCTION_CASEX_PEEK_POKE:
+			pipeline_can_interrupt = 1'b0;
+		default: ;
+	endcase
+end
+
 /*	
  *	Pipeline state machine 		
  *
@@ -271,7 +306,7 @@ begin
  				 * initiate interrupt. pip3 will => pip4, where we will fetch return address,
  				 * imm_reg, and flags from.
 				 */
-				if (interrupt_req && interrupt_flag_r && pip3[NOP_BIT] == 1'b0)
+				if (interrupt_req && interrupt_flag_r && pip3[NOP_BIT] == 1'b0 && pipeline_can_interrupt)
 					state_r <= st_interrupt;
 				else if (mem_exception)				
 					state_r <= st_mem_except1;
@@ -286,7 +321,7 @@ begin
 					state_r <= st_stall2;
 				else if (hazard_3 && !load_pc_request && pip0[NOP_BIT] == 1'b0 && pip3[NOP_BIT] == 1'b0)
 					state_r <= st_stall3;
-				else if (halt)
+				else if (halt && pipeline_can_interrupt)
 					state_r <= st_halt;
 				else if (load_pc_request)
 					state_r <= st_pre_execute; 
@@ -364,8 +399,8 @@ begin
 			prev_pc_r <= pc_r;
 		end
 		st_halt: begin	
-			pc_r <= pip2[PC_MSB : PC_LSB];
-			prev_pc_r <= pip2[PC_MSB : PC_LSB];
+			pc_r <= halt_pc;
+			prev_pc_r <= halt_pc;
 		end
 		st_halt2:	; 
 		st_execute: begin

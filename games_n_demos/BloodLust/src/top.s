@@ -91,6 +91,7 @@ __sleep:
 	ret	
 
 dummy_handler:
+	st [int_flag], r0
 	mov r1, 0xffff
 	out [r0, 0x7001], r1
 	iret
