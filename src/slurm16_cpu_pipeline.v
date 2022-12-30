@@ -480,7 +480,7 @@ begin
 		st_reset, st_pre_execute, st_halt, st_halt2, st_stall1, st_stall2, st_stall3, st_ins_stall1, st_mem_except1, st_mem_except2, st_interrupt, st_ins_stall2:
 			pip0[NOP_BIT] <= 1'b1;
 		default:
-			if (load_pc_request || halt)
+			if (load_pc_request || halt || mem_exception)
 				pip0[NOP_BIT] <= 1'b1;
 			else
 				pip0[NOP_BIT] <= 1'b0;	
@@ -518,7 +518,7 @@ begin
 			pip1[NOP_BIT] <= 1'b1;
 		/* preserve nop bit in stall states unless branch taken */
 		st_stall1, st_stall2, st_stall3: 
-			if (load_pc_request || halt)
+			if (load_pc_request || halt || mem_exception)
 				pip1[NOP_BIT] <= 1'b1;
 		default:
 			if (load_pc_request || halt)
@@ -550,7 +550,7 @@ begin
 		st_reset, st_pre_execute, st_halt, st_halt2, st_interrupt, st_mem_except1, st_stall1, st_stall2, st_stall3:
 			pip2[NOP_BIT] <= 1'b1;
 		default:
-			if (load_pc_request || halt)
+			if (load_pc_request || halt || mem_exception)
 				pip2[NOP_BIT] <= 1'b1;
 			else
 				pip2[NOP_BIT] <= pip1[NOP_BIT];
@@ -576,7 +576,10 @@ begin
 		st_reset, st_interrupt, st_mem_except1, st_halt, st_halt2:
 			pip3[NOP_BIT] <= 1'b1;
 		default:
-			pip3[NOP_BIT] <= pip2[NOP_BIT];
+			if (mem_exception)
+				pip3[NOP_BIT] <= 1'b1;
+			else
+				pip3[NOP_BIT] <= pip2[NOP_BIT];
 	endcase
 end
 
@@ -595,7 +598,10 @@ begin
 		st_reset, st_interrupt, st_mem_except1, st_halt, st_halt2:
 			pip4[NOP_BIT] <= 1'b1;
 		default:
-			pip4[NOP_BIT] <= pip3[NOP_BIT];
+			if (mem_exception)
+				pip4[NOP_BIT] <= 1'b1;
+			else
+				pip4[NOP_BIT] <= pip3[NOP_BIT];
 	endcase
 
 end
