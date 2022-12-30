@@ -24,11 +24,14 @@ assets/chiptune.slurmsng: assets/chiptune.it
 $(ASSETS_ASM): $(ASSETS_SRC) assets/gen-assets.py
 	cd assets; python3 gen-assets.py
 
-$(TARGET): $(PREPROCESSED) $(ASM_SRCS) $(ASSETS_ASM) $(ASSETS_BIN) src/top.s src/bottom.s $(C_INC)
+build/all_complete.asm: $(PREPROCESSED) $(ASM_SRCS) $(ASSETS_ASM) src/top.s src/bottom.s $(C_INC)
 	cat $(PREPROCESSED) > build/all.c1
 	$(CC) -target=slurm16 -c build/all.c1 -o build/all.asm
 	cat src/top.s $(ASM_SRCS) build/all.asm $(ASSETS_ASM) src/bottom.s  > build/all_complete.asm
 	echo "\n\n\t.end" >> build/all_complete.asm
+	
+
+$(TARGET): $(ASSETS_BIN) build/all_complete.asm
 	$(AS) -o build/all_complete.bin build/all_complete.asm
 	# Generate bundle
 	dd if=/dev/zero of=$@ bs=1M count=3

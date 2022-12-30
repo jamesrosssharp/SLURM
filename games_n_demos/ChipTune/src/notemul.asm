@@ -27,6 +27,9 @@ note_mul_asm:
 	umulu r10, r6
 	
 	add r9, r8
+	nop
+	nop
+	nop
 	adc r10, 0
 	
 	mov r2, r9

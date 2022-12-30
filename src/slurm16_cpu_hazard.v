@@ -60,12 +60,14 @@ begin
 				hazard_reg0_r   = LINK_REGISTER; /* link register */
 			end
 		end
-		INSTRUCTION_CASEX_BYTE_LOAD_STORE, INSTRUCTION_CASEX_LOAD_STORE, INSTRUCTION_CASEX_BYTE_LOAD_STORE:	begin /* load store */
+		INSTRUCTION_CASEX_BYTE_LOAD_STORE, INSTRUCTION_CASEX_LOAD_STORE:	begin /* load store */
 			if (is_load_store_from_ins(instruction) == 1'b0) begin /* load */
 				// write back value 
 				hazard_reg0_r = reg_dest_from_ins(instruction);
 			end	
 		end
+		INSTRUCTION_CASEX_BYTE_LOAD_SX:
+			hazard_reg0_r = reg_dest_from_ins(instruction);
 		INSTRUCTION_CASEX_PEEK_POKE: begin /* io peek? */
 			if (is_io_poke_from_ins(instruction) == 1'b0) begin
 				hazard_reg0_r = reg_dest_from_ins(instruction);

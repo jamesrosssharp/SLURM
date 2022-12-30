@@ -301,6 +301,12 @@ short note_mul_asm_hi(short lo, short hi, short c5speed);
 
 void play_sample(short channel, short volume, short note_lo, short note_hi, short SAMPLE, char effect, char param, char note)
 {
+	//if (channel < 0 || channel >= 8)
+	//	my_printf("Bad channel: %d\n", channel);
+
+	//if (SAMPLE < 0 || SAMPLE >= 8)
+	//	my_printf("Bad channel: %d\n", SAMPLE);
+
 
 
 	if (g_samples[SAMPLE].loop != 0)
@@ -452,12 +458,13 @@ int main()
 			int i;
 
 			count += 1;
-			if (count == 5)
+			if (count == 20)
 			{
 
 				row_offset = (cur_patt_buf ? &pattern_B : &pattern_A) + row*32;	
 
-				//my_printf("row: %d patt: %d\r\n", row, ord);
+				//if (row >= 40) 
+				//	my_printf("row: %d patt: %d\r\n", row, ord);
 	
 				//trace_dec(ord*64 + row);
 			
@@ -475,7 +482,13 @@ int main()
 					effect = sample & 0xf;
 					sample >>= 4;
 					effect_param = *row_offset++;
-			
+		
+					//if (row >= 40)
+					//{
+				//		my_printf("channel: %d, sample: %d note %d\r\n", channels[i], sample, note);
+						my_printf("%d-%d-%d  ", sample, note, volume);
+				//	}
+	
 					if (note)
 					{
 						short note_lo, note_hi;
@@ -491,10 +504,14 @@ int main()
 						set_volume(channels[i], volume);
 				}
 
-				row += 1;	
+				my_printf("\r\n");
+
+				row += 1;
+				//row &= 31;
 				if (row == 64)
 				{
 					char pattern;
+					char pad;
 					short offset_lo;
 					short offset_hi;
 					int i;
@@ -525,7 +542,7 @@ int main()
 						add_offset(&offset_lo, &offset_hi, SLURM_PATTERN_SIZE, 0);
 					
 					_do_flash_dma(chiptune_rom_offset_lo, chiptune_rom_offset_hi, offset_lo, offset_hi, cur_patt_buf ? &pattern_B : &pattern_A, (SLURM_PATTERN_SIZE >> 1) - 1, 0);
-
+					
 				}
 				count = 0;
 			}
