@@ -28,7 +28,7 @@ module slurm16_cpu_top
 	output				cpu_debug_pin
 );
 
-assign cpu_debug_pin = 1'b0;
+//assign cpu_debug_pin = 1'b0;
 
 /* Machine is 16 bit with 16 bit address bus, and 16 registers */
 localparam BITS = 16;
@@ -174,7 +174,9 @@ slurm16_cpu_pipeline pip0 (
 
 	load_return_address,
 
-	cond_pass_stage4
+	cond_pass_stage4,
+
+	cpu_debug_pin
 );
 
 wire [14:0] instruction_memory_address;

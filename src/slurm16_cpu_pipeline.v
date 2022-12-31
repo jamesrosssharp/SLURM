@@ -85,7 +85,11 @@ module slurm16_cpu_pipeline #(parameter REGISTER_BITS = 4, BITS = 16, ADDRESS_BI
 
 	output load_return_address,		/* load interrupt return address into interrupt link register in writeback stage */
 
-	output cond_pass_stage4
+	output cond_pass_stage4,
+
+	/* Debugger stuff */
+
+	output reg cpu_debug_pin	/* This is basically a crude serial interface that transmits PC so we know where we are if there is a lock up */
 
 );
 
@@ -821,5 +825,48 @@ wire [15:0] debug_op4 = pip4[INS_MSB : INS_LSB];
 wire [15:0] debug_pc = {pc_r, 1'b0};
 
 `endif
+
+/* Debug PIN */
+
+localparam debug_state_idle = 4'd0;
+localparam debug_state_start = 4'd1;
+localparam debug_state_start_bit = 4'd2;
+localparam debug_state_bits = 4'd3;
+localparam debug_state_stop_bit = 4'd4;
+
+reg [3:0] debug_state = debug_state_idle;
+reg [15:0] data_lat   = 16'd0;
+reg [3:0] debug_count       = 4'd0;
+
+always @(posedge CLK)
+begin
+	case (debug_state)
+		debug_state_idle: begin
+			debug_count <= debug_count + 1;
+			if (debug_count == 4'd15)
+				debug_state <= debug_state_start;
+			cpu_debug_pin <= 1'b1;
+		end
+		debug_state_start: begin
+			data_lat <= {pc_r, 1'b1};
+			debug_state <= debug_state_start_bit;
+		end
+		debug_state_start_bit: begin
+			cpu_debug_pin <= 1'b0;
+			debug_state <= debug_state_bits;
+		end
+		debug_state_bits: begin
+			debug_count <= debug_count + 1;
+			if (debug_count == 4'd15)
+				debug_state <= debug_state_stop_bit;
+			cpu_debug_pin <= data_lat[0];
+			data_lat[14:0] <= data_lat[15:1];
+		end
+		debug_state_stop_bit: begin
+			cpu_debug_pin <= 1'b0;
+			debug_state <= debug_state_idle;	
+		end
+	endcase
+end
 
 endmodule

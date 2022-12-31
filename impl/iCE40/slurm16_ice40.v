@@ -92,6 +92,8 @@ wire flash_csb;
 
 wire vid_blank;
 
+wire cpu_debug_pin;
+
 slurm16 #(
 .CLOCK_FREQ(CLOCKFREQ)
 ) cpu0 (
@@ -121,10 +123,12 @@ slurm16 #(
     flash_mosi,
     flash_miso,
     flash_sclk,
-    flash_csb
+    flash_csb,
+
+    cpu_debug_pin
 );
 
-assign GPIO1 = gpio_out[0];
+assign GPIO1 = cpu_debug_pin; //gpio_out[0];
 assign GPIO2 = gpio_out[1]; 
 
 assign gpio_in[0] = UP_BUTTON;
@@ -137,7 +141,12 @@ assign flash_miso = SPI_FLASH_MISO;
 
 assign UART_TX = uart_tx;
 
-assign RED_LED   = led_r;
+reg [23:0] the_count;
+
+always @(posedge clk)
+	the_count = the_count + 24'd1;
+
+assign RED_LED =   the_count[23]; //= led_r;
 assign GREEN_LED = led_g;
 assign BLUE_LED  = led_b;
 

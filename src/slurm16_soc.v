@@ -35,7 +35,10 @@ module slurm16 #(
 	output flash_mosi,
 	input  flash_miso,
 	output flash_sclk,
-	output flash_csb 
+	output flash_csb,
+
+	output cpu_debug_pin
+
 );
 
 wire [15:0] cpuMemoryIn;
@@ -81,7 +84,6 @@ wire [15:0] au_memory_data;
 wire au_rvalid;
 wire au_rready;
 */
-wire cpu_debug_pin;
 
 // CPU Top level
 
@@ -114,6 +116,7 @@ slurm16_cpu_top cpu0
 
 // Port controller
 
+wire dummy;
 port_controller
 #(.BITS(16), .ADDRESS_BITS(16), .CLOCK_FREQ(CLOCK_FREQ))
 pc0
@@ -125,7 +128,7 @@ pc0
 	.DATA_OUT(cpuPort_in),
 	.memWR(cpuPort_wr), 
 	.memRD(cpuPort_rd), 
-	.cpu_debug_pin(cpu_debug_pin),
+	.cpu_debug_pin(dummy),
 	.gpio_out(gpio_out),
 	.gpio_in(gpio_in),
 	.vid_r(vid_r),
