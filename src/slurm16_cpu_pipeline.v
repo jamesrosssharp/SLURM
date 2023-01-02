@@ -840,6 +840,8 @@ reg [3:0] debug_count       = 4'd0;
 
 always @(posedge CLK)
 begin
+//	cpu_debug_pin <= interrupt_flag_r; 
+
 	case (debug_state)
 		debug_state_idle: begin
 			debug_count <= debug_count + 1;
@@ -848,7 +850,8 @@ begin
 			cpu_debug_pin <= 1'b1;
 		end
 		debug_state_start: begin
-			data_lat <= {pc_r, 1'b1};
+			//data_lat <= {pc_r, 1'b1};
+			data_lat <= {state_r, 4'b0101};
 			debug_state <= debug_state_start_bit;
 		end
 		debug_state_start_bit: begin
