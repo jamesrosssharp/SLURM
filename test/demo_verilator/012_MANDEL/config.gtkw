@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Sat Jan  7 05:08:51 2023
+[*] Sat Jan  7 08:11:25 2023
 [*]
 [dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/demo_verilator/012_MANDEL/dump.vcd"
-[dumpfile_mtime] "Sat Jan  7 05:04:24 2023"
-[dumpfile_size] 198840591
+[dumpfile_mtime] "Sat Jan  7 08:01:15 2023"
+[dumpfile_size] 1984046602
 [savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/demo_verilator/012_MANDEL/config.gtkw"
-[timestart] 2553996000
+[timestart] 44558692000
 [size] 1920 992
 [pos] -1 -1
-*-18.194408 2554700000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-19.194408 44560700000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tb.
 [treeopen] tb.cpu0.
 [treeopen] tb.cpu0.cpu0.
@@ -67,7 +67,6 @@ tb.cpu0.cpu0.mem0.memory_address[14:0]
 @28
 tb.cpu0.cpu0.mem0.mem_wr
 tb.cpu0.cpu0.mem0.memory_success
-@29
 tb.cpu0.cpu0.mem0.wr_mask[1:0]
 @200
 -
@@ -87,6 +86,28 @@ tb.cpu0.cpu0.pip0.debug_op3[15:0]
 tb.cpu0.cpu0.pip0.debug_op4[15:0]
 @200
 -
+@22
+tb.cpu0.pc0.gfx0.spcon0.memory_address[15:0]
+tb.cpu0.mem0.ma0.sprite_memory_data[15:0]
+tb.cpu0.mem0.ma0.sprite_memory_data[15:0]
+tb.cpu0.mem0.ma0.B2_DOUT[15:0]
+@23
+tb.cpu0.mem0.ma0.B2_ADDR[13:0]
+@28
+tb.cpu0.mem0.ma0.b2_mux_sel[1:0]
+tb.cpu0.mem0.ma0.b2_mux_sel_x[1:0]
+tb.cpu0.mem0.ma0.b1_mux_sel[1:0]
+tb.cpu0.mem0.ma0.b3_mux_sel[1:0]
+tb.cpu0.mem0.ma0.b4_mux_sel[1:0]
+@22
+tb.cpu0.pc0.gfx0.spcon0.memory_data[15:0]
+tb.cpu0.pc0.gfx0.spcon0.r_state[3:0]
+@28
+tb.cpu0.pc0.gfx0.spcon0.rvalid
+tb.cpu0.pc0.gfx0.spcon0.rready
+@22
+tb.cpu0.pc0.gfx0.spcon0.cur_sprite_r[7:0]
+@200
 -
 -
 @22

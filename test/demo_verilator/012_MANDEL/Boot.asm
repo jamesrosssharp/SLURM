@@ -2,6 +2,6 @@
 
 	ba 0x200
 
-	.times 254 dw 0
+	.times 252 dw 0
 
 	.end

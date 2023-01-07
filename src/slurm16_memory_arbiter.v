@@ -183,7 +183,7 @@ always @(*)
 begin
 	if (b2_mux_sel_x == MUXSEL_SPRITES)
 		sprite_memory_data = B2_DOUT;
-	if (b3_mux_sel_x == MUXSEL_SPRITES)
+	else if (b3_mux_sel_x == MUXSEL_SPRITES)
 		sprite_memory_data = B3_DOUT;
 	else 
 		sprite_memory_data = B4_DOUT;

@@ -322,7 +322,7 @@ reg [15:0] cur_sprite_data_next;
 
 // Render process
 
-always @(CLK)
+always @(*)
 begin
 	r_state_next 		= r_state;
 	active_buffer_next  = active_buffer;
