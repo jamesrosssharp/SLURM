@@ -152,6 +152,10 @@ localparam f_begin2			 = 4'd7;
 localparam f_prebegin			 = 4'd8;
 localparam f_prebegin2			 = 4'd9;
 
+localparam f_wait_tile_mem2   = 4'd10;
+localparam f_wait_td_mem1    = 4'd11;
+
+
 reg [3:0] f_state_r;
 reg [3:0] f_state_r_next;
 
@@ -355,6 +359,10 @@ begin
 			end
 			f_wait_tile_mem: begin
 				rvalid_r = 1'b1;
+				f_state_r_next = f_wait_tile_mem2;
+			end
+			f_wait_tile_mem2: begin
+				rvalid_r = 1'b1;
 				if (rready == 1'b1) begin
 					if (tilemap_index_r[0] == 1'b0)
 						cur_tile_next = memory_data[7:0];
@@ -385,7 +393,10 @@ begin
 			end
 			f_wait_td_mem: begin
 				rvalid_r = 1'b1;
-				
+				f_state_r_next = f_wait_td_mem1;
+			end
+			f_wait_td_mem1: begin		
+				rvalid_r = 1'b1;
 				if (rready == 1'b1) begin
 					memory_address_r_next = memory_address_r + 1;
 					f_state_r_next = f_wait_td_mem2;

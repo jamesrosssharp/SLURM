@@ -74,6 +74,20 @@ wire [1:0] b2_mux_sel;
 wire [1:0] b3_mux_sel; 
 wire [1:0] b4_mux_sel; 
 
+reg [1:0] b1_mux_sel_x; 
+reg [1:0] b2_mux_sel_x; 
+reg [1:0] b3_mux_sel_x; 
+reg [1:0] b4_mux_sel_x; 
+
+always @(posedge CLK)
+begin
+	b1_mux_sel_x <= b1_mux_sel; 
+	b2_mux_sel_x <= b2_mux_sel; 
+	b3_mux_sel_x <= b3_mux_sel; 
+	b4_mux_sel_x <= b4_mux_sel; 
+end
+
+
 /* muxed peripheral signals */
 
 wire [13:0] b1_periph_addr;
@@ -159,16 +173,20 @@ begin
 		sprite_rready <= 1'b1;
 	else if (b3_mux_sel == MUXSEL_SPRITES)
 		sprite_rready <= 1'b1;
+	else if (b4_mux_sel == MUXSEL_SPRITES)
+		sprite_rready <= 1'b1;
 	else
 		sprite_rready <= 1'b0;
 end
 
 always @(*)
 begin
-	if (b2_mux_sel == MUXSEL_SPRITES)
+	if (b2_mux_sel_x == MUXSEL_SPRITES)
 		sprite_memory_data = B2_DOUT;
-	else 
+	if (b3_mux_sel_x == MUXSEL_SPRITES)
 		sprite_memory_data = B3_DOUT;
+	else 
+		sprite_memory_data = B4_DOUT;
 
 end
 
@@ -176,12 +194,15 @@ end
 /* mux signals going into background - 
  *
  *
- * background connects to banks 2 and 4, read only
+ * background connects to banks 2, 3 and 4, read only
  */
+
 
 always @(posedge CLK)
 begin
 	if (b2_mux_sel == MUXSEL_BACKGROUND)
+		bg0_rready <= 1'b1;
+	else if (b3_mux_sel == MUXSEL_BACKGROUND)
 		bg0_rready <= 1'b1;
 	else if (b4_mux_sel == MUXSEL_BACKGROUND)
 		bg0_rready <= 1'b1;
@@ -191,8 +212,10 @@ end
 
 always @(*)
 begin
-	if (b2_mux_sel == MUXSEL_BACKGROUND)
+	if (b2_mux_sel_x == MUXSEL_BACKGROUND)
 		bg0_memory_data = B2_DOUT;
+	else if (b3_mux_sel_x == MUXSEL_BACKGROUND)
+		bg0_memory_data = B3_DOUT;
 	else 
 		bg0_memory_data = B4_DOUT;
 
@@ -278,7 +301,7 @@ slurm16_peripheral_memory_arbiter arb3
 	b3_periph_wr,
 	b3_periph_wr_mask,
 	sprite_rvalid && (sprite_memory_address[15:14] == 2'b10), /* sprite valid */ 
-	1'b0,   /* background valid */
+	bg0_rvalid && (bg0_memory_address[15:14] == 2'b10),   /* background valid */
 	fl_wvalid && (fl_memory_address[15:14] == 2'b10), /* flash valid */
 	sprite_memory_address, /* sprite address */
 	bg0_memory_address, /* background address */
@@ -301,7 +324,7 @@ slurm16_peripheral_memory_arbiter arb4
 	b4_periph_din,
 	b4_periph_wr,
 	b4_periph_wr_mask,
-	1'b0, /* sprite valid */ 
+	sprite_rvalid && (sprite_memory_address[15:14] == 2'b11), /* sprite valid */ 
 	bg0_rvalid && (bg0_memory_address[15:14] == 2'b11),   /* background valid */
 	fl_wvalid && (fl_memory_address[15:14] == 2'b11), /* flash valid */
 	sprite_memory_address, /* sprite address */
