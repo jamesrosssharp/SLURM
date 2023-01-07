@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Fri Dec 30 08:45:59 2022
+[*] Sat Jan  7 05:08:51 2023
 [*]
 [dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/demo_verilator/012_MANDEL/dump.vcd"
-[dumpfile_mtime] "Fri Dec 30 06:48:24 2022"
-[dumpfile_size] 2237085459
+[dumpfile_mtime] "Sat Jan  7 05:04:24 2023"
+[dumpfile_size] 198840591
 [savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/demo_verilator/012_MANDEL/config.gtkw"
-[timestart] 222203000
+[timestart] 2553996000
 [size] 1920 992
 [pos] -1 -1
-*-18.194408 221600000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-18.194408 2554700000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tb.
 [treeopen] tb.cpu0.
 [treeopen] tb.cpu0.cpu0.
@@ -32,17 +32,43 @@ tb.UART_BYTE_DISPLAY[7:0]
 -
 -
 @22
-tb.cpu0.cpu0.memory_address[15:0]
 tb.cpu0.cpu0.memory_in[15:0]
 tb.cpu0.cpu0.memory_out[15:0]
 @28
 tb.cpu0.cpu0.memory_wr
-tb.cpu0.cpu0.memory_valid
-tb.cpu0.cpu0.memory_ready
 tb.cpu0.cpu0.mem0.data_memory_success
 tb.cpu0.cpu0.pip0.mem_exception
-@29
 tb.cpu0.cpu0.pip0.nop_stage_4
+@22
+tb.cpu0.cpu0.cache0.cache_request_address[14:0]
+@28
+tb.cpu0.cpu0.cache0.cache_miss
+@22
+tb.cpu0.cpu0.mem0.memory_address[14:0]
+@28
+tb.cpu0.cpu0.mem0.memory_success
+@22
+tb.cpu0.cpu0.mem0.instruction_memory_data[15:0]
+tb.cpu0.cpu0.mem0.data_in[15:0]
+tb.cpu0.mem0.ma0.cpu_memory_data[15:0]
+tb.cpu0.mem0.ma0.cpu_memory_data_in[15:0]
+@28
+tb.cpu0.mem0.ma0.b1_mux_sel[1:0]
+@22
+tb.cpu0.mem0.ma0.B1_DOUT[15:0]
+tb.cpu0.mem0.B2_DOUT[15:0]
+tb.cpu0.mem0.cpu_memory_data[15:0]
+tb.cpu0.mem0.boot_data[15:0]
+tb.cpu0.mem0.cpu_memory_address[14:0]
+@200
+-
+@22
+tb.cpu0.cpu0.mem0.memory_address[14:0]
+@28
+tb.cpu0.cpu0.mem0.mem_wr
+tb.cpu0.cpu0.mem0.memory_success
+@29
+tb.cpu0.cpu0.mem0.wr_mask[1:0]
 @200
 -
 @820
@@ -158,9 +184,5 @@ tb.cpu0.pc0.aud0.RSTb
 tb.cpu0.pc0.aud0.control_run
 @200
 -
-@28
-tb.cpu0.mem0.ma0.state_r_1[2:0]
-tb.cpu0.mem0.ma0.state_r_1_next[2:0]
-tb.cpu0.mem0.ma0.bg0_rready_r
 [pattern_trace] 1
 [pattern_trace] 0

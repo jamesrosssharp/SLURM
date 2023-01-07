@@ -9,13 +9,12 @@ module slurm16_cpu_top
 	input CLK,
 	input RSTb,
 
-	output [ADDRESS_BITS - 1:0] 	memory_address,
+	output [ADDRESS_BITS - 2:0] 	memory_address,
 	input  [BITS - 1:0] 		memory_in,
 	output [BITS - 1:0]		memory_out,
-	output				memory_valid,	/* memory request */
 	output				memory_wr,	/* memory write */
-	input				memory_ready,	/* memory ready - from arbiter */
 	output [1:0]			memory_wr_mask, /* write mask - for byte wise access to memory */
+	input				memory_success,
 
 	output [ADDRESS_BITS - 1:0] 	port_address,
 	input  [BITS - 1:0]		port_in,
@@ -185,8 +184,6 @@ wire instruction_memory_success;
 wire [14:0] instruction_memory_requested_address;
 wire [15:0] instruction_memory_data;
 
-wire instruction_will_queue;
-
 wire [14:0] cache_request_address = instruction_address;
 wire [31:0] cache_line;
 assign instruction_address_in = cache_line[31:17];
@@ -194,7 +191,7 @@ wire cache_miss;
 assign instruction_valid = !cache_miss;
 assign instruction_in = cache_line[15:0];
 
-cpu_instruction_cache cache0 (
+slurm16_cpu_instruction_cache cache0 (
 	CLK,
 	RSTb,
 
@@ -207,9 +204,7 @@ cpu_instruction_cache cache0 (
 	
 	instruction_memory_success,	
 	instruction_memory_requested_address,	
-	instruction_memory_data,
-
-	instruction_will_queue
+	instruction_memory_data
 );
 
 wire [14:0] load_store_address;
@@ -221,7 +216,7 @@ wire [1:0] data_memory_wr_mask_out;
 
 wire bank_switch;
 
-cpu_memory_interface mem0 (
+slurm16_cpu_memory_interface mem0 (
 	CLK,
 	RSTb,
 
@@ -231,7 +226,6 @@ cpu_memory_interface mem0 (
 	instruction_memory_data,
 	instruction_memory_requested_address, 
 	instruction_memory_success,	
-	instruction_will_queue,
 
 	load_store_address,
 	store_memory_data,
@@ -243,17 +237,12 @@ cpu_memory_interface mem0 (
 	data_memory_success,	
 	data_memory_wr_mask_out,
 
-	bank_switch,
-
 	memory_address,	
 	memory_out,
 	memory_in,
 	memory_wr_mask,
 	memory_wr,
-	memory_valid,		
-	memory_ready,
-
-	! instruction_request	
+	memory_success
 );
 
 wire [REGISTER_BITS - 1:0] regA_sel;

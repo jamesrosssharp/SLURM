@@ -17,8 +17,9 @@ $(SRCDIR)/bram.v			\
 $(SRCDIR)/copper.v			\
 $(SRCDIR)/gfx.v				\
 $(SRCDIR)/gpio.v			\
-$(SRCDIR)/memory_arbiter.v		\
-$(SRCDIR)/memory_controller.v		\
+$(SRCDIR)/slurm16_memory_arbiter.v		\
+$(SRCDIR)/slurm16_peripheral_memory_arbiter.v		\
+$(SRCDIR)/slurm16_memory_controller.v		\
 memory.v				\
 mult.v					\
 unsigned_mult.v				\
@@ -34,13 +35,13 @@ $(SRCDIR)/slurm16_cpu_pipeline.v		\
 $(SRCDIR)/slurm16_cpu_top.v			\
 $(SRCDIR)/slurm16_cpu_decode.v			\
 $(SRCDIR)/slurm16_cpu_execute.v			\
-$(SRCDIR)/cpu_memory_interface.v	\
+$(SRCDIR)/slurm16_cpu_memory_interface.v	\
 $(SRCDIR)/cpu_port_interface.v		\
 $(SRCDIR)/slurm16_cpu_registers.v		\
 $(SRCDIR)/slurm16_cpu_writeback.v		\
 $(SRCDIR)/slurm16_soc.v			\
 $(SRCDIR)/interrupt_controller.v	\
-$(SRCDIR)/cpu_instruction_cache.v	\
+$(SRCDIR)/slurm16_cpu_instruction_cache.v	\
 $(SRCDIR)/port_controller.v		\
 slurm16_ice40.v 
 

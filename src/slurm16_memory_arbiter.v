@@ -240,7 +240,7 @@ slurm16_peripheral_memory_arbiter arb1
 	/* signals from CPU */
 	cpu_memory_address,
 	cpu_memory_data_in,
-	cpu_wr,
+	cpu_wr && (cpu_memory_address[14] == 1'b0),
 	cpu_wr_mask
 );
 
@@ -264,7 +264,7 @@ slurm16_peripheral_memory_arbiter arb2
 	/* signals from CPU */
 	cpu_memory_address,
 	cpu_memory_data_in,
-	cpu_wr,
+	cpu_wr && (cpu_memory_address[14] == 1'b1),
 	cpu_wr_mask
 );
 
@@ -288,7 +288,7 @@ slurm16_peripheral_memory_arbiter arb3
 	/* signals from CPU */
 	cpu_memory_address,
 	cpu_memory_data_in,
-	cpu_wr,
+	1'b0,
 	cpu_wr_mask
 );
 
@@ -311,7 +311,7 @@ slurm16_peripheral_memory_arbiter arb4
 	/* signals from CPU */
 	cpu_memory_address,
 	cpu_memory_data_in,
-	cpu_wr,
+	1'b0,
 	cpu_wr_mask
 );
 

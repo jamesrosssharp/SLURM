@@ -43,9 +43,8 @@ module slurm16 #(
 
 wire [15:0] cpuMemoryIn;
 wire [15:0] cpuMemoryOut;
-wire [15:0] cpuMemoryAddr;
-wire cpuMemory_ready;
-wire cpuMemory_valid;
+wire [14:0] cpuMemoryAddr;
+wire cpuMemory_success;
 wire cpuMemory_wr;
 wire [1:0] cpuMemory_wr_mask;
 
@@ -95,10 +94,9 @@ slurm16_cpu_top cpu0
 	cpuMemoryAddr,
 	cpuMemoryIn,
 	cpuMemoryOut,
-	cpuMemory_valid,	/* memory request */
 	cpuMemory_wr,		/* memory write */
-	cpuMemory_ready,	/* memory ready - from arbiter */
 	cpuMemory_wr_mask,	/* memory write mask */
+	cpuMemory_success,
 
 	cpuPort_address,
 	cpuPort_in,
@@ -179,7 +177,7 @@ pc0
 
 // Memory controller (wrapper to arbiter + ROM overlay)
 
-memory_controller
+slurm16_memory_controller
 #(.BITS(16), .ADDRESS_BITS(16), .CLOCK_FREQ(CLOCK_FREQ))
 mem0
 (
@@ -196,33 +194,17 @@ mem0
 	bg0_rvalid, // memory address valid
 	bg0_rready,  // memory data valid
 
-	bg1_memory_address,
-	bg1_memory_data,
-	bg1_rvalid, // memory address valid
-	bg1_rready,  // memory data valid
-
-	ov_memory_address,
-	ov_memory_data,
-	ov_rvalid, // memory address valid
-	ov_rready,  // memory data valid
-
 	fl_memory_address,
 	fl_memory_data,
 	fl_wvalid, // memory address valid
 	fl_wready,  // memory data valid
 	
-/*	au_memory_address,
-	au_memory_data,
-	au_rvalid, // memory address valid
-	au_rready,  // memory data valid
-*/
 	cpuMemoryAddr,
 	cpuMemoryOut,
 	cpuMemoryIn,
-	cpuMemory_valid, // memory address valid
 	cpuMemory_wr, // CPU is writing to memory
-	cpuMemory_ready,  // memory access granted
-	cpuMemory_wr_mask
+	cpuMemory_wr_mask,
+	cpuMemory_success
 );
 
 

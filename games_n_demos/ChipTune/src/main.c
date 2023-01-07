@@ -458,7 +458,7 @@ int main()
 			int i;
 
 			count += 1;
-			if (count == 20)
+			if (count == 5)
 			{
 
 				row_offset = (cur_patt_buf ? &pattern_B : &pattern_A) + row*32;	
@@ -486,7 +486,7 @@ int main()
 					//if (row >= 40)
 					//{
 				//		my_printf("channel: %d, sample: %d note %d\r\n", channels[i], sample, note);
-						my_printf("%d-%d-%d  ", sample, note, volume);
+					//	my_printf("%d-%d-%d  ", sample, note, volume);
 				//	}
 	
 					if (note)
@@ -504,7 +504,7 @@ int main()
 						set_volume(channels[i], volume);
 				}
 
-				my_printf("\r\n");
+				//my_printf("\r\n");
 
 				row += 1;
 				//row &= 31;

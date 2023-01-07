@@ -9,7 +9,7 @@
  */
 
 
-module cpu_instruction_cache #(
+module slurm16_cpu_instruction_cache #(
 	parameter CACHE_DEPTH_BITS = 8,
 	parameter CACHE_WIDTH_BITS = 32
 ) (
@@ -18,7 +18,7 @@ module cpu_instruction_cache #(
 
 	input [14:0] cache_request_address, /* request address from the cache */
 	
-	output [CACHE_WIDTH_BITS - 1:0] address_data,
+	output [CACHE_WIDTH_BITS - 1:0] address_data, /* cache line */
 
 	output cache_miss, /* = 1 when the requested address doesn't match the address in the cache line */
 
@@ -28,10 +28,7 @@ module cpu_instruction_cache #(
 	
 	input memory_success,	/* Arbiter will assert this when we our request was successful */
 	input [14:0]  memory_requested_address,	/* Requested address will come back to us */ 
-	input [15:0]  memory_data, /* our data */
-
-	input will_queue
-
+	input [15:0]  memory_data /* our data */
 );
 
 reg [31:0] data_out;
@@ -95,11 +92,11 @@ begin
 			mem_address_x 		<= {1'b0, address_x[MEM_ADDRESS_X_BITS - 2:0]};
 			mem_rd_req_r 		<= 1'b1;
 		end
-		else if ((mem_address_x[MEM_ADDRESS_X_BITS - 1] != 1'b1) && (will_queue == 1'b1)) begin
+		else if (mem_address_x[MEM_ADDRESS_X_BITS - 1] != 1'b1) begin
 			mem_address_x 		<= mem_address_x + 1;	// Fill cache in our spare time (we need to keep the memory pipeline filled)
 			mem_rd_req_r 		<= 1'b1;
 		end
-		else if (mem_address_x[MEM_ADDRESS_X_BITS - 1] == 1'b1)
+		else /*if (mem_address_x[MEM_ADDRESS_X_BITS - 1] == 1'b1)*/
 			mem_rd_req_r 		<= 1'b0;
 				
 	end
