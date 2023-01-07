@@ -86,6 +86,11 @@ wire [15:0] b2_periph_din;
 wire [15:0] b3_periph_din;
 wire [15:0] b4_periph_din;
 
+wire [1:0] b1_periph_wr_mask;
+wire [1:0] b2_periph_wr_mask;
+wire [1:0] b3_periph_wr_mask;
+wire [1:0] b4_periph_wr_mask;
+
 wire b1_periph_wr;
 wire b2_periph_wr;
 wire b3_periph_wr;
@@ -93,25 +98,25 @@ wire b4_periph_wr;
 
 /* mux signals going into the memory banks */
 
-assign B1_ADDR = (b1_mux_sel != MUXSEL_CPU) ? b1_periph_addr : cpu_memory_address[13:0];
-assign B2_ADDR = (b2_mux_sel != MUXSEL_CPU) ? b2_periph_addr : cpu_memory_address[13:0];
-assign B3_ADDR = (b3_mux_sel != MUXSEL_CPU) ? b3_periph_addr : cpu_memory_address[13:0];
-assign B4_ADDR = (b4_mux_sel != MUXSEL_CPU) ? b4_periph_addr : cpu_memory_address[13:0];
+assign B1_ADDR = b1_periph_addr;
+assign B2_ADDR = b2_periph_addr;
+assign B3_ADDR = b3_periph_addr;
+assign B4_ADDR = b4_periph_addr;
 
-assign B1_DIN = (b1_mux_sel != MUXSEL_CPU) ? b1_periph_din : cpu_memory_data;
-assign B2_DIN = (b2_mux_sel != MUXSEL_CPU) ? b2_periph_din : cpu_memory_data;
-assign B3_DIN = (b3_mux_sel != MUXSEL_CPU) ? b3_periph_din : cpu_memory_data;
-assign B4_DIN = (b4_mux_sel != MUXSEL_CPU) ? b4_periph_din : cpu_memory_data;
+assign B1_DIN = b1_periph_din;
+assign B2_DIN = b2_periph_din;
+assign B3_DIN = b3_periph_din;
+assign B4_DIN = b4_periph_din;
 
-assign B1_MASK = (b1_mux_sel != MUXSEL_CPU) ? 2'b11 : cpu_wr_mask;
-assign B2_MASK = (b2_mux_sel != MUXSEL_CPU) ? 2'b11 : cpu_wr_mask;
-assign B3_MASK = (b3_mux_sel != MUXSEL_CPU) ? 2'b11 : cpu_wr_mask;
-assign B4_MASK = (b4_mux_sel != MUXSEL_CPU) ? 2'b11 : cpu_wr_mask;
+assign B1_MASK = b1_periph_wr_mask;
+assign B2_MASK = b2_periph_wr_mask;
+assign B3_MASK = b3_periph_wr_mask;
+assign B4_MASK = b4_periph_wr_mask;
 
-assign B1_WR = (b1_mux_sel != MUXSEL_CPU) ? b1_periph_wr : cpu_wr;
-assign B2_WR = (b2_mux_sel != MUXSEL_CPU) ? b1_periph_wr : cpu_wr;
-assign B3_WR = (b3_mux_sel != MUXSEL_CPU) ? b1_periph_wr : cpu_wr;
-assign B4_WR = (b4_mux_sel != MUXSEL_CPU) ? b1_periph_wr : cpu_wr;
+assign B1_WR = b1_periph_wr;
+assign B2_WR = b2_periph_wr;
+assign B3_WR = b3_periph_wr;
+assign B4_WR = b4_periph_wr;
 
 
 /* mux signals going into cpu */
@@ -185,7 +190,7 @@ end
 
 always @(*)
 begin
-	if (b4_mux_sel == MUXSEL_BACKGROUND)
+	if (b2_mux_sel == MUXSEL_BACKGROUND)
 		bg0_memory_data = B2_DOUT;
 	else 
 		bg0_memory_data = B4_DOUT;
@@ -198,27 +203,115 @@ end
  *
  */
 
+always @(posedge CLK)
+begin
+	if (b1_mux_sel == MUXSEL_FLASH)
+		fl_rready <= 1'b1;
+	else if (b2_mux_sel == MUXSEL_FLASH)
+		fl_rready <= 1'b1;
+	else if (b3_mux_sel == MUXSEL_FLASH)
+		fl_rready <= 1'b1;
+	else if (b4_mux_sel == MUXSEL_FLASH)
+		fl_rready <= 1'b1;
+	else
+		fl_rready <= 1'b0;
+end
 
 /* instantiate perhiperal arbiters for banks 1-4 */
 
 slurm16_peripheral_memory_arbiter arb1
 (
+	CLK,
+	RSTb,	
 	b1_mux_sel,
 	b1_periph_addr,
 	b1_periph_din,
 	b1_periph_wr,
+	b1_periph_wr_mask,
 	1'b0,	/* sprite valid */ 
 	1'b0,   /* background valid */
-	fl_wvalid && (fl_memory_address[15:14] == 2'b00) /* flash valid */
+	fl_wvalid && (fl_memory_address[15:14] == 2'b00), /* flash valid */
 	sprite_memory_address, /* sprite address */
 	bg0_memory_address, /* background address */
 	fl_memory_address, /* flash address */
-	1'b0,	/* sprite does not write */
-	1'b0,	/* background does not write */
-	1'b1,	/* flash always writes */
-	16'd0,  /* sprite write data */
-	16'd0,  /* background write data */
 	fl_memory_data, /* flash write data */
+
+	/* signals from CPU */
+	cpu_memory_address,
+	cpu_memory_data_in,
+	cpu_wr,
+	cpu_wr_mask
+);
+
+slurm16_peripheral_memory_arbiter arb2
+(
+	CLK,
+	RSTb,	
+	b2_mux_sel,
+	b2_periph_addr,
+	b2_periph_din,
+	b2_periph_wr,
+	b2_periph_wr_mask,
+	sprite_rvalid && (sprite_memory_address[15:14] == 2'b01), /* sprite valid */ 
+	bg0_rvalid && (bg0_memory_address[15:14] == 2'b01),   /* background valid */
+	fl_wvalid && (fl_memory_address[15:14] == 2'b01), /* flash valid */
+	sprite_memory_address, /* sprite address */
+	bg0_memory_address, /* background address */
+	fl_memory_address, /* flash address */
+	fl_memory_data, /* flash write data */
+
+	/* signals from CPU */
+	cpu_memory_address,
+	cpu_memory_data_in,
+	cpu_wr,
+	cpu_wr_mask
+);
+
+slurm16_peripheral_memory_arbiter arb3
+(
+	CLK,
+	RSTb,	
+	b3_mux_sel,
+	b3_periph_addr,
+	b3_periph_din,
+	b3_periph_wr,
+	b3_periph_wr_mask,
+	sprite_rvalid && (sprite_memory_address[15:14] == 2'b10), /* sprite valid */ 
+	1'b0,   /* background valid */
+	fl_wvalid && (fl_memory_address[15:14] == 2'b10), /* flash valid */
+	sprite_memory_address, /* sprite address */
+	bg0_memory_address, /* background address */
+	fl_memory_address, /* flash address */
+	fl_memory_data, /* flash write data */
+
+	/* signals from CPU */
+	cpu_memory_address,
+	cpu_memory_data_in,
+	cpu_wr,
+	cpu_wr_mask
+);
+
+slurm16_peripheral_memory_arbiter arb4
+(
+	CLK,
+	RSTb,	
+	b3_mux_sel,
+	b3_periph_addr,
+	b3_periph_din,
+	b3_periph_wr,
+	b3_periph_wr_mask,
+	1'b0, /* sprite valid */ 
+	bg0_rvalid && (bg0_memory_address[15:14] == 2'b11),   /* background valid */
+	fl_wvalid && (fl_memory_address[15:14] == 2'b11), /* flash valid */
+	sprite_memory_address, /* sprite address */
+	bg0_memory_address, /* background address */
+	fl_memory_address, /* flash address */
+	fl_memory_data, /* flash write data */
+	/* signals from CPU */
+	cpu_memory_address,
+	cpu_memory_data_in,
+	cpu_wr,
+	cpu_wr_mask
 );
 
 endmodule
