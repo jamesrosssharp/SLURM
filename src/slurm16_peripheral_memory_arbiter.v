@@ -10,7 +10,7 @@ module slurm16_peripheral_memory_arbiter
 	input CLK,
 	input RSTb,
 	output [1:0] mux_sel,
-	output reg [15:0] periph_addr,
+	output reg [13:0] periph_addr,
 	output reg [15:0] periph_din,
 	output reg periph_wr,
 	output reg [1:0] periph_wr_mask,
@@ -20,11 +20,11 @@ module slurm16_peripheral_memory_arbiter
 	input [15:0] sprite_memory_address, /* sprite address */
 	input [15:0] bg0_memory_address, /* background address */
 	input [15:0] fl_memory_address, /* flash address */
-	fl_memory_data, /* flash write data */
+	input [15:0] fl_memory_data, /* flash write data */
 	input [14:0] cpu_memory_address,
 	input [15:0] cpu_memory_data_in,
 	input cpu_wr,
-	input cpu_wr_mask
+	input [1:0] cpu_wr_mask
 
 );
 
@@ -42,25 +42,25 @@ always @(*)
 begin
 	case (state_r)
 		st_idle_cpu: begin
-			periph_addr = cpu_memory_address;
+			periph_addr = cpu_memory_address[13:0];
 			periph_din = cpu_memory_data_in;
 			periph_wr = cpu_wr;
 			periph_wr_mask = cpu_wr_mask;
 		end
 		st_flash: begin
-			periph_addr = fl_memory_address;
-			periph_din = fl_data;
+			periph_addr = fl_memory_address[13:0];
+			periph_din = fl_memory_data;
 			periph_wr = 1'b1;
 			periph_wr_mask = 2'b11;
 		end
 		st_bg0: begin
-			periph_addr = bg0_memory_address;
+			periph_addr = bg0_memory_address[13:0];
 			periph_din = cpu_memory_data_in;
 			periph_wr = 1'b0;
 			periph_wr_mask = cpu_wr_mask;
 		end
 		st_sprite: begin
-			periph_addr = sprite_memory_address;
+			periph_addr = sprite_memory_address[13:0];
 			periph_din = cpu_memory_data_in;
 			periph_wr = 1'b0;
 			periph_wr_mask = cpu_wr_mask;

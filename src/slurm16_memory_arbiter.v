@@ -5,13 +5,13 @@ module slurm16_memory_arbiter
 	
 	/* sprite controller */
 	input  [15:0] 	sprite_memory_address,
-	output [15:0] 	sprite_memory_data,
+	output reg [15:0] 	sprite_memory_data,
 	input 		sprite_rvalid, // memory address valid
 	output reg 	sprite_rready,  // memory data valid
 
 	/* background controller 0 */
 	input  [15:0] 	bg0_memory_address,
-	output [15:0] 	bg0_memory_data,
+	output reg [15:0] 	bg0_memory_data,
 	input 		bg0_rvalid, // memory address valid
 	output reg 	bg0_rready,  // memory data valid
 
@@ -124,6 +124,7 @@ assign B4_WR = b4_periph_wr;
 reg cpu_memory_address14;
 
 always @(posedge CLK)
+begin
 	cpu_memory_address14 <= cpu_memory_address[14];
 	
 	if (b1_mux_sel == MUXSEL_CPU && cpu_memory_address[14] == 1'b0)
@@ -132,7 +133,7 @@ always @(posedge CLK)
 		cpu_memory_success <= 1'b1;
 	else
 		cpu_memory_success <= 1'b0;
-begin
+end
 
 always @(*)
 begin
@@ -206,15 +207,15 @@ end
 always @(posedge CLK)
 begin
 	if (b1_mux_sel == MUXSEL_FLASH)
-		fl_rready <= 1'b1;
+		fl_wready <= 1'b1;
 	else if (b2_mux_sel == MUXSEL_FLASH)
-		fl_rready <= 1'b1;
+		fl_wready <= 1'b1;
 	else if (b3_mux_sel == MUXSEL_FLASH)
-		fl_rready <= 1'b1;
+		fl_wready <= 1'b1;
 	else if (b4_mux_sel == MUXSEL_FLASH)
-		fl_rready <= 1'b1;
+		fl_wready <= 1'b1;
 	else
-		fl_rready <= 1'b0;
+		fl_wready <= 1'b0;
 end
 
 /* instantiate perhiperal arbiters for banks 1-4 */
@@ -295,11 +296,11 @@ slurm16_peripheral_memory_arbiter arb4
 (
 	CLK,
 	RSTb,	
-	b3_mux_sel,
-	b3_periph_addr,
-	b3_periph_din,
-	b3_periph_wr,
-	b3_periph_wr_mask,
+	b4_mux_sel,
+	b4_periph_addr,
+	b4_periph_din,
+	b4_periph_wr,
+	b4_periph_wr_mask,
 	1'b0, /* sprite valid */ 
 	bg0_rvalid && (bg0_memory_address[15:14] == 2'b11),   /* background valid */
 	fl_wvalid && (fl_memory_address[15:14] == 2'b11), /* flash valid */
