@@ -36,18 +36,18 @@ localparam SCLK_FREQ  = LRCLK_FREQ * 64;
 
 assign mclk = CLK;
 
-reg lr_clk_r = 1'b0;
+reg lr_clk_r;
 reg lr_clk_r_next;
 
 assign lr_clk = lr_clk_r;
 
-reg sclk_r = 1'b0;
+reg sclk_r;
 reg sclk_r_next;
 
 assign sclk = sclk_r;
 
-reg [8:0] lr_clk_count_r = 0; // CLK / 512
-reg [2:0] sclk_count_r = 0;   // CLK / 16
+reg [8:0] lr_clk_count_r; // CLK / 512
+reg [2:0] sclk_count_r;   // CLK / 16
 
 reg [63:0] serial_data_r = {64{1'b0}};
 reg [63:0] serial_data_r_next;
@@ -94,6 +94,13 @@ begin
 		left_rd_addr  <= 9'd0;
 		right_rd_addr <= 9'd0;
 		control_run <= 1'b0;
+
+		lr_clk_r <= 1'b0;
+		sclk_r <= 1'b0;
+
+		lr_clk_count_r <= 9'd0;
+		sclk_count_r <= 3'd0;
+
 	end else begin
 		lr_clk_count_r 	<= lr_clk_count_r + 1;	
 		sclk_count_r 	<= sclk_count_r + 1;

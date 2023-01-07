@@ -129,11 +129,6 @@ begin
 						cond_pass_r = 1'b1;
 					end
 				end
-				INSTRUCTION_CASEX_COND_MOV: begin
-					if (branch_taken_from_ins({imm_reg, instruction[3:0]}, Z, S, C, V) == 1'b1) begin
-						cond_pass_r = 1'b1;
-					end	
-				end
 				default: ;
 			endcase
 	end

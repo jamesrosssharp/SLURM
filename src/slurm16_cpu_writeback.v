@@ -25,7 +25,13 @@ module slurm16_cpu_writeback #(parameter REGISTER_BITS = 4, BITS = 16, ADDRESS_B
 	input load_interrupt_return_address,
 
 	/* conditional instruction passed in stage2 */
-	input cond_pass
+	input cond_pass,
+
+	// Flags for cond mov
+	input Z,
+	input C,
+	input S,
+	input V
 
 );
 
@@ -103,7 +109,9 @@ begin
 				end
 			end
 			INSTRUCTION_CASEX_COND_MOV: begin
-				if (cond_pass == 1'b1) begin
+				/* For best performance, cond mov, operates on flags in stage4, immediately after an alu op (e.g. cmp) */
+
+				if (branch_taken_from_ins({imm_reg, instruction[3:0]}, Z, S, C, V) == 1'b1) begin
 					reg_wr_addr_r = reg_dest_from_ins(instruction);
 					reg_out_r = aluOut;
 				end

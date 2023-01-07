@@ -404,7 +404,12 @@ slurm16_cpu_writeback wb0
 	load_return_address,
 
 	/* conditional instruction passed in stage2 */
-	cond_pass_stage4
+	cond_pass_stage4,
+
+	Z,
+	C,
+	S,
+	V
 );
 
 cpu_port_interface #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_prt0 (

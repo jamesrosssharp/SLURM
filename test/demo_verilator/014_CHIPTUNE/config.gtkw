@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Sat Aug 20 09:36:08 2022
+[*] Sat Jan  7 11:20:25 2023
 [*]
 [dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/demo_verilator/014_CHIPTUNE/dump.vcd"
-[dumpfile_mtime] "Sat Aug 20 09:26:07 2022"
-[dumpfile_size] 2290850405
+[dumpfile_mtime] "Sat Jan  7 11:19:08 2023"
+[dumpfile_size] 485426709
 [savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/demo_verilator/014_CHIPTUNE/config.gtkw"
-[timestart] 125893606000
+[timestart] 30642185000
 [size] 1381 907
 [pos] 505 46
-*-19.194408 125894100000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-19.194408 30623003000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tb.
 [treeopen] tb.cpu0.
 [treeopen] tb.cpu0.cpu0.
@@ -30,49 +30,24 @@ tb.UART_BYTE[7:0]
 tb.UART_BYTE_DISPLAY[7:0]
 @200
 -
-@22
-tb.cpu0.cpu0.pip0.state[3:0]
-@28
-tb.cpu0.cpu0.pip0.cache_miss
-@200
 -
 @22
-tb.cpu0.cpu0.memory_address[15:0]
 tb.cpu0.cpu0.memory_in[15:0]
 tb.cpu0.cpu0.memory_out[15:0]
 @28
-tb.cpu0.cpu0.cpu_wr0.memory_wr_mask_delayed[1:0]
 tb.cpu0.cpu0.memory_wr
-tb.cpu0.cpu0.memory_valid
-tb.cpu0.cpu0.memory_ready
 tb.cpu0.cpu0.mem0.data_memory_success
 @22
-tb.cpu0.cpu0.cpu_exec0.load_store_address[15:0]
 tb.cpu0.cpu0.mem0.address_stage_1[14:0]
 tb.cpu0.cpu0.mem0.address_stage_2[14:0]
 @200
 -
-@22
-tb.cpu0.cpu0.pip0.pc[14:0]
-tb.cpu0.cpu0.pip0.pc_stage0_r[14:0]
-@200
 -
-@22
-tb.cpu0.cpu0.pip0.pipeline_stage0[15:0]
-tb.cpu0.cpu0.pip0.pipeline_stage1[15:0]
-tb.cpu0.cpu0.pip0.pipeline_stage2[15:0]
-tb.cpu0.cpu0.pip0.pipeline_stage3[15:0]
-tb.cpu0.cpu0.pip0.pipeline_stage4[15:0]
-@29
+@28
 tb.cpu0.cpu0.pip0.interrupt_flag_r
 @200
 -
 -
-@28
-tb.cpu0.cpu0.cpu_exec0.memory_wr_mask[1:0]
-@22
-tb.cpu0.cpu0.cpu_exec0.memory_out[15:0]
-@200
 -
 @22
 tb.cpu0.pc0.irq0.irq_clear_pending[4:0]
@@ -96,9 +71,25 @@ tb.cpu0.pc0.tr0.traceVal_r[15:0]
 tb.cpu0.pc0.gfx0.spcon0.aram_WR
 @200
 -
+@820
+tb.cpu0.cpu0.pip0.ascii_instruction0[135:0]
+tb.cpu0.cpu0.pip0.ascii_instruction1[135:0]
+tb.cpu0.cpu0.pip0.ascii_instruction2[135:0]
+tb.cpu0.cpu0.pip0.ascii_instruction3[135:0]
+tb.cpu0.cpu0.pip0.ascii_instruction4[135:0]
+@200
 -
 @22
+tb.cpu0.cpu0.pip0.debug_op0[15:0]
+tb.cpu0.cpu0.pip0.debug_op1[15:0]
+tb.cpu0.cpu0.pip0.debug_op2[15:0]
+tb.cpu0.cpu0.pip0.debug_op3[15:0]
+tb.cpu0.cpu0.pip0.debug_op4[15:0]
+@200
+-
+@23
 tb.cpu0.cpu0.port_address[15:0]
+@22
 tb.cpu0.cpu0.port_in[15:0]
 tb.cpu0.cpu0.port_out[15:0]
 @28
@@ -137,12 +128,6 @@ tb.cpu0.cpu0.reg0.\regFileA[15][15:0]
 @200
 -
 @22
-tb.cpu0.cpu0.pip0.imm_reg[15:0]
-tb.cpu0.cpu0.cpu_exec0.regA[15:0]
-tb.cpu0.cpu0.cpu_exec0.regB[15:0]
-tb.cpu0.cpu0.cpu_wr0.reg_out[15:0]
-tb.cpu0.cpu0.cpu_wr0.memory_in[15:0]
-tb.cpu0.cpu0.cpu_wr0.instruction[15:0]
 tb.cpu0.cpu0.alu0.out[15:0]
 @200
 -
@@ -153,7 +138,6 @@ tb.cpu0.cpu0.alu0.C_flag_reg
 @200
 -
 @22
-tb.cpu0.cpu0.cpu_exec0.load_store_address[15:0]
 tb.cpu0.pc0.u0.tx_reg[7:0]
 @28
 tb.cpu0.pc0.u0.TX
@@ -180,20 +164,27 @@ tb.cpu0.pc0.irq0.irq_audio
 tb.cpu0.pc0.aud0.left_rd_addr[8:0]
 tb.cpu0.pc0.aud0.right_rd_addr[8:0]
 tb.cpu0.pc0.aud0.right_rd_addr_next[8:0]
+tb.cpu0.pc0.aud0.left_rd_addr[8:0]
+tb.cpu0.pc0.aud0.right_rd_addr[8:0]
+tb.cpu0.pc0.aud0.lr_clk_count_r[8:0]
 @28
+tb.cpu0.pc0.aud0.sclk_count_r[2:0]
 tb.cpu0.pc0.aud0.sclk
 tb.cpu0.pc0.aud0.CLK
 tb.cpu0.pc0.aud0.lr_clk
+tb.cpu0.pc0.aud0.lr_clk
+tb.cpu0.pc0.aud0.lr_clk_r
+tb.cpu0.pc0.aud0.sclk_r
+tb.cpu0.pc0.aud0.sclk_r_next
+tb.cpu0.pc0.aud0.lr_clk_r_next
 tb.cpu0.pc0.aud0.RSTb
 tb.cpu0.pc0.aud0.control_run
 @22
 tb.cpu0.pc0.aud0.left_rd_addr[8:0]
 tb.cpu0.pc0.aud0.right_rd_addr[8:0]
+@28
+tb.cpu0.pc0.aud0.control_run
 @200
 -
-@28
-tb.cpu0.mem0.ma0.state_r_1[2:0]
-tb.cpu0.mem0.ma0.state_r_1_next[2:0]
-tb.cpu0.mem0.ma0.bg0_rready_r
 [pattern_trace] 1
 [pattern_trace] 0

@@ -130,30 +130,30 @@ int load_slurm_sng()
 
 	sng_hdr = (struct slurmsng_header*)&song_data; 
 	
-	my_printf("Playlist offset lo: %x hi: %x\r\n", sng_hdr->pl_offset_lo, sng_hdr->pl_offset_hi);
-	my_printf("Playlist len: %d\r\n", sng_hdr->playlist_size);
+	//my_printf("Playlist offset lo: %x hi: %x\r\n", sng_hdr->pl_offset_lo, sng_hdr->pl_offset_hi);
+	//my_printf("Playlist len: %d\r\n", sng_hdr->playlist_size);
 
 	// Get playlist
 
 	pl_hdr = (struct slurmsng_playlist*)((char*)&song_data + sng_hdr->pl_offset_lo);
 
-	my_printf("Playlist chunk len: %d\r\n", pl_hdr->chunklen);
+	//my_printf("Playlist chunk len: %d\r\n", pl_hdr->chunklen);
 
 	pl.pl_len = sng_hdr->playlist_size;
 	pl.pl = (char*) pl_hdr + 4; 
 
-	my_printf("Playlist offset: %x\r\n", pl.pl);
+	//my_printf("Playlist offset: %x\r\n", pl.pl);
 
 	// Get samples
 
-	my_printf("Num samples: %d\r\n", sng_hdr->num_samples);
+	//my_printf("Num samples: %d\r\n", sng_hdr->num_samples);
 	
 	samp =  (struct sample*)((char*)&song_data + sng_hdr->sample_offset_lo);
  	
 	for (i = 0; i < sng_hdr->num_samples; i++)
 	{
 		g_samples[i] = samp;
-		my_printf("Sample %d: %x %d\r\n", i, g_samples[i], samp->sample_len);
+		//my_printf("Sample %d: %x %d\r\n", i, g_samples[i], samp->sample_len);
 		
 		g_samples[i]->offset = (char*)(samp + 1);
 		samp = (struct sample*)(((char*)(samp + 1)) + samp->sample_len);
@@ -166,7 +166,7 @@ int load_slurm_sng()
 	for (i = 0; i < 2; i++)
 	{
 		patterns[i] = pattern;
-		my_printf("Pattern: %d %x\n", i, pattern);
+		//my_printf("Pattern: %d %x\n", i, pattern);
 		pattern += 64*8*4;
 	}
 
@@ -288,12 +288,12 @@ void do_vsync()
 	
 }
 
-short channels[] = {0,4,1,5,2,6,3,7};
+short channels[] = {0,1,2,3,4,5,6,7};
 
 int main()
 {
 	int i;
-	int count = 0;
+	int count = 4;
 	int row = 0;
 	int cur_patt_buf = 0;
 	int ord = 2;
