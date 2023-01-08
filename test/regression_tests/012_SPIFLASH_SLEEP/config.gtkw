@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Mon Dec 26 06:41:33 2022
+[*] Sun Jan  8 09:36:42 2023
 [*]
 [dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/012_SPIFLASH_SLEEP/dump.vcd"
-[dumpfile_mtime] "Mon Dec 26 06:37:32 2022"
-[dumpfile_size] 1592075
+[dumpfile_mtime] "Sun Jan  8 09:36:26 2023"
+[dumpfile_size] 182276239
 [savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/012_SPIFLASH_SLEEP/config.gtkw"
-[timestart] 20096000
+[timestart] 0
 [size] 1920 992
 [pos] 0 0
-*-19.194408 22400000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-27.194408 11200000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tb.
 [treeopen] tb.cpu0.
 [treeopen] tb.cpu0.cpu0.
@@ -23,16 +23,22 @@ tb.cpu0.cpu0.CLK
 tb.cpu0.cpu0.RSTb
 @200
 -
+@28
+tb.flash_csb
+tb.flash_mosi
+tb.flash_sclk
+tb.flash_miso
+@23
+tb.UART_BYTE[7:0]
+@28
+tb.uart_tx
+@200
 -
 @22
-tb.cpu0.cpu0.memory_address[15:0]
 tb.cpu0.cpu0.memory_in[15:0]
 tb.cpu0.cpu0.memory_out[15:0]
 @28
 tb.cpu0.cpu0.memory_wr
-tb.cpu0.cpu0.memory_valid
-tb.cpu0.cpu0.memory_ready
-tb.cpu0.cpu0.mem0.state[1:0]
 @200
 -
 -
@@ -85,7 +91,6 @@ tb.cpu0.cpu0.pip0.imm_r[11:0]
 tb.cpu0.cpu0.pip0.load_pc_request
 tb.cpu0.cpu0.pip0.instruction_request
 tb.cpu0.cpu0.pip0.interrupt_req
-@29
 tb.cpu0.cpu0.pip0.interrupt_flag_r
 @200
 -

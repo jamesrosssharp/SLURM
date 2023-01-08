@@ -29,9 +29,11 @@ wire i2s_data;
 wire i2s_mclk;
 
 wire flash_mosi;
-wire  flash_miso;
+reg  flash_miso;
 wire flash_sclk;
 wire flash_csb;
+
+wire cpu_debug_pin;
 
 slurm16 #(
 .CLOCK_FREQ(10000000)
@@ -62,11 +64,53 @@ slurm16 #(
     flash_mosi,
     flash_miso,
     flash_sclk,
-    flash_csb
+    flash_csb,
+
+    cpu_debug_pin
 );
 
 initial begin 
 	#150 RSTb = 1'b1;
+end
+
+integer i, k;
+
+reg [7:0] UART_BYTE = 8'h00;
+
+reg [63:0] SPI_BYTE;
+
+integer f;
+
+initial begin
+    f = $fopen("simout.txt", "w");
+end
+
+localparam BAUD_TICK = 1e9/115200;
+
+always begin
+	@(negedge uart_tx);
+	#(BAUD_TICK/2); // start bit
+	UART_BYTE <= 8'h00;
+	for (i = 0; i < 8; i += 1) begin
+		#BAUD_TICK; // bits
+		UART_BYTE <= {uart_tx, UART_BYTE[7:1]};	
+	end
+	#BAUD_TICK; // stop bit
+	$fwrite(f, "%c", UART_BYTE);
+end
+
+always begin
+	SPI_BYTE <= 64'h4243424342434243;
+	@(negedge flash_csb);
+	flash_miso <= SPI_BYTE[63];
+	@(negedge flash_csb);
+	SPI_BYTE <= {SPI_BYTE[126:0], 1'b0};	
+	for (k = 0; k < 64; k += 1) begin
+		@(negedge flash_sclk);
+		SPI_BYTE <= {SPI_BYTE[126:0], 1'b0};	
+		flash_miso <= SPI_BYTE[63];
+	end
+//	@(posedge flash_csb);
 end
 
 
@@ -74,7 +118,7 @@ end
 initial begin
     $dumpfile("cpu_mem_stall_test.vcd");
     $dumpvars(0, tb);
-	# 100000 $finish;
+	# 10000000 $finish;
 end
 
 genvar j;

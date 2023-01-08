@@ -56,7 +56,7 @@ do_it:
 	mov r3, 0x4000
 	out [r0, SPI_FLASH_DMA_ADDR], r3
 	mov r3, 0x100
-	out [r0, SPI_FLASH_DMA_ADDR], r3
+	out [r0, SPI_FLASH_DMA_COUNT], r3
 
 	// Enable interrupts
 	mov r1, 1<<3
@@ -85,12 +85,13 @@ do_it:
 	mov r3, 0x8000
 	mov r4, 0x200
 print_loop:
-	ld r1, [r3, 0]
+	ldb r1, [r3, 0]
 	out [r0, UART_TX_REG], r1
 .inner_loop:
 	in r2, [r0, UART_TX_STATUS]
 	or r2, r2
 	bz .inner_loop
+	add r3,1
 	sub r4, 1
 	bnz print_loop 		
 

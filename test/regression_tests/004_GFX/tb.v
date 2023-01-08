@@ -37,6 +37,8 @@ wire  flash_miso;
 wire flash_sclk;
 wire flash_csb;
 
+wire cpu_debug_pin;
+
 slurm16 #(
 .CLOCK_FREQ(10000000)
 ) cpu0 (
@@ -66,7 +68,9 @@ slurm16 #(
     flash_mosi,
     flash_miso,
     flash_sclk,
-    flash_csb
+    flash_csb,
+
+    cpu_debug_pin
 );
 
 
