@@ -124,6 +124,22 @@ begin
 		sclk_r_next = !sclk_r;
 end
 
+`ifdef SIM
+
+integer fl, fr;
+
+initial begin
+	fl = $fopen("laudio.txt");
+	fr = $fopen("raudio.txt");
+end
+
+integer count = 0;
+
+always @(posedge CLK) count = count + 1;
+
+`endif
+
+
 always @(*)
 begin
 	serial_data_r_next = serial_data_r;
@@ -139,9 +155,15 @@ begin
 			if (lr_clk_r == 1'b0) begin // Left channel going to right channel
 				serial_data_r_next[62:47] = right_rd_data;
 				right_rd_addr_next = right_rd_addr + 1;	
+				`ifdef SIM
+					$fwrite(fr, "%d %d\n", count, right_rd_data);			
+				`endif
 			end else begin
 				serial_data_r_next[62:47] = left_rd_data;
 				left_rd_addr_next = left_rd_addr + 1;	
+				`ifdef SIM
+					$fwrite(fl, "%d %d\n", count, left_rd_data);			
+				`endif
 			end
 		end else
 			serial_data_r_next[62:47] = 16'd0; 			

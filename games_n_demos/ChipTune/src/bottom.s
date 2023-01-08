@@ -144,6 +144,8 @@ mix_audio_2:
 mix_audio_2.channel1_loop:
 	ldbsx r9, [r2]
 	add   r4, r3
+	nop
+	nop
 	adc   r2, r1
 	sub   r12, 1
 	mul   r9, r5
@@ -172,6 +174,8 @@ mix_audio_2.channel1_loop:
 mix_audio_2.channel2_loop:
 	ldbsx r9, [r2]
 	add   r4, r3
+	nop
+	nop
 	adc   r2, r1
 	in    r10, [r12, SCRATCH_PAD]
 	sub   r12, 1
@@ -206,6 +210,8 @@ mix_audio_2.channel2_loop:
 mix_audio_2.channel3_loop:
 	ldbsx r9, [r2]
 	add   r4, r3
+	nop
+	nop
 	adc   r2, r1
 	in    r10, [r12, SCRATCH_PAD]
 	mul   r9, r5
@@ -239,6 +245,8 @@ mix_audio_2.channel3_loop:
 mix_audio_2.channel4_loop:
 	ldbsx r9, [r2]
 	add   r4, r3
+	nop
+	nop
 	adc   r2, r1
 	in    r10, [r12, SCRATCH_PAD]
 	mul   r9, r5
@@ -271,6 +279,8 @@ mix_audio_2.channel4_loop:
 mix_audio_2.channel5_loop:
 	ldbsx r9, [r2]
 	add   r4, r3
+	nop
+	nop
 	adc   r2, r1
 	sub   r12, 1
 	mul   r9, r5
@@ -300,6 +310,8 @@ mix_audio_2.channel5_loop:
 mix_audio_2.channel6_loop:
 	ldbsx r9, [r2]
 	add   r4, r3
+	nop
+	nop
 	adc   r2, r1
 	in    r10, [r12, SCRATCH_PAD]
 	sub   r12, 1
@@ -334,6 +346,8 @@ mix_audio_2.channel6_loop:
 mix_audio_2.channel7_loop:
 	ldbsx r9, [r2]
 	add   r4, r3
+	nop
+	nop
 	adc   r2, r1
 	in    r10, [r12, SCRATCH_PAD]
 	sub   r12, 1
@@ -368,6 +382,8 @@ mix_audio_2.channel7_loop:
 mix_audio_2.channel8_loop:
 	ldbsx r9, [r2]
 	add   r4, r3
+	nop
+	nop
 	adc   r2, r1
 	in    r10, [r12, SCRATCH_PAD]
 	mul   r9, r5

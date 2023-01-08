@@ -111,7 +111,7 @@ begin
 			INSTRUCTION_CASEX_COND_MOV: begin
 				/* For best performance, cond mov, operates on flags in stage4, immediately after an alu op (e.g. cmp) */
 
-				if (branch_taken_from_ins({imm_reg, instruction[3:0]}, Z, S, C, V) == 1'b1) begin
+				if (branch_taken_from_ins(instruction, Z, S, C, V) == 1'b1) begin
 					reg_wr_addr_r = reg_dest_from_ins(instruction);
 					reg_out_r = aluOut;
 				end
