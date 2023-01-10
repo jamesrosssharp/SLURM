@@ -30,7 +30,7 @@ void AST::push_number(int number)
 {
 	ExpressionNode* item = new ExpressionNode();
 	item->type = ITEM_NUMBER;
-	item->value = number;
+	item->val.value = number;
 	item->left = item->right = NULL;
 	push_stack(item);
 }
@@ -99,7 +99,7 @@ static int recurse_items(struct ExpressionNode* item)
 	switch (item->type)
 	{
 		case ITEM_NUMBER:
-			return item->value;
+			return item->val.value;
 		case ITEM_LSHIFT:
 			return recurse_items(item->left) << recurse_items(item->right);
 		case ITEM_RSHIFT:

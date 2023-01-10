@@ -1,6 +1,6 @@
 #pragma once
 
-enum ExpressionNodeType {
+enum ItemType {
 	ITEM_LSHIFT,
 	ITEM_RSHIFT,
 	ITEM_ADD,
@@ -16,10 +16,10 @@ struct ExpressionNode {
 
 	enum ItemType type;
 
-	union val {
+	union {
 		int value;
 		char* name;
-	}; 
+	} val; 
 
 	ExpressionNode* left;
 	ExpressionNode* right;

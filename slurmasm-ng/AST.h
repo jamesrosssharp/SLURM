@@ -4,6 +4,7 @@
 
 #include <deque>
 
+
 class AST {
 	
 	public:
@@ -30,7 +31,7 @@ class AST {
 	private:
 		void push_binary(enum ItemType type);
 	
-		std::deque<ExpressionNode*> m_expressionStack;
+		std::deque<ExpressionNode*> m_stack;
 };
 
 
