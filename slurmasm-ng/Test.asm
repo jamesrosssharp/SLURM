@@ -1,5 +1,17 @@
 SOME_EQU equ (-2 + 1024 + 512 - (3 << 2)) / 2
 
-some_label:
+ANOTHER_EQU equ 5 + 7
+
+LABEL_EQU equ loop + 2 - 5*3 + 7
+
+BAD_EQU equ (loop + 2) * 3 - 1
+
+start:
+	mov r1, 4
+	add r1, 1
+loop:
+	ba loop
+
+
 
 .end

@@ -68,12 +68,17 @@
 
 %%
 
-asm: body_section footer { cout << "Parsed asm file" << endl; } ;
+asm : body_section footer { cout << "Parsed asm file" << endl; } ;
 
-expressions: expression ;
+op_code : op_code_0 | op_code_1 ; 
+
+op_code_0 : OPCODE REG COMMA expression ENDL { g_ast.addOneRegisterAndExpressionOpcode(line_num - 1, $1, $2); } ;
+op_code_1 : OPCODE expression ENDL { g_ast.addExpressionOpcode(line_num - 1, $1); } ;
+
 expression: 
 	INT    { g_ast.push_number($1); 	} |
 	HEXVAL { g_ast.push_number($1); 	} |	
+	STRING { g_ast.push_symbol($1);		} |
 	expression SHL expression	{ g_ast.push_lshift(); } |
 	expression SHR expression	{ g_ast.push_rshift(); } |
 	expression PLUS expression	{ g_ast.push_add(); }	 |	
@@ -85,12 +90,12 @@ expression:
 	;
 
 
-equ: STRING EQU expressions ENDL {g_ast.addEqu(line_num, $1); } ;
+equ: STRING EQU expression ENDL {g_ast.addEqu(line_num, $1); } ;
 
 body_section: body_lines ;
 body_lines: body_lines body_line | body_line ;
 
-body_line: equ | blank_line | label;
+body_line: equ | blank_line | label | op_code;
 
 label: STRING LABEL ENDL { g_ast.addLabel(line_num, $1); } ;
 
@@ -159,7 +164,7 @@ int main(int argc, char** argv) {
 }
 
 void yyerror(const char *s) {
-	cout << "Parse error on line " << line_num << ": " << s << endl;
+	cout << "Parse error on line " << (line_num + 1) << ": " << s << endl;
 	// might as well halt now:
 	exit(-1);
 }

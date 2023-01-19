@@ -15,6 +15,9 @@ class AST {
 		bool pop_stack(ExpressionNode** item); /* return false if stack is empty */
 
 		void push_number(int number);
+
+		void push_symbol(char *symbol);
+
 		void push_lshift();
 		void push_rshift();
 		void push_add();
@@ -25,8 +28,14 @@ class AST {
 
 		void eval_stack();
 
+		void reduce_stack();
+
 		void addEqu(int linenum, char* name); 
 		void addLabel(int linenum, char* name);
+
+		void addOneRegisterAndExpressionOpcode(int linenum, char* opcode, char* reg);
+   		void addExpressionOpcode(int linenum, char* opcode); 
+
 
 	private:
 		void push_binary(enum ItemType type);
