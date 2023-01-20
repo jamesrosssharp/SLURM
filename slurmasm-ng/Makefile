@@ -1,8 +1,20 @@
 
 all: slurmasm-ng
 
-slurmasm-ng:	slurmasm-ng.tab.c lex.yy.c AST.cpp AST.h
-	g++ slurmasm-ng.tab.c lex.yy.c AST.cpp -std=c++11 -lfl -I../common -o slurmasm-ng
+SRC = 	slurmasm-ng.tab.c \
+      	lex.yy.c \
+      	AST.cpp \
+	SymbolTable.cpp	\
+	Statement.cpp
+      
+INCLUDE =	AST.h	\
+	  	ExpressionNode.h \
+		SymbolTable.h	\
+		Statement.h
+
+
+slurmasm-ng:	$(SRC) $(INCLUDE)
+	g++ $(SRC) -std=c++11 -lfl -I../common -o slurmasm-ng
 
 slurmasm-ng.tab.c: slurmasm-ng.y
 	bison -d slurmasm-ng.y

@@ -9,7 +9,7 @@ enum ItemType {
 	ITEM_DIV,
 	ITEM_UNARY_NEG,
 	ITEM_NUMBER,
-	ITEM_LABEL
+	ITEM_SYMBOL
 };
 
 struct ExpressionNode {
