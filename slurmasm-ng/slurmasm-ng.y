@@ -72,8 +72,8 @@ asm : body_section footer { cout << "Parsed asm file" << endl; } ;
 
 op_code : op_code_0 | op_code_1 ; 
 
-op_code_0 : OPCODE REG COMMA expression ENDL { g_ast.addOneRegisterAndExpressionOpcode(line_num - 1, $1, $2); } ;
-op_code_1 : OPCODE expression ENDL { g_ast.addExpressionOpcode(line_num - 1, $1); } ;
+op_code_0 : OPCODE REG COMMA expression ENDL { g_ast.addOneRegisterAndExpressionOpcode(line_num, $1, $2); } ;
+op_code_1 : OPCODE expression ENDL { g_ast.addExpressionOpcode(line_num, $1); } ;
 
 expression: 
 	INT    { g_ast.push_number($1); 	} |
@@ -160,6 +160,8 @@ int main(int argc, char** argv) {
 	do {
 	yyparse();
 	} while (!feof(yyin));
+
+	g_ast.print();
 
 }
 

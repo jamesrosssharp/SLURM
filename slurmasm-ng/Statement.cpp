@@ -17,7 +17,7 @@ void Statement::reset()
 {
 	lineNum = 0;
 
-	expression = nullptr;
+	expression.reset();
 
 	type = StatementType::None;
 

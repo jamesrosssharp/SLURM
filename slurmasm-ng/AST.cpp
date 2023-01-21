@@ -104,24 +104,261 @@ void AST::push_symbol(char *symbol)
 	push_stack(item);
 }
 
-void AST::addEqu(int linenum, char* name)
+void AST::addEqu(int linenum, char* label)
 {
-	printf("Adding EQU line %d: %s\n", linenum, name);
+	m_currentStatement.lineNum = linenum;
+	m_currentStatement.type = StatementType::EQU;
+	m_currentStatement.expression.lineNum = linenum;
+	m_currentStatement.expression.root = m_stack.back();
+	m_stack.pop_back();
+	m_currentStatement.label = label;
+	m_sectionStatements[m_currentSection].push_back(m_currentStatement);
+	m_currentStatement.reset();
+
 }
 
-void AST::addLabel(int linenum, char* name)
+void AST::addLabel(int linenum, char* label)
 {
-	printf("Adding Label line %d %s\n", linenum, name);
+	m_currentStatement.lineNum = linenum;
+	m_currentStatement.label = label;
+	m_currentStatement.type = StatementType::LABEL;
+	m_sectionStatements[m_currentSection].push_back(m_currentStatement);
+	m_currentStatement.reset();
 }
 
-void AST::addOneRegisterAndExpressionOpcode(int linenum, char* opcode, char* reg)
+void AST::addOneRegisterAndExpressionOpcode(int linenum, char* opcode, char* regDest)
 {
-	printf("Adding one register and expression opcode");
+	m_currentStatement.lineNum = linenum;
+	m_currentStatement.opcode = convertOpCode(opcode);
+	m_currentStatement.regDest = convertReg(regDest);
+	m_currentStatement.type = StatementType::ONE_REGISTER_OPCODE_AND_EXPRESSION;
+	m_currentStatement.expression.lineNum = linenum;
+	m_currentStatement.expression.root = m_stack.back();
+	m_stack.pop_back();
+	m_sectionStatements[m_currentSection].push_back(m_currentStatement);
+	m_currentStatement.reset();
+
 }
 
 void AST::addExpressionOpcode(int linenum, char* opcode)
 {
-	printf("Adding expression opcode");
+	m_currentStatement.lineNum = linenum;
+	m_currentStatement.opcode = convertOpCode(opcode);
+	m_currentStatement.type = StatementType::OPCODE_WITH_EXPRESSION;
+	m_currentStatement.expression.lineNum = linenum;
+	m_currentStatement.expression.root = m_stack.back();
+	m_stack.pop_back();
+	m_sectionStatements[m_currentSection].push_back(m_currentStatement);
+	m_currentStatement.reset();
+
 }
 
+OpCode AST::convertOpCode(char* opcode)
+{
+	std::string s(opcode);
+
+	for (auto & c: s)
+		c = toupper(c);
+
+	return OpCode_convertOpCode(s);
+
+}
+
+Register AST::convertReg(char* reg)
+{
+
+	std::string s(reg);
+
+	for (auto & c: s)
+		c = tolower(c);
+
+	if (s == "r0")
+	{
+		return Register::r0;
+	}
+	else if (s == "r1")
+	{
+		return Register::r1;
+	}
+	else if (s == "r2")
+	{
+		return Register::r2;
+	}
+	else if (s == "r3")
+	{
+		return Register::r3;
+	}
+	else if (s == "r4")
+	{
+		return Register::r4;
+	}
+	else if (s == "r5")
+	{
+		return Register::r5;
+	}
+	else if (s == "r6")
+	{
+		return Register::r6;
+	}
+	else if (s == "r7")
+	{
+		return Register::r7;
+	}
+	else if (s == "r8")
+	{
+		return Register::r8;
+	}
+	else if (s == "r9")
+	{
+		return Register::r9;
+	}
+	else if (s == "r10")
+	{
+		return Register::r10;
+	}
+	else if (s == "r11")
+	{
+		return Register::r11;
+	}
+	else if (s == "r12")
+	{
+		return Register::r12;
+	}
+	else if (s == "r13")
+	{
+		return Register::r13;
+	}
+	else if (s == "r14")
+	{
+		return Register::r14;
+	}
+	else if (s == "r15")
+	{
+		return Register::r15;
+	}
+
+
+	return Register::None;
+}
+
+std::ostream& operator << (std::ostream& os, const Statement& s)
+{
+
+	os << "Statement line " << s.lineNum << " : ";
+	
+	switch(s.type)
+	{
+		case StatementType::ONE_REGISTER_OPCODE_AND_EXPRESSION:
+			os << s.opcode << " " << s.regDest << " " << s.expression << std::endl;
+		break;
+		//case StatementType::TWO_REGISTER_OPCODE:
+		//	os << s.opcode << " " << s.regDest << " " << s.regSrc << std::endl;
+		//break;
+		//case StatementType::THREE_REGISTER_OPCODE:
+		//	os << s.opcode << " " << s.regDest << " " << s.regSrc2 << " " << s.regSrc << std::endl;
+		//break;
+		//case StatementType::INDIRECT_ADDRESSING_OPCODE:
+		//	os << s.opcode << " " << s.regDest << " " << s.regInd << " " << s.regOffset << std::endl;
+		//break;
+		//case StatementType::INDIRECT_ADDRESSING_OPCODE_WITH_EXPRESSION:
+		//	os << s.opcode << " " << s.regDest << " " << s.regInd << " " << s.expression << std::endl;
+		//break;
+		case StatementType::OPCODE_WITH_EXPRESSION:
+			os << s.opcode << " " << s.expression << std::endl;
+		break;
+		//case StatementType::PSEUDO_OP_WITH_EXPRESSION:
+		//	os << s.pseudoOp << " " << s.expression << std::endl;
+		//break;
+		//case StatementType::STANDALONE_OPCODE:
+		//	os << s.opcode << std::endl;
+		//break;
+		case StatementType::LABEL:
+			os << s.label << ":" << std::endl;
+		break;
+		//case StatementType::TIMES:
+		//	os << "times" << " " << s.expression << " ";
+		//break;
+		case StatementType::EQU:
+			os << "EQU" << " " << s.label << " " << s.expression << std::endl;
+		break;
+	}
+
+	return os;
+}
+
+std::ostream& operator << (std::ostream& os, const ExpressionNode& e)
+{
+	switch (e.type)
+	{
+		case ITEM_UNARY_NEG:
+			os << "-";
+			break;
+		case ITEM_NUMBER:
+			os << e.val.value;
+			return os;
+		case ITEM_SYMBOL:
+			os << e.val.name;
+			return os;
+	}
+
+	os << "(";
+
+	if (e.left != nullptr)
+		os << *e.left;
+
+
+	switch (e.type)
+	{
+		case ITEM_LSHIFT:
+			os << " << " ;
+			break;
+		case ITEM_RSHIFT:
+			os << " >> ";
+			break;
+		case ITEM_ADD:
+			os << " + ";
+			break;
+		case ITEM_SUBTRACT:
+			os << " - ";
+			break;
+		case ITEM_MULT:
+			os << " * ";
+			break;
+		case ITEM_DIV:
+			os << " / ";
+			break;
+	}
+
+	if (e.right != nullptr)
+		os << *e.right;
+
+	os << ")";
+
+	return os;
+
+}
+
+std::ostream& operator << (std::ostream& os, const Expression& e)
+{
+	if (e.root != nullptr)
+		os << *e.root;
+	return os;
+}
+
+void AST::print()
+{
+	// Iterate over sections, statements, etc
+	for (const auto& kv : m_sectionStatements)
+	{
+		auto sec = kv.first;
+
+		std::cout << "Section " << sec << ":" << std::endl;
+
+		for (const auto& stat : kv.second)
+		{	
+			std::cout << "\t\t" << stat;
+		}
+
+	}
+}
 	

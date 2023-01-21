@@ -1,5 +1,12 @@
 
 #include "Expression.h"
+#include <stdio.h>
+
+void Expression::reset()
+{
+	lineNum = 0;
+	root = nullptr;	
+}
 
 static int recurse_items(struct ExpressionNode* item)
 {
@@ -29,7 +36,7 @@ static int recurse_items_with_symbol_value(struct ExpressionNode* item, int v)
 {
 	switch (item->type)
 	{
-		case ITEM_LABEL:
+		case ITEM_SYMBOL:
 			return v;
 		case ITEM_NUMBER:
 			return item->val.value;
@@ -53,8 +60,8 @@ static int recurse_items_with_symbol_value(struct ExpressionNode* item, int v)
 
 static void recurse_find_symbols(ExpressionNode* n, std::map<char*, int>& m)
 {
-	if (n == NULL) return;
-	if (n->type == ITEM_LABEL) 
+	if (n == nullptr) return;
+	if (n->type == ITEM_SYMBOL) 
 	{
 		std::map<char*, int>::iterator it;
 		it = m.find(n->val.name);
@@ -79,7 +86,7 @@ void simplify_expression(ExpressionNode* exp) {
 	recurse_find_symbols(exp, map);
 	
 	int symbols = 0;
-	char* last_sym = NULL;
+	char* last_sym = nullptr;
 
 	for (const auto& kv : map)
 	{
@@ -115,6 +122,8 @@ void simplify_expression(ExpressionNode* exp) {
 		 *	and hence embed them in elf files. If not, we have to raise an 
 		 *	error. 
 		 *
+		 *	OOPS: THIS IS BROKEN FOR BITWISE OPERATORS. NEED TO FIX
+		 *
 		 */
 
 
@@ -145,7 +154,7 @@ void simplify_expression(ExpressionNode* exp) {
 
 void print_expression(struct ExpressionNode* item)
 {
-	if (item == NULL)
+	if (item == nullptr)
 		return;
 
 	switch (item->type)
@@ -156,7 +165,7 @@ void print_expression(struct ExpressionNode* item)
 		case ITEM_NUMBER:
 			printf("%d", item->val.value);
 			return;
-		case ITEM_LABEL:
+		case ITEM_SYMBOL:
 			printf("%s", item->val.name);
 			return;
 	}
@@ -167,7 +176,7 @@ void print_expression(struct ExpressionNode* item)
 	
 	switch (item->type)
 	{
-	case ITEM_LSHIFT:
+		case ITEM_LSHIFT:
 			printf(" << " );
 			break;
 		case ITEM_RSHIFT:

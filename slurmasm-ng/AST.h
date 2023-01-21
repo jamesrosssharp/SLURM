@@ -1,9 +1,14 @@
 #pragma once
 
 #include "ExpressionNode.h"
+#include "SymbolTable.h"
+#include "Statement.h"
+#include "types.h"
+#include "OpCode.h"
 
 #include <deque>
-
+#include <map>
+#include <vector>
 
 class AST {
 	
@@ -36,11 +41,30 @@ class AST {
 		void addOneRegisterAndExpressionOpcode(int linenum, char* opcode, char* reg);
    		void addExpressionOpcode(int linenum, char* opcode); 
 
+		/* print out AST */
+		void print();
 
 	private:
+
+		OpCode convertOpCode(char* opcode);
+		Register convertReg(char* reg);
 		void push_binary(enum ItemType type);
+
+		std::string m_currentSection = ".text";
 	
 		std::deque<ExpressionNode*> m_stack;
+
+		Statement m_currentStatement;
+
+		std::map<std::string, std::vector<Statement>> m_sectionStatements;
+
+		SymbolTable m_symbolTable; 
+		std::vector<Symbol*> m_symbolList;  // a vector of symbols in order found in file for correct evaluation
+
 };
 
+std::ostream& operator << (std::ostream& os, const Expression& e);
+std::ostream& operator << (std::ostream& os, const ExpressionNode*& e);
+std::ostream& operator << (std::ostream& os, const Statement& s);
+std::ostream& operator << (std::ostream& os, const OpCode& o);
 

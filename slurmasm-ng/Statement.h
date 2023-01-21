@@ -4,21 +4,33 @@
 #include <cstdint>
 
 #include "Expression.h"
+#include "types.h"
+#include "OpCode.h"
 
 enum class StatementType
 {
 	None,
 	LABEL,
 	EQU,
+	ONE_REGISTER_OPCODE_AND_EXPRESSION,
+	OPCODE_WITH_EXPRESSION
 };
 
 struct Statement
 {
 	int		lineNum;
 
-	// Expressions are binary trees of operators 
-	// TODO: what about a ternary operator??
-	ExpressionNode*	expression;
+	PseudoOp    pseudoOp;
+	OpCode      opcode;
+
+	Register    regSrc;
+	Register    regSrc2;
+	Register    regDest;
+
+	Register    regInd;
+	Register    regOffset;
+
+	Expression expression;
 
 	StatementType type;
 
