@@ -161,6 +161,12 @@ int main(int argc, char** argv) {
 	yyparse();
 	} while (!feof(yyin));
 
+	g_ast.buildSymbolTable();
+
+	g_ast.reduceSymbolTable();
+
+	g_ast.printSymbolTable();
+
 	g_ast.print();
 
 }

@@ -1,6 +1,8 @@
 
 #include "Expression.h"
 #include <stdio.h>
+#include <sstream>
+#include "SymbolTable.h"
 
 void Expression::reset()
 {
@@ -201,4 +203,78 @@ void print_expression(struct ExpressionNode* item)
 	printf(")");
 }
 
+static int recurse_evaluate_with_symbol_table(struct ExpressionNode* item, SymTab_t& tab, bool& success)
+{
+	switch (item->type)
+	{
+		case ITEM_SYMBOL:
+		{
+			Symbol* s;
+
+			std::string n = item->val.name;
+			//s = &tab[n];
+
+			if (tab.find(n) == tab.end())
+			{
+				std::stringstream ss;
+				ss << "Undefined symbol: " << item->val.name  << std::endl;
+
+				throw std::runtime_error(ss.str());
+			}
+			s = &tab[n];
+
+			if (! s->reduced)
+			{
+				if (s->type == SymbolType::SYMBOL_CONSTANT)
+				{
+					std::stringstream ss;
+					ss << "Referencing another EQU which has not been evaluated yet: " << item->val.name  << std::endl;
+
+					throw std::runtime_error(ss.str());
+				}	
+				else
+					success = false;	
+			}
+		
+			return s->value;
+
+		}
+		case ITEM_NUMBER:
+			return item->val.value;
+		case ITEM_LSHIFT:
+			return recurse_evaluate_with_symbol_table(item->left, tab, success) << recurse_evaluate_with_symbol_table(item->right, tab, success);
+		case ITEM_RSHIFT:
+			return recurse_evaluate_with_symbol_table(item->left, tab, success) >> recurse_evaluate_with_symbol_table(item->right, tab, success);
+		case ITEM_ADD:
+			return recurse_evaluate_with_symbol_table(item->left, tab, success) + recurse_evaluate_with_symbol_table(item->right, tab, success);
+		case ITEM_SUBTRACT:
+			return recurse_evaluate_with_symbol_table(item->left, tab, success) - recurse_evaluate_with_symbol_table(item->right, tab, success);
+		case ITEM_MULT:
+			return recurse_evaluate_with_symbol_table(item->left, tab, success) * recurse_evaluate_with_symbol_table(item->right, tab, success);
+		case ITEM_DIV:
+			return recurse_evaluate_with_symbol_table(item->left, tab, success) / recurse_evaluate_with_symbol_table(item->right, tab, success);
+		case ITEM_UNARY_NEG:
+			return - recurse_evaluate_with_symbol_table(item->left, tab, success);
+	}
+	return 0;
+}
+
+bool Expression::evaluate(SymTab_t &tab, int &value)
+{
+
+	bool success = true;
+
+	try {
+		value = recurse_evaluate_with_symbol_table(root, tab, success);
+	} 
+	catch (const std::runtime_error& e)
+	{
+		std::stringstream ss;
+		ss << "Expression on line " << lineNum << " could not be evaluated: " << e.what() << std::endl;
+
+		throw std::runtime_error(ss.str());
+	}
+
+	return success;
+}
 

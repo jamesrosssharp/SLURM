@@ -361,4 +361,45 @@ void AST::print()
 
 	}
 }
+
+void AST::buildSymbolTable()
+{
+	// Iterate over sections, statements, etc
+	for (auto& kv : m_sectionStatements)
+	{
+		auto sec = kv.first;
+
+		for (auto& s : kv.second)
+		{	
+			// For each statement, if it is a LABEL or 
+			// an EQU, add it to the symbol table		
+
+			if (s.type == StatementType::LABEL)
+			{
+				m_symbolTable.addSymbol(s);
+			}
+			else if (s.type == StatementType::EQU)
+			{
+				m_symbolTable.addConstant(s);
+			}
+		
+		}
+
+	}
+
+}
+
+/*
+ *	Simplifies all EQU constants to most basic form.
+ *	
+ */
+void AST::reduceSymbolTable()
+{
+	m_symbolTable.reduce();
+}
+
+void AST::printSymbolTable()
+{
+	std::cout << m_symbolTable << std::endl;
+}
 	

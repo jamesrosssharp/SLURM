@@ -3,38 +3,27 @@
 
 #include <string>
 #include "ExpressionNode.h"
-
 #include <map>
 
-enum SymbolType {
-	SYMBOL_LABEL,
-	SYMBOL_CONSTANT
+#include "Statement.h"
+
+#include <vector>
+
+#include "SymTab_t.h"
+
+struct SymbolTable {
+
+	SymTab_t symtab;
+	std::vector<Symbol*> symlist;
+
+	void addSymbol(Statement& stat); 
+	void addConstant(Statement& stat); 
+	void reduce(); 
+
+private:
+	void _addSymbol(Statement& stat, SymbolType symtype); 
+
 };
 
-struct Symbol {
-
-	enum SymbolType type;
-
-	std::string name;
-
-	bool evaluated;
-
-	int value;
-
-	// Defined in?
-	
-	// Referred by?	
-};
-
-
-class SymbolTable {
-
-	public:
-
-		void print();
-
-	private:
-
-		std::map<std::string, Symbol> m_symtab;
-};
-
+std::ostream& operator << (std::ostream& os, const SymbolTable& s);
+std::ostream& operator << (std::ostream& os, const Symbol& s);
