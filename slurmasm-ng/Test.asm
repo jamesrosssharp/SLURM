@@ -2,13 +2,13 @@ SOME_EQU equ (-2 + 1024 + 512 - (3 << 2)) / 2
 
 ANOTHER_EQU equ SOME_EQU + 5 + 7
 
-LABEL_EQU equ loop + 2 - 5*3 + 7
+LABEL_EQU equ loop + (2<<3) - 5*3 + 7/3
 
-BAD_EQU equ (loop + 2) * 3 - 1
+//BAD_EQU equ (loop + 2) * 3 - 1
 
-ANOTHER_BAD_EQU equ (1 << loop) + 4
+//ANOTHER_BAD_EQU equ (1 << loop) + 4
 
-THIS_IS_ALSO_BAD equ (1 >> (1 - loop))
+//THIS_IS_ALSO_BAD equ (1 >> (1 - loop))
 
 //YET_ANOTHER_BAD equ ANOTHER_BAD_EQU + 1
 

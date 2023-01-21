@@ -10,56 +10,6 @@ void Expression::reset()
 	root = nullptr;	
 }
 
-static int recurse_items(struct ExpressionNode* item)
-{
-	switch (item->type)
-	{
-		case ITEM_NUMBER:
-			return item->val.value;
-		case ITEM_LSHIFT:
-			return recurse_items(item->left) << recurse_items(item->right);
-		case ITEM_RSHIFT:
-			return recurse_items(item->left) >> recurse_items(item->right);
-		case ITEM_ADD:
-			return recurse_items(item->left) + recurse_items(item->right);
-		case ITEM_SUBTRACT:
-			return recurse_items(item->left) - recurse_items(item->right);
-		case ITEM_MULT:
-			return recurse_items(item->left) * recurse_items(item->right);
-		case ITEM_DIV:
-			return recurse_items(item->left) / recurse_items(item->right);
-		case ITEM_UNARY_NEG:
-			return - recurse_items(item->left);
-	}
-	return 0;
-}
-
-static int recurse_items_with_symbol_value(struct ExpressionNode* item, int v)
-{
-	switch (item->type)
-	{
-		case ITEM_SYMBOL:
-			return v;
-		case ITEM_NUMBER:
-			return item->val.value;
-		case ITEM_LSHIFT:
-			return recurse_items_with_symbol_value(item->left, v) << recurse_items_with_symbol_value(item->right, v);
-		case ITEM_RSHIFT:
-			return recurse_items_with_symbol_value(item->left, v) >> recurse_items_with_symbol_value(item->right, v);
-		case ITEM_ADD:
-			return recurse_items_with_symbol_value(item->left, v) + recurse_items_with_symbol_value(item->right, v);
-		case ITEM_SUBTRACT:
-			return recurse_items_with_symbol_value(item->left, v) - recurse_items_with_symbol_value(item->right, v);
-		case ITEM_MULT:
-			return recurse_items_with_symbol_value(item->left, v) * recurse_items_with_symbol_value(item->right, v);
-		case ITEM_DIV:
-			return recurse_items_with_symbol_value(item->left, v) / recurse_items_with_symbol_value(item->right, v);
-		case ITEM_UNARY_NEG:
-			return - recurse_items_with_symbol_value(item->left, v);
-	}
-	return 0;
-}
-
 static void recurse_find_symbols(ExpressionNode* n, std::map<char*, int>& m)
 {
 	if (n == nullptr) return;
@@ -74,84 +24,6 @@ static void recurse_find_symbols(ExpressionNode* n, std::map<char*, int>& m)
 	}
 	recurse_find_symbols(n->left, m);
 	recurse_find_symbols(n->right, m);
-}
-
-
-void simplify_expression(ExpressionNode* exp) {
-
-	// First, replace with evaluated symbols
-
-	// Traverse expression tree, to find symbols.
-	
-	std::map<char*, int> map;
-
-	recurse_find_symbols(exp, map);
-	
-	int symbols = 0;
-	char* last_sym = nullptr;
-
-	for (const auto& kv : map)
-	{
-		symbols += kv.second;
-		last_sym = kv.first;
-	}
-
-	if (symbols == 0)
-	{
-		// There are no symbols. We can evaluate the whole expression and reduce it to just a number.
-		int value = recurse_items(exp);
-
-		// Here we should free all the nodes to prevent a memory leak
-
-		//m_stack.pop_back();
-		//push_number(value);
-
-		// TODO: Fix this
-
-	}
-	else if (symbols == 1)
-	{
-		/*
-		 *	Notes about alegbraically reducing the expressions:
-		 *
-		 *	Instead of applying some kind of recursive algebraic manipulation
-		 *	to reduce the expressions, we make sure there is only 1 instance of 
-		 *	a single irreducible symbol in the expression, then evaluate for 
-		 *	sym = 0,1,2. We need the sym = 2 case to prevent statements of the 
-		 *	form X = (1 << sym) + ... from accientally passing the test.
-		 *	We *hope* there are no other corner cases. If the evaluated values 
-		 *	are what we expect, we can reduce the expression to sym + a constant,
-		 *	and hence embed them in elf files. If not, we have to raise an 
-		 *	error. 
-		 *
-		 *	OOPS: THIS IS BROKEN FOR BITWISE OPERATORS. NEED TO FIX
-		 *
-		 */
-
-
-		int v1 = recurse_items_with_symbol_value(exp, 0);
-		int v2 = recurse_items_with_symbol_value(exp, 1);
-		int v3 = recurse_items_with_symbol_value(exp, 2);
-
-		if ((v2 - v1 == 1) && (v3 - v1 == 2))
-		{
-		//	m_stack.pop_back();
-		//	push_symbol(last_sym);
-		//	push_number(v1);
-		//	push_add();
-		
-			// TODO: fix this
-
-		}
-		else {
-			printf("Expression cannot be simply reduced to a label plus a constant.");
-		}
-	}
-	else {
-		printf("Expression cannot be simply reduced to a label plus a constant.");
-
-	}
-
 }
 
 void print_expression(struct ExpressionNode* item)
@@ -277,4 +149,219 @@ bool Expression::evaluate(SymTab_t &tab, int &value)
 
 	return success;
 }
+
+static void recurse_replace_evaluated_symbols(struct ExpressionNode* item, SymTab_t& tab)
+{
+
+	if (item == nullptr)
+		return;
+
+	switch (item->type)
+	{
+		case ITEM_SYMBOL:
+		{
+			Symbol* s;
+
+			std::string n = item->val.name;
+			s = &tab[n];
+
+			if (s->evaluated)
+			{
+				item->type = ITEM_NUMBER;
+				item->val.value = s->value; 
+			}
+		
+		}
+	}
+	
+	recurse_replace_evaluated_symbols(item->left, tab);
+	recurse_replace_evaluated_symbols(item->right, tab);
+
+}
+
+bool recurse_verify_symbol_has_simple_addition(ExpressionNode* n, bool simple)
+{
+	if (n == nullptr)
+		return true;
+
+	switch (n->type)
+	{
+		case ITEM_SYMBOL:
+			return simple;
+		case ITEM_NUMBER:
+			return true;
+		case ITEM_ADD:
+		case ITEM_SUBTRACT:
+			return recurse_verify_symbol_has_simple_addition(n->left, simple) &&
+			       recurse_verify_symbol_has_simple_addition(n->right, simple);
+		default:
+			return recurse_verify_symbol_has_simple_addition(n->left, false) &&
+			       recurse_verify_symbol_has_simple_addition(n->right, false);
+
+	}	
+
+}
+
+bool Expression::reduce_to_label_plus_const(SymTab_t &tab)
+{
+
+	if (root == nullptr)
+		return true;	// True, because expression doesn't exist so is already effectively reduced!
+
+	// Replace all evaluated symbols in expression
+
+	recurse_replace_evaluated_symbols(root, tab);
+
+	// Traverse expression tree, to find unreplaced symbols.
+	
+	std::map<char*, int> map;
+
+	recurse_find_symbols(root, map);
+	
+	int symbols = 0;
+	char* last_sym = nullptr;
+
+	for (const auto& kv : map)
+	{
+		symbols += kv.second;
+		last_sym = kv.first;
+	}
+
+	if (symbols == 0)
+	{
+		bool success;
+
+		int v0 = recurse_evaluate_with_symbol_table(root, tab, success);
+		root->type = ITEM_NUMBER;
+		root->val.value = v0;
+		return true;
+	}
+	else if (symbols == 1)
+	{
+		// Expression, after replacement, consists of a single unevaluated symbol and one or more operators with constants.
+		// First, verify that all operators up the tree from the symbol are either + or -.
+		if (!recurse_verify_symbol_has_simple_addition(root, true))
+		{
+			std::stringstream ss;
+			ss << "Expression on line " << lineNum << " cannot be reduced to a single relocation (label + const) as more complicated operations are performed on the label's address: " << *this  << std::endl;
+
+			throw std::runtime_error(ss.str());
+
+		}
+
+		// Now, evaluate the expression with the symbol = 0 and symbol = 1
+		Symbol sym;
+		sym.evaluated = true;
+		sym.reduced = true;
+		sym.type = SymbolType::SYMBOL_CONSTANT;
+		sym.value = 0;
+		SymTab_t testTab = {{last_sym, sym}};		
+		bool success;
+		int v0 = recurse_evaluate_with_symbol_table(root, testTab, success);
+		std::string lsym = last_sym;
+		testTab[lsym].value = 1;
+		int v1 = recurse_evaluate_with_symbol_table(root, testTab, success);
+
+		// If the symbol = 1 case was 1 more than the symbol = 0 case, we can reduce the expression.
+		if (v1 - v0 == 1)
+		{
+			ExpressionNode* n1 = new ExpressionNode;
+			n1->type = ITEM_ADD;
+		
+			ExpressionNode* n2 = new ExpressionNode;
+			n2->type = ITEM_SYMBOL;
+			n2->val.name = last_sym;
+
+			ExpressionNode* n3 = new ExpressionNode;
+			n3->type = ITEM_NUMBER;
+			n3->val.value = v0;
+
+			n1->left = n2;
+			n1->right = n3;
+
+			root = n1;
+
+			return true;
+		}
+		else
+		{
+			std::stringstream ss;
+			ss << "Expression on line " << lineNum << " cannot be reduced to a single relocation (label + const). "  << std::endl;
+
+			throw std::runtime_error(ss.str());
+
+		}
+
+	}
+	else
+	{
+		std::stringstream ss;
+		ss << "Expression on line " << lineNum << " consists of multiple unevaluated symbols, and cannot be reduced to a single relocation (label + const). "  << std::endl;
+
+		throw std::runtime_error(ss.str());
+	
+	}
+
+	return false;
+}
+
+std::ostream& operator << (std::ostream& os, const ExpressionNode& e)
+{
+	switch (e.type)
+	{
+		case ITEM_UNARY_NEG:
+			os << "-";
+			break;
+		case ITEM_NUMBER:
+			os << e.val.value;
+			return os;
+		case ITEM_SYMBOL:
+			os << e.val.name;
+			return os;
+	}
+
+	os << "(";
+
+	if (e.left != nullptr)
+		os << *e.left;
+
+
+	switch (e.type)
+	{
+		case ITEM_LSHIFT:
+			os << " << " ;
+			break;
+		case ITEM_RSHIFT:
+			os << " >> ";
+			break;
+		case ITEM_ADD:
+			os << " + ";
+			break;
+		case ITEM_SUBTRACT:
+			os << " - ";
+			break;
+		case ITEM_MULT:
+			os << " * ";
+			break;
+		case ITEM_DIV:
+			os << " / ";
+			break;
+	}
+
+	if (e.right != nullptr)
+		os << *e.right;
+
+	os << ")";
+
+	return os;
+
+}
+
+std::ostream& operator << (std::ostream& os, const Expression& e)
+{
+	if (e.root != nullptr)
+		os << *e.root;
+	return os;
+}
+
 

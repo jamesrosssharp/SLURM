@@ -21,8 +21,8 @@ struct ExpressionNode {
 		char* name;
 	} val; 
 
-	ExpressionNode* left;
-	ExpressionNode* right;
+	ExpressionNode* left = nullptr;
+	ExpressionNode* right = nullptr;
 
 };
 

@@ -161,11 +161,13 @@ int main(int argc, char** argv) {
 	yyparse();
 	} while (!feof(yyin));
 
+	// Build and simplify symbol table
 	g_ast.buildSymbolTable();
-
 	g_ast.reduceSymbolTable();
-
 	g_ast.printSymbolTable();
+
+	// Simplify all expressions
+	g_ast.reduceAllExpressions();
 
 	g_ast.print();
 

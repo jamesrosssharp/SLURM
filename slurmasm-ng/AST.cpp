@@ -286,65 +286,6 @@ std::ostream& operator << (std::ostream& os, const Statement& s)
 	return os;
 }
 
-std::ostream& operator << (std::ostream& os, const ExpressionNode& e)
-{
-	switch (e.type)
-	{
-		case ITEM_UNARY_NEG:
-			os << "-";
-			break;
-		case ITEM_NUMBER:
-			os << e.val.value;
-			return os;
-		case ITEM_SYMBOL:
-			os << e.val.name;
-			return os;
-	}
-
-	os << "(";
-
-	if (e.left != nullptr)
-		os << *e.left;
-
-
-	switch (e.type)
-	{
-		case ITEM_LSHIFT:
-			os << " << " ;
-			break;
-		case ITEM_RSHIFT:
-			os << " >> ";
-			break;
-		case ITEM_ADD:
-			os << " + ";
-			break;
-		case ITEM_SUBTRACT:
-			os << " - ";
-			break;
-		case ITEM_MULT:
-			os << " * ";
-			break;
-		case ITEM_DIV:
-			os << " / ";
-			break;
-	}
-
-	if (e.right != nullptr)
-		os << *e.right;
-
-	os << ")";
-
-	return os;
-
-}
-
-std::ostream& operator << (std::ostream& os, const Expression& e)
-{
-	if (e.root != nullptr)
-		os << *e.root;
-	return os;
-}
-
 void AST::print()
 {
 	// Iterate over sections, statements, etc
@@ -401,5 +342,30 @@ void AST::reduceSymbolTable()
 void AST::printSymbolTable()
 {
 	std::cout << m_symbolTable << std::endl;
+}
+
+void AST::reduceAllExpressions()
+{
+	// Iterate over sections, statements, etc
+	for (auto& kv : m_sectionStatements)
+	{
+		auto sec = kv.first;
+
+		for (auto& s : kv.second)
+		{	
+			switch (s.type)
+			{
+				case StatementType::LABEL:
+				case StatementType::EQU:
+				case StatementType::ONE_REGISTER_OPCODE_AND_EXPRESSION:
+				case StatementType::OPCODE_WITH_EXPRESSION:
+					s.expression.reduce_to_label_plus_const(m_symbolTable.symtab);
+					break;	
+			}	
+		}
+
+	}
+
+
 }
 	

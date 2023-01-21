@@ -15,15 +15,18 @@ struct Symbol {
 
 	enum SymbolType type;
 
-	std::string name;
+	std::string name = "UNDEF";
 
-	bool evaluated;
-	bool reduced;
+	/* symbol has been evaluated to a constant and value is the correct constant */
+	bool evaluated = false;
 
-	int value;
+	/* symbol has been evaluated to a constant or reduced to a label + constant */
+	bool reduced = false;
+
+	int value = 0;
 
 	// Defined in?
-	Statement* definedIn;
+	Statement* definedIn = nullptr;
 
 	// Referred by?	
 	std::vector<Statement*> referredBy;

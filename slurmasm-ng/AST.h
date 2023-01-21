@@ -49,6 +49,8 @@ class AST {
 		void reduceSymbolTable();
 		void printSymbolTable();
 
+		void reduceAllExpressions();
+
 	private:
 
 		OpCode convertOpCode(char* opcode);
@@ -68,7 +70,5 @@ class AST {
 
 };
 
-std::ostream& operator << (std::ostream& os, const Expression& e);
-std::ostream& operator << (std::ostream& os, const ExpressionNode*& e);
 std::ostream& operator << (std::ostream& os, const Statement& s);
 

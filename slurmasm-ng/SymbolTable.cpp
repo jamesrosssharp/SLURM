@@ -61,19 +61,36 @@ void SymbolTable::reduce()
 			if (! sym->reduced)
 			{
 				// Try to reduce to a single label type symbol plus a constant
+				sym->reduced = stat->expression.reduce_to_label_plus_const(symtab);
+
 			}
 		} 
 
 	}
 
-	// Check that all symbols have been reduced
+	// Check that all EQU symbols have been reduced
 
+	for (const auto& sym : symlist)
+	{
+		if (sym->type == SymbolType::SYMBOL_CONSTANT && ! sym->reduced )
+		{
+
+			Statement* stat = sym->definedIn;	
+
+			std::stringstream ss;
+			ss << "Expression on line " << stat->lineNum << " could not be reduced to either a constant or a single label plus a constant. " << std::endl;
+
+			throw std::runtime_error(ss.str());
+	
+
+		}
+	}
 
 }
 
 std::ostream& operator << (std::ostream& os, const Symbol& s)
 {
-	os << s.name << " eval=" << s.evaluated << " val=" << s.value;
+	os << s.name << " eval=" << s.evaluated << " redu=" << s.reduced << " val=" << s.value;
 
 	return os;
 }
