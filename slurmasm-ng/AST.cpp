@@ -249,7 +249,10 @@ std::ostream& operator << (std::ostream& os, const Statement& s)
 	switch(s.type)
 	{
 		case StatementType::ONE_REGISTER_OPCODE_AND_EXPRESSION:
-			os << s.opcode << " " << s.regDest << " " << s.expression << std::endl;
+		{
+			os << s.opcode << " " << s.regDest << "," << s.expression;
+		
+	}
 		break;
 		//case StatementType::TWO_REGISTER_OPCODE:
 		//	os << s.opcode << " " << s.regDest << " " << s.regSrc << std::endl;
@@ -264,7 +267,7 @@ std::ostream& operator << (std::ostream& os, const Statement& s)
 		//	os << s.opcode << " " << s.regDest << " " << s.regInd << " " << s.expression << std::endl;
 		//break;
 		case StatementType::OPCODE_WITH_EXPRESSION:
-			os << s.opcode << " " << s.expression << std::endl;
+			os << s.opcode << " " << s.expression;
 		break;
 		//case StatementType::PSEUDO_OP_WITH_EXPRESSION:
 		//	os << s.pseudoOp << " " << s.expression << std::endl;
@@ -273,15 +276,22 @@ std::ostream& operator << (std::ostream& os, const Statement& s)
 		//	os << s.opcode << std::endl;
 		//break;
 		case StatementType::LABEL:
-			os << s.label << ":" << std::endl;
+			os << s.label << ":";
 		break;
 		//case StatementType::TIMES:
 		//	os << "times" << " " << s.expression << " ";
 		//break;
 		case StatementType::EQU:
-			os << "EQU" << " " << s.label << " " << s.expression << std::endl;
+			os << "EQU" << " " << s.label << " " << s.expression;
 		break;
 	}
+
+	os << "\t";
+
+	for (const auto b : s.assembledBytes)
+		os << std::hex << std::setfill('0') << std::setw(2) << (int)b << " ";
+
+	os << std::endl;
 
 	return os;
 }
@@ -365,7 +375,19 @@ void AST::reduceAllExpressions()
 		}
 
 	}
-
-
 }
-	
+
+void AST::assemble()
+{
+	// Iterate over sections, statements, etc
+	for (auto& kv : m_sectionStatements)
+	{
+		auto sec = kv.first;
+
+		for (auto& s : kv.second)
+		{	
+			s.assemble();
+		}
+
+	}
+}

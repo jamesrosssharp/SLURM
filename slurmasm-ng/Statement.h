@@ -45,4 +45,9 @@ struct Statement
 
 	void reset();
 
+private:
+
+	void _assemble_one_reg_opcode_and_expression(int expressionValue);
+	void _assemble_opcode_and_expression(int expressionValue);
+
 };

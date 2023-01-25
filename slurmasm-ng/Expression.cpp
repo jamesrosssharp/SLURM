@@ -234,6 +234,7 @@ bool Expression::reduce_to_label_plus_const(SymTab_t &tab)
 		int v0 = recurse_evaluate_with_symbol_table(root, tab, success);
 		root->type = ITEM_NUMBER;
 		root->val.value = v0;
+		is_const = true;	
 		return true;
 	}
 	else if (symbols == 1)
@@ -243,7 +244,8 @@ bool Expression::reduce_to_label_plus_const(SymTab_t &tab)
 		if (!recurse_verify_symbol_has_simple_addition(root, true))
 		{
 			std::stringstream ss;
-			ss << "Expression on line " << lineNum << " cannot be reduced to a single relocation (label + const) as more complicated operations are performed on the label's address: " << *this  << std::endl;
+			ss << "Expression on line " << lineNum << " cannot be reduced to a single relocation (label + const) as more "
+				" complicated operations are performed on the label's address: " << *this  << std::endl;
 
 			throw std::runtime_error(ss.str());
 
@@ -280,6 +282,8 @@ bool Expression::reduce_to_label_plus_const(SymTab_t &tab)
 			n1->right = n3;
 
 			root = n1;
+
+			is_label_plus_const = true; 
 
 			return true;
 		}
@@ -364,4 +368,11 @@ std::ostream& operator << (std::ostream& os, const Expression& e)
 	return os;
 }
 
-
+int Expression::getValue()
+{
+	if (is_const)
+	{
+		return root->val.value;
+	}	
+	return 0;
+}

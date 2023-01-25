@@ -18,7 +18,8 @@
   AST g_ast;
 
   void yyerror(const char *s);
-  %}
+
+%}
 
 // Bison fundamentally works by asking flex to get the next token, which it
 // returns as an object of type "yystype".	But tokens could be of any
@@ -53,8 +54,7 @@
 %left MULT DIV
 %left NEG
 
- // define the "terminal symbol" token types I'm going to use (in CAPS
- // by convention), and associate each with a field of the union:
+// define the "terminal symbol" token types 
 %token <ival> INT
 %token <hval> HEXVAL
 %token <sval> STRING
@@ -126,12 +126,9 @@ int main(int argc, char** argv) {
 	char *type = nullptr;
 	char c;
 
-	while ((c = getopt (argc, argv, "t:o:")) != -1)
+	while ((c = getopt (argc, argv, "o:")) != -1)
 	switch (c)
 	{
-		case 't':
-			type = strdup(optarg);
-			break;
 		case 'o':
 			outputFile = strdup(optarg);
 			break;
@@ -149,8 +146,8 @@ int main(int argc, char** argv) {
 	FILE *myfile = fopen(argv[optind], "r");
 	// make sure it's valid:
 	if (!myfile) {
-	cout << "I can't open Test.asm file!" << endl;
-	return -1;
+		cout << "I can't open input file!" << endl;
+		return -1;
 	}
 	// set lex to read from it instead of defaulting to STDIN:
 	yyin = myfile;
@@ -158,7 +155,7 @@ int main(int argc, char** argv) {
 	// parse through the input until there is no more:
 
 	do {
-	yyparse();
+		yyparse();
 	} while (!feof(yyin));
 
 	// Build and simplify symbol table
@@ -168,6 +165,11 @@ int main(int argc, char** argv) {
 
 	// Simplify all expressions
 	g_ast.reduceAllExpressions();
+
+	// Generate assembly
+	g_ast.assemble();	
+
+	// Generate relocations for each section	
 
 	g_ast.print();
 

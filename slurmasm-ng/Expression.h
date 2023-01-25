@@ -17,6 +17,11 @@ struct Expression {
 	bool evaluate(SymTab_t &tab, int &value);
 	bool reduce_to_label_plus_const(SymTab_t &tab);
 
+	bool is_const = false;
+	bool is_label_plus_const = false;
+
+	int getValue();
+
 };
 
 void simplify_expression(ExpressionNode* exp);

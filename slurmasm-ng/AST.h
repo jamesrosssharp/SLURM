@@ -44,12 +44,13 @@ class AST {
 		/* print out AST */
 		void print();
 
-
 		void buildSymbolTable();
 		void reduceSymbolTable();
 		void printSymbolTable();
 
 		void reduceAllExpressions();
+
+		void assemble();	
 
 	private:
 
