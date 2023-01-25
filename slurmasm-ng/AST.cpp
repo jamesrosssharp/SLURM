@@ -155,6 +155,16 @@ void AST::addExpressionOpcode(int linenum, char* opcode)
 
 }
 
+void AST::addStandaloneOpcode(int linenum, char* opcode)
+{
+	m_currentStatement.lineNum = linenum;
+	m_currentStatement.opcode = convertOpCode(opcode);
+	m_currentStatement.type = StatementType::STANDALONE_OPCODE;
+	m_currentStatement.expression.lineNum = linenum;
+	m_sectionStatements[m_currentSection].push_back(m_currentStatement);
+	m_currentStatement.reset();
+}
+
 OpCode AST::convertOpCode(char* opcode)
 {
 	std::string s(opcode);
@@ -241,61 +251,6 @@ Register AST::convertReg(char* reg)
 
 
 	return Register::None;
-}
-
-std::ostream& operator << (std::ostream& os, const Statement& s)
-{
-
-	os << "Statement line " << s.lineNum << " : ";
-	
-	switch(s.type)
-	{
-		case StatementType::ONE_REGISTER_OPCODE_AND_EXPRESSION:
-		{
-			os << s.opcode << " " << s.regDest << "," << s.expression;
-		
-	}
-		break;
-		//case StatementType::TWO_REGISTER_OPCODE:
-		//	os << s.opcode << " " << s.regDest << " " << s.regSrc << std::endl;
-		//break;
-		//case StatementType::THREE_REGISTER_OPCODE:
-		//	os << s.opcode << " " << s.regDest << " " << s.regSrc2 << " " << s.regSrc << std::endl;
-		//break;
-		//case StatementType::INDIRECT_ADDRESSING_OPCODE:
-		//	os << s.opcode << " " << s.regDest << " " << s.regInd << " " << s.regOffset << std::endl;
-		//break;
-		//case StatementType::INDIRECT_ADDRESSING_OPCODE_WITH_EXPRESSION:
-		//	os << s.opcode << " " << s.regDest << " " << s.regInd << " " << s.expression << std::endl;
-		//break;
-		case StatementType::OPCODE_WITH_EXPRESSION:
-			os << s.opcode << " " << s.expression;
-		break;
-		//case StatementType::PSEUDO_OP_WITH_EXPRESSION:
-		//	os << s.pseudoOp << " " << s.expression << std::endl;
-		//break;
-		//case StatementType::STANDALONE_OPCODE:
-		//	os << s.opcode << std::endl;
-		//break;
-		case StatementType::LABEL:
-			os << s.label << ":";
-		break;
-		//case StatementType::TIMES:
-		//	os << "times" << " " << s.expression << " ";
-		//break;
-		case StatementType::EQU:
-			os << "EQU" << " " << s.label << " " << s.expression;
-		break;
-	}
-
-	os << "\t";
-
-	for (const auto b : s.assembledBytes)
-		os << std::hex << std::setfill('0') << std::setw(2) << (int)b << " ";
-
-	os << std::endl;
-
-	return os;
 }
 
 void AST::print()

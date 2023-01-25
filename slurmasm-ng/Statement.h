@@ -17,7 +17,8 @@ enum class StatementType
 	LABEL,
 	EQU,
 	ONE_REGISTER_OPCODE_AND_EXPRESSION,
-	OPCODE_WITH_EXPRESSION
+	OPCODE_WITH_EXPRESSION,
+	STANDALONE_OPCODE
 };
 
 struct Statement
@@ -57,5 +58,9 @@ private:
 
 	void _assemble_one_reg_opcode_and_expression(int expressionValue);
 	void _assemble_opcode_and_expression(int expressionValue);
+	void _assemble_standalone_opcode();
 
 };
+
+
+std::ostream& operator << (std::ostream& os, const Statement& s);

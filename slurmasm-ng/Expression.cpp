@@ -150,11 +150,13 @@ bool Expression::evaluate(SymTab_t &tab, int &value)
 	return success;
 }
 
-static void recurse_replace_evaluated_symbols(struct ExpressionNode* item, SymTab_t& tab)
+static void recurse_replace_evaluated_symbols(struct ExpressionNode** it, SymTab_t& tab)
 {
 
-	if (item == nullptr)
+	if (it == nullptr || *it == nullptr)
 		return;
+
+	struct ExpressionNode* item = *it;
 
 	switch (item->type)
 	{
@@ -170,13 +172,19 @@ static void recurse_replace_evaluated_symbols(struct ExpressionNode* item, SymTa
 				item->type = ITEM_NUMBER;
 				item->val.value = s->value; 
 			}
+			else if (s->reduced && s->type == SYMBOL_CONSTANT)
+			{
+				// This symbol consists of a label plus a constant.
+				// Add this to the AST
+				*it = s->definedIn->expression.root;	
+				item = *it;
+			}
 		
 		}
 	}
 	
-	recurse_replace_evaluated_symbols(item->left, tab);
-	recurse_replace_evaluated_symbols(item->right, tab);
-
+	recurse_replace_evaluated_symbols(&item->left, tab);
+	recurse_replace_evaluated_symbols(&item->right, tab);
 }
 
 bool recurse_verify_symbol_has_simple_addition(ExpressionNode* n, bool simple)
@@ -210,7 +218,7 @@ bool Expression::reduce_to_label_plus_const(SymTab_t &tab)
 
 	// Replace all evaluated symbols in expression
 
-	recurse_replace_evaluated_symbols(root, tab);
+	recurse_replace_evaluated_symbols(&root, tab);
 
 	// Traverse expression tree, to find unreplaced symbols.
 	

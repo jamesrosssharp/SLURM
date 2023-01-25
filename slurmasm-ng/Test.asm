@@ -17,12 +17,15 @@ start:
 	add r1, 1
 	mov r2, 65535
 	mov r3, 7
-	mov r4, 0
+	mov r4, ANOTHER_EQU
 	add r4, 341
+	bl  my_func
 loop:
-	add r4, 3
+	add r4, SOME_EQU
 	ba loop
 
-
+my_func:
+	add r4, LABEL_EQU
+	ret
 
 .end

@@ -231,3 +231,22 @@ void Assembly::assembleBranch(int linenum, OpCode opcode, Register regIdx, int e
 	assembledBytes.push_back(op >> 8);
 }
 
+
+void Assembly::assembleRetIRet(int lineNum, OpCode opcode, std::vector<uint8_t>& assembledBytes)
+{
+	uint16_t op;
+	switch (opcode)
+	{
+		case OpCode::RET:
+			op = SLRM_RET_INSTRUCTION; 
+			break;
+		case OpCode::IRET:
+			op = SLRM_IRET_INSTRUCTION;
+			break;
+	}
+
+	assembledBytes.push_back(op & 0xff);
+	assembledBytes.push_back(op >> 8);
+
+}
+

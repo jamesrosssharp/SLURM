@@ -41,7 +41,8 @@ class AST {
 
 		void addOneRegisterAndExpressionOpcode(int linenum, char* opcode, char* reg);
    		void addExpressionOpcode(int linenum, char* opcode); 
-
+		void addStandaloneOpcode(int linenum, char* opcode);
+ 
 		/* print out AST */
 		void print();
 
@@ -78,5 +79,4 @@ class AST {
 
 };
 
-std::ostream& operator << (std::ostream& os, const Statement& s);
 
