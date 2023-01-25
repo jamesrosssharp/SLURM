@@ -5,6 +5,7 @@
 #include "Statement.h"
 #include "types.h"
 #include "OpCode.h"
+#include "RelocationTable.h"
 
 #include <deque>
 #include <map>
@@ -47,10 +48,14 @@ class AST {
 		void buildSymbolTable();
 		void reduceSymbolTable();
 		void printSymbolTable();
+		void printRelocationTable();
 
 		void reduceAllExpressions();
 
 		void assemble();	
+		
+		void resolveSymbols();
+		void generateRelocationTables();
 
 	private:
 
@@ -68,6 +73,8 @@ class AST {
 
 		SymbolTable m_symbolTable; 
 		std::vector<Symbol*> m_symbolList;  // a vector of symbols in order found in file for correct evaluation
+
+		RelocationTable m_relocationTable;
 
 };
 

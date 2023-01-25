@@ -161,7 +161,6 @@ int main(int argc, char** argv) {
 	// Build and simplify symbol table
 	g_ast.buildSymbolTable();
 	g_ast.reduceSymbolTable();
-	g_ast.printSymbolTable();
 
 	// Simplify all expressions
 	g_ast.reduceAllExpressions();
@@ -169,9 +168,15 @@ int main(int argc, char** argv) {
 	// Generate assembly
 	g_ast.assemble();	
 
-	// Generate relocations for each section	
+	// Resolve label symbols
+	g_ast.resolveSymbols();
 
+	// Generate relocations for each section	
+	g_ast.generateRelocationTables();
+
+	g_ast.printSymbolTable();
 	g_ast.print();
+	g_ast.printRelocationTable();
 
 }
 

@@ -4,6 +4,8 @@
 #include <stdexcept>
 #include <map>
 
+#include "Relocation.h"
+
 AST::AST()
 {
 
@@ -298,12 +300,14 @@ std::ostream& operator << (std::ostream& os, const Statement& s)
 
 void AST::print()
 {
+	std::cout << "Assembled AST:" << std::endl;
+
 	// Iterate over sections, statements, etc
 	for (const auto& kv : m_sectionStatements)
 	{
 		auto sec = kv.first;
 
-		std::cout << "Section " << sec << ":" << std::endl;
+		std::cout << "\tSection " << sec << ":" << std::endl;
 
 		for (const auto& stat : kv.second)
 		{	
@@ -390,4 +394,62 @@ void AST::assemble()
 		}
 
 	}
+}
+
+void AST::resolveSymbols()
+{
+
+	for (auto& kv : m_sectionStatements)
+	{
+		auto sec = kv.first;
+
+		int sec_address = 0;
+
+		for (auto& s : kv.second)
+		{	
+			switch (s.type)
+			{
+				case StatementType::LABEL:
+					s.annotateLabel(m_symbolTable.symtab, sec, sec_address);	
+					break;
+				default:
+					sec_address += s.assembledBytes.size();
+					break;
+			}	
+		}
+
+	}
+}
+
+void AST::generateRelocationTables()
+{
+	for (auto& kv : m_sectionStatements)
+	{
+		auto sec = kv.first;
+
+		int sec_address = 0;
+		
+		std::vector<Relocation> vec;
+	
+		for (auto& s : kv.second)
+		{	
+			Relocation rel;
+
+			if (s.createRelocation(rel, m_symbolTable.symtab, sec, sec_address))
+			{
+				vec.push_back(rel);
+			}			
+
+			sec_address += s.assembledBytes.size();
+		}
+
+		// Emplace in relocation table
+		m_relocationTable.emplace(sec, vec);
+	}
+}
+
+
+void AST::printRelocationTable()
+{
+	std::cout << m_relocationTable << std::endl;
 }

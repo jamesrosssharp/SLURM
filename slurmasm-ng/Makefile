@@ -8,7 +8,9 @@ SRC = 	slurmasm-ng.tab.c \
 	Statement.cpp	\
 	Expression.cpp	\
 	OpCode.cpp	\
-	Assembly.cpp
+	Assembly.cpp	\
+	Relocation.cpp	\
+	RelocationTable.cpp
       
 INCLUDE =	AST.h	\
 	  	ExpressionNode.h \
@@ -17,7 +19,10 @@ INCLUDE =	AST.h	\
 		Expression.h	\
 		types.h		\
 		OpCode.h	\
-		Assembly.h
+		Assembly.h	\
+		Relocation.h	\
+		SymTab_t.h	\
+		RelocationTable.h
 
 
 slurmasm-ng:	$(SRC) $(INCLUDE)

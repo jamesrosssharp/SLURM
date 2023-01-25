@@ -93,3 +93,30 @@ void Statement::reset()
 	repetitionCount = 1;
 }
 
+
+void Statement::annotateLabel(SymTab_t& symTab, std::string section, int address)
+{
+
+	std::string sym = label;
+
+	symTab[sym].value = address;
+	symTab[sym].evaluated = true;
+	symTab[sym].reduced = true;
+}
+
+bool Statement::createRelocation(Relocation& rel, SymTab_t &symtab, std::string sec, int address)
+{
+
+	if (type == StatementType::EQU)
+		return false;
+
+	if (!expression.is_label_plus_const)
+		return false;
+
+	rel.sym = &symtab[expression.root->left->val.name];
+
+	rel.offset = expression.root->right->val.value;
+	rel.address = address;
+
+	return true;
+}

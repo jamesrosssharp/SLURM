@@ -15,7 +15,12 @@ LABEL_EQU equ loop + (2<<3) - 5*3 + 7/3
 start:
 	mov r1, 4
 	add r1, 1
+	mov r2, 65535
+	mov r3, 7
+	mov r4, 0
+	add r4, 341
 loop:
+	add r4, 3
 	ba loop
 
 

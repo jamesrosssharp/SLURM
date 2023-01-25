@@ -107,6 +107,77 @@ static void get_aluOp(OpCode opcode, uint32_t lineNum, uint16_t& aluOp)
 	}
 }
 
+static uint16_t get_branch(OpCode opcode, int lineNum)
+{
+	uint16_t branch = 0;
+
+	switch (opcode)
+	{
+		case OpCode::BZ:
+		case OpCode::BEQ:
+			branch = 0;
+			break;
+		case OpCode::BNZ:
+		case OpCode::BNE:
+			branch = 1;
+			break;
+		case OpCode::BS:
+			branch = 2;
+			break;
+		case OpCode::BNS:
+			branch = 3;
+			break;
+		case OpCode::BC:
+		case OpCode::BLTU:
+			branch = 4;
+			break;
+		case OpCode::BNC:
+		case OpCode::BGEU:
+			branch = 5;
+			break;
+		case OpCode::BV:
+			branch = 6;
+			break;
+		case OpCode::BNV:
+			branch = 7;
+			break;
+		case OpCode::BLT:
+			branch = 8;
+			break;
+		case OpCode::BLE:
+			branch = 9;
+			break;
+		case OpCode::BGT:
+			branch = 10;
+			break;
+		case OpCode::BGE:
+			branch = 11;
+			break;
+		case OpCode::BLEU:
+			branch = 12;
+			break;
+		case OpCode::BGTU:
+			branch = 13;
+			break;
+		case OpCode::BA:
+			branch = 14;
+			break;
+		case OpCode::BL:
+			branch = 15;
+			break;
+		default:
+		{
+			std::stringstream ss;
+			ss << "Unsupported branch operation on line " << lineNum << std::endl;
+			throw std::runtime_error(ss.str());  
+		}
+	}
+
+	return branch;
+}
+
+
+
 static uint16_t makeImm(int linenum, int expressionValue)
 {
 	if (expressionValue < -32768 || expressionValue > 65535)
@@ -136,8 +207,6 @@ void Assembly::assembleRegisterImmediateALUOp(int linenum, OpCode opcode, Regist
 	
 	uint16_t op = SLRM_ALU_REG_IMM_INSTRUCTION | ((aluOp & 0xf) << 8) | ((int)regDest << 4) | ((uint16_t)expressionValue & 0xf);
 
-	printf("op: %x\n", op);
-
 	assembledBytes.push_back(op & 0xff);
 	assembledBytes.push_back(op >> 8);
 
@@ -146,6 +215,19 @@ void Assembly::assembleRegisterImmediateALUOp(int linenum, OpCode opcode, Regist
 void Assembly::assembleBranch(int linenum, OpCode opcode, Register regIdx, int expressionValue, std::vector<uint8_t>& assembledBytes)
 {
 
+	uint16_t branch = 0;
+	branch = get_branch(opcode, linenum);
 
+	uint16_t op;
+
+	uint16_t imm = makeImm(linenum, expressionValue);
+ 
+	op = SLRM_BRANCH_INSTRUCTION | (branch << 8) | ((uint16_t)expressionValue & 0xf) | ((uint16_t)regIdx << 4);
+	
+	assembledBytes.push_back(imm & 0xff);
+	assembledBytes.push_back(imm >> 8);
+
+	assembledBytes.push_back(op & 0xff);
+	assembledBytes.push_back(op >> 8);
 }
 

@@ -100,7 +100,8 @@ std::ostream& operator << (std::ostream& os, const SymbolTable& s)
 	os << "Symbol table: " << std::endl;
 
 	for (const auto& sym : s.symlist)
-		os << "\t" << *sym << std::endl; 
+		if (sym->type == SymbolType::SYMBOL_LABEL)
+			os << "\t" << *sym << std::endl; 
 
 	return os;
 }
