@@ -87,6 +87,12 @@ struct elf_sym32 {
         uint16_t        st_shndx;
 } __attribute__ ((packed));
 
+struct elf_rela32 {
+	uint32_t offset;
+	uint32_t info;
+	int32_t addend;
+} __attribute__ ((packed));
+
 /*========================= ELF File class ===============================*/
 
 struct ElfSection {
@@ -132,6 +138,12 @@ struct ElfSymbol {
         uint32_t        size = 0;
 };
 
+struct ElfRelocation {
+	uint32_t offset = 0;
+	uint32_t info = 0;
+	int32_t addend = 0;
+};
+
 class ElfFile {
 
 	public:
@@ -146,13 +158,24 @@ class ElfFile {
 		void beginSymbolTable();
 		void addSymbol(const std::string& sym_name, const std::string& sym_section, int value);
 		void finaliseSymbolTable();
+
+		void beginRelocationTable(const std::string& sec);
+		void addRelocation(const std::string& name, int32_t addend, uint32_t address);
+		void finaliseRelocationTable();
 	
 	private:
 
 		int findSectionIdxByName(const std::string& name);
+		int findSymbolIdxByName(const std::string& name);
 		void buildSectionHeaderStringTable();
 
 		std::vector<ElfSection> m_sections;
 		std::vector<ElfSymbol> m_symbols;
+
+		/* relocations for current section */
+		std::vector<ElfRelocation> m_relocations;
+
+		int m_curRela_shndx = 0;
+		std::string m_curRela_secname;
 };
 

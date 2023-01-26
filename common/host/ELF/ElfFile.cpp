@@ -78,6 +78,15 @@ static void fill_elf_sym(elf_sym32* esym, const ElfSymbol& sym)
         esym->st_size = sym.size;
 }
 
+static void fill_elf_rela(elf_rela32* erela, const ElfRelocation& rela)
+{
+	erela->offset = rela.offset;
+	erela->info = rela.info;
+	erela->addend = rela.addend;
+}
+
+
+
 /*==================== ELF Section =======================================*/
 
 ElfSection::~ElfSection()
@@ -163,6 +172,15 @@ void ElfFile::addSection(const std::string& name, const std::vector<uint8_t>& co
 		s.link = m_symbols.size() - 1;
 		s.align = 0;
 		s.entsize = sizeof(elf_sym32);
+	}
+	else if (name.substr(0,5) == ".rela")
+	{
+		s.type = SHT_RELA;
+		s.flags = 0;
+		s.info = 0;
+		s.link = 0;
+		s.align = 0;
+		s.entsize = sizeof(elf_rela32);
 	}
 	else 
 	{
@@ -286,10 +304,9 @@ void ElfFile::finaliseSymbolTable()
 	{
 		elf_sym32 esym;
 
+		// TODO: We need a map
 		sym.shndx = findSectionIdxByName(sym.section);
 
-		std::cout << "Section found:" << sym.shndx << std::endl;
-	
 		fill_elf_sym(&esym, sym);
 
 		uint8_t* ptr = (uint8_t*)&esym;
@@ -306,7 +323,70 @@ void ElfFile::finaliseSymbolTable()
 
 	addSection(symn, sym_data);
 }
-	
+
+void ElfFile::beginRelocationTable(const std::string& sec)
+{
+	m_relocations.clear();
+
+	m_curRela_shndx = findSectionIdxByName(sec);
+	m_curRela_secname = ".rela" + sec;
+
+}
+
+int ElfFile::findSymbolIdxByName(const std::string& name)
+{
+	int i = 0;
+	for (const auto& sec : m_symbols)
+	{
+		if (sec.name == name)
+			return i;
+
+		i++;
+	}
+
+	return 0;
+}
+
+
+
+void ElfFile::addRelocation(const std::string& name, int32_t addend, uint32_t address)
+{
+	ElfRelocation e;
+
+	e.offset = address;
+	e.info   = findSymbolIdxByName(name) << 8 | 1; /* 1 = R_386_32 TODO: SLURM relocation types... */
+	e.addend = addend;
+
+	m_relocations.push_back(e);
+}
+
+void ElfFile::finaliseRelocationTable()
+{
+	std::vector<uint8_t> rela_data;
+
+	for (auto& rela : m_relocations)
+	{
+		elf_rela32 erela;
+
+		fill_elf_rela(&erela, rela);
+
+		uint8_t* ptr = (uint8_t*)&erela;
+
+		for (int i = 0; i < sizeof(elf_rela32); i++)
+		{
+			rela_data.push_back(*ptr++);
+		}		
+	} 
+
+	// Add rel. tab
+
+	addSection(m_curRela_secname, rela_data);
+
+	m_sections.back().link = findSectionIdxByName(".symtab"); 
+	m_sections.back().info = m_curRela_shndx;
+
+}
+		
 void ElfFile::writeOutput(char* filename)
 {
 

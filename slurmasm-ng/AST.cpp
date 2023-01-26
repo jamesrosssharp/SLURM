@@ -447,7 +447,21 @@ void AST::writeElfFile(char* outputFile)
 	e.finaliseSymbolTable();
 	
 	// Add relocations
-	
+
+	for (auto& kv : m_relocationTable)
+	{
+		auto sec = kv.first;
+
+		e.beginRelocationTable(sec);
+
+		for (const auto& rel : kv.second)
+		{
+			e.addRelocation(rel.sym->name, rel.offset, rel.address);
+		}
+
+		e.finaliseRelocationTable();
+
+	}
 
 	// Write output
 	e.writeOutput(outputFile);
