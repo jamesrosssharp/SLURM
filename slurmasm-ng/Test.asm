@@ -16,7 +16,7 @@ start:
 	mov r1, 4
 	add r1, 1
 	mov r2, 65535
-	mov r3, 7
+	mov r3, -7
 	mov r4, ANOTHER_EQU
 	add r4, 341
 	bl  my_func

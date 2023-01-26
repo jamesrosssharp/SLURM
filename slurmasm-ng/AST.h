@@ -58,6 +58,8 @@ class AST {
 		void resolveSymbols();
 		void generateRelocationTables();
 
+		void writeElfFile(char* outputFile);
+
 	private:
 
 		OpCode convertOpCode(char* opcode);

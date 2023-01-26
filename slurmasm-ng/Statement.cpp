@@ -195,6 +195,7 @@ std::ostream& operator << (std::ostream& os, const Statement& s)
 
 	for (const auto b : s.assembledBytes)
 		os << std::hex << std::setfill('0') << std::setw(2) << (int)b << " ";
+	os << std::dec;
 
 	os << std::endl;
 

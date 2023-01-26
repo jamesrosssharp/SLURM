@@ -16,12 +16,12 @@ struct SymbolTable {
 	SymTab_t symtab;
 	std::vector<Symbol*> symlist;
 
-	void addSymbol(Statement& stat); 
-	void addConstant(Statement& stat); 
+	void addSymbol(Statement& stat, const std::string& section); 
+	void addConstant(Statement& stat, const std::string& section); 
 	void reduce(); 
 
 private:
-	void _addSymbol(Statement& stat, SymbolType symtype); 
+	void _addSymbol(Statement& stat, SymbolType symtype, const std::string& section); 
 
 };
 

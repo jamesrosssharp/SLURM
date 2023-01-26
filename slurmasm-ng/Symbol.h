@@ -32,6 +32,7 @@ struct Symbol {
 	// Referred by?	
 	std::vector<Statement*> referredBy;
 
+	std::string section;
 };
 
 

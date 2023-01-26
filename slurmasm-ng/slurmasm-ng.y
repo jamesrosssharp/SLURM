@@ -139,6 +139,9 @@ int main(int argc, char** argv) {
 			exit(EXIT_FAILURE);
 	}
 
+	if (outputFile == nullptr)
+		outputFile = strdup("a.out");
+
 	if (optind == argc)
 	{
 		std::cout << "ERROR: no input files" << std::endl;
@@ -148,7 +151,7 @@ int main(int argc, char** argv) {
 	FILE *myfile = fopen(argv[optind], "r");
 	// make sure it's valid:
 	if (!myfile) {
-		cout << "I can't open input file!" << endl;
+		std::cout << "I can't open input file!" << endl;
 		return -1;
 	}
 	// set lex to read from it instead of defaulting to STDIN:
@@ -179,6 +182,10 @@ int main(int argc, char** argv) {
 	g_ast.printSymbolTable();
 	g_ast.print();
 	g_ast.printRelocationTable();
+
+	std::cout << "Generating ELF output..." << std::endl;
+
+	g_ast.writeElfFile(outputFile);
 
 }
 

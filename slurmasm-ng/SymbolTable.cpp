@@ -3,7 +3,7 @@
 
 #include <sstream>
 
-void SymbolTable::_addSymbol(Statement& stat, SymbolType symtype)
+void SymbolTable::_addSymbol(Statement& stat, SymbolType symtype, const std::string& section)
 {
 	Symbol sym;
 	sym.definedIn = &stat;
@@ -11,6 +11,7 @@ void SymbolTable::_addSymbol(Statement& stat, SymbolType symtype)
 	sym.value = 0;
 	sym.evaluated = false;
 	sym.type = symtype;
+	sym.section = section;
 
 	bool found = true;
 
@@ -36,14 +37,14 @@ void SymbolTable::_addSymbol(Statement& stat, SymbolType symtype)
 
 }
 
-void SymbolTable::addSymbol(Statement& stat)
+void SymbolTable::addSymbol(Statement& stat, const std::string& section)
 {
-	_addSymbol(stat, SymbolType::SYMBOL_LABEL);
+	_addSymbol(stat, SymbolType::SYMBOL_LABEL, section);
 }
 
-void SymbolTable::addConstant(Statement& stat)
+void SymbolTable::addConstant(Statement& stat, const std::string& section)
 {
-	_addSymbol(stat, SymbolType::SYMBOL_CONSTANT);
+	_addSymbol(stat, SymbolType::SYMBOL_CONSTANT, section);
 }
 
 void SymbolTable::reduce()
@@ -90,7 +91,7 @@ void SymbolTable::reduce()
 
 std::ostream& operator << (std::ostream& os, const Symbol& s)
 {
-	os << s.name << " eval=" << s.evaluated << " redu=" << s.reduced << " val=" << s.value;
+	os << s.name << " section=" << s.section << " eval=" << s.evaluated << " redu=" << s.reduced << " val=" << s.value;
 
 	return os;
 }

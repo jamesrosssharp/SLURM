@@ -5,6 +5,8 @@
 #include <map>
 
 #include "Relocation.h"
+#include <host/ELF/ElfFile.h>
+
 
 AST::AST()
 {
@@ -286,11 +288,11 @@ void AST::buildSymbolTable()
 
 			if (s.type == StatementType::LABEL)
 			{
-				m_symbolTable.addSymbol(s);
+				m_symbolTable.addSymbol(s, sec);
 			}
 			else if (s.type == StatementType::EQU)
 			{
-				m_symbolTable.addConstant(s);
+				m_symbolTable.addConstant(s, sec);
 			}
 		
 		}
@@ -408,3 +410,39 @@ void AST::printRelocationTable()
 {
 	std::cout << m_relocationTable << std::endl;
 }
+
+void AST::writeElfFile(char* outputFile)
+{
+
+	ElfFile e;
+
+	// Add sections
+
+	for (auto& kv : m_sectionStatements)
+	{
+		auto sec = kv.first;
+
+		int sec_address = 0;
+		
+		std::vector<uint8_t> vec;
+	
+		for (auto& s : kv.second)
+		{	
+			for (const auto& a : s.assembledBytes)
+				vec.push_back(a);
+		}
+
+		e.addSection(sec, vec);
+	}
+
+	// Add symbols
+	
+
+	// Add relocations
+	
+
+	// Write output
+	e.writeOutput(outputFile);
+}
+
+
