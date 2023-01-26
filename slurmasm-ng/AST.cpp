@@ -416,7 +416,7 @@ void AST::writeElfFile(char* outputFile)
 
 	ElfFile e;
 
-	// Add sections
+	// Add sections first
 
 	for (auto& kv : m_sectionStatements)
 	{
@@ -435,9 +435,17 @@ void AST::writeElfFile(char* outputFile)
 		e.addSection(sec, vec);
 	}
 
-	// Add symbols
-	
+	// Now add symbols
+	e.beginSymbolTable();
 
+	for (Symbol* sym : m_symbolTable.symlist)
+	{
+		if (sym->type == SYMBOL_LABEL)
+			e.addSymbol(sym->name, sym->section, sym->value);
+	}
+
+	e.finaliseSymbolTable();
+	
 	// Add relocations
 	
 
