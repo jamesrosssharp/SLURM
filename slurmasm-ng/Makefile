@@ -40,4 +40,4 @@ install: slurmasm
 	cp slurmasm-ng ../bin
 
 clean:
-	rm lex.yy.c slurmasm-ng.tab.c slurmasm-ng
+	rm lex.yy.c slurmasm-ng.tab.c slurmasm-ng *.o *.out

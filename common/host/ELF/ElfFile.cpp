@@ -41,7 +41,7 @@ static void fill_elf_header(elf_header32* h, int shnum)
         h->e_ehsize = 0;
         h->e_phentsize = 0;
         h->e_phnum = 0;
-        h->e_shentsize = 0;
+        h->e_shentsize = sizeof(elf_sh32);
         h->e_shnum = shnum;
         h->e_shstrndx = shnum - 1;
 
@@ -115,12 +115,14 @@ ElfFile::~ElfFile()
 void ElfFile::addSection(const std::string& name, const std::vector<uint8_t>& contents)
 {
 
+#if 0
 	std::cout << "Adding section: " << name << std::endl;
 
 	for (const auto& a : contents)
 		std::cout << std::hex << std::setw(2) << std::setfill('0') << (int) a << " ";
 
 	std::cout << std::endl;
+#endif
 
 	ElfSection s;
 

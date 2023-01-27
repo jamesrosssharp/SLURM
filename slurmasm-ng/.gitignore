@@ -2,3 +2,4 @@ slurmasm-ng.tab*
 lex.yy.c
 slurmasm-ng
 a.out
+*.o
