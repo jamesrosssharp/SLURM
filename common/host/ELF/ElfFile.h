@@ -5,6 +5,9 @@
 #include <vector>
 #include <cstdint>
 
+#include <cstdio>
+#include <cstdlib>
+
 /*========================== Elf Structures ===================================*/
 
 #define ELF_CLASS_32_BIT 1
@@ -96,6 +99,27 @@ struct elf_rela32 {
 /*========================= ELF File class ===============================*/
 
 struct ElfSection {
+
+	// Move constructor to take hold of data (destructor will free if not null)	
+	ElfSection(ElfSection&& from)
+	{
+		name = std::move(from.name);
+		name_offset = from.name_offset;
+		offset = from.offset;
+		address = from.address;
+		type = from.type;
+		flags = from.flags;
+		info = from.info;
+		link = from.link;
+		align = from.align;
+		entsize = from.entsize;
+		data = from.data;
+		from.data = nullptr;
+		size = from.size;
+	}
+
+	ElfSection() {}
+
 	std::string name;
 	/* offset of name in string table */
 	uint32_t name_offset = 0;
@@ -118,9 +142,8 @@ struct ElfSection {
 	uint8_t* data = nullptr;
 	int size = 0;	// Size in bytes of section
 
-	// TODO: Need move semantics or copy constructor to transfer data array to emplaced symbol in vector,
+	// We use move semantics to transfer data array to emplaced object in vector,
 	// allowing destructor to free the memory
-
 	~ElfSection();
 };
 
@@ -154,7 +177,7 @@ class ElfFile {
 		void addSection(const std::string& name, const std::vector<uint8_t>& contents);
 
 		void writeOutput(char* filename);
-
+		
 		void beginSymbolTable();
 		void addSymbol(const std::string& sym_name, const std::string& sym_section, int value);
 		void finaliseSymbolTable();
@@ -163,11 +186,16 @@ class ElfFile {
 		void addRelocation(const std::string& name, int32_t addend, uint32_t address);
 		void finaliseRelocationTable();
 	
+		/* load an ELF file and create internal structures to be used in disassembly and linking */
+		void load(char* filename);
+
 	private:
 
 		int findSectionIdxByName(const std::string& name);
 		int findSymbolIdxByName(const std::string& name);
 		void buildSectionHeaderStringTable();
+
+		void loadSection(FILE* fil, uint32_t offset);
 
 		std::vector<ElfSection> m_sections;
 		std::vector<ElfSymbol> m_symbols;

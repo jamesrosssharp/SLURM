@@ -85,15 +85,38 @@ static void fill_elf_rela(elf_rela32* erela, const ElfRelocation& rela)
 	erela->addend = rela.addend;
 }
 
+static bool validate_elf_header(elf_header32* e)
+{
+	// Check ident:
+	// 	Check magic
 
+	if (e->ident.magic[0] != 0x7f) return false;
+	if (e->ident.magic[1] != 'E') return false;
+	if (e->ident.magic[2] != 'L') return false;
+	if (e->ident.magic[3] != 'F') return false;
+
+	// 	Check rest of ident 
+	if (e->ident.e_class != ELF_CLASS_32_BIT) return false;
+        if (e->ident.data    != ELF_DATA_LE) return false;
+        if (e->ident.version != EV_CURRENT) return false;
+	
+	// Check rest of header
+	
+        if (e->e_machine != EM_SLURM) return false;
+
+
+	return true;
+}
 
 /*==================== ELF Section =======================================*/
 
 ElfSection::~ElfSection()
 {
-	//if (data != nullptr)
-	//	delete [] data;
-	//data = nullptr;
+	if (data != nullptr)
+	{
+		delete [] data;
+		data = nullptr;
+	}
 }
 
 /*==================== ELF File class =====================================*/
@@ -194,7 +217,7 @@ void ElfFile::addSection(const std::string& name, const std::vector<uint8_t>& co
 		s.align = 2;
 	}
 
-	m_sections.push_back(s);
+	m_sections.push_back(std::move(s));
 
 }
 
@@ -441,5 +464,119 @@ void ElfFile::writeOutput(char* filename)
 
 
 	fclose(outf);
+}
+
+void ElfFile::loadSection(FILE* fil, uint32_t offset)
+{
+	// Load section header
+
+	elf_sh32 s;
+
+	fseek(fil, offset, SEEK_SET);
+
+	if (fread(&s, sizeof(elf_sh32), 1, fil) != 1)
+	{
+		throw std::runtime_error("Error reading ELF section header!");
+	}
+
+	ElfSection ss;
+	
+	ss.name_offset 	= s.sh_name;
+	ss.offset 	= s.sh_offset;
+	ss.address 	= s.sh_addr;
+	ss.type 	= s.sh_type;
+	ss.flags 	= s.sh_flags;
+	ss.info 	= s.sh_info;
+	ss.link 	= s.sh_link;
+	ss.align 	= s.sh_addralign;
+	ss.entsize 	= s.sh_entsize;
+	ss.size 	= s.sh_size;
+
+	// Load section data
+
+	if (ss.size != 0)
+	{
+
+		fseek(fil, ss.offset, SEEK_SET);
+
+		ss.data = new uint8_t[s.sh_size];
+
+		if (fread(ss.data, 1, ss.size, fil) != ss.size)
+		{
+			throw std::runtime_error("Error reading section data!");
+		}
+	}
+
+	// Add section
+
+	m_sections.push_back(std::move(ss));
+}
+
+void ElfFile::load(char* filename)
+{
+
+	FILE* inf = fopen(filename, "rb");
+
+	if (inf == NULL)
+	{
+		throw std::runtime_error("Error opening file!");
+	}	
+
+	elf_header32 e;
+
+	if (fread(&e, sizeof(elf_header32), 1, inf) != 1)
+	{
+		throw std::runtime_error("Error reading ELF header!");
+	}
+
+	if (! validate_elf_header(&e))
+	{
+		throw std::runtime_error("File is not a SLURM16 Elf file!");
+	}
+
+	// Load section sections
+	
+	if (e.e_shentsize != sizeof(elf_sh32))
+	{
+		throw std::runtime_error("File does not have the expected section header size!");
+	}
+
+	uint32_t offset = e.e_shoff;
+
+	// We created a dummy section in the constructor... delete it
+	m_sections.clear();
+
+	for (int i = 0; i < e.e_shnum; i++)
+	{
+		loadSection(inf, offset);
+		offset += sizeof(elf_sh32);		
+	}
+
+	// Fill in section names
+
+	int shstrtab_idx = e.e_shstrndx;
+
+	if (shstrtab_idx < 0 || shstrtab_idx >= e.e_shnum)
+		throw std::runtime_error("String table index out of range!");
+
+	ElfSection* strtab = &m_sections[shstrtab_idx];
+
+	for (auto& sec : m_sections)
+	{
+		// Security: don't trust offsets in file
+		uint32_t off = sec.name_offset;
+		while (off < strtab->size && strtab->data[off++] != 0);
+		if (off > strtab->size)
+		{
+			std::cout << "Error: bad string index" << std::endl;
+			continue;
+		}
+
+		sec.name = std::string((char*)&strtab->data[sec.name_offset]);
+	}
+
+	// Create symbol table
+
+	// Create relocation table
 }
 
