@@ -97,10 +97,17 @@ struct elf_rela32 {
 } __attribute__ ((packed));
 
 /*========================= ELF File class ===============================*/
+struct ElfRelocation {
+	uint32_t offset = 0;
+	uint32_t info = 0;
+	int32_t  addend = 0;
+
+	// TODO: Accessor methods for obtaining symbol, etc.
+};
 
 struct ElfSection {
 
-	// Move constructor to take hold of data (destructor will free if not null)	
+	// Move constructor to take hold of data (destructor will free data if not null)	
 	ElfSection(ElfSection&& from)
 	{
 		name = std::move(from.name);
@@ -116,6 +123,7 @@ struct ElfSection {
 		data = from.data;
 		from.data = nullptr;
 		size = from.size;
+		relocation_table = std::move(from.relocation_table);
 	}
 
 	ElfSection() {}
@@ -145,6 +153,9 @@ struct ElfSection {
 	// We use move semantics to transfer data array to emplaced object in vector,
 	// allowing destructor to free the memory
 	~ElfSection();
+
+	std::vector<ElfRelocation> relocation_table;
+
 };
 
 struct ElfSymbol {
@@ -159,12 +170,6 @@ struct ElfSymbol {
         uint16_t        shndx = 0;
         uint32_t        value = 0;
         uint32_t        size = 0;
-};
-
-struct ElfRelocation {
-	uint32_t offset = 0;
-	uint32_t info = 0;
-	int32_t addend = 0;
 };
 
 class ElfFile {
@@ -196,6 +201,11 @@ class ElfFile {
 		void buildSectionHeaderStringTable();
 
 		void loadSection(FILE* fil, uint32_t offset);
+
+		void createSymbolTableFromSection(int sec_idx);
+		void createRelocationTableFromSection(int sec_idx);
+
+		std::string getStringFromStrTab(const ElfSection* strtab, uint32_t name_offset); 
 
 		std::vector<ElfSection> m_sections;
 		std::vector<ElfSymbol> m_symbols;

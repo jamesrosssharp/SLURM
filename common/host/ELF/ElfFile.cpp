@@ -494,6 +494,12 @@ void ElfFile::loadSection(FILE* fil, uint32_t offset)
 
 	// Load section data
 
+	//	Sanity check section size
+	if (ss.size > 65536)
+	{
+		throw std::runtime_error("Section unusually large for a SLURM elf : corrupt file?");
+	}
+
 	if (ss.size != 0)
 	{
 
@@ -511,6 +517,98 @@ void ElfFile::loadSection(FILE* fil, uint32_t offset)
 
 	m_sections.push_back(std::move(ss));
 }
+
+void ElfFile::createSymbolTableFromSection(int sec_idx)
+{
+
+	ElfSection *sym_sec = &m_sections[sec_idx];
+
+	if (sym_sec->entsize != sizeof(elf_sym32))
+	{
+		std::cout << sym_sec->entsize << std::endl;
+		throw std::runtime_error("Symbol table entry size not standard: corrupt file?");
+	}
+
+	if (sym_sec->link > m_sections.size())
+		throw std::runtime_error("String table index is out of bounds: corrupt file?");
+
+	ElfSection *str_tab = &m_sections[sym_sec->link];
+
+	if (str_tab->type != SHT_STRTAB)
+		throw std::runtime_error("String table index does not point to string table: corrupt file?");
+
+ 	uint32_t offset = 0;
+
+	while (offset < sym_sec->size)
+	{
+		elf_sym32* esym = (elf_sym32*)&sym_sec->data[offset];
+
+		ElfSymbol e;
+
+		e.name_offset = esym->st_name;
+		e.info = esym->st_info;
+        	e.other = esym->st_other;
+        	e.shndx = esym->st_shndx;
+        	e.value = esym->st_value;
+        	e.size = esym->st_size;
+
+		// Get string from string table
+		e.name = getStringFromStrTab(str_tab, e.name_offset);
+	
+		// Fill in section name
+		e.section = m_sections.at(e.shndx).name;
+
+		m_symbols.push_back(e);
+
+		offset += sizeof(elf_sym32);
+	}
+
+
+}
+
+void ElfFile::createRelocationTableFromSection(int sec_idx)
+{
+
+	ElfSection *rela_sec = &m_sections[sec_idx];
+	ElfSection *relocated_sec = &m_sections.at(rela_sec->info);
+	// We don't care about accessing symbol table, as we have made sure there is only 1 symbol table.
+
+	if (rela_sec->entsize != sizeof(elf_rela32))
+	{
+		throw std::runtime_error("Relocation table entry size not standard: corrupt file?");
+	}
+
+	uint32_t offset = 0;
+	
+	while (offset < rela_sec->size)
+	{
+		elf_rela32* rela = (elf_rela32*)&rela_sec->data[offset]; 
+
+		ElfRelocation e;
+
+		e.offset = rela->offset;
+		e.info 	 = rela->info;
+		e.addend = rela->addend;
+
+		relocated_sec->relocation_table.push_back(e);
+
+		offset += sizeof(elf_rela32);
+	}
+
+}
+
+
+std::string ElfFile::getStringFromStrTab(const ElfSection* strtab, uint32_t name_offset)
+{
+	// Security: don't trust offsets in file
+	uint32_t off = name_offset;
+	while (off < strtab->size && strtab->data[off++] != 0);
+	if (off > strtab->size)
+	{
+		throw std::runtime_error("Error: bad string index: corrupt file?");
+	}
+	return std::string((char*)&strtab->data[name_offset]);
+} 
 
 void ElfFile::load(char* filename)
 {
@@ -541,6 +639,13 @@ void ElfFile::load(char* filename)
 		throw std::runtime_error("File does not have the expected section header size!");
 	}
 
+	// Sanity check number of sections ... slurm objects would never have more than 100
+	
+	if (e.e_shnum > 100)
+	{
+		throw std::runtime_error("Object file has more than 100 sections... corrupt file?");
+	} 
+
 	uint32_t offset = e.e_shoff;
 
 	// We created a dummy section in the constructor... delete it
@@ -563,20 +668,46 @@ void ElfFile::load(char* filename)
 
 	for (auto& sec : m_sections)
 	{
-		// Security: don't trust offsets in file
-		uint32_t off = sec.name_offset;
-		while (off < strtab->size && strtab->data[off++] != 0);
-		if (off > strtab->size)
-		{
-			std::cout << "Error: bad string index" << std::endl;
-			continue;
-		}
 
-		sec.name = std::string((char*)&strtab->data[sec.name_offset]);
+		sec.name = getStringFromStrTab(strtab, sec.name_offset); 
 	}
 
 	// Create symbol table
 
+	bool symtab_found = false;
+	int  symtab_idx;
+	int  i = 0;
+
+	for (auto& sec : m_sections)
+	{
+		if (sec.type == SHT_SYMTAB)
+		{
+			if (symtab_found)
+				throw std::runtime_error("Error: multiple symbol tables");
+
+			symtab_found = true;
+			symtab_idx = i;	
+		}
+
+		i++;
+	}
+
+	if (! symtab_found)
+		throw std::runtime_error("Error: file has no symbol table : corrupt file?");
+
+	createSymbolTableFromSection(symtab_idx);
+
 	// Create relocation table
+	
+	i = 0;	
+
+	for (auto& sec : m_sections)
+	{
+		if (sec.type == SHT_RELA)
+		{
+			createRelocationTableFromSection(i);
+		}
+		i++;
+	}
 }
 
