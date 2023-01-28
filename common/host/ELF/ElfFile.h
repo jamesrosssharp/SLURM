@@ -156,6 +156,9 @@ struct ElfSection {
 
 	std::vector<ElfRelocation> relocation_table;
 
+	ElfRelocation* findRelocationAtAddress(uint32_t offset);
+	bool isExecutableSection();
+
 };
 
 struct ElfSymbol {
@@ -171,6 +174,8 @@ struct ElfSymbol {
         uint32_t        value = 0;
         uint32_t        size = 0;
 };
+
+typedef void (*progbitsIter_cb)(ElfSection* e, void* user_data);
 
 class ElfFile {
 
@@ -193,6 +198,13 @@ class ElfFile {
 	
 		/* load an ELF file and create internal structures to be used in disassembly and linking */
 		void load(char* filename);
+
+		/* iterate over all PROGBITS sections, and call callback */
+		void iterateOverProgbitsSections(progbitsIter_cb section_cb, void* user_data);	
+
+		ElfSymbol* findSymbolBySectionAndAddress(const std::string& name, uint32_t offset);
+
+		void printRelocation(ElfRelocation* rela);
 
 	private:
 

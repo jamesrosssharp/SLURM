@@ -1,7 +1,7 @@
 
 
 #include "Assembly.h"
-#include "slurm16InstructionSet.h"
+#include "host/SLURM/slurm16InstructionSet.h"
 
 #include <sstream>
 

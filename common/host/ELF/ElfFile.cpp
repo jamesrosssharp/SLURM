@@ -711,3 +711,50 @@ void ElfFile::load(char* filename)
 	}
 }
 
+void ElfFile::iterateOverProgbitsSections(progbitsIter_cb section_cb, void* user_data)
+{
+	for (auto& sec : m_sections)
+	{
+		if (sec.type == SHT_PROGBITS)
+		{
+			section_cb(&sec, user_data);
+		}
+	}
+}
+
+ElfSymbol* ElfFile::findSymbolBySectionAndAddress(const std::string& name, uint32_t offset)
+{
+
+	for (auto& sym : m_symbols)
+	{
+		if (sym.section == name && sym.value == offset)
+			return &sym;
+	}
+
+	return nullptr;
+
+}
+
+ElfRelocation* ElfSection::findRelocationAtAddress(uint32_t offset)
+{
+	for (auto& rela : relocation_table)
+	{
+		if (rela.offset == offset) return &rela;
+	}
+	return nullptr;
+}
+
+void ElfFile::printRelocation(ElfRelocation* rela)
+{
+	int sym_idx = rela->info >> 8;
+
+	ElfSymbol& esym = m_symbols.at(sym_idx);
+
+	std::cout << "<" << esym.name << " + " << rela->addend << ">";
+
+}
+
+bool ElfSection::isExecutableSection()
+{
+	return flags & SHF_EXECINSTR;
+}
