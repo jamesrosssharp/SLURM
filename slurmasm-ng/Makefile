@@ -36,7 +36,7 @@ slurmasm-ng.tab.c: slurmasm-ng.y
 lex.yy.c: slurmasm-ng.lex
 	flex slurmasm-ng.lex
 
-install: slurmasm
+install: slurmasm-ng
 	cp slurmasm-ng ../bin
 
 clean:
