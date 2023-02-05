@@ -122,4 +122,23 @@ void AST::addAssign(int linenum, char* label)
 }
 
 
+void AST::addMemoryOrigin(int line_num)
+{
+	std::cout << "Memory origin line " << line_num << std::endl;
+}
 
+void AST::addMemoryLength(int line_num)
+{
+	std::cout << "Memory length line " << line_num << std::endl;
+}
+
+void AST::addMemoryStatement(int line_num, char* name, char* attr)
+{
+	std::cout << "Memory statement " << line_num << " " << name << " " << attr << std::endl;
+}
+
+void AST::finaliseMemoryBlock(int line_num)
+{
+	std::cout << "Memory block line num:" << line_num << std::endl;
+}
+	

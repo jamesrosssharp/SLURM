@@ -44,7 +44,12 @@ class AST
 		void reduce_stack();
 
 		void addAssign(int linenum, char* name); 
-	
+
+		void addMemoryOrigin(int line_num);
+		void addMemoryLength(int line_num);
+		void addMemoryStatement(int line_num, char* name, char* attr);
+		void finaliseMemoryBlock(int line_num);
+ 
 	private:
 		void push_binary(enum ItemType type);
 		

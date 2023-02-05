@@ -117,7 +117,7 @@ blank_line: ENDL;
 
 /* MEMORY blocks */
 
-memory_block: memory_start optional_open_brace memory_statements CLOSE_BRACE ;
+memory_block: memory_start optional_open_brace memory_statements CLOSE_BRACE { g_ast.finaliseMemoryBlock(line_num); };
 
 memory_start: MEMORY | MEMORY ENDL;
 
@@ -125,15 +125,15 @@ optional_open_brace: OPEN_BRACE | OPEN_BRACE ENDL;
 
 memory_statements: memory_statements memory_statement | memory_statement;
 
-memory_statement: STRING OPEN_PARENTHESIS STRING CLOSE_PARENTHESIS COLON memory_attributes ENDL |
-		  STRING COLON memory_attributes ENDL;
+memory_statement: STRING OPEN_PARENTHESIS STRING CLOSE_PARENTHESIS COLON memory_attributes ENDL { g_ast.addMemoryStatement(line_num, $1, $3); } |
+		  STRING COLON memory_attributes ENDL { g_ast.addMemoryStatement(line_num, $1, NULL); };
 
 memory_attributes: memory_attributes COMMA memory_attribute | 
 		   memory_attribute;
 
 memory_attribute: 
-	ORIGIN ASSIGN expression |
-	LENGTH ASSIGN expression;
+	ORIGIN ASSIGN expression 	{ g_ast.addMemoryOrigin(line_num);}	|
+	LENGTH ASSIGN expression	{ g_ast.addMemoryLength(line_num);}	;
 
 /* SECTIONS blocks */
 
