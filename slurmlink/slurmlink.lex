@@ -35,11 +35,19 @@ int g_str_idx = 0;
 <CHAR_LITERAL>\' { BEGIN(INITIAL); g_string[g_str_idx] = '\0'; yylval.sval = strdup(g_string); return CH_LITERAL; }
 <CHAR_LITERAL>. { if (g_str_idx < MAX_STRING - 2) g_string[g_str_idx++] = yytext[0];};
 
+MEMORY 	 { return MEMORY; }
+ORIGIN 	 { return ORIGIN; }
+LENGTH 	 { return LENGTH; }
+SECTIONS { return SECTIONS; }
+ALIGN 	 { return ALIGN; }
+PROVIDE  { return PROVIDE; }
+NOLOAD 	 { return NOLOAD; }
+KEEP 	 { return KEEP; }
 
 [0-9]+         { yylval.ival = atoi(yytext); return INT; }
 0x[0-9a-fA-F]+|[0-9a-fA-F]+h         { yylval.ival = strtol(yytext, NULL, 16); return HEXVAL; }
 
-[a-zA-Z]+[a-zA-Z0-9_\.]*   {
+[a-zA-Z\.\_]+[a-zA-Z0-9_\.\*]*  {
     yylval.sval = strdup(yytext);
     return STRING;
 }
@@ -62,6 +70,9 @@ int g_str_idx = 0;
 \]             { return CLOSE_SQUARE_BRACKET; }
 =		{ return ASSIGN; }
 ;		{ return SEMICOLON; }
-
+\{		{ return OPEN_BRACE; }
+\}		{ return CLOSE_BRACE; }
+\:		{ return COLON; }
+\>		{ return RIGHT_ANGLE; }
 
 %%

@@ -49,6 +49,14 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 }
 %define parse.error verbose
 
+%token KEEP
+%token NOLOAD
+%token PROVIDE
+%token ALIGN
+%token SECTIONS
+%token COLON
+%token OPEN_BRACE CLOSE_BRACE
+%token MEMORY ORIGIN LENGTH
 %token SEMICOLON
 %token COMMA HEX
 %token END ENDL
@@ -58,6 +66,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 %token OPEN_SQUARE_BRACKET CLOSE_SQUARE_BRACKET
 %token NEG
 %token ASSIGN
+%token RIGHT_ANGLE
 
 %left SHL SHR
 %left PLUS MINUS
@@ -85,6 +94,7 @@ expression:
 	INT    { g_ast.push_number($1); 	} |
 	HEXVAL { g_ast.push_number($1); 	} |	
 	STRING { g_ast.push_symbol($1);		} |
+	ALIGN OPEN_PARENTHESIS expression CLOSE_PARENTHESIS |
 	expression SHL expression	{ g_ast.push_lshift(); } |
 	expression SHR expression	{ g_ast.push_rshift(); } |
 	expression PLUS expression	{ g_ast.push_add(); }	 |	
@@ -101,10 +111,68 @@ asgn: STRING ASSIGN expression SEMICOLON ENDL {g_ast.addAssign(line_num, $1); } 
 body_section: body_lines ;
 body_lines: body_lines body_line | body_line ;
 
-body_line: asgn | blank_line;
+body_line: asgn | memory_block | sections_block | blank_line;
 
 blank_line: ENDL;
 
+/* MEMORY blocks */
+
+memory_block: memory_start optional_open_brace memory_statements CLOSE_BRACE ;
+
+memory_start: MEMORY | MEMORY ENDL;
+
+optional_open_brace: OPEN_BRACE | OPEN_BRACE ENDL;
+
+memory_statements: memory_statements memory_statement | memory_statement;
+
+memory_statement: STRING OPEN_PARENTHESIS STRING CLOSE_PARENTHESIS COLON memory_attributes ENDL |
+		  STRING COLON memory_attributes ENDL;
+
+memory_attributes: memory_attributes COMMA memory_attribute | 
+		   memory_attribute;
+
+memory_attribute: 
+	ORIGIN ASSIGN expression |
+	LENGTH ASSIGN expression;
+
+/* SECTIONS blocks */
+
+sections_block: sections_start OPEN_BRACE sections_statements CLOSE_BRACE;
+
+sections_start: SECTIONS | SECTIONS ENDL;
+
+sections_statements: sections_statements sections_statement | sections_statement;
+
+sections_statement:
+		ENDL |
+		section_block ENDL |
+		asgn |
+		PROVIDE OPEN_PARENTHESIS STRING ASSIGN expression CLOSE_PARENTHESIS SEMICOLON ENDL; 
+
+section_block: section_block_start OPEN_BRACE section_block_statements CLOSE_BRACE section_block_end | 
+		section_block_start ENDL OPEN_BRACE section_block_statements CLOSE_BRACE section_block_end ;   
+
+section_block_start: 
+		STRING COLON | 
+		STRING OPEN_PARENTHESIS NOLOAD CLOSE_PARENTHESIS COLON;	
+
+section_block_statements: section_block_statements section_block_statement | section_block_statement;
+
+section_block_statement:
+		asgn |
+		KEEP OPEN_PARENTHESIS section_block_statement_section_list CLOSE_PARENTHESIS ENDL |
+		section_block_statement_section_list ENDL |
+		ENDL;
+			
+section_block_statement_section_list: STRING OPEN_PARENTHESIS section_list CLOSE_PARENTHESIS	|
+					MULT OPEN_PARENTHESIS section_list CLOSE_PARENTHESIS;  
+
+section_list: section_list STRING |
+		STRING;
+
+section_block_end: 
+		RIGHT_ANGLE STRING ENDL | 
+		ENDL;
 %%
 
 void printUsage(char *arg0)

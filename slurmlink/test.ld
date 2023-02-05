@@ -2,10 +2,8 @@
 BOOTLOADER_SIZE = 0x200;
 STACK_SIZE 	= 0x400;
 
-MEMORY
-{
-	bootloader (wx) : ORIGIN = 0x0000, LENGTH = BOOTLOADER_SIZE
-	ram (wx) : ORIGIN = BOOTLOADER_SIZE, LENGTH = 0x10000 - BOOTLOADER_SIZE
+MEMORY {bootloader (wx) : ORIGIN = 0x0000, LENGTH = BOOTLOADER_SIZE
+	ram (wx) : ORIGIN = BOOTLOADER_SIZE, LENGTH = 0x10000 - BOOTLOADER_SIZE 
 }
 
 SECTIONS
@@ -43,6 +41,8 @@ SECTIONS
 	/* heap */
 
 	. = ALIGN(4);
+
+	/* PROVIDE provides the symbol only if it is referenced, but not defined */
    	PROVIDE(_heap_start = .);
    	_end = . ;
 }
