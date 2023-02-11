@@ -261,7 +261,9 @@ int main(int argc, char** argv) {
 	for (int i = optind; i < argc; i++)
 		l.loadElfFile(argv[i]);
 
-	
+	l.link(outputFile);
+
+	std::cout << "Linking complete, have a nice day..." << std::endl;
 
 }
 

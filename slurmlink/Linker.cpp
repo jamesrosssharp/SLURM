@@ -14,6 +14,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 */
 
 #include <iostream>
+#include <sstream>
 #include "Linker.h"
 
 Linker::Linker(AST* ast) : m_ast(ast) 
@@ -29,13 +30,35 @@ Linker::~Linker()
 
 void Linker::loadElfFile(const char* name)
 {
-	std::cout << " Loading Elf: " << name << std::endl;
+	std::cout << "\tLoading Elf: " << name << std::endl;
+
+	if (m_files.find(name) != m_files.end())
+	{
+		std::stringstream ss;
+		ss << "Error: file already loaded: " << name << std::endl;
+		throw std::runtime_error(ss.str());  
+	}
 
 	ElfFile* e = new ElfFile();
 
 	e->load(name);
 
 	m_files.emplace(name, e);
+
+}
+
+void Linker::link(const char* outFile)
+{
+	// Process SECTIONS statements, one by one, to create the output sections.
+	// Build up symbol table and sections relocation table.	
+
+
+	// Perform linking of symbols
+	
+
+	// Write relocations.
+	
+	// Create linked output file.
 
 }
 	

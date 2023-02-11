@@ -29,6 +29,9 @@ class Linker {
 		~Linker();
 
 		void loadElfFile(const char* name);
+
+		/* where the magic happens... link all the loaded files according to linker script */
+		void link(const char* outFile);
 		
 	private:
 
