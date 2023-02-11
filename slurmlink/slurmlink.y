@@ -149,16 +149,16 @@ sections_statements: sections_statements sections_statement | sections_statement
 
 sections_statement:
 		ENDL |
-		section_block ENDL {g_ast.consumeSectionBlock(); } |
-		asgn { g_ast.consumeSectionsAssignment(); } |
+		section_block ENDL {g_ast.consumeSectionBlock(line_num); } |
+		asgn { g_ast.consumeSectionsAssignment(line_num); } |
 		PROVIDE OPEN_PARENTHESIS STRING ASSIGN expression CLOSE_PARENTHESIS SEMICOLON ENDL {g_ast.addProvide(line_num, $3);}; 
 
 section_block: section_block_start OPEN_BRACE section_block_statements CLOSE_BRACE section_block_end | 
 		section_block_start ENDL OPEN_BRACE section_block_statements CLOSE_BRACE section_block_end ;   
 
 section_block_start: 
-		STRING COLON | 
-		STRING OPEN_PARENTHESIS NOLOAD CLOSE_PARENTHESIS COLON;	
+		STRING COLON { g_ast.setCurrentSectionBlockName($1); } | 
+		STRING OPEN_PARENTHESIS NOLOAD CLOSE_PARENTHESIS COLON { g_ast.setCurrentSectionBlockName($1); };	
 
 section_block_statements: section_block_statements section_block_statement | section_block_statement;
 

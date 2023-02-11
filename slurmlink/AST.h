@@ -21,6 +21,9 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include "MemoryStatement.h"
 #include "Expression.h"
 #include "Assignment.h"
+#include "SectionBlockStatementSectionList.h"
+#include "SectionBlockStatement.h"
+#include "SectionsStatement.h"
 
 class AST
 {
@@ -63,7 +66,7 @@ class AST
 		/* SECTIONS statements */
 
 		/*
-		 *	The terminology is confusing, but example of SECTIONS block:
+		 *	The terminology used here is confusing, but example of SECTIONS block:
 		 *	
 		 *	1 : SECTIONS {
 		 * 	2 :	.text : {
@@ -77,7 +80,7 @@ class AST
 		 *	10:		*( .data )
 		 *	11:		} > ram
 		 *	12:
-   		 *	13:		_end = . ;
+   		 *	13:	_end = . ;
 		 *	14: }
 		 *
 		 *	Lines 1-14 are the "SectionsBlock"
@@ -93,22 +96,34 @@ class AST
 		
 		/* finalise the sections block */
 		void finaliseSectionsBlock(int line_num);
+
 		/* pop section block of the stack and create a section block statement in the vector of SECTIONS statements */
-		void consumeSectionBlock();
+		void consumeSectionBlock(int line_num);
+
 		/* consume an assigment from the stack and create an assignment statement in the vector of SECTIONS statements */
-		void consumeSectionsAssignment();
+		void consumeSectionsAssignment(int line_num);
+
 		/* add a provide statement */
-		void addProvide(int line_num, char* symbol); 
+		void addProvide(int line_num, char* symbol);
+
+		/* set the name of the current section block */
+		void setCurrentSectionBlockName(char* name); 
+
 		/* consume an assigment from the stack and create as assignment statement in the current section block */
 		void addSectionBlockAssignment(); 
+
 		/* consume the current SectionBlockStatementSectionList and create a KeepSectionBlockStatement */
 		void addKeepSectionBlockStatement(int line_num);
+
 		/* consume the current SectionBlockStatementSectionList and create a SectionBlockStatement */ 
 		void addSectionBlockStatement(int line_num);
+
 		/* add a SectionBlockStatementSectionList to the stack */	
 		void addSectionBlockStatementSectionList(char* file_name);
+
  		/* add a section name to the SectionBlockStatementSectionList stack */
 		void pushSectionName(char *section_name);
+
 		/* set the memory for the last section block statement */
 		void setMemoryForLastSectionBlockStatement(char* memory_name); 
 
@@ -119,13 +134,18 @@ class AST
 		void push_binary(enum ItemType type);
 		
 		/* Parse stacks for expressions, assignments, memory statement nodes, etc */
-		std::deque<ExpressionNode*> m_stack;
+		std::deque<ExpressionNode*> 	 m_stack;
 		std::deque<MemoryStatementNode*> m_memoryStack;
-		std::deque<Assignment> m_assignmentStack;
-
+		std::deque<Assignment> 		 m_assignmentStack;
+		std::deque<std::string> 	 m_sectionNameStack;
+		std::deque<SectionBlockStatementSectionList> m_sectionBlockStatementSectionListStack;
+		std::deque<SectionBlockStatement> m_sectionBlockStatementStack;
+	
+		std::string m_currentSectionBlockName;
 
 		/* Vectors of memory statements, global assignments, etc */
 		std::vector<MemoryStatement> m_memoryStatements;
 		std::vector<Assignment> m_globalAssignments;
+		std::vector<SectionsStatement> m_sectionsStatements;
 };
 

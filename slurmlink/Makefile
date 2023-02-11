@@ -8,10 +8,13 @@ SRC	=	slurmlink.tab.c	\
 		MemoryStatement.cpp	\
 		Assignment.cpp
 
-HEADERS = 	AST.h	\
-		Expression.h	\
+HEADERS = 	AST.h			\
+		Expression.h		\
+		ExpressionNode.h	\
 		MemoryStatement.h	\
-		Assignment.h
+		Assignment.h		\
+		SectionBlockStatementSectionList.h	\
+		SectionBlockStatement.h
 
 
 slurmlink: $(SRC) $(HEADERS)

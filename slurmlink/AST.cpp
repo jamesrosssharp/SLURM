@@ -261,59 +261,118 @@ void AST::finaliseSectionsBlock(int line_num)
 }
 
 /* pop section block of the stack and create a section block statement in the vector of SECTIONS statements */
-void AST::consumeSectionBlock()
+void AST::consumeSectionBlock(int line_num)
 {
+	SectionsStatement s;
+
+	s.type = SECTIONS_STATEMENT_TYPE_SECTION_BLOCK;
+	s.line_num = line_num;
+	
+	s.section_block_name = m_currentSectionBlockName;
+	
+	for (const auto& statement : m_sectionBlockStatementStack)
+		s.statements.push_back(std::move(statement));
+	
+	m_sectionBlockStatementStack.clear();
+
+	m_sectionsStatements.push_back(s);
 
 }
 	
 /* consume an assigment from the stack and create an assignment statement in the vector of SECTIONS statements */
-void AST::consumeSectionsAssignment()
+void AST::consumeSectionsAssignment(int line_num)
 {
+	SectionsStatement s;
+	
+	s.type = SECTIONS_STATEMENT_TYPE_ASSIGNMENT;
+	s.line_num = line_num;
+	s.assignment = m_assignmentStack.back();
+	m_assignmentStack.pop_back();
 
+	m_sectionsStatements.push_back(s);
+	
 }
 
 /* add a provide statement */
 void AST::addProvide(int line_num, char* symbol)
 {
+	SectionsStatement s;
+	
+	s.type = SECTIONS_STATEMENT_TYPE_PROVIDE;
+	s.line_num = line_num;
+	s.provide_symbol = symbol;
+	pop_stack(&s.provide_expression.root);
 
+	m_sectionsStatements.push_back(s);
+}
+
+void AST::setCurrentSectionBlockName(char* name)
+{
+	m_currentSectionBlockName = name;
 }
 
 /* consume an assigment from the stack and create as assignment statement in the current section block */
 void AST::addSectionBlockAssignment()
 {
-
+	SectionBlockStatement s;
+	
+	s.type = SECTION_BLOCK_STATEMENT_TYPE_ASSIGNMENT;
+	s.assignment = std::move(m_assignmentStack.back());
+	m_assignmentStack.pop_back();
+	m_sectionBlockStatementStack.push_back(s); 
 
 }
 
 /* consume the current SectionBlockStatementSectionList and create a KeepSectionBlockStatement */
 void AST::addKeepSectionBlockStatement(int line_num)
 {
+	SectionBlockStatement s;
+
+	s.type = SECTION_BLOCK_STATEMENT_TYPE_KEEP;
+	s.section_list = std::move(m_sectionBlockStatementSectionListStack.back());
+	m_sectionBlockStatementSectionListStack.pop_back();
+	m_sectionBlockStatementStack.push_back(s); 
 
 }
 
 /* consume the current SectionBlockStatementSectionList and create a SectionBlockStatement */ 
 void AST::addSectionBlockStatement(int line_num)
 {
+	SectionBlockStatement s;
 
+	s.type = SECTION_BLOCK_STATEMENT_TYPE_SECTION_LIST;
+	s.section_list = std::move(m_sectionBlockStatementSectionListStack.back());
+	m_sectionBlockStatementSectionListStack.pop_back();
+	m_sectionBlockStatementStack.push_back(s); 
 }
 
 /* add a SectionBlockStatementSectionList to the stack */	
 void AST::addSectionBlockStatementSectionList(char* file_name)
 {
+	/* whoa! what a mouthful */
+	SectionBlockStatementSectionList s;
 
+	s.file_name = file_name;
+	
+	/* take all the section name strings on the stack */
+	for (auto& ss : m_sectionNameStack)
+	{
+		s.sections.push_back(std::move(ss));
+	}
+
+	m_sectionNameStack.clear(); 
+	m_sectionBlockStatementSectionListStack.push_back(s);	
 }
 
 /* add a section name to the SectionBlockStatementSectionList stack */
 void AST::pushSectionName(char *section_name)
 {
-
-
+	m_sectionNameStack.push_back(section_name);
 }
 
 /* set the memory for the last section block statement */
 void AST::setMemoryForLastSectionBlockStatement(char* memory_name)
 {
-
-
+	m_sectionsStatements.back().memory_name = memory_name;
 }
 	
