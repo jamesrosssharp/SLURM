@@ -344,11 +344,13 @@ void arpeggiate(short tick, int channel)
 	short sample = channel_info[channel].sample;
 	short note_hi, note_lo;
 
-	if (tick == 1 || tick == 3)
+//	if (tick == 1 || tick == 3)
+	if (tick == 2)
 	{
 		dev = ((channel_info[channel].param & 0xf0) >> 4);
 	}
-	else if (tick == 2)
+//	else if (tick == 2)
+	else if (tick == 1 || tick == 3)
 	{
 		dev = (channel_info[channel].param & 0xf);
 	}
@@ -428,7 +430,7 @@ void print_channel_ptrs()
 
 }
 
-short channels[] = {0,4,1,5,2,6,3,7};
+short channels[] = {0,2,4,6,1,3,5,7};
 
 int main()
 {
