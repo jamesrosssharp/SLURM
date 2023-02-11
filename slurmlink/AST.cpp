@@ -225,7 +225,7 @@ void AST::addMemoryStatement(int line_num, char* name, char* attr)
 
 void AST::finaliseMemoryBlock(int line_num)
 {
-	std::cout << "Memory block line num:" << line_num << std::endl;
+	//std::cout << "Memory block line num:" << line_num << std::endl;
 }
 
 
@@ -252,6 +252,68 @@ void AST::print()
 	{
 		std::cout << "\t\t" << m << std::endl;
 	}
+
+}
+
+void AST::finaliseSectionsBlock(int line_num)
+{
+	std::cout << "SECTIONS block line " << line_num << std::endl;
+}
+
+/* pop section block of the stack and create a section block statement in the vector of SECTIONS statements */
+void AST::consumeSectionBlock()
+{
+
+}
+	
+/* consume an assigment from the stack and create an assignment statement in the vector of SECTIONS statements */
+void AST::consumeSectionsAssignment()
+{
+
+}
+
+/* add a provide statement */
+void AST::addProvide(int line_num, char* symbol)
+{
+
+}
+
+/* consume an assigment from the stack and create as assignment statement in the current section block */
+void AST::addSectionBlockAssignment()
+{
+
+
+}
+
+/* consume the current SectionBlockStatementSectionList and create a KeepSectionBlockStatement */
+void AST::addKeepSectionBlockStatement(int line_num)
+{
+
+}
+
+/* consume the current SectionBlockStatementSectionList and create a SectionBlockStatement */ 
+void AST::addSectionBlockStatement(int line_num)
+{
+
+}
+
+/* add a SectionBlockStatementSectionList to the stack */	
+void AST::addSectionBlockStatementSectionList(char* file_name)
+{
+
+}
+
+/* add a section name to the SectionBlockStatementSectionList stack */
+void AST::pushSectionName(char *section_name)
+{
+
+
+}
+
+/* set the memory for the last section block statement */
+void AST::setMemoryForLastSectionBlockStatement(char* memory_name)
+{
+
 
 }
 	

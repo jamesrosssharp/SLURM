@@ -49,15 +49,68 @@ class AST
 
 		void addAssign(int linenum, char* name); 
 
+		/* we have had an assigment outside of a sections block - consume this as
+ 		 * a global assignment
+ 		 */
+		void consumeGlobalAssignment();
+
+		/* MEMORY statements */
 		void addMemoryOrigin(int line_num);
 		void addMemoryLength(int line_num);
 		void addMemoryStatement(int line_num, char* name, char* attr);
 		void finaliseMemoryBlock(int line_num);
 
-		/* we have had an assigment outside of a sections block - consume this as
- 		 * a global assignment
- 		 */
-		void consumeGlobalAssignment();
+		/* SECTIONS statements */
+
+		/*
+		 *	The terminology is confusing, but example of SECTIONS block:
+		 *	
+		 *	1 : SECTIONS {
+		 * 	2 :	.text : {
+		 *	3 :		KEEP(*(.vectors .vectors.*))
+		 *	4 :		*( .text )
+		 *	5 :		} > ram
+		 *      6 :
+		 *	7 :	.data : {
+		 *	8 :		. = ALIGN(2);
+		 *	9 :		_sdata = .;
+		 *	10:		*( .data )
+		 *	11:		} > ram
+		 *	12:
+   		 *	13:		_end = . ;
+		 *	14: }
+		 *
+		 *	Lines 1-14 are the "SectionsBlock"
+		 *
+		 *	Lines 2-5 and 7-11 are "SectionBlocks"
+		 *
+		 *	Line 13 is a "SectionsAssignment"
+		 *
+		 *	Lines 8 and 9 are "SectionBlockAssignments"
+		 *
+		 *	Lines 3, 4, 10 are "SectionBlockStatements", made up of a filename with wildcard and a "SectionBlockStatementSectionList"
+		 */
+		
+		/* finalise the sections block */
+		void finaliseSectionsBlock(int line_num);
+		/* pop section block of the stack and create a section block statement in the vector of SECTIONS statements */
+		void consumeSectionBlock();
+		/* consume an assigment from the stack and create an assignment statement in the vector of SECTIONS statements */
+		void consumeSectionsAssignment();
+		/* add a provide statement */
+		void addProvide(int line_num, char* symbol); 
+		/* consume an assigment from the stack and create as assignment statement in the current section block */
+		void addSectionBlockAssignment(); 
+		/* consume the current SectionBlockStatementSectionList and create a KeepSectionBlockStatement */
+		void addKeepSectionBlockStatement(int line_num);
+		/* consume the current SectionBlockStatementSectionList and create a SectionBlockStatement */ 
+		void addSectionBlockStatement(int line_num);
+		/* add a SectionBlockStatementSectionList to the stack */	
+		void addSectionBlockStatementSectionList(char* file_name);
+ 		/* add a section name to the SectionBlockStatementSectionList stack */
+		void pushSectionName(char *section_name);
+		/* set the memory for the last section block statement */
+		void setMemoryForLastSectionBlockStatement(char* memory_name); 
 
 		/* Print out parsed AST */
 		void print();
