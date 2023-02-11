@@ -20,6 +20,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include "ExpressionNode.h"
 #include "MemoryStatement.h"
 #include "Expression.h"
+#include "Assignment.h"
 
 class AST
 {
@@ -53,16 +54,25 @@ class AST
 		void addMemoryStatement(int line_num, char* name, char* attr);
 		void finaliseMemoryBlock(int line_num);
 
+		/* we have had an assigment outside of a sections block - consume this as
+ 		 * a global assignment
+ 		 */
+		void consumeGlobalAssignment();
+
 		/* Print out parsed AST */
 		void print();
  
 	private:
 		void push_binary(enum ItemType type);
 		
+		/* Parse stacks for expressions, assignments, memory statement nodes, etc */
 		std::deque<ExpressionNode*> m_stack;
 		std::deque<MemoryStatementNode*> m_memoryStack;
+		std::deque<Assignment> m_assignmentStack;
 
+
+		/* Vectors of memory statements, global assignments, etc */
 		std::vector<MemoryStatement> m_memoryStatements;
-
+		std::vector<Assignment> m_globalAssignments;
 };
 

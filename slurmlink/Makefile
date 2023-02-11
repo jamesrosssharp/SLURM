@@ -5,11 +5,13 @@ SRC	=	slurmlink.tab.c	\
 		lex.yy.c	\
 		AST.cpp		\
 		Expression.cpp	\
-		MemoryStatement.cpp
+		MemoryStatement.cpp	\
+		Assignment.cpp
 
 HEADERS = 	AST.h	\
 		Expression.h	\
-		MemoryStatement.h
+		MemoryStatement.h	\
+		Assignment.h
 
 
 slurmlink: $(SRC) $(HEADERS)

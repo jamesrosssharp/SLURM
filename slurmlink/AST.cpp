@@ -117,11 +117,23 @@ void AST::push_symbol(char *symbol)
 	push_stack(item);
 }
 
-void AST::addAssign(int linenum, char* label)
+void AST::addAssign(int line_num, char* label)
 {
-	std::cout << "Linenum: " << linenum << " label: " << label << std::endl;
+//	std::cout << "Linenum: " << line_num << " label: " << label << std::endl;
+
+	Assignment a;
+
+	a.symbol = label; 	
+	a.line_num = line_num;
+	pop_stack(&a.expression.root);
+	m_assignmentStack.push_back(a);
 }
 
+void AST::consumeGlobalAssignment()
+{
+	m_globalAssignments.push_back(m_assignmentStack.back());
+	m_assignmentStack.pop_back();
+}
 
 void AST::addMemoryOrigin(int line_num)
 {
@@ -153,6 +165,9 @@ void AST::addMemoryStatement(int line_num, char* name, char* attr)
 	MemoryStatement m;
 
 	m.name = name; 	
+
+	if (attr != NULL)
+		m.permissions = attr;
 
 	for (const auto& elem : m_memoryStack)
 	{
@@ -213,10 +228,21 @@ void AST::finaliseMemoryBlock(int line_num)
 	std::cout << "Memory block line num:" << line_num << std::endl;
 }
 
+
+
 void AST::print()
 {
 
 	std::cout << std::endl << "AST:" << std::endl; 
+
+	// Print global assignments
+
+	std::cout << "\tGlobal assignments: " << std::endl;
+
+	for (const auto& a : m_globalAssignments)
+	{
+		std::cout << "\t\t" << a << std::endl;
+	}
 
 	// Print memory statements
 

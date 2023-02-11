@@ -111,7 +111,10 @@ asgn: STRING ASSIGN expression SEMICOLON ENDL {g_ast.addAssign(line_num, $1); } 
 body_section: body_lines ;
 body_lines: body_lines body_line | body_line ;
 
-body_line: asgn | memory_block | sections_block | blank_line;
+body_line: 	asgn { g_ast.consumeGlobalAssignment(); }  | 
+		memory_block 	| 
+		sections_block  | 
+		blank_line;
 
 blank_line: ENDL;
 

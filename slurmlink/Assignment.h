@@ -1,6 +1,6 @@
 /*
 
-MemoryStatement.h : SLURM16 Linker, structures relating to memory statements.
+Assignment.h : SLURM16 Linker Assignments (from linker scripts)
 
 License: MIT License
 
@@ -13,30 +13,14 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
+#pragma once 
 
-#include "ExpressionNode.h"
 #include "Expression.h"
-#include <string>
 
-enum MemoryItemType {
-	MEMORY_ITEM_ORIGIN,
-	MEMORY_ITEM_LENGTH
-};
-
-struct MemoryStatementNode {
-
-	enum MemoryItemType type;
-
-	Expression expression;
-};
-
-struct MemoryStatement {
+struct Assignment {
+	std::string symbol;
+	Expression  expression;
 	int line_num;
-	std::string name;
-	std::string permissions;
-	Expression origin_expr;
-	Expression length_expr;
 };
 
-std::ostream& operator << (std::ostream& os, const MemoryStatement& e);
+std::ostream& operator << (std::ostream& os, const Assignment& a);

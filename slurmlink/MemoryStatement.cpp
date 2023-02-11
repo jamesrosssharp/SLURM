@@ -17,6 +17,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 std::ostream& operator << (std::ostream& os, const MemoryStatement& e)
 {
-	os << e.name << ": line " << e.line_num << " origin: " << e.origin_expr << " length: " << e.length_expr;
+	os << e.name << ": line " << e.line_num << " permission: " << e.permissions << " origin: " << e.origin_expr << " length: " << e.length_expr;
 	return os;
 }
