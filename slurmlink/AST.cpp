@@ -216,13 +216,15 @@ void AST::finaliseMemoryBlock(int line_num)
 void AST::print()
 {
 
+	std::cout << std::endl << "AST:" << std::endl; 
+
 	// Print memory statements
 
-	std::cout << "Memory statements: " << std::endl;
+	std::cout << "\tMemory statements: " << std::endl;
 
 	for (const auto& m : m_memoryStatements)
 	{
-		std::count << m << std::endl;
+		std::cout << "\t\t" << m << std::endl;
 	}
 
 }

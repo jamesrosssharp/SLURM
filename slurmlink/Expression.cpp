@@ -2,7 +2,6 @@
 #include "Expression.h"
 #include <stdio.h>
 #include <sstream>
-#include "SymbolTable.h"
 
 void Expression::reset()
 {
@@ -379,6 +378,7 @@ std::ostream& operator << (std::ostream& os, const Expression& e)
 	return os;
 }
 
+#if 0 
 int Expression::getValue()
 {
 	if (is_const)
@@ -387,3 +387,4 @@ int Expression::getValue()
 	}	
 	return 0;
 }
+#endif

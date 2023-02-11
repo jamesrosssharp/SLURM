@@ -3,9 +3,16 @@ all: slurmlink
 
 SRC	=	slurmlink.tab.c	\
 		lex.yy.c	\
-		AST.cpp
+		AST.cpp		\
+		Expression.cpp	\
+		MemoryStatement.cpp
 
-slurmlink: $(SRC)
+HEADERS = 	AST.h	\
+		Expression.h	\
+		MemoryStatement.h
+
+
+slurmlink: $(SRC) $(HEADERS)
 	g++ $(SRC) -o slurmlink
 
  
