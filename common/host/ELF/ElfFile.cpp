@@ -194,7 +194,7 @@ void ElfFile::addSection(const std::string& name, const std::vector<uint8_t>& co
 		s.type = SHT_SYMTAB;
 		s.flags = 0;
 		s.info = 0;
-		s.link = m_symbols.size() - 1;
+		s.link = m_sections.size() - 1;
 		s.align = 0;
 		s.entsize = sizeof(elf_sym32);
 	}
@@ -610,7 +610,7 @@ std::string ElfFile::getStringFromStrTab(const ElfSection* strtab, uint32_t name
 	return std::string((char*)&strtab->data[name_offset]);
 } 
 
-void ElfFile::load(char* filename)
+void ElfFile::load(const char* filename)
 {
 
 	FILE* inf = fopen(filename, "rb");

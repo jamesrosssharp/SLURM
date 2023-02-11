@@ -9,7 +9,9 @@ SRC	=	slurmlink.tab.c	\
 		Assignment.cpp		\
 		SectionsStatement.cpp	\
 		SectionBlockStatement.cpp	\
-		SectionBlockStatementSectionList.cpp
+		SectionBlockStatementSectionList.cpp	\
+		Linker.cpp				\
+		../common/host/ELF/ElfFile.cpp	
 
 HEADERS = 	AST.h			\
 		Expression.h		\
@@ -18,11 +20,12 @@ HEADERS = 	AST.h			\
 		Assignment.h		\
 		SectionBlockStatementSectionList.h	\
 		SectionBlockStatement.h			\
-		SectionsStatement.h
-
+		SectionsStatement.h			\
+		Linker.h				\
+		../common/host/ELF/ElfFile.h	
 
 slurmlink: $(SRC) $(HEADERS)
-	g++ $(SRC) -o slurmlink
+	g++ $(SRC) -o slurmlink -I../common 
 
  
 slurmlink.tab.c: slurmlink.y

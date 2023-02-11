@@ -2,3 +2,4 @@ slurmlink
 *.tab.c
 *.yy.c
 *.tab.h
+test

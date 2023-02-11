@@ -197,7 +197,7 @@ class ElfFile {
 		void finaliseRelocationTable();
 	
 		/* load an ELF file and create internal structures to be used in disassembly and linking */
-		void load(char* filename);
+		void load(const char* filename);
 
 		/* iterate over all PROGBITS sections, and call callback */
 		void iterateOverProgbitsSections(progbitsIter_cb section_cb, void* user_data);	

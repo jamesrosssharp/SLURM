@@ -20,6 +20,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include "AST.h"
 #include <unistd.h>
 #include <string.h>
+#include "Linker.h"
 
   using namespace std;
 
@@ -253,7 +254,14 @@ int main(int argc, char** argv) {
 		yyparse();
 	} while (!feof(yyin));
 
-	g_ast.print();
+	//g_ast.print();
+
+	Linker l(&g_ast);
+
+	for (int i = optind; i < argc; i++)
+		l.loadElfFile(argv[i]);
+
+	
 
 }
 
