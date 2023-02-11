@@ -1,6 +1,6 @@
 /*
 
-AST.h : SLURM16 Linker Abstract Syntax Tree (from parsing linker scripts)
+MemoryStatement.h : SLURM16 Linker, structures relating to memory statements.
 
 License: MIT License
 
@@ -15,54 +15,26 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 #pragma once
 
-#include <deque>
-#include <vector>
 #include "ExpressionNode.h"
-#include "MemoryStatement.h"
 #include "Expression.h"
+#include <string>
 
-class AST
-{
-	public:
-		AST();
-		~AST();
-	
-		void push_stack(ExpressionNode* item);
-		bool pop_stack(ExpressionNode** item); /* return false if stack is empty */
+enum MemoryItemType {
+	MEMORY_ITEM_ORIGIN,
+	MEMORY_ITEM_LENGTH
+};
 
-		void push_number(int number);
+struct MemoryStatementNode {
 
-		void push_symbol(char *symbol);
+	enum MemoryItemType type;
 
-		void push_lshift();
-		void push_rshift();
-		void push_add();
-		void push_subtract();
-		void push_mult();
-		void push_div();
-		void push_unary_neg();	
+	Expression expression;
+};
 
-		void eval_stack();
-
-		void reduce_stack();
-
-		void addAssign(int linenum, char* name); 
-
-		void addMemoryOrigin(int line_num);
-		void addMemoryLength(int line_num);
-		void addMemoryStatement(int line_num, char* name, char* attr);
-		void finaliseMemoryBlock(int line_num);
-
-		/* Print out parsed AST */
-		void print();
- 
-	private:
-		void push_binary(enum ItemType type);
-		
-		std::deque<ExpressionNode*> m_stack;
-		std::deque<MemoryStatementNode*> m_memoryStack;
-
-		std::vector<MemoryStatement> m_memoryStatements;
-
+struct MemoryStatement {
+	int line_num;
+	std::string name;
+	Expression origin_expr;
+	Expression length_expr;
 };
 

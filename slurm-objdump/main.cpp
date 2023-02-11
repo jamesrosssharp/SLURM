@@ -41,7 +41,6 @@ void section_cb(ElfSection* sec, void* user_data)
 
 		uint8_t* dptr = &sec->data[offset];
 		
-
 		// Are there any symbols at this offset?
 
 		ElfFile* e = (ElfFile*)user_data;
@@ -92,8 +91,6 @@ void section_cb(ElfSection* sec, void* user_data)
 		}
 		
 		std::cout << std::endl;
-
-//		SlurmDisassembly::disassemble(&sec->data[offset]);
 
 		offset += consume_size;
 

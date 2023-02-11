@@ -233,6 +233,8 @@ int main(int argc, char** argv) {
 		yyparse();
 	} while (!feof(yyin));
 
+	g_ast.print();
+
 }
 
 void yyerror(const char *s) {

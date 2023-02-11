@@ -1,6 +1,6 @@
 /*
 
-AST.h : SLURM16 Linker Abstract Syntax Tree (from parsing linker scripts)
+Expression.h : SLURM16 Linker, structures relating to expressions.
 
 License: MIT License
 
@@ -13,56 +13,19 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+
 #pragma once
 
-#include <deque>
-#include <vector>
 #include "ExpressionNode.h"
-#include "MemoryStatement.h"
-#include "Expression.h"
 
-class AST
-{
-	public:
-		AST();
-		~AST();
-	
-		void push_stack(ExpressionNode* item);
-		bool pop_stack(ExpressionNode** item); /* return false if stack is empty */
+struct Expression {
 
-		void push_number(int number);
+	int lineNum;
+	ExpressionNode* root = nullptr;
 
-		void push_symbol(char *symbol);
-
-		void push_lshift();
-		void push_rshift();
-		void push_add();
-		void push_subtract();
-		void push_mult();
-		void push_div();
-		void push_unary_neg();	
-
-		void eval_stack();
-
-		void reduce_stack();
-
-		void addAssign(int linenum, char* name); 
-
-		void addMemoryOrigin(int line_num);
-		void addMemoryLength(int line_num);
-		void addMemoryStatement(int line_num, char* name, char* attr);
-		void finaliseMemoryBlock(int line_num);
-
-		/* Print out parsed AST */
-		void print();
- 
-	private:
-		void push_binary(enum ItemType type);
-		
-		std::deque<ExpressionNode*> m_stack;
-		std::deque<MemoryStatementNode*> m_memoryStack;
-
-		std::vector<MemoryStatement> m_memoryStatements;
+	void reset();
 
 };
 
+std::ostream& operator << (std::ostream& os, const Expression& e);
+std::ostream& operator << (std::ostream& os, const ExpressionNode*& e);

@@ -15,6 +15,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 #include "AST.h"
 #include <iostream>
+#include <sstream>
 
 AST::AST()
 {
@@ -124,21 +125,105 @@ void AST::addAssign(int linenum, char* label)
 
 void AST::addMemoryOrigin(int line_num)
 {
-	std::cout << "Memory origin line " << line_num << std::endl;
+	//std::cout << "Memory origin line " << line_num << std::endl;
+
+	MemoryStatementNode* n = new MemoryStatementNode();
+	n->type = MEMORY_ITEM_ORIGIN;
+	pop_stack(&n->expression.root);
+	m_memoryStack.push_back(n);	
 }
 
 void AST::addMemoryLength(int line_num)
 {
-	std::cout << "Memory length line " << line_num << std::endl;
+	//std::cout << "Memory length line " << line_num << std::endl;
+
+	MemoryStatementNode* n = new MemoryStatementNode();
+	n->type = MEMORY_ITEM_LENGTH;
+	pop_stack(&n->expression.root);
+	m_memoryStack.push_back(n);
 }
 
 void AST::addMemoryStatement(int line_num, char* name, char* attr)
 {
-	std::cout << "Memory statement " << line_num << " " << name << " " << attr << std::endl;
+	//std::cout << "Memory statement " << line_num << " " << name << " " << attr << std::endl;
+
+	bool gotOrigin = false;
+	bool gotLength = false;
+
+	MemoryStatement m;
+
+	m.name = name; 	
+
+	for (const auto& elem : m_memoryStack)
+	{
+		switch (elem->type)
+		{
+			case MEMORY_ITEM_ORIGIN:
+			{
+
+				if (gotOrigin)
+				{
+					std::stringstream ss;
+					ss << "Error: Memory statement on line " << line_num << " : origin already specified" << std::endl;
+					throw std::runtime_error(ss.str());  
+				}	
+	
+				m.origin_expr = elem->expression;
+
+				gotOrigin = true;
+
+			}
+			break;
+			case MEMORY_ITEM_LENGTH:
+			{
+				if (gotLength)
+				{
+					std::stringstream ss;
+					ss << "Error: Memory statement on line " << line_num << " : length already specified" << std::endl;
+					throw std::runtime_error(ss.str());  
+				}	
+	
+				m.length_expr = elem->expression;
+
+				gotLength = true;
+			}
+			break;
+			default:
+				break;
+		}
+	}
+
+	if (!gotOrigin || !gotLength)
+	{
+		std::stringstream ss;
+		ss << "Error: Memory statement on line " << line_num << " requires origin and length " << std::endl;
+		throw std::runtime_error(ss.str());  
+	}
+
+	m.line_num = line_num;
+	
+	m_memoryStack.clear();
+
+	m_memoryStatements.push_back(m);
+
 }
 
 void AST::finaliseMemoryBlock(int line_num)
 {
 	std::cout << "Memory block line num:" << line_num << std::endl;
+}
+
+void AST::print()
+{
+
+	// Print memory statements
+
+	std::cout << "Memory statements: " << std::endl;
+
+	for (const auto& m : m_memoryStatements)
+	{
+		std::count << m << std::endl;
+	}
+
 }
 	
