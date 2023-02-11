@@ -332,6 +332,9 @@ std::ostream& operator << (std::ostream& os, const ExpressionNode& e)
 		case ITEM_SYMBOL:
 			os << e.val.name;
 			return os;
+		case ITEM_ALIGN:
+			os << "ALIGN";
+			break;
 	}
 
 	os << "(";

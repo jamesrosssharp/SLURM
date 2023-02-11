@@ -108,6 +108,22 @@ void AST::push_unary_neg()
 
 }
 
+void AST::push_align()
+{
+	ExpressionNode* item = new ExpressionNode();
+	item->type = ITEM_ALIGN;
+
+	if (!pop_stack(&item->left))
+		throw std::runtime_error("Parse error!");
+
+	item->right = NULL;
+
+	push_stack(item);
+
+}
+
+
+
 void AST::push_symbol(char *symbol)
 {
 	ExpressionNode* item = new ExpressionNode();
@@ -253,20 +269,32 @@ void AST::print()
 		std::cout << "\t\t" << m << std::endl;
 	}
 
+	// Print SECTIONS statements
+
+	std::cout << "\tSections statements: " << std::endl;
+
+	for (const auto& s : m_sectionsStatements)
+	{
+		std::cout << "\t\t" << s << std::endl;
+	}
+
 }
 
 void AST::finaliseSectionsBlock(int line_num)
 {
-	std::cout << "SECTIONS block line " << line_num << std::endl;
+	//std::cout << "SECTIONS block line " << line_num << std::endl;
 }
 
 /* pop section block of the stack and create a section block statement in the vector of SECTIONS statements */
 void AST::consumeSectionBlock(int line_num)
 {
+	//std::cout << "Consume section block" << std::endl;
+
 	SectionsStatement s;
 
 	s.type = SECTIONS_STATEMENT_TYPE_SECTION_BLOCK;
 	s.line_num = line_num;
+	s.memory_name = m_currentSectionBlockMemory;
 	
 	s.section_block_name = m_currentSectionBlockName;
 	
@@ -371,8 +399,8 @@ void AST::pushSectionName(char *section_name)
 }
 
 /* set the memory for the last section block statement */
-void AST::setMemoryForLastSectionBlockStatement(char* memory_name)
+void AST::setCurrentSectionBlockMemory(char* memory_name)
 {
-	m_sectionsStatements.back().memory_name = memory_name;
+	m_currentSectionBlockMemory = memory_name;
 }
 	

@@ -29,3 +29,6 @@ struct SectionBlockStatement {
 	SectionBlockStatementSectionList section_list;
 	Assignment assignment;	
 };
+
+std::ostream& operator << (std::ostream& os, const SectionBlockStatement& s);
+

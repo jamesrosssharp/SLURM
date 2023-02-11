@@ -45,6 +45,7 @@ class AST
 		void push_mult();
 		void push_div();
 		void push_unary_neg();	
+		void push_align();
 
 		void eval_stack();
 
@@ -125,7 +126,7 @@ class AST
 		void pushSectionName(char *section_name);
 
 		/* set the memory for the last section block statement */
-		void setMemoryForLastSectionBlockStatement(char* memory_name); 
+		void setCurrentSectionBlockMemory(char* memory_name); 
 
 		/* Print out parsed AST */
 		void print();
@@ -142,6 +143,7 @@ class AST
 		std::deque<SectionBlockStatement> m_sectionBlockStatementStack;
 	
 		std::string m_currentSectionBlockName;
+		std::string m_currentSectionBlockMemory;
 
 		/* Vectors of memory statements, global assignments, etc */
 		std::vector<MemoryStatement> m_memoryStatements;

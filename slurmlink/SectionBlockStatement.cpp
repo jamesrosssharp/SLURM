@@ -1,6 +1,6 @@
 /*
 
-ExpressionNode.h : SLURM16 Linker, structures relating to nodes in expression binary trees.
+SectionBlockStatement.cpp : SLURM16 Linker Abstract Syntax Tree (from parsing linker scripts)
 
 License: MIT License
 
@@ -13,32 +13,22 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
+#include "SectionBlockStatement.h"
 
-enum ItemType {
-	ITEM_LSHIFT,
-	ITEM_RSHIFT,
-	ITEM_ADD,
-	ITEM_SUBTRACT,
-	ITEM_MULT,
-	ITEM_DIV,
-	ITEM_UNARY_NEG,
-	ITEM_NUMBER,
-	ITEM_SYMBOL,
-	ITEM_ALIGN
-};
+std::ostream& operator << (std::ostream& os, const SectionBlockStatement& s)
+{
+	switch (s.type)
+	{
+		case SECTION_BLOCK_STATEMENT_TYPE_SECTION_LIST:
+			os << s.section_list << " ";
+			break;
+		case SECTION_BLOCK_STATEMENT_TYPE_KEEP:
+			os << "KEEP " << s.section_list << " ";
+			break;
+		case SECTION_BLOCK_STATEMENT_TYPE_ASSIGNMENT:
+			os << s.assignment << " ";
+			break;
+	}
 
-struct ExpressionNode {
-
-	enum ItemType type;
-
-	union {
-		int value;
-		char* name;
-	} val; 
-
-	ExpressionNode* left = nullptr;
-	ExpressionNode* right = nullptr;
-
-};
-
+	return os;
+}

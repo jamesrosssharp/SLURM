@@ -23,3 +23,5 @@ struct SectionBlockStatementSectionList
 	std::string file_name;
 	std::vector<std::string> sections;
 };
+
+std::ostream& operator << (std::ostream& os, const SectionBlockStatementSectionList& s);

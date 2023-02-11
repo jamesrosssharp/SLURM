@@ -15,6 +15,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 #pragma once
 
+#include <iostream>
 #include "SectionBlockStatement.h"
 #include "Expression.h"
 #include "Assignment.h"
@@ -41,3 +42,4 @@ struct SectionsStatement {
 	 
 };
 
+std::ostream& operator << (std::ostream& os, const SectionsStatement& s);

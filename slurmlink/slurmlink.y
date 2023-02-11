@@ -94,7 +94,7 @@ expression:
 	INT    { g_ast.push_number($1); 	} |
 	HEXVAL { g_ast.push_number($1); 	} |	
 	STRING { g_ast.push_symbol($1);		} |
-	ALIGN OPEN_PARENTHESIS expression CLOSE_PARENTHESIS |
+	ALIGN OPEN_PARENTHESIS expression CLOSE_PARENTHESIS { g_ast.push_align(); } |
 	expression SHL expression	{ g_ast.push_lshift(); } |
 	expression SHR expression	{ g_ast.push_rshift(); } |
 	expression PLUS expression	{ g_ast.push_add(); }	 |	
@@ -177,7 +177,7 @@ section_list: section_list STRING {g_ast.pushSectionName($2);} |
 		;
 
 section_block_end: 
-		RIGHT_ANGLE STRING ENDL {g_ast.setMemoryForLastSectionBlockStatement($2); }| 
+		RIGHT_ANGLE STRING ENDL {g_ast.setCurrentSectionBlockMemory($2); }| 
 		ENDL;
 %%
 

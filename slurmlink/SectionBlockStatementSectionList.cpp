@@ -1,6 +1,6 @@
 /*
 
-ExpressionNode.h : SLURM16 Linker, structures relating to nodes in expression binary trees.
+SectionBlockStatementSectionList.cpp : SLURM16 Linker Abstract Syntax Tree (from parsing linker scripts)
 
 License: MIT License
 
@@ -13,32 +13,17 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
+#include <iostream>
+#include "SectionBlockStatementSectionList.h"
 
-enum ItemType {
-	ITEM_LSHIFT,
-	ITEM_RSHIFT,
-	ITEM_ADD,
-	ITEM_SUBTRACT,
-	ITEM_MULT,
-	ITEM_DIV,
-	ITEM_UNARY_NEG,
-	ITEM_NUMBER,
-	ITEM_SYMBOL,
-	ITEM_ALIGN
-};
+std::ostream& operator << (std::ostream& os, const SectionBlockStatementSectionList& s)
+{
+	os << s.file_name << " ("; 
 
-struct ExpressionNode {
+	for (const auto& ss : s.sections)
+		os << ss << " ";
 
-	enum ItemType type;
+	os << ")";
 
-	union {
-		int value;
-		char* name;
-	} val; 
-
-	ExpressionNode* left = nullptr;
-	ExpressionNode* right = nullptr;
-
-};
-
+	return os;
+}
