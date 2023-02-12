@@ -412,7 +412,7 @@ void ElfFile::finaliseRelocationTable()
 
 }
 		
-void ElfFile::writeOutput(char* filename)
+void ElfFile::writeOutput(const char* filename)
 {
 
 	// Build section header string table
@@ -461,7 +461,6 @@ void ElfFile::writeOutput(char* filename)
 	
 	for (auto& sec : m_sections)
 		write_elf_section_header(sec, outf);
-
 
 	fclose(outf);
 }
@@ -746,7 +745,7 @@ ElfRelocation* ElfSection::findRelocationAtAddress(uint32_t offset)
 
 void ElfFile::printRelocation(ElfRelocation* rela)
 {
-	int sym_idx = rela->info >> 8;
+	int sym_idx = rela->getSymbolIndex();
 
 	ElfSymbol& esym = m_symbols.at(sym_idx);
 

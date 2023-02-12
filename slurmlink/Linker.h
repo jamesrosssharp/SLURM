@@ -22,6 +22,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <map>
 
 #include "LinkerSection.h"
+#include "LinkerSymbol.h"
+#include "LinkerSymtab.h"
 
 class Linker {
 
@@ -49,5 +51,8 @@ class Linker {
 		std::map<std::string, ElfFile*> m_files;	
 
 		std::vector<LinkerSection> m_outputSections;
+		LinkerSymtab m_symtab;
+
+		uint32_t m_currentOffset;
 
 };

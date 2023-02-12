@@ -52,18 +52,66 @@ void Linker::consumeFileSections(LinkerSection& lsec, ElfFile* e, const std::vec
 {
 
 	// Iterate over all sections
-
+	for (const auto & sec : sections)
+	{
 		// Iterate over all sections in e
 
-		// Match wildcard?
+		for (const auto& esec : e->getSections())
+		{	
+			if (esec.type != SHT_PROGBITS)
+				continue;			
+
+			// Match wildcard?
+			if (matchStringToWildcard(esec.name, sec))
+			{
 		
-		// Consume section data
+				std::cout << "\t\t\t\t\t" << "Section " << esec.name << " matches wildcard " << sec << std::endl;
+
+				// Consume section data
+
+				/* TODO: The relocation of sections requires more thought. */
+				uint32_t address_shift = m_currentOffset - lsec.load_address;
+
+				for (int i = 0; i < esec.size; i++)
+					lsec.data.push_back(esec.data[i]);
+
+				m_currentOffset += esec.size;
 	
-		// Add section symbols to symbol table - move to new offset
+				// Add section symbols to symbol table - move to new offset
 
-		// Add relocations 
+				for (const auto& sym : e->getSymbols())
+				{
+					if (sym.section == esec.name)
+					{
+						std::cout << "\t\t\t\t\t\t" << "Adding symbol " << sym.name << " to symbol table : moving to " << (sym.value + address_shift) << std::endl;
 
+						LinkerSymbol lsym;
 
+						lsym.name = sym.name;
+						lsym.section = lsec.name;
+						lsym.section_offset = sym.value + address_shift;
+
+						// TODO: Check for duplicate symbols here.
+
+						m_symtab.emplace(lsym.name, lsym);	
+					}
+				}	
+
+				// Add relocations 
+	
+				for (const auto& rela : esec.relocation_table)
+				{
+					int idx = rela.getSymbolIndex();
+					std::string sym_name = e->getSymbols()[idx].name;
+
+					std::cout << "\t\t\t\t\t\t " << "Adding relocation " << (rela.offset + address_shift) << " : " << sym_name << " + " << rela.addend << std::endl;
+
+					lsec.relocation_table.emplace_back(rela.offset + address_shift, sym_name, rela.addend);	
+				}		
+
+			}
+		}
+	}
 }
 
 bool Linker::matchStringToWildcard(const std::string& str, const std::string& wildcard)
@@ -126,6 +174,7 @@ void Linker::consumeSections(LinkerSection& lsec, const SectionBlockStatementSec
 
 		if (matchPathToWildcard(fpath, seclist.file_name))
 		{
+			std::cout << "\t\t\t\tChecking file " << fpath << std::endl;
 			//std::cout << "Fpath: " << fpath << " matched to wildcard: " << seclist.file_name << std::endl;
 			consumeFileSections(lsec, p.second, seclist.sections);
 		}
@@ -139,6 +188,9 @@ void Linker::processSectionBlock(const SectionsStatement& stat)
 	LinkerSection s;
 
 	s.name = stat.section_block_name;
+
+	/* TODO: Fix this */
+	s.load_address = m_currentOffset;
 
 	// Iterate over all statements in the section block	
 
@@ -168,6 +220,8 @@ void Linker::link(const char* outFile)
 	// Process SECTIONS statements, one by one, to create the output sections.
 	// Build up symbol table and sections relocation table.	
 
+	m_currentOffset = 0;
+
 	for (const auto& s : m_ast->getSectionsStatements())
 	{
 		switch (s.type)
@@ -182,12 +236,48 @@ void Linker::link(const char* outFile)
 		}
 	}
 
-	// Perform linking of symbols
-	
-
-	// Write relocations.
+	// Perform linking of symbols, write relocations.
 	
 	// Create linked output file.
 
-}
-	
+	std::cout << "Creating output file: " << outFile << std::endl;
+
+	ElfFile e;
+
+	for (const auto& sec : m_outputSections)
+	{
+		e.addSection(sec.name, sec.data);
+	}	
+
+	e.beginSymbolTable();
+
+	for (const auto &p : m_symtab)
+	{
+		const LinkerSymbol& sym = p.second;
+		e.addSymbol(sym.name, sym.section, sym.section_offset);
+	}
+
+	e.finaliseSymbolTable();
+
+	for (const auto& sec : m_outputSections)
+	{
+		if (sec.relocation_table.size() != 0)
+		{
+			e.beginRelocationTable(sec.name);
+
+			for (const auto& rel : sec.relocation_table)
+			{
+				e.addRelocation(rel.symbol, rel.addend, rel.offset);
+			}
+
+			e.finaliseRelocationTable();
+		} 
+		else
+		{
+			std::cout << "No relocations for section " << sec.name << std::endl;
+		}
+	}	
+
+	e.writeOutput(outFile);
+
+}	

@@ -13,7 +13,7 @@ SECTIONS
 	.text : {
 		/* keep will be a noop, since slurmlink won't gc sections */
 		KEEP(*(.vectors .vectors.*))
-		Test*( .text )
+		*( .text )
 	} > ram
 
 	.data : {

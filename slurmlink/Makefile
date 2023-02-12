@@ -22,7 +22,11 @@ HEADERS = 	AST.h			\
 		SectionBlockStatement.h			\
 		SectionsStatement.h			\
 		Linker.h				\
-		../common/host/ELF/ElfFile.h	
+		../common/host/ELF/ElfFile.h		\
+		LinkerSection.h				\
+		LinkerSymbol.h				\
+		LinkerSymtab.h				\
+		LinkerRelocation.h
 
 slurmlink: $(SRC) $(HEADERS)
 	g++ $(SRC) -o slurmlink -I../common 

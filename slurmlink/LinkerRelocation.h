@@ -1,6 +1,6 @@
 /*
 
-LinkerSection.h : SLURM16 Linker output section class
+LinkerRelocation.h : SLURM16 Linker relocations
 
 License: MIT License
 
@@ -15,28 +15,11 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 #pragma once
 
-#include <vector>
-#include "LinkerRelocation.h"
-
-struct LinkerSection 
+struct LinkerRelocation 
 {
+	uint32_t 	offset;
+	std::string 	symbol;
+	int32_t 	addend;
 
-	LinkerSection() {}
-
-	// Move constructor	
-	LinkerSection(LinkerSection&& from)
-	{
-		name = std::move(from.name);
-		data = std::move(from.data);
-		load_address = from.load_address;
-		relocation_table = std::move(from.relocation_table);
-	}	
-
-	std::string name;
-	std::vector<uint8_t> data;
-	
-	/* TODO: Section relocation needs more thought */
-	uint32_t load_address;
-	
-	std::vector<LinkerRelocation> relocation_table;
+	LinkerRelocation(uint32_t _offset, const std::string& _symbol, int32_t _addend) : offset(_offset), symbol(_symbol), addend(_addend) { }
 };

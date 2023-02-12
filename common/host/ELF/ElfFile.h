@@ -102,6 +102,8 @@ struct ElfRelocation {
 	uint32_t info = 0;
 	int32_t  addend = 0;
 
+	int getSymbolIndex() const { return info  >> 8; }
+
 	// TODO: Accessor methods for obtaining symbol, etc.
 };
 
@@ -186,7 +188,7 @@ class ElfFile {
 
 		void addSection(const std::string& name, const std::vector<uint8_t>& contents);
 
-		void writeOutput(char* filename);
+		void writeOutput(const char* filename);
 		
 		void beginSymbolTable();
 		void addSymbol(const std::string& sym_name, const std::string& sym_section, int value);
@@ -205,6 +207,9 @@ class ElfFile {
 		ElfSymbol* findSymbolBySectionAndAddress(const std::string& name, uint32_t offset);
 
 		void printRelocation(ElfRelocation* rela);
+
+		std::vector<ElfSection>& getSections() { return m_sections; }
+		std::vector<ElfSymbol>&  getSymbols()  { return m_symbols;  }
 
 	private:
 

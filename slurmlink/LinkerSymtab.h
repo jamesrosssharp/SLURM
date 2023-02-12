@@ -1,6 +1,6 @@
 /*
 
-LinkerSection.h : SLURM16 Linker output section class
+LinkerSymtab.h : SLURM16 Linker symbol table
 
 License: MIT License
 
@@ -15,28 +15,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 #pragma once
 
-#include <vector>
-#include "LinkerRelocation.h"
+#include "LinkerSymbol.h"
+#include <string>
+#include <map>
 
-struct LinkerSection 
-{
-
-	LinkerSection() {}
-
-	// Move constructor	
-	LinkerSection(LinkerSection&& from)
-	{
-		name = std::move(from.name);
-		data = std::move(from.data);
-		load_address = from.load_address;
-		relocation_table = std::move(from.relocation_table);
-	}	
-
-	std::string name;
-	std::vector<uint8_t> data;
-	
-	/* TODO: Section relocation needs more thought */
-	uint32_t load_address;
-	
-	std::vector<LinkerRelocation> relocation_table;
-};
+using LinkerSymtab = std::map<std::string, LinkerSymbol>;
