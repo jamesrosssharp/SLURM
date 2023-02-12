@@ -305,7 +305,7 @@ void Linker::link(const char* outFile)
 
 	for (const auto& sec : m_outputSections)
 	{
-		e.addSection(sec.name, sec.data);
+		e.addSection(sec.name, sec.data, sec.load_address);
 	}	
 
 	e.beginSymbolTable();

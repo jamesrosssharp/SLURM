@@ -135,7 +135,7 @@ ElfFile::~ElfFile()
 
 }
 
-void ElfFile::addSection(const std::string& name, const std::vector<uint8_t>& contents)
+void ElfFile::addSection(const std::string& name, const std::vector<uint8_t>& contents, uint32_t loadAddr)
 {
 
 #if 0
@@ -156,6 +156,8 @@ void ElfFile::addSection(const std::string& name, const std::vector<uint8_t>& co
 	memcpy(s.data, contents.data(), contents.size());
 
 	s.size = contents.size(); 
+
+	s.address = loadAddr;
 
 	if (name == "")
 	{

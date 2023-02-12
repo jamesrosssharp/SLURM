@@ -186,7 +186,7 @@ class ElfFile {
 		ElfFile();
 		~ElfFile();
 
-		void addSection(const std::string& name, const std::vector<uint8_t>& contents);
+		void addSection(const std::string& name, const std::vector<uint8_t>& contents, uint32_t load_addr = 0);
 
 		void writeOutput(const char* filename);
 		

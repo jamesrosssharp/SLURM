@@ -45,7 +45,7 @@ void section_cb(ElfSection* sec, void* user_data)
 
 		ElfFile* e = (ElfFile*)user_data;
 
-		ElfSymbol* sym = e->findSymbolBySectionAndAddress(sec->name, offset);
+		ElfSymbol* sym = e->findSymbolBySectionAndAddress(sec->name, offset + sec->address);
 
 		if (sym != nullptr)
 		{
@@ -53,7 +53,7 @@ void section_cb(ElfSection* sec, void* user_data)
 		}
 
 		// Print offset, raw bytes, and disassembly
-		std::cout << std::hex << std::setw(4) << std::setfill(' ') << offset << "\t";
+		std::cout << std::hex << std::setw(4) << std::setfill(' ') << (offset + sec->address) << "\t";
 
 		int consume_size = 2;
 
@@ -82,7 +82,7 @@ void section_cb(ElfSection* sec, void* user_data)
 
 		// Are there any relocations at this address?
 
-		ElfRelocation* rela = sec->findRelocationAtAddress(offset);
+		ElfRelocation* rela = sec->findRelocationAtAddress(offset + sec->address);
 
 		if (rela != nullptr)
 		{
@@ -95,6 +95,7 @@ void section_cb(ElfSection* sec, void* user_data)
 		offset += consume_size;
 
 	}
+	std::cout << std::endl;
 
 }
 
