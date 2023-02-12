@@ -130,6 +130,8 @@ class AST
 
 		/* Print out parsed AST */
 		void print();
+
+		std::vector<SectionsStatement>& getSectionsStatements() { return m_sectionsStatements; }
  
 	private:
 		void push_binary(enum ItemType type);

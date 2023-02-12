@@ -1,6 +1,6 @@
 /*
 
-Linker.h : SLURM16 Linker
+LinkerSection.h : SLURM16 Linker output section class
 
 License: MIT License
 
@@ -15,39 +15,20 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 #pragma once
 
-#include "AST.h"
-
-#include <host/ELF/ElfFile.h>
 #include <vector>
-#include <map>
 
-#include "LinkerSection.h"
+struct LinkerSection 
+{
 
-class Linker {
+	LinkerSection() {}
 
-	public:
+	// Move constructor	
+	LinkerSection(LinkerSection&& from)
+	{
+		name = std::move(from.name);
+		data = std::move(from.data);
+	}	
 
-		Linker(AST* ast);
-		~Linker();
-
-		void loadElfFile(const char* name);
-
-		/* where the magic happens... link all the loaded files according to linker script */
-		void link(const char* outFile);
-		
-	private:
-		/* private methods */
-		
-		void processSectionBlock(const SectionsStatement& stat);
-		void consumeSections(LinkerSection& lsec, const SectionBlockStatementSectionList& seclist);
-		void consumeFileSections(LinkerSection& lsec, ElfFile* e, const std::vector<std::string>& sections);
-
-		bool matchStringToWildcard(const std::string& str, const std::string& wildcard);
-		bool matchPathToWildcard(const std::string& path, const std::string& wildcard);
-		
-		AST* m_ast;
-		std::map<std::string, ElfFile*> m_files;	
-
-		std::vector<LinkerSection> m_outputSections;
-
+	std::string name;
+	std::vector<uint8_t> data;
 };
