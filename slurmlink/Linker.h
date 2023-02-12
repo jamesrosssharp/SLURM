@@ -24,6 +24,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include "LinkerSection.h"
 #include "LinkerSymbol.h"
 #include "LinkerSymtab.h"
+#include "LinkerMemory.h"
 
 class Linker {
 
@@ -52,6 +53,7 @@ class Linker {
 
 		std::vector<LinkerSection> m_outputSections;
 		LinkerSymtab m_symtab;
+		std::map<std::string, LinkerMemory> m_memoryMap;
 
 		uint32_t m_currentOffset;
 

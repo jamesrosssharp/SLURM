@@ -70,7 +70,7 @@ void Linker::consumeFileSections(LinkerSection& lsec, ElfFile* e, const std::vec
 				// Consume section data
 
 				/* TODO: The relocation of sections requires more thought. */
-				uint32_t address_shift = m_currentOffset - lsec.load_address;
+				uint32_t address_shift = m_currentOffset;
 
 				for (int i = 0; i < esec.size; i++)
 					lsec.data.push_back(esec.data[i]);
@@ -89,7 +89,7 @@ void Linker::consumeFileSections(LinkerSection& lsec, ElfFile* e, const std::vec
 
 						lsym.name = sym.name;
 						lsym.section = lsec.name;
-						lsym.section_offset = sym.value + address_shift;
+						lsym.value = sym.value + address_shift;
 
 						// TODO: Check for duplicate symbols here.
 
@@ -189,7 +189,15 @@ void Linker::processSectionBlock(const SectionsStatement& stat)
 
 	s.name = stat.section_block_name;
 
-	/* TODO: Fix this */
+	if (m_memoryMap.find(stat.memory_name) == m_memoryMap.end())
+	{
+		std::stringstream ss;
+		ss << "Error: could not find memory " << stat.memory_name << " on line " << stat.line_num << std::endl;
+		throw std::runtime_error(ss.str());  
+	}
+
+	m_currentOffset = m_memoryMap[stat.memory_name].cur_offset;
+
 	s.load_address = m_currentOffset;
 
 	// Iterate over all statements in the section block	
@@ -211,12 +219,63 @@ void Linker::processSectionBlock(const SectionsStatement& stat)
 
 	}
 
+	m_memoryMap[stat.memory_name].cur_offset = m_currentOffset;
+
 	m_outputSections.push_back(std::move(s));
 
 }
 
 void Linker::link(const char* outFile)
 {
+	// Process global assignments. Create symbol table
+
+	for (auto& a : m_ast->getGlobalAssignments())
+	{
+		int32_t val = 0;
+		bool canEval = a.expression.evaluate(m_symtab, val);
+
+		LinkerSymbol s;
+		s.section = "";
+		s.name = a.symbol;
+		s.value = val;
+
+		m_symtab.emplace(s.name, s); 
+	}
+
+	// Process MEMORY statements to create LinkerMemory structs
+
+	for (auto& m : m_ast->getMemoryStatements())
+	{
+		LinkerMemory lm;
+
+		lm.name = m.name;
+		lm.permissions = m.permissions;
+		
+		// TODO: Evaluate expressions here
+		int val = 0;
+		m.origin_expr.evaluate(m_symtab, val);
+		lm.origin = val;
+
+		val = 0;
+		m.length_expr.evaluate(m_symtab, val);
+		lm.length = val;
+
+		lm.cur_offset = lm.origin;
+
+		m_memoryMap.emplace(lm.name, lm);
+	}	
+
+	// Emplace a dummy memory
+	LinkerMemory nullmem;
+
+	nullmem.name = "";
+	nullmem.permissions = "rx";
+	nullmem.origin = 0;
+	nullmem.length = -1;
+	nullmem.cur_offset = 0;
+
+	m_memoryMap.emplace(nullmem.name, nullmem);
+
 	// Process SECTIONS statements, one by one, to create the output sections.
 	// Build up symbol table and sections relocation table.	
 
@@ -254,7 +313,7 @@ void Linker::link(const char* outFile)
 	for (const auto &p : m_symtab)
 	{
 		const LinkerSymbol& sym = p.second;
-		e.addSymbol(sym.name, sym.section, sym.section_offset);
+		e.addSymbol(sym.name, sym.section, sym.value);
 	}
 
 	e.finaliseSymbolTable();

@@ -1,6 +1,6 @@
 /*
 
-Expression.h : SLURM16 Linker, structures relating to expressions.
+LinkerMemory.h : LinkerMemory structs
 
 License: MIT License
 
@@ -13,23 +13,19 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-
 #pragma once
 
-#include <iostream>
-#include "ExpressionNode.h"
-#include "LinkerSymtab.h"
+struct LinkerMemory
+{
+	std::string name;
 
-struct Expression {
+	/* this probably won't get used? */
+	std::string permissions;
 
-	int lineNum;
-	ExpressionNode* root = nullptr;
+	uint32_t origin;
+	uint32_t length;
 
-	void reset();
-	
-	bool evaluate(LinkerSymtab &tab, int &value);
-	bool reduce_to_label_plus_const(LinkerSymtab &tab);
+	/* current linker offset in this memory */
+	uint32_t cur_offset;
+
 };
-
-std::ostream& operator << (std::ostream& os, const Expression& e);
-std::ostream& operator << (std::ostream& os, const ExpressionNode*& e);

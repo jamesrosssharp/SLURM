@@ -2,6 +2,7 @@
 #include "Expression.h"
 #include <stdio.h>
 #include <sstream>
+#include "LinkerSymtab.h"
 
 void Expression::reset()
 {
@@ -9,7 +10,6 @@ void Expression::reset()
 	root = nullptr;	
 }
 
-#if 0
 static void recurse_find_symbols(ExpressionNode* n, std::map<char*, int>& m)
 {
 	if (n == nullptr) return;
@@ -75,13 +75,13 @@ void print_expression(struct ExpressionNode* item)
 	printf(")");
 }
 
-static int recurse_evaluate_with_symbol_table(struct ExpressionNode* item, SymTab_t& tab, bool& success)
+static int recurse_evaluate_with_symbol_table(struct ExpressionNode* item, LinkerSymtab& tab, bool& success)
 {
 	switch (item->type)
 	{
 		case ITEM_SYMBOL:
 		{
-			Symbol* s;
+			LinkerSymbol* s;
 
 			std::string n = item->val.name;
 			//s = &tab[n];
@@ -95,19 +95,6 @@ static int recurse_evaluate_with_symbol_table(struct ExpressionNode* item, SymTa
 			}
 			s = &tab[n];
 
-			if (! s->reduced)
-			{
-				if (s->type == SymbolType::SYMBOL_CONSTANT)
-				{
-					std::stringstream ss;
-					ss << "Referencing another EQU which has not been evaluated yet: " << item->val.name  << std::endl;
-
-					throw std::runtime_error(ss.str());
-				}	
-				else
-					success = false;	
-			}
-		
 			return s->value;
 
 		}
@@ -131,7 +118,7 @@ static int recurse_evaluate_with_symbol_table(struct ExpressionNode* item, SymTa
 	return 0;
 }
 
-bool Expression::evaluate(SymTab_t &tab, int &value)
+bool Expression::evaluate(LinkerSymtab &tab, int &value)
 {
 
 	bool success = true;
@@ -150,7 +137,7 @@ bool Expression::evaluate(SymTab_t &tab, int &value)
 	return success;
 }
 
-static void recurse_replace_evaluated_symbols(struct ExpressionNode** it, SymTab_t& tab)
+static void recurse_replace_evaluated_symbols(struct ExpressionNode** it, LinkerSymtab& tab)
 {
 
 	if (it == nullptr || *it == nullptr)
@@ -162,23 +149,13 @@ static void recurse_replace_evaluated_symbols(struct ExpressionNode** it, SymTab
 	{
 		case ITEM_SYMBOL:
 		{
-			Symbol* s;
+			LinkerSymbol* s;
 
 			std::string n = item->val.name;
 			s = &tab[n];
 
-			if (s->evaluated)
-			{
-				item->type = ITEM_NUMBER;
-				item->val.value = s->value; 
-			}
-			else if (s->reduced && s->type == SYMBOL_CONSTANT)
-			{
-				// This symbol consists of a label plus a constant.
-				// Add this to the AST
-				*it = s->definedIn->expression.root;	
-				item = *it;
-			}
+			item->type = ITEM_NUMBER;
+			item->val.value = s->value; 
 		
 		}
 	}
@@ -210,7 +187,7 @@ bool recurse_verify_symbol_has_simple_addition(ExpressionNode* n, bool simple)
 
 }
 
-bool Expression::reduce_to_label_plus_const(SymTab_t &tab)
+bool Expression::reduce_to_label_plus_const(LinkerSymtab &tab)
 {
 
 	if (root == nullptr)
@@ -242,7 +219,6 @@ bool Expression::reduce_to_label_plus_const(SymTab_t &tab)
 		int v0 = recurse_evaluate_with_symbol_table(root, tab, success);
 		root->type = ITEM_NUMBER;
 		root->val.value = v0;
-		is_const = true;	
 		return true;
 	}
 	else if (symbols == 1)
@@ -260,12 +236,9 @@ bool Expression::reduce_to_label_plus_const(SymTab_t &tab)
 		}
 
 		// Now, evaluate the expression with the symbol = 0 and symbol = 1
-		Symbol sym;
-		sym.evaluated = true;
-		sym.reduced = true;
-		sym.type = SymbolType::SYMBOL_CONSTANT;
+		LinkerSymbol sym;
 		sym.value = 0;
-		SymTab_t testTab = {{last_sym, sym}};		
+		LinkerSymtab testTab = {{last_sym, sym}};		
 		bool success;
 		int v0 = recurse_evaluate_with_symbol_table(root, testTab, success);
 		std::string lsym = last_sym;
@@ -291,8 +264,6 @@ bool Expression::reduce_to_label_plus_const(SymTab_t &tab)
 
 			root = n1;
 
-			is_label_plus_const = true; 
-
 			return true;
 		}
 		else
@@ -316,8 +287,6 @@ bool Expression::reduce_to_label_plus_const(SymTab_t &tab)
 
 	return false;
 }
-
-#endif
 
 std::ostream& operator << (std::ostream& os, const ExpressionNode& e)
 {

@@ -22,6 +22,6 @@ struct LinkerSymbol {
 	std::string name;
 	std::string section;
 
-	uint32_t section_offset;
+	uint32_t value;
 
 };

@@ -132,7 +132,9 @@ class AST
 		void print();
 
 		std::vector<SectionsStatement>& getSectionsStatements() { return m_sectionsStatements; }
- 
+		std::vector<MemoryStatement>&   getMemoryStatements()   { return m_memoryStatements; }
+		std::vector<Assignment>&	getGlobalAssignments()  { return m_globalAssignments; }
+
 	private:
 		void push_binary(enum ItemType type);
 		
