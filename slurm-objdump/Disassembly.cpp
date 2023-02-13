@@ -64,6 +64,48 @@ static std::string handle_alu_reg_imm(uint16_t op, uint16_t imm_hi)
 
 }
 
+static std::string handle_alu_reg_reg(uint16_t op, uint16_t imm_hi)
+{
+	std::stringstream dis;
+
+	uint16_t alu_op = (op & 0x0f00) >> 8;
+
+	switch (alu_op)
+	{
+		case 0:
+			dis << "mov ";
+			break;
+		case 1:
+			dis << "add ";
+			break;
+		case 2:
+			dis << "adc ";
+			break;
+        	case 3:
+			dis << "sub ";
+			break;
+		case 4:
+			dis << "sbb";
+			break;
+		default: 
+			dis << "??? ";
+			break;
+	}
+
+	uint16_t rdest = (op & 0x00f0) >> 4; 
+
+	dis << "r" << rdest;
+	
+	uint16_t rsrc = (op & 0x000f);
+
+	dis << ", r" <<  rsrc;
+
+	return dis.str();
+
+}
+
+
+
 static std::string handle_ret_iret(uint16_t opcode, uint16_t imm)
 {
 	if (opcode & 1)
@@ -109,6 +151,7 @@ static std::string handle_branch(uint16_t op, uint16_t imm_hi)
 
 std::vector<std::tuple<uint16_t, uint16_t, ins_handler_t>> ins_handlers = {
 	{SLRM_ALU_REG_IMM_INSTRUCTION, SLRM_ALU_REG_IMM_INSTRUCTION_MASK, handle_alu_reg_imm},
+	{SLRM_ALU_REG_REG_INSTRUCTION, SLRM_ALU_REG_REG_INSTRUCTION_MASK, handle_alu_reg_reg},
 	{SLRM_IRET_INSTRUCTION, SLRM_IRET_INSTRUCTION_MASK, handle_ret_iret},
 	{SLRM_RET_INSTRUCTION, SLRM_RET_INSTRUCTION_MASK, handle_ret_iret},
 	{SLRM_BRANCH_INSTRUCTION, SLRM_BRANCH_INSTRUCTION_MASK, handle_branch}	 			

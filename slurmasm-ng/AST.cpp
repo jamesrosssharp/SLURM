@@ -167,6 +167,22 @@ void AST::addStandaloneOpcode(int linenum, char* opcode)
 	m_currentStatement.reset();
 }
 
+void AST::addThreeRegCondOpcode(int line_num, char* cond, char* regdest, char* regsrc1, char* regsrc2)
+{
+	std::cout << " Three reg cond op code line " << line_num << " cond: " << cond << std::endl;
+}
+
+void AST::addTwoRegisterOpcode(int line_num, char* opcode, char* regdest, char* regsrc)
+{
+	m_currentStatement.lineNum = line_num;
+	m_currentStatement.opcode = convertOpCode(opcode);
+	m_currentStatement.regDest = convertReg(regdest);
+	m_currentStatement.regSrc = convertReg(regsrc);
+	m_currentStatement.type = StatementType::TWO_REGISTER_OPCODE;
+	m_sectionStatements[m_currentSection].push_back(m_currentStatement);
+	m_currentStatement.reset();
+}
+
 OpCode AST::convertOpCode(char* opcode)
 {
 	std::string s(opcode);

@@ -18,7 +18,8 @@ enum class StatementType
 	EQU,
 	ONE_REGISTER_OPCODE_AND_EXPRESSION,
 	OPCODE_WITH_EXPRESSION,
-	STANDALONE_OPCODE
+	STANDALONE_OPCODE,
+	TWO_REGISTER_OPCODE
 };
 
 struct Statement
@@ -59,6 +60,7 @@ private:
 	void _assemble_one_reg_opcode_and_expression(int expressionValue);
 	void _assemble_opcode_and_expression(int expressionValue);
 	void _assemble_standalone_opcode();
+	void _assemble_two_register_opcode();
 
 };
 

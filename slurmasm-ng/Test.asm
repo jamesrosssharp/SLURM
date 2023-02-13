@@ -19,13 +19,14 @@ start:
 	mov r3, -7
 	mov r4, ANOTHER_EQU
 	add r4, 341
+	add.z r7, r4, r3
 	bl  my_func
 loop:
 	add r4, SOME_EQU
 	ba loop
 
 my_func:
-	add r4, LABEL_EQU
+	add r2, r4
 	ret
 
 .end

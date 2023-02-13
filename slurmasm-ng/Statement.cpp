@@ -18,6 +18,12 @@ void Statement::_assemble_one_reg_opcode_and_expression(int expressionValue)
 		case OpCode::ADD:
 			Assembly::assembleRegisterImmediateALUOp(lineNum, opcode, regDest, expressionValue, assembledBytes);
 			break;
+		default: {
+			std::stringstream ss;
+			ss << "Unsupported opcode for one reg with expression on line " << lineNum << std::endl;	
+			throw std::runtime_error(ss.str());
+		}
+
 	}
 }
 
@@ -29,6 +35,12 @@ void Statement::_assemble_opcode_and_expression(int expressionValue)
 		case OpCode::BL:
 			Assembly::assembleBranch(lineNum, opcode, Register::r0, expressionValue, assembledBytes);
 			break;
+		default: {
+			std::stringstream ss;
+			ss << "Unsupported opcode for opcode with expression on line " << lineNum << std::endl;	
+			throw std::runtime_error(ss.str());
+		}
+
 	}
 }
 
@@ -40,6 +52,27 @@ void Statement::_assemble_standalone_opcode()
 		case OpCode::IRET:
 			Assembly::assembleRetIRet(lineNum, opcode, assembledBytes);
 			break;
+		default: {
+			std::stringstream ss;
+			ss << "Unsupported standalone opcode on line " << lineNum << std::endl;	
+			throw std::runtime_error(ss.str());
+		}
+
+	}
+}
+
+void Statement::_assemble_two_register_opcode()
+{
+	switch (opcode)
+	{
+		case OpCode::ADD:
+			Assembly::assembleTwoRegisterALUOp(lineNum, opcode, regDest, regSrc, assembledBytes);
+			break;
+		default: {
+			std::stringstream ss;
+			ss << "Unsupported two register opcode on line " << lineNum << std::endl;	
+			throw std::runtime_error(ss.str());
+		}
 	}
 }
 
@@ -91,7 +124,9 @@ void Statement::assemble()
 		case StatementType::LABEL:
 			// NO assembly for these statements
 			break;
-
+		case StatementType::TWO_REGISTER_OPCODE:
+			_assemble_two_register_opcode();
+			break;
 		default: {
 			std::stringstream ss;
 			ss << "Unsupported statement type on line " << lineNum << std::endl;	
@@ -156,9 +191,12 @@ std::ostream& operator << (std::ostream& os, const Statement& s)
 		case StatementType::ONE_REGISTER_OPCODE_AND_EXPRESSION:
 		{
 			os << s.opcode << " " << s.regDest << "," << s.expression;
-		
-	}
+		}
 		break;
+		case StatementType::TWO_REGISTER_OPCODE:
+		{
+			os << s.opcode << " " << s.regDest << "," << s.regSrc;
+		}
 		//case StatementType::TWO_REGISTER_OPCODE:
 		//	os << s.opcode << " " << s.regDest << " " << s.regSrc << std::endl;
 		//break;

@@ -50,11 +50,11 @@ equ {return EQU; }
 
 adc|add|and|asr|ba|bc|bl|bnc|bns|bnz|bs|bz|bv|bnv|cc|cs|cz|imm|iret|ld|lsl|lsr|mov|nop|or|ret|rol|rolc|rorc|sbb|sc|ss|st|sub|sz|xor|cmp|test|in|out|sleep|sti|cli|stf|rsf|mul|mulu|umulu|bne|beq|bge|blt|ble|bgt|ldb|ldbsx|stb|bltu|bleu|bgtu|bgeu { yylval.sval = strdup(yytext); return OPCODE; }
 
-\.c|\.nc|\.z|\.nz|\.s|\.s|\.v|\.nv|\.le|\.lt|\.ge|\.gt|\.eq|\.ne|\.ltu|\.leu|.\gtu|.\geu { yylval.condval = strdup(yytext); return COND; }
+(add|adc|and|or|sbb|sub|xor|mul|mulu|umulu)(\.c|\.nc|\.z|\.nz|\.s|\.s|\.v|\.nv|\.le|\.lt|\.ge|\.gt|\.eq|\.ne|\.ltu|\.leu|.\gtu|.\geu) { yylval.condval = strdup(yytext); return COND; }
  
 r0|r1|r2|r3|r4|r5|r6|r7|r8|r9|r10|r11|r12|r13|r14|r15 {yylval.regval = strdup(yytext); return REG; }
 
-[a-zA-Z]+[a-zA-Z0-9_\.]*   {
+[a-zA-Z_\.]+[a-zA-Z0-9_\.]*   {
     yylval.sval = strdup(yytext);
     return STRING;
 }

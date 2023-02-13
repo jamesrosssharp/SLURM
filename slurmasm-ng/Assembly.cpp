@@ -250,3 +250,14 @@ void Assembly::assembleRetIRet(int lineNum, OpCode opcode, std::vector<uint8_t>&
 
 }
 
+void Assembly::assembleTwoRegisterALUOp(int lineNum, OpCode opcode, Register regDest, Register regSrc, std::vector<uint8_t>& assembledBytes)
+{
+	uint16_t aluOp = 0;
+	get_aluOp(opcode, lineNum, aluOp);
+
+	uint16_t op = SLRM_ALU_REG_REG_INSTRUCTION | ((aluOp & 0xf) << 8) | ((int)regDest << 4) | ((uint16_t)regSrc & 0xf);
+
+	assembledBytes.push_back(op & 0xff);
+	assembledBytes.push_back(op >> 8);
+
+}
