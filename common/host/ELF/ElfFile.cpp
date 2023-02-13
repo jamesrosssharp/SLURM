@@ -7,6 +7,8 @@
 
 #include <cstdio>
 
+#include <algorithm>
+
 /*====================== Static elf structure helpers =====================*/
 
 static void fill_elf_ident(elf_ident* i)
@@ -262,7 +264,7 @@ void ElfFile::beginSymbolTable()
 	// Do nothing
 }
 
-void ElfFile::addSymbol(const std::string& sym_name, const std::string& sym_section, int value)
+void ElfFile::addSymbol(const std::string& sym_name, const std::string& sym_section, int value, uint8_t bind, uint8_t type)
 {
  	// Add symbol
  	
@@ -271,8 +273,9 @@ void ElfFile::addSymbol(const std::string& sym_name, const std::string& sym_sect
 	e.name = sym_name;
 	e.section = sym_section;
 
-	// TODO: Fix this
 	e.info = 0;
+	e.set_info(bind, type);
+
 	e.other = 0;
 
 	e.value = value;
@@ -299,6 +302,10 @@ int ElfFile::findSectionIdxByName(const std::string& name)
 
 void ElfFile::finaliseSymbolTable()
 {
+	// Sort symbol table - locals first
+
+	std::sort(m_symbols.begin(), m_symbols.end(), [] (const ElfSymbol& e1, const ElfSymbol& e2) { if (e1.is_local()) return -1; if (e2.is_local()) return 1; else return 0; });	
+
 	// Build strtab
 	
 	std::vector<uint8_t> str_data;
@@ -327,12 +334,20 @@ void ElfFile::finaliseSymbolTable()
 	
 	std::vector<uint8_t> sym_data;
 
+	int local_count = 0;
+	
 	for (auto& sym : m_symbols)
 	{
 		elf_sym32 esym;
 
+		if (sym.is_local()) local_count ++;
+
 		// TODO: We need a map
-		sym.shndx = findSectionIdxByName(sym.section);
+
+		if (sym.section == "ABS")
+			sym.shndx = SHN_ABS;	
+		else
+			sym.shndx = findSectionIdxByName(sym.section);
 
 		fill_elf_sym(&esym, sym);
 
@@ -349,6 +364,8 @@ void ElfFile::finaliseSymbolTable()
 	// Add symtab
 
 	addSection(symn, sym_data);
+
+	m_sections.back().info = local_count;
 }
 
 void ElfFile::beginRelocationTable(const std::string& sec)

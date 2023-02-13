@@ -68,24 +68,6 @@ std::map<std::string, OpCode> opCodeMap = {
 {"LDB", OpCode::LDB},
 {"LDBSX", OpCode::LDBSX},
 {"STB", OpCode::STB},
-{"MOVC", OpCode::MOVC},
-{"MOVNC", OpCode::MOVNC},
-{"MOVZ", OpCode::MOVZ},
-{"MOVNZ", OpCode::MOVNZ},
-{"MOVS", OpCode::MOVS},
-{"MOVNS", OpCode::MOVNS},
-{"MOVV", OpCode::MOVV},
-{"MOVNV", OpCode::MOVNV},
-{"MOVEQ", OpCode::MOVEQ},
-{"MOVNE", OpCode::MOVNE},
-{"MOVLT", OpCode::MOVLT},
-{"MOVLE", OpCode::MOVLE},
-{"MOVGT", OpCode::MOVGT},
-{"MOVGE", OpCode::MOVGE},
-{"MOVLTU", OpCode::MOVLTU},
-{"MOVLEU", OpCode::MOVLEU},
-{"MOVGTU", OpCode::MOVGTU},
-{"MOVGEU", OpCode::MOVGEU}
 };
 
 

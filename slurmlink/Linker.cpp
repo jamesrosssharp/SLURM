@@ -235,9 +235,10 @@ void Linker::link(const char* outFile)
 		bool canEval = a.expression.evaluate(m_symtab, val);
 
 		LinkerSymbol s;
-		s.section = "";
+		s.section = "ABS";
 		s.name = a.symbol;
 		s.value = val;
+		s.bind = STB_GLOBAL;
 
 		m_symtab.emplace(s.name, s); 
 	}
@@ -313,7 +314,7 @@ void Linker::link(const char* outFile)
 	for (const auto &p : m_symtab)
 	{
 		const LinkerSymbol& sym = p.second;
-		e.addSymbol(sym.name, sym.section, sym.value);
+		e.addSymbol(sym.name, sym.section, sym.value, sym.bind, sym.type);
 	}
 
 	e.finaliseSymbolTable();

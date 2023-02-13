@@ -69,25 +69,6 @@ enum class OpCode : uint32_t
 	LDB,	/* Load byte */
 	LDBSX,	/* Load byte, sign extend */
 	STB,	/* Store byte */
-	/* Conditional move - TODO: Fix this! */
-	MOVC,
-	MOVNC,
-	MOVZ,
-	MOVNZ,
-	MOVS,
-	MOVNS,
-	MOVV,
-	MOVNV,
-	MOVEQ,
-	MOVNE,
-	MOVLT,
-	MOVLE,
-	MOVGT,
-	MOVGE,
-	MOVLTU,
-	MOVLEU,
-	MOVGTU,
-	MOVGEU
 };
 
 #include <string>

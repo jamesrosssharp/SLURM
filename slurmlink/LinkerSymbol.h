@@ -17,11 +17,16 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 #include <string>
 
+#include <host/ELF/ElfFile.h>
+
 struct LinkerSymbol {
 
 	std::string name;
 	std::string section;
 
 	uint32_t value;
+
+	int8_t bind = STB_LOCAL;
+	int8_t type = STT_NOTYPE;
 
 };

@@ -40,6 +40,34 @@ enum {
 	SHF_EXECINSTR = 0x4
 };
 
+enum {
+	STB_LOCAL = 0,
+	STB_GLOBAL = 1,
+	STB_WEAK = 2,
+	STB_LOPROC = 13,
+	STB_HIPROC = 15
+};
+
+enum {
+	STT_NOTYPE = 0,
+	STT_OBJECT = 1,
+	STT_FUNC   = 2,
+	STT_SECTION = 3,
+	STT_FILE    = 4,
+	STT_LOPROC  = 13,
+	STT_HIPROC  = 15
+};
+
+enum {
+	SHN_UNDEF 	= 0,
+	SHN_LORESERVE 	= 0xff00,
+	SHN_LOPROC 	= 0xff00,
+	SHN_HIPROC 	= 0xff1f,
+	SHN_ABS 	= 0xfff1,
+	SHN_COMMON 	= 0xfff2,
+	SHN_HIRESERVE 	= 0xffff
+};
+
 struct elf_ident {
         char magic[4];
         char e_class;
@@ -175,6 +203,25 @@ struct ElfSymbol {
         uint16_t        shndx = 0;
         uint32_t        value = 0;
         uint32_t        size = 0;
+
+	void set_info(uint8_t bind, uint8_t type)
+	{
+		info = (bind << 4) | (type & 0xf);
+	}
+
+	void get_bind_type (uint8_t& bind, uint8_t& type) const
+	{
+		bind = info >> 4;
+		type = info & 0xf;
+	}
+
+	bool is_local() const
+	{
+		uint8_t bind, info;
+		get_bind_type(bind, info);
+		return (bind == STB_LOCAL);
+	}
+
 };
 
 typedef void (*progbitsIter_cb)(ElfSection* e, void* user_data);
@@ -191,7 +238,7 @@ class ElfFile {
 		void writeOutput(const char* filename);
 		
 		void beginSymbolTable();
-		void addSymbol(const std::string& sym_name, const std::string& sym_section, int value);
+		void addSymbol(const std::string& sym_name, const std::string& sym_section, int value, uint8_t bind = STB_LOCAL, uint8_t type = STT_NOTYPE);
 		void finaliseSymbolTable();
 
 		void beginRelocationTable(const std::string& sec);
