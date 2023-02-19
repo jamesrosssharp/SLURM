@@ -126,11 +126,54 @@ void Statement::_assemble_three_register_cond_opcode()
 	{
 		case OpCode::ADD:
 		case OpCode::MOV:
+		case OpCode::ADC:
+		case OpCode::SUB:
+		case OpCode::SBB:
+		case OpCode::OR:
+		case OpCode::XOR:
+		case OpCode::AND:
+		case OpCode::BSWAP:
+		case OpCode::RRN:
+		case OpCode::RLN:
+		case OpCode::MUL:
+		case OpCode::MULU:
+		case OpCode::UMULU:
+		case OpCode::CMP:
+		case OpCode::TEST:
 			Assembly::assembleCondAluOp(lineNum, opcode, cond, regDest, regSrc, regSrc2, assembledBytes);
 			break;
 		default: {
 			std::stringstream ss;
 			ss << "Unsupported three register conditional opcode on line " << lineNum << std::endl;	
+			throw std::runtime_error(ss.str());
+		}
+	}
+}
+
+void Statement::_assemble_one_register_opcode()
+{
+	switch (opcode)
+	{
+		case OpCode::ASR:
+		case OpCode::CC:
+		case OpCode::CS:
+		case OpCode::CZ:
+		case OpCode::LSL:
+		case OpCode::LSR:
+		case OpCode::ROL:
+		case OpCode::ROLC:
+		case OpCode::ROR:	
+		case OpCode::RORC:
+		case OpCode::SC:
+		case OpCode::SS:
+		case OpCode::SZ:
+		case OpCode::STF:
+		case OpCode::RSF:
+			Assembly::assembleOneRegAluOp(lineNum, opcode, regDest, assembledBytes);
+			break;
+		default: {
+			std::stringstream ss;
+			ss << "Unsupported one register opcode on line " << lineNum << std::endl;	
 			throw std::runtime_error(ss.str());
 		}
 	}
@@ -192,6 +235,9 @@ void Statement::assemble()
 			break;
 		case StatementType::THREE_REGISTER_COND_OPCODE:
 			_assemble_three_register_cond_opcode();
+			break;
+		case StatementType::ONE_REGISTER_OPCODE:
+			_assemble_one_register_opcode();
 			break;
 		default: {
 			std::stringstream ss;
@@ -269,6 +315,11 @@ std::ostream& operator << (std::ostream& os, const Statement& s)
 		case StatementType::TWO_REGISTER_COND_OPCODE:
 		{
 			os << s.opcode << "." << s.cond << " " << s.regDest << "," << s.regSrc;
+		}
+		break;
+		case StatementType::ONE_REGISTER_OPCODE:
+		{
+			os << s.opcode << " " << s.regDest;
 		}
 		break;
 		case StatementType::THREE_REGISTER_COND_OPCODE:

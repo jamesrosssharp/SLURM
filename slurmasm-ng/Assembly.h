@@ -15,4 +15,5 @@ namespace Assembly
 	void assembleTwoRegisterALUOp(int lineNum, OpCode opcode, Register regDest, Register regSrc, std::vector<uint8_t>& assembledBytes);
 	void assembleCondMovOp(int lineNum, Cond cond, Register regDest, Register regSrc, std::vector<uint8_t>& assembledBytes);
 	void assembleCondAluOp(int lineNum, OpCode opcode, Cond cond, Register regDest, Register regSrc, Register regSrc2, std::vector<uint8_t>& assembledBytes);
+	void assembleOneRegAluOp(int lineNum, OpCode opcode, Register regDest, std::vector<uint8_t>& assembledBytes);
 }

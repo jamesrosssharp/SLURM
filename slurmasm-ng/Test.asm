@@ -42,6 +42,7 @@ my_func:
 	test r2, 3
 	umulu r4, r2
 	bswap r4, r2
+	asr r4
 	mov r3, 0x666
 	mov.gtu r2, r3
 	ret

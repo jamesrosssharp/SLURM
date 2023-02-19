@@ -39,8 +39,23 @@ static void get_aluOp(OpCode opcode, uint32_t lineNum, uint16_t& aluOp)
 		case OpCode::MULU:
 			aluOp = 9;
 			break;
+		case OpCode::RRN:
+			aluOp = 10;
+			break;
+		case OpCode::RLN:
+			aluOp = 11;
+			break;
+		case OpCode::CMP:
+			aluOp = 12;
+			break;		
+		case OpCode::TEST:
+			aluOp = 13;
+			break;
 		case OpCode::UMULU:
 			aluOp = 14;
+			break;
+		case OpCode::BSWAP:
+			aluOp = 15;
 			break;
 		case OpCode::ASR:
 			aluOp = 16;
@@ -73,22 +88,13 @@ static void get_aluOp(OpCode opcode, uint32_t lineNum, uint16_t& aluOp)
 			aluOp = 25;
 			break;
 		case OpCode::SZ:
-			aluOp = 25;
-			break;
-		case OpCode::CS:
 			aluOp = 26;
 			break;
-		case OpCode::SS:
+		case OpCode::CS:
 			aluOp = 27;
 			break;
-		case OpCode::BSWAP:
-			aluOp = 15;
-			break;
-		case OpCode::CMP:
-			aluOp = 12;
-			break;		
-		case OpCode::TEST:
-			aluOp = 13;
+		case OpCode::SS:
+			aluOp = 28;
 			break;
 		case OpCode::STF:
 			// Store flags.
@@ -97,12 +103,6 @@ static void get_aluOp(OpCode opcode, uint32_t lineNum, uint16_t& aluOp)
 		case OpCode::RSF:
 			// Restore flags
 			aluOp = 30;
-			break;
-		case OpCode::RRN:
-			aluOp = 10;
-			break;
-		case OpCode::RLN:
-			aluOp = 11;
 			break;
 		default:
 		{
@@ -291,4 +291,17 @@ void Assembly::assembleCondAluOp(int lineNum, OpCode opcode, Cond cond, Register
 
 	assembledBytes.push_back(op & 0xff);
 	assembledBytes.push_back(op >> 8);
+}
+
+void Assembly::assembleOneRegAluOp(int lineNum, OpCode opcode, Register regDest, std::vector<uint8_t>& assembledBytes)
+{
+
+	uint16_t aluOp = 0;
+	get_aluOp(opcode, lineNum, aluOp);
+
+	uint16_t op = SLRM_ALU_SINGLE_REG_INSTRUCTION | ((int)regDest << 8) | (((uint16_t)aluOp & 0xf) << 4) | ((uint16_t)regDest);
+
+	assembledBytes.push_back(op & 0xff);
+	assembledBytes.push_back(op >> 8);
+
 }

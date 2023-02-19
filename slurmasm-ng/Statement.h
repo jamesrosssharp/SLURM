@@ -23,11 +23,12 @@ enum class StatementType
 	TWO_REGISTER_OPCODE,
 	TWO_REGISTER_COND_OPCODE,
 	THREE_REGISTER_COND_OPCODE,
+	ONE_REGISTER_OPCODE
 };
 
 struct Statement
 {
-	int		lineNum;
+	int	lineNum;
 
 	PseudoOp    pseudoOp;
 	OpCode      opcode;
@@ -67,7 +68,7 @@ private:
 	void _assemble_two_register_opcode();
 	void _assemble_two_register_cond_opcode();
 	void _assemble_three_register_cond_opcode();
-
+	void _assemble_one_register_opcode();
 };
 
 

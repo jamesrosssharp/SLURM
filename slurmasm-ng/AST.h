@@ -46,6 +46,7 @@ class AST {
  		void addThreeRegCondOpcode(int line_num, char* cond, char* regdest, char* regsrc1, char* regsrc2);
 		void addTwoRegisterOpcode(int line_num, char* opcode, char* regdest, char* regsrc);
 		void addTwoRegisterCondOpcode(int line_num, char* cond, char* regdest, char* regsrc);
+		void addOneRegisterOpcode(int line_num, char* opcode, char* regdest);
 
 		/* print out AST */
 		void print();

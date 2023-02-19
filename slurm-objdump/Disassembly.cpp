@@ -312,6 +312,21 @@ static std::string handle_three_reg_cond_alu(uint16_t op, uint16_t imm_hi)
 	return dis.str();
 }
 
+static std::string handle_one_reg_alu_op(uint16_t op, uint16_t imm_hi)
+{
+	std::stringstream dis;
+
+	uint16_t aluOp = (op & 0x00f0) >> 4;
+	
+	createAluOp(aluOp | 0x10, dis);
+
+	uint16_t rdest = (op & 0x000f); 
+
+	dis << " r" << rdest;
+
+	return dis.str();
+}
+
 std::vector<std::tuple<uint16_t, uint16_t, ins_handler_t>> ins_handlers = {
 	{SLRM_ALU_REG_IMM_INSTRUCTION, SLRM_ALU_REG_IMM_INSTRUCTION_MASK, handle_alu_reg_imm},
 	{SLRM_ALU_REG_REG_INSTRUCTION, SLRM_ALU_REG_REG_INSTRUCTION_MASK, handle_alu_reg_reg},
@@ -320,6 +335,7 @@ std::vector<std::tuple<uint16_t, uint16_t, ins_handler_t>> ins_handlers = {
 	{SLRM_BRANCH_INSTRUCTION, SLRM_BRANCH_INSTRUCTION_MASK, handle_branch},
 	{SLRM_CONDITIONAL_MOV_INSTRUCTION, SLRM_CONDITIONAL_MOV_INSTRUCTION_MASK, handle_cond_mov},
 	{SLRM_THREE_REG_COND_ALU_INSTRUCTION, SLRM_THREE_REG_COND_ALU_INSTRUCTION_MASK, handle_three_reg_cond_alu},			
+	{SLRM_ALU_SINGLE_REG_INSTRUCTION, SLRM_ALU_SINGLE_REG_INSTRUCTION_MASK, handle_one_reg_alu_op},		
 }; 
 
 std::string Disassembly::disassemble(uint8_t* bytes)

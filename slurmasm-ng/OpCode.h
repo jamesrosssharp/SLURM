@@ -71,6 +71,7 @@ enum class OpCode : uint32_t
 	STB,	/* Store byte */
 	RRN,	/* rotate right nibble */
 	RLN,	/* rotate left nibble */
+
 };
 
 #include <string>

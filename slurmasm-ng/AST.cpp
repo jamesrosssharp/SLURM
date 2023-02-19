@@ -217,6 +217,16 @@ void AST::addTwoRegisterCondOpcode(int line_num, char* cond, char* regdest, char
 
 }
 
+void AST::addOneRegisterOpcode(int line_num, char* opcode, char* regdest)
+{
+	m_currentStatement.lineNum = line_num;
+	m_currentStatement.opcode = convertOpCode(opcode);
+	m_currentStatement.regDest = convertReg(regdest);
+	m_currentStatement.type = StatementType::ONE_REGISTER_OPCODE;
+	m_sectionStatements[m_currentSection].push_back(m_currentStatement);
+	m_currentStatement.reset();
+}
+
 OpCode AST::convertOpCode(std::string s)
 {
 

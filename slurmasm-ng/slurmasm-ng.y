@@ -70,14 +70,28 @@
 
 asm : body_section footer { cout << "Parsed asm file" << endl; } ;
 
-op_code : op_code_0 | op_code_1 | op_code_2 | op_code_3 | op_code_4 | op_code_5 ; 
+op_code : op_code_0 | op_code_1 | op_code_2 | op_code_3 | op_code_4 | op_code_5 | op_code_6 ; 
 
+/* one register + expression opcode */
 op_code_0 : OPCODE REG COMMA expression ENDL { g_ast.addOneRegisterAndExpressionOpcode(line_num, $1, $2); } ;
+
+/* opcode with expression */
 op_code_1 : OPCODE expression ENDL { g_ast.addExpressionOpcode(line_num, $1); } ;
+
+/* standalone opcode */
 op_code_2 : OPCODE ENDL { g_ast.addStandaloneOpcode(line_num, $1); } ;
+
+/* three register condition alu operation */
 op_code_3 : COND REG COMMA REG COMMA REG ENDL { g_ast.addThreeRegCondOpcode(line_num, $1, $2, $4, $6); } ;
+
+/* two register operation */
 op_code_4 : OPCODE REG COMMA REG ENDL { g_ast.addTwoRegisterOpcode(line_num, $1, $2, $4); } ;
+
+/* two register conditional operation */
 op_code_5 : COND REG COMMA REG ENDL { g_ast.addTwoRegisterCondOpcode(line_num, $1, $2, $4); } ;
+
+/* one register alu operation */
+op_code_6 : OPCODE REG ENDL { g_ast.addOneRegisterOpcode(line_num, $1, $2); } ; 
 
 expression: 
 	INT    { g_ast.push_number($1); 	} |
