@@ -43,6 +43,84 @@ void createAluOp(uint16_t alu_op, std::stringstream& dis)
 		case 4:
 			dis << "sbb";
 			break;
+		case 5:
+			dis << "and";
+			break;
+		case 6:
+			dis << "or";
+			break;	
+		case 7:
+			dis << "xor";
+			break;	
+		case 8:
+			dis << "mul";
+			break;	
+		case 9:
+			dis << "mulu";
+			break;	
+		case 10:
+			dis << "rrn";
+			break;	
+		case 11:
+			dis << "rln";
+			break;	
+		case 12:
+			dis << "cmp";
+			break;	
+		case 13:
+			dis << "test";
+			break;	
+		case 14:
+			dis << "umulu";
+			break;	
+		case 15:
+			dis << "bswap";
+			break;	
+		case 16:
+			dis << "asr";
+			break;
+		case 17:
+			dis << "lsr";
+			break;
+		case 18:
+			dis << "lsl";
+			break;
+		case 19:
+			dis << "rolc";
+			break;
+		case 20:
+			dis << "rolc";
+			break;
+		case 21:
+			dis << "rol";
+			break;
+		case 22:
+			dis << "ror";
+			break;
+		case 23:
+			dis << "cc";
+			break;
+		case 24:
+			dis << "sc";
+			break;
+		case 25:
+			dis << "cz";
+			break;
+		case 26:
+			dis << "sz";
+			break;
+		case 27:
+			dis << "cs";
+			break;
+		case 28:
+			dis << "ss";
+			break;
+		case 29:
+			dis << "stf";
+			break;
+		case 30:
+			dis << "rsf";
+			break;
 		default: 
 			dis << "???";
 			break;

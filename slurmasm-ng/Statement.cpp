@@ -16,6 +16,20 @@ void Statement::_assemble_one_reg_opcode_and_expression(int expressionValue)
 	{
 		case OpCode::MOV:
 		case OpCode::ADD:
+		case OpCode::ADC:
+		case OpCode::SUB:
+		case OpCode::SBB:
+		case OpCode::OR:
+		case OpCode::XOR:
+		case OpCode::AND:
+		case OpCode::BSWAP:
+		case OpCode::RRN:
+		case OpCode::RLN:
+		case OpCode::MUL:
+		case OpCode::MULU:
+		case OpCode::UMULU:
+		case OpCode::CMP:
+		case OpCode::TEST:
 			Assembly::assembleRegisterImmediateALUOp(lineNum, opcode, regDest, expressionValue, assembledBytes);
 			break;
 		default: {
@@ -65,7 +79,22 @@ void Statement::_assemble_two_register_opcode()
 {
 	switch (opcode)
 	{
+		case OpCode::MOV:
 		case OpCode::ADD:
+		case OpCode::ADC:
+		case OpCode::SUB:
+		case OpCode::SBB:
+		case OpCode::OR:
+		case OpCode::XOR:
+		case OpCode::AND:
+		case OpCode::BSWAP:
+		case OpCode::RRN:
+		case OpCode::RLN:
+		case OpCode::MUL:
+		case OpCode::MULU:
+		case OpCode::UMULU:
+		case OpCode::CMP:
+		case OpCode::TEST:
 			Assembly::assembleTwoRegisterALUOp(lineNum, opcode, regDest, regSrc, assembledBytes);
 			break;
 		default: {

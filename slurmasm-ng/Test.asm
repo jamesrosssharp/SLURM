@@ -27,6 +27,21 @@ loop:
 
 my_func:
 	add r2, r4
+	or  r2, 1
+	and r2, 0xf
+	xor r2, 0xa
+	add r2, 5
+	adc r2, r0
+	sub r2, 3
+	sbb r2, r0
+	mul r2, 15
+	mulu r4, r2
+	rrn r2, r4
+	rln r4, r2
+	cmp r4, 5
+	test r2, 3
+	umulu r4, r2
+	bswap r4, r2
 	mov r3, 0x666
 	mov.gtu r2, r3
 	ret

@@ -98,6 +98,12 @@ static void get_aluOp(OpCode opcode, uint32_t lineNum, uint16_t& aluOp)
 			// Restore flags
 			aluOp = 30;
 			break;
+		case OpCode::RRN:
+			aluOp = 10;
+			break;
+		case OpCode::RLN:
+			aluOp = 11;
+			break;
 		default:
 		{
 			std::stringstream ss;

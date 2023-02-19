@@ -223,8 +223,6 @@ OpCode AST::convertOpCode(std::string s)
 	for (auto & c: s)
 		c = toupper(c);
 
-	std::cout << "Convert: " << s << std::endl;
-
 	return OpCode_convertOpCode(s);
 
 }

@@ -69,6 +69,8 @@ enum class OpCode : uint32_t
 	LDB,	/* Load byte */
 	LDBSX,	/* Load byte, sign extend */
 	STB,	/* Store byte */
+	RRN,	/* rotate right nibble */
+	RLN,	/* rotate left nibble */
 };
 
 #include <string>
