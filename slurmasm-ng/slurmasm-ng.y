@@ -70,7 +70,8 @@
 
 asm : body_section footer { cout << "Parsed asm file" << endl; } ;
 
-op_code : op_code_0 | op_code_1 | op_code_2 | op_code_3 | op_code_4 | op_code_5 | op_code_6 ; 
+op_code : op_code_0 | op_code_1 | op_code_2 | op_code_3 | op_code_4 | op_code_5 | op_code_6 |
+	  op_code_7 | op_code_8 | op_code_9 | op_code_10 | op_code_11 | op_code_12 ; 
 
 /* one register + expression opcode */
 op_code_0 : OPCODE REG COMMA expression ENDL { g_ast.addOneRegisterAndExpressionOpcode(line_num, $1, $2); } ;
@@ -92,6 +93,24 @@ op_code_5 : COND REG COMMA REG ENDL { g_ast.addTwoRegisterCondOpcode(line_num, $
 
 /* one register alu operation */
 op_code_6 : OPCODE REG ENDL { g_ast.addOneRegisterOpcode(line_num, $1, $2); } ; 
+
+/* one register indirect operation */
+op_code_7: OPCODE OPEN_SQUARE_BRACKET REG CLOSE_SQUARE_BRACKET ENDL { g_ast.addOneRegisterIndirectOpcode(line_num, $1, $3); } ; 
+
+/* one register indirect operation with expression */
+op_code_8: OPCODE OPEN_SQUARE_BRACKET REG COMMA expression CLOSE_SQUARE_BRACKET ENDL { g_ast.addOneRegisterIndirectOpcodeWithExpression(line_num, $1, $3); }; 
+
+/* two register indirect operation - ld, in */
+op_code_9: OPCODE REG COMMA OPEN_SQUARE_BRACKET REG CLOSE_SQUARE_BRACKET ENDL {}; 
+
+/* two register indirect operation with expression - ld, in */
+op_code_10: OPCODE REG COMMA OPEN_SQUARE_BRACKET REG COMMA expression CLOSE_SQUARE_BRACKET ENDL {}; 
+
+/* two register indirect operation - st, out */
+op_code_11: OPCODE OPEN_SQUARE_BRACKET REG CLOSE_SQUARE_BRACKET COMMA REG ENDL {}; 
+
+/* two register indirect operation with expression - st, out */
+op_code_12: OPCODE OPEN_SQUARE_BRACKET REG COMMA expression CLOSE_SQUARE_BRACKET COMMA REG ENDL {}; 
 
 expression: 
 	INT    { g_ast.push_number($1); 	} |

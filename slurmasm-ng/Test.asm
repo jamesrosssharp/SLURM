@@ -21,6 +21,8 @@ start:
 	add r4, 341
 	add.z r7, r4, r3
 	bl  my_func
+	mov r2, my_func2
+	bl [r2]
 loop:
 	add r4, SOME_EQU
 	ba loop
@@ -45,6 +47,13 @@ my_func:
 	asr r4
 	mov r3, 0x666
 	mov.gtu r2, r3
+	ret
+
+my_func2:
+	ld r4, [r0, 0x8000]
+	out [r0], r4
+	in r2, [r0, 1]
+	st [r0, 0x8002], r2
 	ret
 
 .end

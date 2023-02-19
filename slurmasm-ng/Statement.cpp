@@ -47,6 +47,24 @@ void Statement::_assemble_opcode_and_expression(int expressionValue)
 	{
 		case OpCode::BA:
 		case OpCode::BL:
+		case OpCode::BNE:
+		case OpCode::BEQ:
+		case OpCode::BGE:
+		case OpCode::BGT:
+		case OpCode::BLE:
+		case OpCode::BLT:
+		case OpCode::BLEU:
+		case OpCode::BLTU:
+		case OpCode::BGEU:
+		case OpCode::BGTU:
+		case OpCode::BV:
+		case OpCode::BNV:
+		case OpCode::BZ:
+		case OpCode::BNZ:
+		case OpCode::BS:
+		case OpCode::BNS:
+		case OpCode::BC:
+		case OpCode::BNC:
 			Assembly::assembleBranch(lineNum, opcode, Register::r0, expressionValue, assembledBytes);
 			break;
 		default: {
@@ -179,6 +197,41 @@ void Statement::_assemble_one_register_opcode()
 	}
 }
 
+void Statement::_assemble_one_register_indirect_opcode_and_expression(int expressionValue)
+{
+	switch (opcode)
+	{
+		case OpCode::BA:
+		case OpCode::BL:
+		case OpCode::BNE:
+		case OpCode::BEQ:
+		case OpCode::BGE:
+		case OpCode::BGT:
+		case OpCode::BLE:
+		case OpCode::BLT:
+		case OpCode::BLEU:
+		case OpCode::BLTU:
+		case OpCode::BGEU:
+		case OpCode::BGTU:
+		case OpCode::BV:
+		case OpCode::BNV:
+		case OpCode::BZ:
+		case OpCode::BNZ:
+		case OpCode::BS:
+		case OpCode::BNS:
+		case OpCode::BC:
+		case OpCode::BNC:
+			Assembly::assembleBranch(lineNum, opcode, regInd, expressionValue, assembledBytes);
+			break;
+		default: {
+			std::stringstream ss;
+			ss << "Unsupported one register indirect opcode and expression on line " << lineNum << std::endl;	
+			throw std::runtime_error(ss.str());
+		}
+
+	}
+}
+
 void Statement::assemble()
 {
 
@@ -201,6 +254,27 @@ void Statement::assemble()
 				throw std::runtime_error("Expression not reduced. Weird?");	
 			}
 
+			break;
+		case StatementType::ONE_REGISTER_INDIRECT_OPCODE_AND_EXPRESSION:
+			if (expression.is_const)
+			{
+				// Expression is a constant, we can assemble and forget			
+				_assemble_one_register_indirect_opcode_and_expression(expression.getValue());	
+			}
+			else if (expression.is_label_plus_const)
+			{
+				// Else expression is a relocation. Assemble with value 0 for 
+				// expression
+				_assemble_one_register_indirect_opcode_and_expression(0);	
+			}
+			else {
+				// Shouldn't get here so bug out
+				throw std::runtime_error("Expression not reduced. Weird?");	
+			}
+
+			break;
+		case StatementType::ONE_REGISTER_INDIRECT_OPCODE:
+			_assemble_one_register_indirect_opcode_and_expression(0);	
 			break;
 		case StatementType::OPCODE_WITH_EXPRESSION:
 			if (expression.is_const)
@@ -305,6 +379,16 @@ std::ostream& operator << (std::ostream& os, const Statement& s)
 		case StatementType::ONE_REGISTER_OPCODE_AND_EXPRESSION:
 		{
 			os << s.opcode << " " << s.regDest << "," << s.expression;
+		}
+		break;
+		case StatementType::ONE_REGISTER_INDIRECT_OPCODE_AND_EXPRESSION:
+		{
+			os << s.opcode << " [" << s.regInd << "," << s.expression << "]";
+		}
+		break;
+		case StatementType::ONE_REGISTER_INDIRECT_OPCODE:
+		{
+			os << s.opcode << " [" << s.regInd << ", 0]";
 		}
 		break;
 		case StatementType::TWO_REGISTER_OPCODE:

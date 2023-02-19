@@ -227,6 +227,29 @@ void AST::addOneRegisterOpcode(int line_num, char* opcode, char* regdest)
 	m_currentStatement.reset();
 }
 
+void AST::addOneRegisterIndirectOpcode(int line_num, char* opcode, char* regidx)
+{
+	m_currentStatement.lineNum = line_num;
+	m_currentStatement.opcode = convertOpCode(opcode);
+	m_currentStatement.regInd = convertReg(regidx);
+	m_currentStatement.type = StatementType::ONE_REGISTER_INDIRECT_OPCODE;
+	m_sectionStatements[m_currentSection].push_back(m_currentStatement);
+	m_currentStatement.reset();
+}
+
+void AST::addOneRegisterIndirectOpcodeWithExpression(int line_num, char* opcode, char* regidx)
+{
+	m_currentStatement.lineNum = line_num;
+	m_currentStatement.opcode = convertOpCode(opcode);
+	m_currentStatement.regInd = convertReg(regidx);
+	m_currentStatement.type = StatementType::ONE_REGISTER_INDIRECT_OPCODE_AND_EXPRESSION;
+	m_currentStatement.expression.lineNum = line_num;
+	m_currentStatement.expression.root = m_stack.back();
+	m_stack.pop_back();
+	m_sectionStatements[m_currentSection].push_back(m_currentStatement);
+	m_currentStatement.reset();
+}
+
 OpCode AST::convertOpCode(std::string s)
 {
 

@@ -23,7 +23,9 @@ enum class StatementType
 	TWO_REGISTER_OPCODE,
 	TWO_REGISTER_COND_OPCODE,
 	THREE_REGISTER_COND_OPCODE,
-	ONE_REGISTER_OPCODE
+	ONE_REGISTER_OPCODE,
+	ONE_REGISTER_INDIRECT_OPCODE,
+	ONE_REGISTER_INDIRECT_OPCODE_AND_EXPRESSION,
 };
 
 struct Statement
@@ -39,7 +41,6 @@ struct Statement
 	Register    regDest;
 
 	Register    regInd;
-	Register    regOffset;
 
 	Expression expression;
 
@@ -69,6 +70,8 @@ private:
 	void _assemble_two_register_cond_opcode();
 	void _assemble_three_register_cond_opcode();
 	void _assemble_one_register_opcode();
+	void _assemble_one_register_indirect_opcode_and_expression(int expressionValue);
+
 };
 
 
