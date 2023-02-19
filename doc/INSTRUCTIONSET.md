@@ -206,6 +206,7 @@ Reserved
 
 
 Class 8: immediate + register byte memory operation with sign extend
+--------------------------------------------------------------------
 
 |15 | 14 | 13 | 12  | 11 - 8  | 7  - 4 | 3 - 0 |
 |---|----|----|-----|---------|--------|-------|
@@ -223,6 +224,7 @@ Class 8: immediate + register byte memory operation with sign extend
 
 
 Class 9: three register conditional ALU operation
+-------------------------------------------------
 
 Encoded as two words, first word being an immediate value
 

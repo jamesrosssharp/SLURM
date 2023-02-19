@@ -5,6 +5,7 @@
 #include "Statement.h"
 #include "types.h"
 #include "OpCode.h"
+#include "Cond.h"
 #include "RelocationTable.h"
 
 #include <deque>
@@ -44,6 +45,7 @@ class AST {
 		void addStandaloneOpcode(int linenum, char* opcode);
  		void addThreeRegCondOpcode(int line_num, char* cond, char* regdest, char* regsrc1, char* regsrc2);
 		void addTwoRegisterOpcode(int line_num, char* opcode, char* regdest, char* regsrc);
+		void addTwoRegisterCondOpcode(int line_num, char* cond, char* regdest, char* regsrc);
 
 		/* print out AST */
 		void print();
@@ -64,7 +66,9 @@ class AST {
 
 	private:
 
-		OpCode convertOpCode(char* opcode);
+		OpCode convertOpCode(std::string opcode);
+		Cond   convertCond(std::string cond);		
+
 		Register convertReg(char* reg);
 		void push_binary(enum ItemType type);
 

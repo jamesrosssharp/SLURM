@@ -7,6 +7,7 @@
 #include "Expression.h"
 #include "types.h"
 #include "OpCode.h"
+#include "Cond.h"
 
 #include "SymTab_t.h"
 #include "Relocation.h"
@@ -19,7 +20,9 @@ enum class StatementType
 	ONE_REGISTER_OPCODE_AND_EXPRESSION,
 	OPCODE_WITH_EXPRESSION,
 	STANDALONE_OPCODE,
-	TWO_REGISTER_OPCODE
+	TWO_REGISTER_OPCODE,
+	TWO_REGISTER_COND_OPCODE,
+	THREE_REGISTER_COND_OPCODE,
 };
 
 struct Statement
@@ -28,6 +31,7 @@ struct Statement
 
 	PseudoOp    pseudoOp;
 	OpCode      opcode;
+	Cond	    cond;
 
 	Register    regSrc;
 	Register    regSrc2;
@@ -61,6 +65,8 @@ private:
 	void _assemble_opcode_and_expression(int expressionValue);
 	void _assemble_standalone_opcode();
 	void _assemble_two_register_opcode();
+	void _assemble_two_register_cond_opcode();
+	void _assemble_three_register_cond_opcode();
 
 };
 

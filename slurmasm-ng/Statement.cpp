@@ -76,6 +76,37 @@ void Statement::_assemble_two_register_opcode()
 	}
 }
 
+void Statement::_assemble_two_register_cond_opcode()
+{
+	switch (opcode)
+	{
+		case OpCode::MOV:
+			Assembly::assembleCondMovOp(lineNum, cond, regDest, regSrc, assembledBytes);
+			break;
+		default: {
+			std::stringstream ss;
+			ss << "Unsupported two register conditional opcode on line " << lineNum << std::endl;	
+			throw std::runtime_error(ss.str());
+		}
+	}
+}
+
+void Statement::_assemble_three_register_cond_opcode()
+{
+	switch (opcode)
+	{
+		case OpCode::ADD:
+		case OpCode::MOV:
+			Assembly::assembleCondAluOp(lineNum, opcode, cond, regDest, regSrc, regSrc2, assembledBytes);
+			break;
+		default: {
+			std::stringstream ss;
+			ss << "Unsupported three register conditional opcode on line " << lineNum << std::endl;	
+			throw std::runtime_error(ss.str());
+		}
+	}
+}
+
 void Statement::assemble()
 {
 
@@ -127,6 +158,12 @@ void Statement::assemble()
 		case StatementType::TWO_REGISTER_OPCODE:
 			_assemble_two_register_opcode();
 			break;
+		case StatementType::TWO_REGISTER_COND_OPCODE:
+			_assemble_two_register_cond_opcode();
+			break;
+		case StatementType::THREE_REGISTER_COND_OPCODE:
+			_assemble_three_register_cond_opcode();
+			break;
 		default: {
 			std::stringstream ss;
 			ss << "Unsupported statement type on line " << lineNum << std::endl;	
@@ -142,6 +179,8 @@ void Statement::reset()
 	lineNum = 0;
 
 	expression.reset();
+
+	cond = Cond::None;
 
 	type = StatementType::None;
 
@@ -197,12 +236,15 @@ std::ostream& operator << (std::ostream& os, const Statement& s)
 		{
 			os << s.opcode << " " << s.regDest << "," << s.regSrc;
 		}
-		//case StatementType::TWO_REGISTER_OPCODE:
-		//	os << s.opcode << " " << s.regDest << " " << s.regSrc << std::endl;
-		//break;
-		//case StatementType::THREE_REGISTER_OPCODE:
-		//	os << s.opcode << " " << s.regDest << " " << s.regSrc2 << " " << s.regSrc << std::endl;
-		//break;
+		break;
+		case StatementType::TWO_REGISTER_COND_OPCODE:
+		{
+			os << s.opcode << "." << s.cond << " " << s.regDest << "," << s.regSrc;
+		}
+		break;
+		case StatementType::THREE_REGISTER_COND_OPCODE:
+			os << s.opcode << "." << s.cond << " "  << s.regDest << "," << s.regSrc << "," << s.regSrc2;
+		break;
 		//case StatementType::INDIRECT_ADDRESSING_OPCODE:
 		//	os << s.opcode << " " << s.regDest << " " << s.regInd << " " << s.regOffset << std::endl;
 		//break;

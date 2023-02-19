@@ -27,6 +27,8 @@ loop:
 
 my_func:
 	add r2, r4
+	mov r3, 0x666
+	mov.gtu r2, r3
 	ret
 
 .end

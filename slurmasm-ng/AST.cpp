@@ -169,7 +169,22 @@ void AST::addStandaloneOpcode(int linenum, char* opcode)
 
 void AST::addThreeRegCondOpcode(int line_num, char* cond, char* regdest, char* regsrc1, char* regsrc2)
 {
-	std::cout << " Three reg cond op code line " << line_num << " cond: " << cond << std::endl;
+	std::string c = cond;
+
+	std::string opcode = c.substr(0, c.find_first_of('.'));
+	std::string cc = c.substr(c.find_first_of('.') + 1); 
+
+	m_currentStatement.lineNum = line_num;
+	m_currentStatement.opcode = convertOpCode(opcode);
+	m_currentStatement.cond = convertCond(cc);
+	
+	m_currentStatement.regDest = convertReg(regdest);
+	m_currentStatement.regSrc = convertReg(regsrc1);
+	m_currentStatement.regSrc2 = convertReg(regsrc2);
+
+	m_currentStatement.type = StatementType::THREE_REGISTER_COND_OPCODE;
+	m_sectionStatements[m_currentSection].push_back(m_currentStatement);
+	m_currentStatement.reset();
 }
 
 void AST::addTwoRegisterOpcode(int line_num, char* opcode, char* regdest, char* regsrc)
@@ -183,16 +198,48 @@ void AST::addTwoRegisterOpcode(int line_num, char* opcode, char* regdest, char* 
 	m_currentStatement.reset();
 }
 
-OpCode AST::convertOpCode(char* opcode)
+void AST::addTwoRegisterCondOpcode(int line_num, char* cond, char* regdest, char* regsrc)
 {
-	std::string s(opcode);
+	std::string c = cond;
+
+	std::string opcode = c.substr(0, c.find_first_of('.'));
+	std::string cc = c.substr(c.find_first_of('.') + 1); 
+
+	m_currentStatement.lineNum = line_num;
+	m_currentStatement.opcode = convertOpCode(opcode);
+	m_currentStatement.cond = convertCond(cc);
+	
+	m_currentStatement.regDest = convertReg(regdest);
+	m_currentStatement.regSrc = convertReg(regsrc);
+	m_currentStatement.type = StatementType::TWO_REGISTER_COND_OPCODE;
+	m_sectionStatements[m_currentSection].push_back(m_currentStatement);
+	m_currentStatement.reset();
+
+}
+
+OpCode AST::convertOpCode(std::string s)
+{
 
 	for (auto & c: s)
 		c = toupper(c);
 
+	std::cout << "Convert: " << s << std::endl;
+
 	return OpCode_convertOpCode(s);
 
 }
+
+Cond AST::convertCond(std::string s)
+{
+
+	for (auto & c: s)
+		c = toupper(c);
+
+	return Cond_convertCond(s);
+
+}
+
+
 
 Register AST::convertReg(char* reg)
 {

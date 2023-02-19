@@ -261,3 +261,28 @@ void Assembly::assembleTwoRegisterALUOp(int lineNum, OpCode opcode, Register reg
 	assembledBytes.push_back(op >> 8);
 
 }
+
+void Assembly::assembleCondMovOp(int lineNum, Cond cond, Register regDest, Register regSrc, std::vector<uint8_t>& assembledBytes)
+{
+	uint16_t op = SLRM_CONDITIONAL_MOV_INSTRUCTION | (((uint32_t)cond & 0xf) << 8) | ((int)regDest << 4) | ((uint16_t)regSrc & 0xf);
+ 	
+	assembledBytes.push_back(op & 0xff);
+	assembledBytes.push_back(op >> 8);
+}
+
+void Assembly::assembleCondAluOp(int lineNum, OpCode opcode, Cond cond, Register regDest, Register regSrc, Register regSrc2, std::vector<uint8_t>& assembledBytes)
+{
+	uint16_t aluOp = 0;
+	get_aluOp(opcode, lineNum, aluOp);
+
+	uint16_t condValue = (((uint32_t)cond << 4) | aluOp) << 4;
+	uint16_t imm = makeImm(lineNum, condValue);
+
+	uint16_t op = SLRM_THREE_REG_COND_ALU_INSTRUCTION | ((int)regDest << 8) | ((uint16_t)regSrc << 4) | ((uint16_t)regSrc2);
+
+	assembledBytes.push_back(imm & 0xff);
+	assembledBytes.push_back(imm >> 8);
+
+	assembledBytes.push_back(op & 0xff);
+	assembledBytes.push_back(op >> 8);
+}

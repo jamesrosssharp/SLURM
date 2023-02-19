@@ -24,37 +24,42 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 typedef std::string (*ins_handler_t)(uint16_t op, uint16_t imm_hi);
 
+void createAluOp(uint16_t alu_op, std::stringstream& dis)
+{
+	switch (alu_op)
+	{
+		case 0:
+			dis << "mov";
+			break;
+		case 1:
+			dis << "add";
+			break;
+		case 2:
+			dis << "adc";
+			break;
+        	case 3:
+			dis << "sub";
+			break;
+		case 4:
+			dis << "sbb";
+			break;
+		default: 
+			dis << "???";
+			break;
+	}
+}
+
 static std::string handle_alu_reg_imm(uint16_t op, uint16_t imm_hi)
 {
 	std::stringstream dis;
 
 	uint16_t alu_op = (op & 0x0f00) >> 8;
 
-	switch (alu_op)
-	{
-		case 0:
-			dis << "mov ";
-			break;
-		case 1:
-			dis << "add ";
-			break;
-		case 2:
-			dis << "adc ";
-			break;
-        	case 3:
-			dis << "sub ";
-			break;
-		case 4:
-			dis << "sbb";
-			break;
-		default: 
-			dis << "??? ";
-			break;
-	}
+	createAluOp(alu_op, dis);
 
 	uint16_t rdest = (op & 0x00f0) >> 4; 
 
-	dis << "r" << rdest;
+	dis << " r" << rdest;
 	
 	int16_t imm = (imm_hi << 4) | (op & 0x000f);
 
@@ -70,41 +75,18 @@ static std::string handle_alu_reg_reg(uint16_t op, uint16_t imm_hi)
 
 	uint16_t alu_op = (op & 0x0f00) >> 8;
 
-	switch (alu_op)
-	{
-		case 0:
-			dis << "mov ";
-			break;
-		case 1:
-			dis << "add ";
-			break;
-		case 2:
-			dis << "adc ";
-			break;
-        	case 3:
-			dis << "sub ";
-			break;
-		case 4:
-			dis << "sbb";
-			break;
-		default: 
-			dis << "??? ";
-			break;
-	}
+	createAluOp(alu_op, dis);
 
 	uint16_t rdest = (op & 0x00f0) >> 4; 
 
-	dis << "r" << rdest;
+	dis << " r" << rdest;
 	
 	uint16_t rsrc = (op & 0x000f);
 
 	dis << ", r" <<  rsrc;
 
 	return dis.str();
-
 }
-
-
 
 static std::string handle_ret_iret(uint16_t opcode, uint16_t imm)
 {
@@ -145,8 +127,111 @@ static std::string handle_branch(uint16_t op, uint16_t imm_hi)
 	dis << ", 0x" << std::hex <<  imm << "]";
 
 	return dis.str();
+}
 
+void createCond(uint16_t cond, std::stringstream& dis)
+{
+	switch (cond)
+	{
+		case 0:
+			dis << "eq";
+			break;
+		case 1:
+			dis << "ne";
+			break;
+		case 2:
+			dis << "s";
+			break;
+		case 3:
+			dis << "ns";
+			break;
+		case 4:
+			dis << "ltu";
+			break;
+		case 5:
+			dis << "geu";
+			break;
+		case 6:
+			dis << "v";
+			break;
+		case 7:
+			dis << "nv";
+			break;
+		case 8:
+			dis << "lt";
+			break;
+		case 9:
+			dis << "le";
+			break;
+		case 10:
+			dis << "gt";
+			break;
+		case 11:
+			dis << "ge";
+			break;
+		case 12:
+			dis << "leu";
+			break;
+		case 13:
+			dis << "gtu";
+			break;
+		case 14:
+			dis << "a";
+			break;
+		case 15:
+			dis << "a";
+			break;
+		default: 
+			dis << "?";
+			break;
+	}
+}
 
+static std::string handle_cond_mov(uint16_t op, uint16_t imm_hi)
+{
+	std::stringstream dis;
+
+	uint16_t cond = (op & 0x0f00) >> 8;
+
+	dis << "mov.";
+
+	createCond(cond, dis);
+
+	uint16_t rdest = (op & 0x00f0) >> 4; 
+
+	dis << " r" << rdest;
+
+	uint16_t rsrc = (op & 0x000f); 
+
+	dis << ", r" << rsrc;
+	
+	return dis.str();
+}
+
+static std::string handle_three_reg_cond_alu(uint16_t op, uint16_t imm_hi)
+{
+	std::stringstream dis;
+
+	uint16_t cond = (imm_hi & 0x0f0) >> 4;
+	uint16_t aluOp = (imm_hi & 0x00f);
+	
+	createAluOp(aluOp, dis);
+	dis << ".";
+	createCond(cond, dis);
+
+	uint16_t rdest = (op & 0x0f00) >> 8; 
+
+	dis << " r" << rdest;
+
+	uint16_t rsrc = (op & 0x00f0) >> 4; 
+
+	dis << ", r" << rsrc;
+
+	uint16_t rsrc2 = (op & 0x000f); 
+
+	dis << ", r" << rsrc2;
+	
+	return dis.str();
 }
 
 std::vector<std::tuple<uint16_t, uint16_t, ins_handler_t>> ins_handlers = {
@@ -154,7 +239,9 @@ std::vector<std::tuple<uint16_t, uint16_t, ins_handler_t>> ins_handlers = {
 	{SLRM_ALU_REG_REG_INSTRUCTION, SLRM_ALU_REG_REG_INSTRUCTION_MASK, handle_alu_reg_reg},
 	{SLRM_IRET_INSTRUCTION, SLRM_IRET_INSTRUCTION_MASK, handle_ret_iret},
 	{SLRM_RET_INSTRUCTION, SLRM_RET_INSTRUCTION_MASK, handle_ret_iret},
-	{SLRM_BRANCH_INSTRUCTION, SLRM_BRANCH_INSTRUCTION_MASK, handle_branch}	 			
+	{SLRM_BRANCH_INSTRUCTION, SLRM_BRANCH_INSTRUCTION_MASK, handle_branch},
+	{SLRM_CONDITIONAL_MOV_INSTRUCTION, SLRM_CONDITIONAL_MOV_INSTRUCTION_MASK, handle_cond_mov},
+	{SLRM_THREE_REG_COND_ALU_INSTRUCTION, SLRM_THREE_REG_COND_ALU_INSTRUCTION_MASK, handle_three_reg_cond_alu},			
 }; 
 
 std::string Disassembly::disassemble(uint8_t* bytes)
