@@ -50,6 +50,11 @@ class AST {
 		void addOneRegisterIndirectOpcode(int line_num, char* opcode, char* regidx);
 		void addOneRegisterIndirectOpcodeWithExpression(int line_num, char* opcode, char* regidx);
 
+		void addTwoRegisterIndirectOpcodeA(int line_num, char* opcode, char* regdest, char* regidx);
+		void addTwoRegisterIndirectOpcodeWithExpressionA(int line_num, char* opcode, char* regdest, char* regidx);
+		void addTwoRegisterIndirectOpcodeB(int line_num, char* opcode, char* regidx, char* regdest);
+		void addTwoRegisterIndirectOpcodeWithExpressionB(int line_num, char* opcode, char* regidx, char* regdest);
+
 		/* print out AST */
 		void print();
 

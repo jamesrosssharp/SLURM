@@ -327,6 +327,101 @@ static std::string handle_one_reg_alu_op(uint16_t op, uint16_t imm_hi)
 	return dis.str();
 }
 
+static std::string handle_ldbsx(uint16_t op, uint16_t imm_hi)
+{
+	std::stringstream dis;
+
+	dis << "ldbsx ";
+
+	uint16_t rdest = (op & 0x00f0) >> 4; 
+
+	dis << " r" << rdest;
+
+	uint16_t ridx = (op & 0x0f00) >> 8; 
+
+	dis << ", [r" << ridx;
+
+	uint16_t off = (imm_hi << 4) | (op & 0xf);
+	
+	dis << " , " << off << "]";
+
+	return dis.str();
+}
+
+static std::string handle_memb(uint16_t op, uint16_t imm_hi)
+{
+	std::stringstream dis;
+
+	if (op & 0x1000)
+		dis << "stb";
+	else
+		dis << "ldb";
+
+	uint16_t rdest = (op & 0x00f0) >> 4; 
+
+	dis << " r" << rdest;
+
+	uint16_t ridx = (op & 0x0f00) >> 8; 
+
+	dis << ", [r" << ridx;
+
+	uint16_t off = (imm_hi << 4) | (op & 0xf);
+	
+	dis << " , " << off << "]";
+
+	return dis.str();
+}
+
+static std::string handle_mem(uint16_t op, uint16_t imm_hi)
+{
+	std::stringstream dis;
+
+	if (op & 0x1000)
+		dis << "st";
+	else
+		dis << "ld";
+
+	uint16_t rdest = (op & 0x00f0) >> 4; 
+
+	dis << " r" << rdest;
+
+	uint16_t ridx = (op & 0x0f00) >> 8; 
+
+	dis << ", [r" << ridx;
+
+	uint16_t off = (imm_hi << 4) | (op & 0xf);
+	
+	dis << " , " << off << "]";
+
+	return dis.str();
+}
+
+static std::string handle_port(uint16_t op, uint16_t imm_hi)
+{
+	std::stringstream dis;
+
+	if (op & 0x1000)
+		dis << "out";
+	else
+		dis << "in ";
+
+	uint16_t rdest = (op & 0x00f0) >> 4; 
+
+	dis << " r" << rdest;
+
+	uint16_t ridx = (op & 0x0f00) >> 8; 
+
+	dis << ", [r" << ridx;
+
+	uint16_t off = (imm_hi << 4) | (op & 0xf);
+	
+	dis << " , " << off << "]";
+
+	return dis.str();
+}
+
+
+
 std::vector<std::tuple<uint16_t, uint16_t, ins_handler_t>> ins_handlers = {
 	{SLRM_ALU_REG_IMM_INSTRUCTION, SLRM_ALU_REG_IMM_INSTRUCTION_MASK, handle_alu_reg_imm},
 	{SLRM_ALU_REG_REG_INSTRUCTION, SLRM_ALU_REG_REG_INSTRUCTION_MASK, handle_alu_reg_reg},
@@ -336,6 +431,10 @@ std::vector<std::tuple<uint16_t, uint16_t, ins_handler_t>> ins_handlers = {
 	{SLRM_CONDITIONAL_MOV_INSTRUCTION, SLRM_CONDITIONAL_MOV_INSTRUCTION_MASK, handle_cond_mov},
 	{SLRM_THREE_REG_COND_ALU_INSTRUCTION, SLRM_THREE_REG_COND_ALU_INSTRUCTION_MASK, handle_three_reg_cond_alu},			
 	{SLRM_ALU_SINGLE_REG_INSTRUCTION, SLRM_ALU_SINGLE_REG_INSTRUCTION_MASK, handle_one_reg_alu_op},		
+	{SLRM_IMMEDIATE_PLUS_REG_MEMORY_BYTE_INSTRUCTION_SX, SLRM_IMMEDIATE_PLUS_REG_MEMORY_BYTE_INSTRUCTION_SX_MASK, handle_ldbsx},
+	{SLRM_IMMEDIATE_PLUS_REG_MEMORY_BYTE_INSTRUCTION, SLRM_IMMEDIATE_PLUS_REG_MEMORY_BYTE_INSTRUCTION_MASK, handle_memb},
+	{SLRM_IMMEDIATE_PLUS_REG_MEMORY_INSTRUCTION, SLRM_IMMEDIATE_PLUS_REG_MEMORY_INSTRUCTION_MASK, handle_mem},
+	{SLRM_PORT_INSTRUCTION, SLRM_PORT_INSTRUCTION_MASK, handle_port},      
 }; 
 
 std::string Disassembly::disassemble(uint8_t* bytes)

@@ -232,6 +232,45 @@ void Statement::_assemble_one_register_indirect_opcode_and_expression(int expres
 	}
 }
 
+void Statement::_assemble_two_register_indirect_opcode_and_expression_A(int expressionValue)
+{
+	switch (opcode)
+	{
+		case OpCode::LD:
+		case OpCode::LDB:
+		case OpCode::LDBSX:
+		case OpCode::IN:
+			Assembly::assembleMemoryOp(lineNum, opcode, regDest, regInd, expressionValue, assembledBytes);
+			break;
+		default: {
+			std::stringstream ss;
+			ss << "Unsupported one register indirect opcode and expression on line " << lineNum << std::endl;	
+			throw std::runtime_error(ss.str());
+		}
+
+	}
+}
+
+void Statement::_assemble_two_register_indirect_opcode_and_expression_B(int expressionValue)
+{
+	switch (opcode)
+	{
+		case OpCode::ST:
+		case OpCode::STB:
+		case OpCode::OUT:
+			Assembly::assembleMemoryOp(lineNum, opcode, regDest, regInd, expressionValue, assembledBytes);
+			break;
+		default: {
+			std::stringstream ss;
+			ss << "Unsupported one register indirect opcode and expression on line " << lineNum << std::endl;	
+			throw std::runtime_error(ss.str());
+		}
+
+	}
+}
+
+
+
 void Statement::assemble()
 {
 
@@ -275,6 +314,50 @@ void Statement::assemble()
 			break;
 		case StatementType::ONE_REGISTER_INDIRECT_OPCODE:
 			_assemble_one_register_indirect_opcode_and_expression(0);	
+			break;
+		case StatementType::TWO_REGISTER_INDIRECT_OPCODE_AND_EXPRESSION_A:
+			if (expression.is_const)
+			{
+				// Expression is a constant, we can assemble and forget			
+				_assemble_two_register_indirect_opcode_and_expression_A(expression.getValue());	
+			}
+			else if (expression.is_label_plus_const)
+			{
+				// Else expression is a relocation. Assemble with value 0 for 
+				// expression
+				_assemble_two_register_indirect_opcode_and_expression_A(0);	
+			}
+			else {
+				std::cout << expression << std::endl;
+				// Shouldn't get here so bug out
+				throw std::runtime_error("Expression not reduced. Weird? A");	
+			}
+
+			break;
+		case StatementType::TWO_REGISTER_INDIRECT_OPCODE_A:
+			_assemble_two_register_indirect_opcode_and_expression_A(0);	
+			break;
+		case StatementType::TWO_REGISTER_INDIRECT_OPCODE_AND_EXPRESSION_B:
+			if (expression.is_const)
+			{
+				// Expression is a constant, we can assemble and forget			
+				_assemble_two_register_indirect_opcode_and_expression_B(expression.getValue());	
+			}
+			else if (expression.is_label_plus_const)
+			{
+				// Else expression is a relocation. Assemble with value 0 for 
+				// expression
+				_assemble_two_register_indirect_opcode_and_expression_B(0);	
+			}
+			else {
+				std::cout << expression << std::endl;
+				// Shouldn't get here so bug out
+				throw std::runtime_error("Expression not reduced. Weird? B");	
+			}
+
+			break;
+		case StatementType::TWO_REGISTER_INDIRECT_OPCODE_B:
+			_assemble_two_register_indirect_opcode_and_expression_B(0);	
 			break;
 		case StatementType::OPCODE_WITH_EXPRESSION:
 			if (expression.is_const)
@@ -387,6 +470,17 @@ std::ostream& operator << (std::ostream& os, const Statement& s)
 		}
 		break;
 		case StatementType::ONE_REGISTER_INDIRECT_OPCODE:
+		{
+			os << s.opcode << " [" << s.regInd << ", 0]";
+		}
+		case StatementType::TWO_REGISTER_INDIRECT_OPCODE_AND_EXPRESSION_A:
+		case StatementType::TWO_REGISTER_INDIRECT_OPCODE_AND_EXPRESSION_B:
+		{
+			os << s.opcode << " [" << s.regInd << "," << s.expression << "]";
+		}
+		break;
+		case StatementType::TWO_REGISTER_INDIRECT_OPCODE_A:
+		case StatementType::TWO_REGISTER_INDIRECT_OPCODE_B:
 		{
 			os << s.opcode << " [" << s.regInd << ", 0]";
 		}

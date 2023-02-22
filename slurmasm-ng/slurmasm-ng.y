@@ -101,16 +101,16 @@ op_code_7: OPCODE OPEN_SQUARE_BRACKET REG CLOSE_SQUARE_BRACKET ENDL { g_ast.addO
 op_code_8: OPCODE OPEN_SQUARE_BRACKET REG COMMA expression CLOSE_SQUARE_BRACKET ENDL { g_ast.addOneRegisterIndirectOpcodeWithExpression(line_num, $1, $3); }; 
 
 /* two register indirect operation - ld, in */
-op_code_9: OPCODE REG COMMA OPEN_SQUARE_BRACKET REG CLOSE_SQUARE_BRACKET ENDL {}; 
+op_code_9: OPCODE REG COMMA OPEN_SQUARE_BRACKET REG CLOSE_SQUARE_BRACKET ENDL { g_ast.addTwoRegisterIndirectOpcodeA(line_num, $1, $2, $5); }; 
 
 /* two register indirect operation with expression - ld, in */
-op_code_10: OPCODE REG COMMA OPEN_SQUARE_BRACKET REG COMMA expression CLOSE_SQUARE_BRACKET ENDL {}; 
+op_code_10: OPCODE REG COMMA OPEN_SQUARE_BRACKET REG COMMA expression CLOSE_SQUARE_BRACKET ENDL { g_ast.addTwoRegisterIndirectOpcodeWithExpressionA(line_num, $1, $2, $5); }; 
 
 /* two register indirect operation - st, out */
-op_code_11: OPCODE OPEN_SQUARE_BRACKET REG CLOSE_SQUARE_BRACKET COMMA REG ENDL {}; 
+op_code_11: OPCODE OPEN_SQUARE_BRACKET REG CLOSE_SQUARE_BRACKET COMMA REG ENDL { g_ast.addTwoRegisterIndirectOpcodeB(line_num, $1, $3, $6); }; 
 
 /* two register indirect operation with expression - st, out */
-op_code_12: OPCODE OPEN_SQUARE_BRACKET REG COMMA expression CLOSE_SQUARE_BRACKET COMMA REG ENDL {}; 
+op_code_12: OPCODE OPEN_SQUARE_BRACKET REG COMMA expression CLOSE_SQUARE_BRACKET COMMA REG ENDL { g_ast.addTwoRegisterIndirectOpcodeWithExpressionB(line_num, $1, $3, $8); }; 
 
 expression: 
 	INT    { g_ast.push_number($1); 	} |
