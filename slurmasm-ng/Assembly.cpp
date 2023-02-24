@@ -346,3 +346,38 @@ void Assembly::assembleMemoryOp(int lineNum, OpCode opcode, Register regDest, Re
 	assembledBytes.push_back(op >> 8);
 
 }
+
+void Assembly::assembleIntFlagOp(int lineNum, OpCode opcode, std::vector<uint8_t>& assembledBytes)
+{
+	uint16_t op;
+
+	switch (opcode)
+	{
+		case OpCode::CLI:
+			op = SLRM_CLI_INSTRUCTION;
+			break;
+		case OpCode::STI:
+			op = SLRM_STI_INSTRUCTION;
+			break;
+	}
+	assembledBytes.push_back(op & 0xff);
+	assembledBytes.push_back(op >> 8);
+
+}
+
+void Assembly::assembleSleep(int lineNum, std::vector<uint8_t>& assembledBytes)
+{
+	uint16_t op = SLRM_SLEEP_INSTRUCTION;
+
+	assembledBytes.push_back(op & 0xff);
+	assembledBytes.push_back(op >> 8);
+}
+
+void Assembly::assembleNop(int lineNum, std::vector<uint8_t>& assembledBytes)
+{
+	uint16_t op = SLRM_NOP_INSTRUCTION;
+
+	assembledBytes.push_back(op & 0xff);
+	assembledBytes.push_back(op >> 8);
+}
+

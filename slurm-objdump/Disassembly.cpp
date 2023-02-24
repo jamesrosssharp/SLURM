@@ -420,7 +420,41 @@ static std::string handle_port(uint16_t op, uint16_t imm_hi)
 	return dis.str();
 }
 
+static std::string handle_sti(uint16_t op, uint16_t imm_hi)
+{
+	std::stringstream dis;
 
+	dis << "sti";
+
+	return dis.str();
+}
+
+static std::string handle_cli(uint16_t op, uint16_t imm_hi)
+{
+	std::stringstream dis;
+
+	dis << "cli";
+
+	return dis.str();
+}
+
+static std::string handle_sleep(uint16_t op, uint16_t imm_hi)
+{
+	std::stringstream dis;
+
+	dis << "sleep";
+
+	return dis.str();
+}
+
+static std::string handle_nop(uint16_t op, uint16_t imm_hi)
+{
+	std::stringstream dis;
+
+	dis << "nop";
+
+	return dis.str();
+}
 
 std::vector<std::tuple<uint16_t, uint16_t, ins_handler_t>> ins_handlers = {
 	{SLRM_ALU_REG_IMM_INSTRUCTION, SLRM_ALU_REG_IMM_INSTRUCTION_MASK, handle_alu_reg_imm},
@@ -435,6 +469,10 @@ std::vector<std::tuple<uint16_t, uint16_t, ins_handler_t>> ins_handlers = {
 	{SLRM_IMMEDIATE_PLUS_REG_MEMORY_BYTE_INSTRUCTION, SLRM_IMMEDIATE_PLUS_REG_MEMORY_BYTE_INSTRUCTION_MASK, handle_memb},
 	{SLRM_IMMEDIATE_PLUS_REG_MEMORY_INSTRUCTION, SLRM_IMMEDIATE_PLUS_REG_MEMORY_INSTRUCTION_MASK, handle_mem},
 	{SLRM_PORT_INSTRUCTION, SLRM_PORT_INSTRUCTION_MASK, handle_port},      
+	{SLRM_STI_INSTRUCTION,  SLRM_STI_INSTRUCTION_MASK,  handle_sti},
+	{SLRM_CLI_INSTRUCTION,  SLRM_CLI_INSTRUCTION_MASK,  handle_cli},
+	{SLRM_SLEEP_INSTRUCTION,  SLRM_SLEEP_INSTRUCTION_MASK,  handle_sleep},
+	{SLRM_NOP_INSTRUCTION,  SLRM_NOP_INSTRUCTION_MASK,  handle_nop},
 }; 
 
 std::string Disassembly::disassemble(uint8_t* bytes)

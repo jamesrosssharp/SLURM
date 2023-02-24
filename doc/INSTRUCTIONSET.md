@@ -53,22 +53,7 @@ Class 0 has 4 sub-classes, bits 9 - 8 of the opcode.
         30 - rsf: restore flags
         31 : reserved
 
-5. Interrupt
-
-    |15 | 14 | 13 | 12 | 11 | 10 | 9 | 8 | 7 - 4 | 3 - 0 |
-    |---|----|----|----|----|----|---|---|-------|-------|
-    |0  | 0  | 0  | 0  | 0  | 1  | 0 | 1 | xxxxx | INT   |
-
-	INT: interrupt vector (0-15)
-
-	Branches to interrupt vector specified by INT, linking to
-	interrupt link register, r14.
-
-	Vector table is located at address 0x0000.
-
-	Can be used for software interrupts, but mostly exists so
-	it can be inserted into the pipeline on interrupt condition.
-
+5. Reserved 
 
 6. Set / clear interrupts
 

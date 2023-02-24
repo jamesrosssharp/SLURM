@@ -56,4 +56,11 @@ my_func2:
 	st [r0, 0x8002], r2
 	ret
 
+sleep_func:
+	sti
+	sleep
+	nop
+	cli
+	ret
+
 .end

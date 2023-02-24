@@ -84,6 +84,16 @@ void Statement::_assemble_standalone_opcode()
 		case OpCode::IRET:
 			Assembly::assembleRetIRet(lineNum, opcode, assembledBytes);
 			break;
+		case OpCode::CLI:
+		case OpCode::STI:
+			Assembly::assembleIntFlagOp(lineNum, opcode, assembledBytes);	
+			break;
+		case OpCode::SLEEP:
+			Assembly::assembleSleep(lineNum, assembledBytes);
+			break;
+		case OpCode::NOP:
+			Assembly::assembleNop(lineNum, assembledBytes);
+			break;
 		default: {
 			std::stringstream ss;
 			ss << "Unsupported standalone opcode on line " << lineNum << std::endl;	
