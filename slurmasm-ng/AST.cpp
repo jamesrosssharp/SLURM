@@ -300,6 +300,21 @@ void AST::addTwoRegisterIndirectOpcodeWithExpressionB(int line_num, char* opcode
 	m_currentStatement.reset();
 }
 
+void AST::addPseudoOp(int line_num, char *pseudo_op)
+{
+	std::cout << "Pseudo op: " << line_num << " " << pseudo_op << std::endl;	
+}
+
+void AST::addPseudoOpWithExpression(int line_num, char *pseudo_op)
+{
+	std::cout << "Pseudo op with expression: " << line_num << " " << pseudo_op << std::endl;	
+}
+
+void AST::addTimes(int line_num)
+{
+	std::cout << "Times: " << line_num << std::endl;
+}
+
 OpCode AST::convertOpCode(std::string s)
 {
 

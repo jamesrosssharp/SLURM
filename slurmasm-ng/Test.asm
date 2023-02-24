@@ -12,6 +12,8 @@ LABEL_EQU equ loop + (2<<3) - 5*3 + 7/3
 
 //YET_ANOTHER_BAD equ ANOTHER_BAD_EQU + 1
 
+	.section text
+
 start:
 	mov r1, 4
 	add r1, 1
@@ -27,6 +29,8 @@ loop:
 	add r4, SOME_EQU
 	ba loop
 
+	.global my_func
+	.function my_func
 my_func:
 	add r2, r4
 	or  r2, 1
@@ -48,19 +52,34 @@ my_func:
 	mov r3, 0x666
 	mov.gtu r2, r3
 	ret
+	.endfunc
 
+	.global my_func2
+	.function my_func2
 my_func2:
 	ld r4, [r0, 0x8000]
 	out [r0], r4
 	in r2, [r0, 1]
 	st [r0, 0x8002], r2
 	ret
+	.endfunc
 
+	.global sleep_func
+	.function sleep_func
+	.extern after_sleep_func
 sleep_func:
 	sti
 	sleep
 	nop
 	cli
+	bl after_sleep_func
 	ret
+	.endfunc
+
+	.section data
+some_var:
+	dw 0x666
+	dw my_func2
+	db sleep_func
 
 .end

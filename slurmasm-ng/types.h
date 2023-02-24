@@ -24,16 +24,6 @@ enum class Register : uint32_t
 	None = 0xff
 };
 
-enum class PseudoOp : uint32_t
-{
-	ALIGN,
-	DW,
-	DD,
-	DB,
-	SECTION,
-	None
-};
-
 inline std::ostream& operator << (std::ostream& os, const Register& r)
 {
 	if (r == Register::None)

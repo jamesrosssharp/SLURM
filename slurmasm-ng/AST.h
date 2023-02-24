@@ -55,6 +55,10 @@ class AST {
 		void addTwoRegisterIndirectOpcodeB(int line_num, char* opcode, char* regidx, char* regdest);
 		void addTwoRegisterIndirectOpcodeWithExpressionB(int line_num, char* opcode, char* regidx, char* regdest);
 
+		void addPseudoOp(int line_num, char *pseudo_op);
+		void addPseudoOpWithExpression(int line_num, char *pseudo_op);
+		void addTimes(int line_num);
+
 		/* print out AST */
 		void print();
 

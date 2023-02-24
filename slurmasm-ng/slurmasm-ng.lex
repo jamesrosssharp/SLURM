@@ -40,9 +40,7 @@ int g_str_idx = 0;
 [0-9]+         { yylval.ival = atoi(yytext); return INT; }
 0x[0-9a-fA-F]+|[0-9a-fA-F]+h         { yylval.ival = strtol(yytext, NULL, 16); return HEXVAL; }
 
-\.align|dw|dd|db|\.global {yylval.pseudoopval = strdup(yytext); return PSEUDOOP; }
-
-\.text|\.data {yylval.sectionval = strdup(yytext); return SECTION; }
+\.align|dw|dd|db|\.global|\.function|\.endfunc|\.weak|\.extern|\.section {yylval.pseudoopval = strdup(yytext); return PSEUDOOP; }
 
 \.times {return TIMES; }
 

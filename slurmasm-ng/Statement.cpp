@@ -483,6 +483,7 @@ std::ostream& operator << (std::ostream& os, const Statement& s)
 		{
 			os << s.opcode << " [" << s.regInd << ", 0]";
 		}
+		break;
 		case StatementType::TWO_REGISTER_INDIRECT_OPCODE_AND_EXPRESSION_A:
 		case StatementType::TWO_REGISTER_INDIRECT_OPCODE_AND_EXPRESSION_B:
 		{

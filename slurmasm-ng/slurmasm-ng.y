@@ -112,27 +112,39 @@ op_code_11: OPCODE OPEN_SQUARE_BRACKET REG CLOSE_SQUARE_BRACKET COMMA REG ENDL {
 /* two register indirect operation with expression - st, out */
 op_code_12: OPCODE OPEN_SQUARE_BRACKET REG COMMA expression CLOSE_SQUARE_BRACKET COMMA REG ENDL { g_ast.addTwoRegisterIndirectOpcodeWithExpressionB(line_num, $1, $3, $8); }; 
 
+
+/* expressions */
 expression: 
 	INT    { g_ast.push_number($1); 	} |
 	HEXVAL { g_ast.push_number($1); 	} |	
 	STRING { g_ast.push_symbol($1);		} |
-	expression SHL expression	{ g_ast.push_lshift(); } |
-	expression SHR expression	{ g_ast.push_rshift(); } |
-	expression PLUS expression	{ g_ast.push_add(); }	 |	
+	expression SHL expression	{ g_ast.push_lshift(); }    |
+	expression SHR expression	{ g_ast.push_rshift(); }    |
+	expression PLUS expression	{ g_ast.push_add(); }	    |	
 	expression MINUS expression	{ g_ast.push_subtract(); }  |
-	expression MULT expression	{ g_ast.push_mult(); } |
-	expression DIV expression	{ g_ast.push_div(); } |
-	OPEN_PARENTHESIS expression CLOSE_PARENTHESIS | 
+	expression MULT expression	{ g_ast.push_mult(); } 	    |
+	expression DIV expression	{ g_ast.push_div(); } 	    |
+	OPEN_PARENTHESIS expression CLOSE_PARENTHESIS 		    | 
 	MINUS expression %prec NEG 	{ g_ast.push_unary_neg(); }
 	;
 
+/* pseudo op codes */
+pseudo_op_code: pseudo_op1 | pseudo_op2 | times;
+
+/* e.g. .function, .global etc */
+pseudo_op1: PSEUDOOP expression ENDL { g_ast.addPseudoOpWithExpression(line_num, $1); };
+
+/* e.g. .endfunc */
+pseudo_op2: PSEUDOOP ENDL { g_ast.addPseudoOp(line_num, $1); };
+
+times: TIMES expression COMMA op_code { g_ast.addTimes(line_num); };
 
 equ: STRING EQU expression ENDL {g_ast.addEqu(line_num, $1); } ;
 
 body_section: body_lines ;
 body_lines: body_lines body_line | body_line ;
 
-body_line: equ | blank_line | label | op_code;
+body_line: equ | blank_line | label | op_code | pseudo_op_code ;
 
 label: STRING LABEL ENDL { g_ast.addLabel(line_num, $1); } ;
 
