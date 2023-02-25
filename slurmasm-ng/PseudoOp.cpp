@@ -19,12 +19,12 @@ std::map<std::string, PseudoOp> pseudoOpMap = {
 
 PseudoOp PseudoOp_convertPseudoOp(std::string pseudoop)
 {
-	return opCodeMap[opcode];
+	return pseudoOpMap[pseudoop];
 }
 
 std::ostream& operator << (std::ostream& os, const PseudoOp& o)
 {
-	for (const auto& kv : opCodeMap)
+	for (const auto& kv : pseudoOpMap)
 	{
 		if (kv.second == o) os << kv.first;
 	}

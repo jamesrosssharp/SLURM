@@ -3,6 +3,7 @@
 #include <exception>
 #include <stdexcept>
 #include <map>
+#include <sstream>
 
 #include "Relocation.h"
 #include <host/ELF/ElfFile.h>
@@ -302,12 +303,74 @@ void AST::addTwoRegisterIndirectOpcodeWithExpressionB(int line_num, char* opcode
 
 void AST::addPseudoOp(int line_num, char *pseudo_op)
 {
-	std::cout << "Pseudo op: " << line_num << " " << pseudo_op << std::endl;	
+	//std::cout << "Pseudo op: " << line_num << " " << pseudo_op << std::endl;	
+	m_currentStatement.lineNum = line_num;
+	m_currentStatement.pseudoOp = convertPseudoOp(pseudo_op);
+	m_currentStatement.type = StatementType::PSEUDO_OP;
+
+	// Sanity check
+
+	switch (m_currentStatement.pseudoOp)
+	{
+		case PseudoOp::ENDFUNC:
+			break;
+		default:
+		{
+			std::stringstream ss;
+			ss << "Pseudo Op " << m_currentStatement.pseudoOp << "cannot be stand-alone on line " << line_num << std::endl;	
+			throw std::runtime_error(ss.str());
+		}	
+	}
+
+
+	m_sectionStatements[m_currentSection].push_back(m_currentStatement);
+	m_currentStatement.reset();
 }
 
 void AST::addPseudoOpWithExpression(int line_num, char *pseudo_op)
 {
-	std::cout << "Pseudo op with expression: " << line_num << " " << pseudo_op << std::endl;	
+	//std::cout << "Pseudo op with expression: " << line_num << " " << pseudo_op << std::endl;	
+
+	m_currentStatement.lineNum = line_num;
+	m_currentStatement.pseudoOp = convertPseudoOp(pseudo_op);
+	m_currentStatement.type = StatementType::PSEUDO_OP_WITH_EXPRESSION;
+	m_currentStatement.expression.lineNum = line_num;
+	m_currentStatement.expression.root = m_stack.back();
+	m_stack.pop_back();
+
+	// Some pseudo ops need to be processed now.
+	switch (m_currentStatement.pseudoOp)
+	{
+		case PseudoOp::SECTION:
+			if (m_currentStatement.expression.isString())
+			{
+				m_currentSection = "." + std::string(m_currentStatement.expression.getString());
+			}
+			else
+			{
+				std::stringstream ss;
+				ss << "Pseudo Op " << m_currentStatement.pseudoOp << "takes only a single string (section name) on line " << line_num << std::endl;	
+				throw std::runtime_error(ss.str());
+			}
+		case PseudoOp::EXTERN:
+			if (m_currentStatement.expression.isString())
+			{
+				m_currentStatement.label = m_currentStatement.expression.getString();
+			}
+			else
+			{
+				std::stringstream ss;
+				ss << "Pseudo Op " << m_currentStatement.pseudoOp << "takes only a single string (symbol name) on line " << line_num << std::endl;	
+				throw std::runtime_error(ss.str());
+			}
+		default:
+			break;
+	}
+
+	m_sectionStatements[m_currentSection].push_back(m_currentStatement);
+	m_currentStatement.reset();
+
+
 }
 
 void AST::addTimes(int line_num)
@@ -324,6 +387,18 @@ OpCode AST::convertOpCode(std::string s)
 	return OpCode_convertOpCode(s);
 
 }
+
+PseudoOp AST::convertPseudoOp(std::string s)
+{
+
+	for (auto & c: s)
+		c = toupper(c);
+
+	return PseudoOp_convertPseudoOp(s);
+
+}
+
+
 
 Cond AST::convertCond(std::string s)
 {
@@ -453,7 +528,13 @@ void AST::buildSymbolTable()
 			{
 				m_symbolTable.addConstant(s, sec);
 			}
-		
+			else if (s.type == StatementType::PSEUDO_OP_WITH_EXPRESSION)
+			{
+				if (s.pseudoOp == PseudoOp::EXTERN)
+				{
+					m_symbolTable.addSymbol(s, "");
+				}
+			}
 		}
 
 	}
@@ -492,6 +573,7 @@ void AST::reduceAllExpressions()
 				case StatementType::ONE_REGISTER_INDIRECT_OPCODE_AND_EXPRESSION:
 				case StatementType::TWO_REGISTER_INDIRECT_OPCODE_AND_EXPRESSION_A:
 				case StatementType::TWO_REGISTER_INDIRECT_OPCODE_AND_EXPRESSION_B:
+				case StatementType::PSEUDO_OP_WITH_EXPRESSION:
 					s.expression.reduce_to_label_plus_const(m_symbolTable.symtab);
 					break;	
 			}	

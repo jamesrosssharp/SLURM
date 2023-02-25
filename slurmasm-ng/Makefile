@@ -12,7 +12,8 @@ SRC = 	slurmasm-ng.tab.c \
 	Relocation.cpp	\
 	RelocationTable.cpp	\
 	../common/host/ELF/ElfFile.cpp	\
-	Cond.cpp
+	Cond.cpp	\
+	PseudoOp.cpp
       
 INCLUDE =	AST.h	\
 	  	ExpressionNode.h \
@@ -26,7 +27,8 @@ INCLUDE =	AST.h	\
 		SymTab_t.h	\
 		RelocationTable.h \
 		../common/host/ELF/ElfFile.h	\
-		Cond.h
+		Cond.h	\
+		PseudoOp.h
 
 
 slurmasm-ng:	$(SRC) $(INCLUDE)

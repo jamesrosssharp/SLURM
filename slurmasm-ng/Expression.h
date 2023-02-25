@@ -22,6 +22,9 @@ struct Expression {
 
 	int getValue();
 
+	bool isString();
+	char* getString();	
+
 };
 
 void simplify_expression(ExpressionNode* exp);

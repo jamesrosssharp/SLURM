@@ -384,3 +384,17 @@ int Expression::getValue()
 	}	
 	return 0;
 }
+
+bool Expression::isString()
+{
+	return root->type == ITEM_SYMBOL; 
+}
+
+char* Expression::getString()
+{
+	return root->val.name;
+}
+
+
+
+

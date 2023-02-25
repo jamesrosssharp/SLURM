@@ -574,7 +574,10 @@ void ElfFile::createSymbolTableFromSection(int sec_idx)
 		e.name = getStringFromStrTab(str_tab, e.name_offset);
 	
 		// Fill in section name
-		e.section = m_sections.at(e.shndx).name;
+		if (e.shndx < m_sections.size())
+			e.section = m_sections.at(e.shndx).name;
+		else if (e.shndx == SHN_ABS)
+			e.section = "ABS"; 
 
 		m_symbols.push_back(e);
 

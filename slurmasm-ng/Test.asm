@@ -80,6 +80,6 @@ sleep_func:
 some_var:
 	dw 0x666
 	dw my_func2
-	db sleep_func
+	dw sleep_func
 
 .end

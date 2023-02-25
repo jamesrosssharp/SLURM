@@ -15,7 +15,7 @@ enum class PseudoOp : uint32_t
 	EXTERN,
 	WEAK,
 	None
-}
+};
 
 #include <string>
 

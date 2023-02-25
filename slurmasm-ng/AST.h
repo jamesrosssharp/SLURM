@@ -5,6 +5,7 @@
 #include "Statement.h"
 #include "types.h"
 #include "OpCode.h"
+#include "PseudoOp.h"
 #include "Cond.h"
 #include "RelocationTable.h"
 
@@ -79,6 +80,7 @@ class AST {
 	private:
 
 		OpCode convertOpCode(std::string opcode);
+		PseudoOp convertPseudoOp(std::string pseudoOp);
 		Cond   convertCond(std::string cond);		
 
 		Register convertReg(char* reg);

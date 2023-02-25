@@ -7,6 +7,7 @@
 #include "Expression.h"
 #include "types.h"
 #include "OpCode.h"
+#include "PseudoOp.h"
 #include "Cond.h"
 
 #include "SymTab_t.h"
@@ -30,6 +31,8 @@ enum class StatementType
 	TWO_REGISTER_INDIRECT_OPCODE_AND_EXPRESSION_A,
 	TWO_REGISTER_INDIRECT_OPCODE_B,
 	TWO_REGISTER_INDIRECT_OPCODE_AND_EXPRESSION_B,
+	PSEUDO_OP,
+	PSEUDO_OP_WITH_EXPRESSION,
 };
 
 struct Statement
@@ -53,8 +56,9 @@ struct Statement
 	char*		label;
 
 	std::vector<uint8_t> assembledBytes;
-
-	Statement* timesStatement = nullptr;
+	
+	bool hasTimes = false;
+	Expression timesExpression;
 	int32_t repetitionCount = 1;
 
 	void assemble();
@@ -77,6 +81,7 @@ private:
 	void _assemble_one_register_indirect_opcode_and_expression(int expressionValue);
 	void _assemble_two_register_indirect_opcode_and_expression_A(int expressionValue);
 	void _assemble_two_register_indirect_opcode_and_expression_B(int expressionValue);
+	void _assemble_pseudo_op_and_expression(int expressionValue);
 };
 
 
