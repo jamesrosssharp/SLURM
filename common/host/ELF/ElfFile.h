@@ -238,7 +238,7 @@ class ElfFile {
 		void writeOutput(const char* filename);
 		
 		void beginSymbolTable();
-		void addSymbol(const std::string& sym_name, const std::string& sym_section, int value, uint8_t bind = STB_LOCAL, uint8_t type = STT_NOTYPE);
+		void addSymbol(const std::string& sym_name, const std::string& sym_section, int value, uint8_t bind = STB_LOCAL, uint8_t type = STT_NOTYPE, int size = 0);
 		void finaliseSymbolTable();
 
 		void beginRelocationTable(const std::string& sec);

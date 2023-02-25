@@ -75,6 +75,11 @@ class AST {
 		void resolveSymbols();
 		void generateRelocationTables();
 
+		void generateTimesMacros();
+		void handleAlignStatements();
+		void handleGlobalAndWeakSymbols();
+		void determineFunctionsAndLengths();
+
 		void writeElfFile(char* outputFile);
 
 	private:

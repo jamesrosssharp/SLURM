@@ -129,7 +129,10 @@ expression:
 	;
 
 /* pseudo op codes */
-pseudo_op_code: pseudo_op1 | pseudo_op2 | times;
+
+pseudo_op: pseudo_op_code | times;
+
+pseudo_op_code: pseudo_op1 | pseudo_op2;
 
 /* e.g. .function, .global etc */
 pseudo_op1: PSEUDOOP expression ENDL { g_ast.addPseudoOpWithExpression(line_num, $1); };
@@ -137,14 +140,15 @@ pseudo_op1: PSEUDOOP expression ENDL { g_ast.addPseudoOpWithExpression(line_num,
 /* e.g. .endfunc */
 pseudo_op2: PSEUDOOP ENDL { g_ast.addPseudoOp(line_num, $1); };
 
-times: TIMES expression COMMA op_code { g_ast.addTimes(line_num); };
+times: TIMES expression op_code { g_ast.addTimes(line_num); } |
+       TIMES expression pseudo_op_code { g_ast.addTimes(line_num); } ;
 
 equ: STRING EQU expression ENDL {g_ast.addEqu(line_num, $1); } ;
 
 body_section: body_lines ;
 body_lines: body_lines body_line | body_line ;
 
-body_line: equ | blank_line | label | op_code | pseudo_op_code ;
+body_line: equ | blank_line | label | op_code | pseudo_op ;
 
 label: STRING LABEL ENDL { g_ast.addLabel(line_num, $1); } ;
 
@@ -219,6 +223,18 @@ int main(int argc, char** argv) {
 
 	// Generate assembly
 	g_ast.assemble();	
+
+	// Generate repeated assemblies given by the times statement
+	g_ast.generateTimesMacros();
+
+	// Handle ".align" statements
+	g_ast.handleAlignStatements();
+
+	// Handle global and weak symbols
+	g_ast.handleGlobalAndWeakSymbols();
+
+	// Compute length of functions
+	g_ast.determineFunctionsAndLengths();
 
 	// Resolve label symbols
 	g_ast.resolveSymbols();

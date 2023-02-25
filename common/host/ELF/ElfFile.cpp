@@ -261,10 +261,18 @@ void ElfFile::buildSectionHeaderStringTable()
 
 void ElfFile::beginSymbolTable()
 {
-	// Do nothing
+	// 0th symbol is a dummy symbol
+
+	ElfSymbol e;
+	e.name = "";
+	e.section = "";
+	e.info = 0;
+	e.other = 0;
+	e.value = 0;
+	m_symbols.push_back(e);	
 }
 
-void ElfFile::addSymbol(const std::string& sym_name, const std::string& sym_section, int value, uint8_t bind, uint8_t type)
+void ElfFile::addSymbol(const std::string& sym_name, const std::string& sym_section, int value, uint8_t bind, uint8_t type, int size)
 {
  	// Add symbol
  	
@@ -279,6 +287,8 @@ void ElfFile::addSymbol(const std::string& sym_name, const std::string& sym_sect
 	e.other = 0;
 
 	e.value = value;
+
+	e.size = size;
 
 	m_symbols.push_back(e);	
 
@@ -304,8 +314,11 @@ void ElfFile::finaliseSymbolTable()
 {
 	// Sort symbol table - locals first
 
-	std::sort(m_symbols.begin(), m_symbols.end(), [] (const ElfSymbol& e1, const ElfSymbol& e2) { if (e1.is_local()) return -1; if (e2.is_local()) return 1; else return 0; });	
-
+	std::sort(m_symbols.begin(), m_symbols.end(), [] (const ElfSymbol& e1, const ElfSymbol& e2) { 
+			if (e1.is_local() && !e2.is_local()) return true;
+			if (!e1.is_local() && e2.is_local()) return false;
+			else return false; 
+			});	
 	// Build strtab
 	
 	std::vector<uint8_t> str_data;

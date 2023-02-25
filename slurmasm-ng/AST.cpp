@@ -375,7 +375,15 @@ void AST::addPseudoOpWithExpression(int line_num, char *pseudo_op)
 
 void AST::addTimes(int line_num)
 {
-	std::cout << "Times: " << line_num << std::endl;
+	//std::cout << "Times: " << line_num << std::endl;
+
+	Statement& s = m_sectionStatements[m_currentSection].back();
+
+	s.hasTimes = true;
+	s.timesExpression.lineNum = line_num;
+	s.timesExpression.root = m_stack.back();
+	m_stack.pop_back();
+
 }
 
 OpCode AST::convertOpCode(std::string s)
@@ -573,10 +581,23 @@ void AST::reduceAllExpressions()
 				case StatementType::ONE_REGISTER_INDIRECT_OPCODE_AND_EXPRESSION:
 				case StatementType::TWO_REGISTER_INDIRECT_OPCODE_AND_EXPRESSION_A:
 				case StatementType::TWO_REGISTER_INDIRECT_OPCODE_AND_EXPRESSION_B:
-				case StatementType::PSEUDO_OP_WITH_EXPRESSION:
 					s.expression.reduce_to_label_plus_const(m_symbolTable.symtab);
-					break;	
+					break;
+				case StatementType::PSEUDO_OP_WITH_EXPRESSION:
+					switch (s.pseudoOp)
+					{
+						case PseudoOp::ALIGN:
+						case PseudoOp::DB:
+						case PseudoOp::DW:
+						case PseudoOp::DD:
+							s.expression.reduce_to_label_plus_const(m_symbolTable.symtab);
+							break; 
+					}
+					break;
 			}	
+			
+			if (s.hasTimes)
+				s.timesExpression.reduce_to_label_plus_const(m_symbolTable.symtab);
 		}
 
 	}
@@ -685,7 +706,9 @@ void AST::writeElfFile(char* outputFile)
 	for (Symbol* sym : m_symbolTable.symlist)
 	{
 		if (sym->type == SYMBOL_LABEL)
-			e.addSymbol(sym->name, sym->section, sym->value);
+		{
+			e.addSymbol(sym->name, sym->section, sym->value, sym->e_bind, sym->e_type, sym->size);
+		}
 	}
 
 	e.finaliseSymbolTable();
@@ -711,4 +734,227 @@ void AST::writeElfFile(char* outputFile)
 	e.writeOutput(outputFile);
 }
 
+void AST::generateTimesMacros()
+{
+	for (auto& kv : m_sectionStatements)
+	{
+		auto sec = kv.first;
+
+		for (auto& s : kv.second)
+		{	
+	
+			if (s.hasTimes)
+			{
+				if (s.timesExpression.is_const)
+				{
+					s.repetitionCount = s.timesExpression.getValue(); 
+				}
+				else
+				{
+					std::stringstream ss;
+					ss << ".TIMES expression not reducible to a constant on line " << s.lineNum << std::endl;	
+					throw std::runtime_error(ss.str());
+				}
+
+				std::vector<uint8_t> v = s.assembledBytes;
+				
+				// Do the actual repetition of the assembled bytes specified by the times macro
+				for (int i = 0; i < s.repetitionCount - 1; i++)
+					for (const auto& a : v)
+						s.assembledBytes.push_back(a);
+
+			}
+
+		}
+	}
+}
+
+void AST::handleAlignStatements()
+{
+	for (auto& kv : m_sectionStatements)
+	{
+		auto sec = kv.first;
+
+		uint32_t sec_address = 0;
+
+		for (auto& s : kv.second)
+		{	
+
+			switch (s.type)
+			{
+				case StatementType::PSEUDO_OP_WITH_EXPRESSION:
+				{
+					switch (s.pseudoOp)
+					{
+						case PseudoOp::ALIGN:		
+
+							if (s.expression.is_const)
+							{
+								
+								uint32_t a = s.expression.getValue(); 
+								uint32_t align_add = ((sec_address + a-1) / a) * a;
+
+								int32_t delta = align_add - sec_address;
+
+								for (int i = 0; i < delta; i++)
+									s.assembledBytes.push_back(0);
+							}
+							else
+							{
+								std::stringstream ss;
+								ss << ".TIMES expression not reducible to a constant on line " << s.lineNum << std::endl;	
+								throw std::runtime_error(ss.str());
+							}
+
+
+
+							break;
+						default:
+							break;
+					}
+				}
+				break;
+				default:
+					break;
+			}
+	
+			sec_address += s.assembledBytes.size();
+
+		}
+	}
+}
+
+void AST::handleGlobalAndWeakSymbols()
+{
+	// Search through all statements, and find .GLOBAL and .WEAK statements.
+	// Mark corresponding symbols as appropriate.
+
+	for (auto& kv : m_sectionStatements)
+	{
+		auto sec = kv.first;
+
+		for (auto& s : kv.second)
+		{	
+
+			switch (s.type)
+			{
+				case StatementType::PSEUDO_OP_WITH_EXPRESSION:
+				{
+					switch (s.pseudoOp)
+					{
+						case PseudoOp::GLOBAL:		
+							if (s.expression.isString())
+							{
+								std::string n = s.expression.getString();
+								Symbol& sym = m_symbolTable.symtab.at(n);
+								sym.e_bind = STB_GLOBAL;
+							}
+							else
+							{
+								std::stringstream ss;
+								ss << ".GLOBAL statement must take a single string, the symbol name, on line " << s.lineNum << std::endl;	
+								throw std::runtime_error(ss.str());
+							}
+				
+							break;
+						case PseudoOp::WEAK:
+							if (s.expression.isString())
+							{
+								std::string n = s.expression.getString();
+								Symbol& sym = m_symbolTable.symtab.at(n);
+								sym.e_bind = STB_WEAK;
+							}
+							else
+							{
+								std::stringstream ss;
+								ss << ".GLOBAL statement must take a single string, the symbol name, on line " << s.lineNum << std::endl;	
+								throw std::runtime_error(ss.str());
+							}
+				
+
+							break;
+						default:
+							break;
+					}
+				}
+				break;
+				default:
+					break;
+			}
+	
+		}
+	}
+
+
+}
+
+void AST::determineFunctionsAndLengths()
+{
+	// Search through all statements, mark functions. Compute function length. Store against symbol.
+
+	for (auto& kv : m_sectionStatements)
+	{
+		auto sec = kv.first;
+
+		uint32_t sec_address = 0;
+
+		std::string cur_func = "";
+		uint32_t func_start = 0;
+
+		for (auto& s : kv.second)
+		{	
+
+			switch (s.type)
+			{
+				case StatementType::PSEUDO_OP_WITH_EXPRESSION:
+				{
+					switch (s.pseudoOp)
+					{
+						case PseudoOp::FUNCTION:		
+
+							if (s.expression.isString())
+							{
+								cur_func = s.expression.getString();
+								func_start = sec_address;			
+							}
+							else
+							{
+								std::stringstream ss;
+								ss << ".FUNCTION takes a single string, name of function, as a parameter " << s.lineNum << std::endl;	
+								throw std::runtime_error(ss.str());
+							}
+							break;
+						default:
+							break;
+					}
+				}
+				break;
+				case StatementType::PSEUDO_OP:
+				{	
+					switch (s.pseudoOp)
+					{
+						case PseudoOp::ENDFUNC:
+						{	uint32_t size = sec_address - func_start;
+
+							Symbol& sym = m_symbolTable.symtab.at(cur_func);
+							sym.size = size;
+							sym.e_type = STT_FUNC;
+
+							break;
+						}
+						default:
+							break;
+					}
+				}
+				break;	
+				default:
+					break;
+			}
+	
+			sec_address += s.assembledBytes.size();
+
+		}
+	}
+
+}
 

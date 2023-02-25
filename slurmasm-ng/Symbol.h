@@ -4,6 +4,8 @@
 #include <vector>
 #include <string>
 
+#include <host/ELF/ElfFile.h>
+
 enum SymbolType {
 	SYMBOL_LABEL,
 	SYMBOL_CONSTANT
@@ -25,6 +27,11 @@ struct Symbol {
 	bool reduced = false;
 
 	int value = 0;
+
+	int size = 0;
+
+	int8_t e_bind = STB_LOCAL;
+	int8_t e_type = STT_OBJECT;
 
 	// Defined in?
 	Statement* definedIn = nullptr;

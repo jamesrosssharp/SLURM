@@ -48,7 +48,7 @@ my_func:
 	test r2, 3
 	umulu r4, r2
 	bswap r4, r2
-	asr r4
+	.times 6*3 asr r4
 	mov r3, 0x666
 	mov.gtu r2, r3
 	ret
@@ -64,7 +64,7 @@ my_func2:
 	ret
 	.endfunc
 
-	.global sleep_func
+	.weak sleep_func
 	.function sleep_func
 	.extern after_sleep_func
 sleep_func:
@@ -78,7 +78,8 @@ sleep_func:
 
 	.section data
 some_var:
-	dw 0x666
+	.times 5 + 1 dw 0x666
+	.align 8
 	dw my_func2
 	dw sleep_func
 

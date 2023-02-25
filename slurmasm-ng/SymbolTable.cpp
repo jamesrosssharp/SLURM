@@ -13,6 +13,9 @@ void SymbolTable::_addSymbol(Statement& stat, SymbolType symtype, const std::str
 	sym.type = symtype;
 	sym.section = section;
 
+	if (section == "")
+		sym.e_bind = STB_GLOBAL;
+
 	bool found = true;
 
 	// check to see if symbol already exists?

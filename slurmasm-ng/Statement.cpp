@@ -547,6 +547,11 @@ std::ostream& operator << (std::ostream& os, const Statement& s)
 {
 
 	os << "Statement line " << s.lineNum << " : ";
+
+	if (s.hasTimes)
+	{
+		os << " .times " << s.timesExpression << " ";
+	}
 	
 	switch(s.type)
 	{
