@@ -15,11 +15,21 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 #pragma once
 
+#include "LinkerSymbol.h"
+
 struct LinkerRelocation 
 {
 	uint32_t 	offset;
 	std::string 	symbol;
 	int32_t 	addend;
 
+	LinkerSymbol*   _sym = nullptr;
+
 	LinkerRelocation(uint32_t _offset, const std::string& _symbol, int32_t _addend) : offset(_offset), symbol(_symbol), addend(_addend) { }
+
+	void resolve(LinkerSymbol* sym) 
+	{
+		sym->referenced = true;
+		_sym = sym;
+	}
 };

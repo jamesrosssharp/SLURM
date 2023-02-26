@@ -454,6 +454,7 @@ void Statement::assemble()
 						throw std::runtime_error(ss.str());
 					}
 				}
+				break;
 				case PseudoOp::DW:
 				{
 
@@ -473,6 +474,7 @@ void Statement::assemble()
 						throw std::runtime_error("Expression not reduced. Weird?");	
 					}
 				}
+				break;
 			}
 			break;
 		default: {

@@ -9,6 +9,10 @@
 
 #include <algorithm>
 
+#include <sstream>
+
+static int g_id = 0;
+
 /*====================== Static elf structure helpers =====================*/
 
 static void fill_elf_ident(elf_ident* i)
@@ -653,6 +657,14 @@ void ElfFile::load(const char* filename)
 	{
 		throw std::runtime_error("Error opening file!");
 	}	
+
+	m_fname = filename;
+
+	std::stringstream uniq;
+
+	uniq << "f" << g_id++;
+	
+	m_uniqueId = uniq.str();
 
 	elf_header32 e;
 

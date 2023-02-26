@@ -185,6 +185,45 @@ static std::string handle_branch(uint16_t op, uint16_t imm_hi)
 		case 0:
 			dis << "bz  ";
 			break;
+		case 1:
+			dis << "bnz  ";
+			break;
+		case 2:
+			dis << "bs  ";
+			break;
+		case 3:
+			dis << "bns  ";
+			break;
+		case 4:
+			dis << "bc  ";
+			break;
+		case 5:
+			dis << "bnc  ";
+			break;
+		case 6:
+			dis << "bv  ";
+			break;
+		case 7:
+			dis << "bnv  ";
+			break;
+		case 8:
+			dis << "blt  ";
+			break;
+		case 9:
+			dis << "ble  ";
+			break;
+		case 10:
+			dis << "bgt  ";
+			break;
+		case 11:
+			dis << "bge  ";
+			break;
+		case 12:
+			dis << "bleu  ";
+			break;
+		case 13:
+			dis << "bgtu  ";
+			break;
 		case 14:
 			dis << "ba  ";
 			break;

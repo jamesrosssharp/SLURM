@@ -87,11 +87,34 @@ void Linker::consumeFileSections(LinkerSection& lsec, ElfFile* e, const std::vec
 
 						LinkerSymbol lsym;
 
-						lsym.name = sym.name;
+						if (sym.is_local())
+						{
+							// Local symbols get prefixed with unique id
+							lsym.name = e->getUniqueId() + "." + sym.name;	
+						}
+						else if (sym.is_weak())
+						{
+							// Weak symbols get prefixed with ".weak.":
+							// We will link them later if there is no GLOBAL with the same (unprefixed) name.
+							lsym.name = ".weak." + sym.name;	
+						}
+						else 
+						{
+							lsym.name = sym.name;
+						}	
+					
 						lsym.section = lsec.name;
 						lsym.value = sym.value + address_shift;
+						
+						sym.get_bind_type(lsym.bind, lsym.type);
 
-						// TODO: Check for duplicate symbols here.
+						if (m_symtab.find(lsym.name) != m_symtab.end())
+						{
+							std::stringstream ss;
+							ss << "Error: duplicate symbol '" << lsym.name << "' redefined in " << e->getFileName() << std::endl;
+							throw std::runtime_error(ss.str());  
+						}
+
 
 						m_symtab.emplace(lsym.name, lsym);	
 					}
@@ -103,6 +126,11 @@ void Linker::consumeFileSections(LinkerSection& lsec, ElfFile* e, const std::vec
 				{
 					int idx = rela.getSymbolIndex();
 					std::string sym_name = e->getSymbols()[idx].name;
+
+					if (e->getSymbols()[idx].is_local())
+					{
+						sym_name = e->getUniqueId() + "." + sym_name;
+					}
 
 					std::cout << "\t\t\t\t\t\t " << "Adding relocation " << (rela.offset + address_shift) << " : " << sym_name << " + " << rela.addend << std::endl;
 
@@ -296,7 +324,61 @@ void Linker::link(const char* outFile)
 		}
 	}
 
-	// Perform linking of symbols, write relocations.
+	// Perform linking of symbols.
+
+	std::cout << "Resolving symbols..." << std::endl;
+
+	// 1. resolve all relocations to actual symbols - resolve weak symbols if they are not overridden. Mark symbol as 
+	// referenced if it is referenced.
+
+	for (auto& sec : m_outputSections)
+	{
+		for (auto& rela : sec.relocation_table)
+		{
+			if (m_symtab.find(rela.symbol) == m_symtab.end())
+			{
+				// Look for weak version of symbol.
+				std::string weak = ".weak." + rela.symbol;
+
+				if (m_symtab.find(weak) == m_symtab.end())
+				{
+
+					std::stringstream ss;
+					ss << "Error: symbol '" << rela.symbol << "' could not be resolved. " << std::endl;
+					throw std::runtime_error(ss.str());  
+				}
+				else
+				{
+					// The symbol exists only as a weak symbol. Rename it for the output writing.
+					LinkerSymbol *sym = &(*m_symtab.find(weak)).second; 
+					sym->name = sym->name.substr(6);
+					rela.resolve(sym);
+				}
+			}
+			else
+			{
+				rela.resolve(&(*m_symtab.find(rela.symbol)).second);
+			}
+		}
+	}	
+
+	// Garbage collect unused functions.
+
+	std::cout << "Garbage collecting unused functions..." << std::endl;
+
+	for (auto& p : m_symtab)
+	{
+		auto& sym = p.second;
+
+		if (sym.type == STT_FUNC && !sym.referenced)
+		{
+			std::cout << "\t - Function '" << sym.name << "' unused. Garbage collecting." << std::endl;
+		}
+
+	}
+
+	// Perform relocations
+
 	
 	// Create linked output file.
 

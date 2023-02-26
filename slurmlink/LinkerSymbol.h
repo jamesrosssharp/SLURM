@@ -26,7 +26,9 @@ struct LinkerSymbol {
 
 	uint32_t value;
 
-	int8_t bind = STB_LOCAL;
-	int8_t type = STT_NOTYPE;
+	uint8_t bind = STB_LOCAL;
+	uint8_t type = STT_NOTYPE;
+
+	bool referenced = false;
 
 };

@@ -222,6 +222,13 @@ struct ElfSymbol {
 		return (bind == STB_LOCAL);
 	}
 
+	bool is_weak() const
+	{
+		uint8_t bind, info;
+		get_bind_type(bind, info);
+		return (bind == STB_WEAK);
+	}
+
 };
 
 typedef void (*progbitsIter_cb)(ElfSection* e, void* user_data);
@@ -258,6 +265,10 @@ class ElfFile {
 		std::vector<ElfSection>& getSections() { return m_sections; }
 		std::vector<ElfSymbol>&  getSymbols()  { return m_symbols;  }
 
+		std::string& getFileName() { return m_fname; }
+
+		std::string& getUniqueId() { return m_uniqueId; }
+
 	private:
 
 		int findSectionIdxByName(const std::string& name);
@@ -279,5 +290,8 @@ class ElfFile {
 
 		int m_curRela_shndx = 0;
 		std::string m_curRela_secname;
+
+		std::string m_fname;
+		std::string m_uniqueId;
 };
 

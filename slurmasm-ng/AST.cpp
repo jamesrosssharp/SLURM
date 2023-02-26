@@ -756,8 +756,11 @@ void AST::generateTimesMacros()
 					throw std::runtime_error(ss.str());
 				}
 
-				std::vector<uint8_t> v = s.assembledBytes;
-				
+				std::vector<uint8_t> v;
+		
+				for (auto c : s.assembledBytes)
+					v.push_back(c);
+			
 				// Do the actual repetition of the assembled bytes specified by the times macro
 				for (int i = 0; i < s.repetitionCount - 1; i++)
 					for (const auto& a : v)
@@ -802,7 +805,7 @@ void AST::handleAlignStatements()
 							else
 							{
 								std::stringstream ss;
-								ss << ".TIMES expression not reducible to a constant on line " << s.lineNum << std::endl;	
+								ss << ".ALIGN expression not reducible to a constant on line " << s.lineNum << std::endl;	
 								throw std::runtime_error(ss.str());
 							}
 
