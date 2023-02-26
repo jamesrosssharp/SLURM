@@ -20,6 +20,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <host/ELF/ElfFile.h>
 #include <vector>
 #include <map>
+#include <string>
 
 #include "LinkerSection.h"
 #include "LinkerSymbol.h"
@@ -45,9 +46,15 @@ class Linker {
 		void consumeSections(LinkerSection& lsec, const SectionBlockStatementSectionList& seclist);
 		void consumeFileSections(LinkerSection& lsec, ElfFile* e, const std::vector<std::string>& sections);
 
+		void processAssignment(LinkerSection& lsec, const Assignment& ass);
+
 		bool matchStringToWildcard(const std::string& str, const std::string& wildcard);
 		bool matchPathToWildcard(const std::string& path, const std::string& wildcard);
 		
+		void deleteFunction(LinkerSymbol* sym);
+	
+		void performRelocation(LinkerSection& sec, LinkerRelocation& rela);
+	
 		AST* m_ast;
 		std::map<std::string, ElfFile*> m_files;	
 

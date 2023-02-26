@@ -10,7 +10,7 @@
 #include <sstream>
 #include <iostream>
 
-void Statement::_assemble_one_reg_opcode_and_expression(int expressionValue)
+void Statement::_assemble_one_reg_opcode_and_expression(int expressionValue, bool forceImm)
 {
 	switch (opcode)
 	{
@@ -30,7 +30,7 @@ void Statement::_assemble_one_reg_opcode_and_expression(int expressionValue)
 		case OpCode::UMULU:
 		case OpCode::CMP:
 		case OpCode::TEST:
-			Assembly::assembleRegisterImmediateALUOp(lineNum, opcode, regDest, expressionValue, assembledBytes);
+			Assembly::assembleRegisterImmediateALUOp(lineNum, opcode, regDest, expressionValue, assembledBytes, forceImm);
 			break;
 		default: {
 			std::stringstream ss;
@@ -41,7 +41,7 @@ void Statement::_assemble_one_reg_opcode_and_expression(int expressionValue)
 	}
 }
 
-void Statement::_assemble_opcode_and_expression(int expressionValue)
+void Statement::_assemble_opcode_and_expression(int expressionValue, bool forceImm)
 {
 	switch (opcode)
 	{
@@ -207,7 +207,7 @@ void Statement::_assemble_one_register_opcode()
 	}
 }
 
-void Statement::_assemble_one_register_indirect_opcode_and_expression(int expressionValue)
+void Statement::_assemble_one_register_indirect_opcode_and_expression(int expressionValue, bool forceImm)
 {
 	switch (opcode)
 	{
@@ -242,7 +242,7 @@ void Statement::_assemble_one_register_indirect_opcode_and_expression(int expres
 	}
 }
 
-void Statement::_assemble_two_register_indirect_opcode_and_expression_A(int expressionValue)
+void Statement::_assemble_two_register_indirect_opcode_and_expression_A(int expressionValue, bool forceImm)
 {
 	switch (opcode)
 	{
@@ -261,7 +261,7 @@ void Statement::_assemble_two_register_indirect_opcode_and_expression_A(int expr
 	}
 }
 
-void Statement::_assemble_two_register_indirect_opcode_and_expression_B(int expressionValue)
+void Statement::_assemble_two_register_indirect_opcode_and_expression_B(int expressionValue, bool forceImm)
 {
 	switch (opcode)
 	{
@@ -323,7 +323,7 @@ void Statement::assemble()
 			{
 				// Else expression is a relocation. Assemble with value 0 for 
 				// expression
-				_assemble_one_reg_opcode_and_expression(0);	
+				_assemble_one_reg_opcode_and_expression(0, true);	
 			}
 			else {
 				// Shouldn't get here so bug out
@@ -341,7 +341,7 @@ void Statement::assemble()
 			{
 				// Else expression is a relocation. Assemble with value 0 for 
 				// expression
-				_assemble_one_register_indirect_opcode_and_expression(0);	
+				_assemble_one_register_indirect_opcode_and_expression(0, true);	
 			}
 			else {
 				// Shouldn't get here so bug out
@@ -362,7 +362,7 @@ void Statement::assemble()
 			{
 				// Else expression is a relocation. Assemble with value 0 for 
 				// expression
-				_assemble_two_register_indirect_opcode_and_expression_A(0);	
+				_assemble_two_register_indirect_opcode_and_expression_A(0, true);	
 			}
 			else {
 				std::cout << expression << std::endl;
@@ -384,7 +384,7 @@ void Statement::assemble()
 			{
 				// Else expression is a relocation. Assemble with value 0 for 
 				// expression
-				_assemble_two_register_indirect_opcode_and_expression_B(0);	
+				_assemble_two_register_indirect_opcode_and_expression_B(0, true);	
 			}
 			else {
 				std::cout << expression << std::endl;
@@ -406,7 +406,7 @@ void Statement::assemble()
 			{
 				// Else expression is a relocation. Assemble with value 0 for 
 				// expression
-				_assemble_opcode_and_expression(0);	
+				_assemble_opcode_and_expression(0, true);	
 			}
 			else {
 				// Shouldn't get here so bug out

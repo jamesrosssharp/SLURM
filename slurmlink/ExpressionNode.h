@@ -40,5 +40,7 @@ struct ExpressionNode {
 	ExpressionNode* left = nullptr;
 	ExpressionNode* right = nullptr;
 
+	int line_num;
+
 };
 

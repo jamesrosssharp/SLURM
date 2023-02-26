@@ -26,8 +26,11 @@ struct Expression {
 	ExpressionNode* root = nullptr;
 
 	void reset();
+
+	bool is_align() const;	
+	bool evaluate_align (LinkerSymtab &tab, int &value) const;
 	
-	bool evaluate(LinkerSymtab &tab, int &value);
+	bool evaluate(LinkerSymtab &tab, int &value) const;
 	bool reduce_to_label_plus_const(LinkerSymtab &tab);
 };
 

@@ -30,5 +30,8 @@ struct LinkerSymbol {
 	uint8_t type = STT_NOTYPE;
 
 	bool referenced = false;
+	bool deleted = false;
+
+	uint32_t size;
 
 };

@@ -71,16 +71,16 @@ struct Statement
 
 private:
 
-	void _assemble_one_reg_opcode_and_expression(int expressionValue);
-	void _assemble_opcode_and_expression(int expressionValue);
+	void _assemble_one_reg_opcode_and_expression(int expressionValue, bool forceImm = false);
+	void _assemble_opcode_and_expression(int expressionValue, bool forceImm = false);
 	void _assemble_standalone_opcode();
 	void _assemble_two_register_opcode();
 	void _assemble_two_register_cond_opcode();
 	void _assemble_three_register_cond_opcode();
 	void _assemble_one_register_opcode();
-	void _assemble_one_register_indirect_opcode_and_expression(int expressionValue);
-	void _assemble_two_register_indirect_opcode_and_expression_A(int expressionValue);
-	void _assemble_two_register_indirect_opcode_and_expression_B(int expressionValue);
+	void _assemble_one_register_indirect_opcode_and_expression(int expressionValue, bool forceImm = false);
+	void _assemble_two_register_indirect_opcode_and_expression_A(int expressionValue, bool forceImm = false);
+	void _assemble_two_register_indirect_opcode_and_expression_B(int expressionValue, bool forceImm = false);
 	void _assemble_pseudo_op_and_expression(int expressionValue);
 };
 

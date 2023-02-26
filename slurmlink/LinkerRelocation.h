@@ -23,6 +23,8 @@ struct LinkerRelocation
 	std::string 	symbol;
 	int32_t 	addend;
 
+	bool 		deleted = false;
+
 	LinkerSymbol*   _sym = nullptr;
 
 	LinkerRelocation(uint32_t _offset, const std::string& _symbol, int32_t _addend) : offset(_offset), symbol(_symbol), addend(_addend) { }

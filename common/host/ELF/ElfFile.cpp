@@ -181,7 +181,7 @@ void ElfFile::addSection(const std::string& name, const std::vector<uint8_t>& co
 		s.link = 0;
 		s.align = 2;
 	}
-	else if (name == ".bss")
+	else if (name == ".bss" || name == ".stack")
 	{
 		s.type = SHT_NOBITS;
 		s.flags = SHF_WRITE;
@@ -480,15 +480,16 @@ void ElfFile::writeOutput(const char* filename)
 	{
 		sec.offset = off;
 
-		if (sec.size)
+		if (sec.size && (sec.type != SHT_NOBITS))
 		{
 			if (fwrite(sec.data, sec.size, 1, outf) != 1)
 			{
 				throw std::runtime_error("Error writing section!");
 			}
+	
+			off += sec.size;
 		}		
 
-		off += sec.size;
 	}
 
 	// Write out section headers
@@ -535,16 +536,21 @@ void ElfFile::loadSection(FILE* fil, uint32_t offset)
 		throw std::runtime_error("Section unusually large for a SLURM elf : corrupt file?");
 	}
 
-	if (ss.size != 0)
+	if (ss.size != 0 )
 	{
 
 		fseek(fil, ss.offset, SEEK_SET);
 
 		ss.data = new uint8_t[s.sh_size];
+		memset(ss.data, 0, s.sh_size);
 
-		if (fread(ss.data, 1, ss.size, fil) != ss.size)
+		if (ss.type != SHT_NOBITS)
 		{
-			throw std::runtime_error("Error reading section data!");
+			if (fread(ss.data, 1, ss.size, fil) != ss.size)
+			{
+				std::cout << ss.type << std::endl;
+				throw std::runtime_error("Error reading section data!");
+			}
 		}
 	}
 

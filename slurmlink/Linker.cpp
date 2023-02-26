@@ -58,7 +58,7 @@ void Linker::consumeFileSections(LinkerSection& lsec, ElfFile* e, const std::vec
 
 		for (const auto& esec : e->getSections())
 		{	
-			if (esec.type != SHT_PROGBITS)
+			if (esec.type != SHT_PROGBITS && esec.type != SHT_NOBITS)
 				continue;			
 
 			// Match wildcard?
@@ -105,7 +105,8 @@ void Linker::consumeFileSections(LinkerSection& lsec, ElfFile* e, const std::vec
 					
 						lsym.section = lsec.name;
 						lsym.value = sym.value + address_shift;
-						
+						lsym.size = sym.size;					
+	
 						sym.get_bind_type(lsym.bind, lsym.type);
 
 						if (m_symtab.find(lsym.name) != m_symtab.end())
@@ -241,7 +242,7 @@ void Linker::processSectionBlock(const SectionsStatement& stat)
 				consumeSections(s, blockStat.section_list);
 				break;
 			case SECTION_BLOCK_STATEMENT_TYPE_ASSIGNMENT:
-
+				processAssignment(s, blockStat.assignment);
 				break;
 		}
 
@@ -249,12 +250,116 @@ void Linker::processSectionBlock(const SectionsStatement& stat)
 
 	m_memoryMap[stat.memory_name].cur_offset = m_currentOffset;
 
+	// TODO: Check this later, after we have garbage collected the unused functions...
+	if (m_currentOffset > (m_memoryMap[stat.memory_name].origin + m_memoryMap[stat.memory_name].length))
+	{
+		std::stringstream ss;
+		ss << "Error: memory overflowed by " << ((m_memoryMap[stat.memory_name].origin + m_memoryMap[stat.memory_name].length) - m_currentOffset) << " bytes on line " << stat.line_num << std::endl;
+		throw std::runtime_error(ss.str());  
+	}
+
+
 	m_outputSections.push_back(std::move(s));
+
+}
+
+void Linker::processAssignment(LinkerSection& sec, const Assignment& ass)
+{
+	// Update "." for arithmetic
+	m_symtab["."].value = m_currentOffset;
+
+	// If ass.symbol == ".", then we need to see if:
+	//   - expression is an ALIGN
+	//   - or, expression is a constant
+	if (ass.symbol == ".")
+	{
+		uint32_t new_offset = m_currentOffset;
+		
+		if (ass.expression.is_align())
+		{
+			std::cout << "Sections statement on line " << ass.line_num << " is an align of current address " << std::endl;
+
+			int32_t align_val = 0;
+
+			if (!ass.expression.evaluate_align(m_symtab, align_val))
+			{
+				std::stringstream ss;
+				ss << "Error: could not evalute alignment on line " << ass.line_num << std::endl;
+				throw std::runtime_error(ss.str());  
+			}
+
+			new_offset = ((m_currentOffset + align_val - 1) / align_val) * align_val;
+	
+		}
+		else 
+		{
+			int val = 0;
+			if (!ass.expression.evaluate(m_symtab, val))
+			{
+				std::stringstream ss;
+				ss << "Error: could not evalute expression on line " << ass.line_num << std::endl;
+				throw std::runtime_error(ss.str());  	
+			}
+			new_offset = val;
+		}
+
+		uint32_t prev_offset = m_currentOffset;
+		m_currentOffset = new_offset;
+	
+		for (int i = prev_offset; i < m_currentOffset; i ++)		
+			sec.data.push_back(0x00);
+	
+	}
+	else
+	{
+
+		//
+		//	Else, we are creating another symbol. This must reduce to a constant.
+		//
+
+		int val = 0;
+		if (!ass.expression.evaluate(m_symtab, val))
+		{
+			std::stringstream ss;
+			ss << "Error: could not evalute expression on line " << ass.line_num << std::endl;
+			throw std::runtime_error(ss.str());  	
+		}
+
+		LinkerSymbol s;
+		s.section = sec.name;
+		s.name = ass.symbol;
+		s.value = val;
+		s.bind = STB_GLOBAL;
+		s.type = STT_OBJECT;	
+	
+		if (m_symtab.find(s.name) != m_symtab.end())
+		{
+			std::stringstream ss;
+			ss << "Error: symbol " << s.name << " already defined on line " << ass.line_num << std::endl;
+			throw std::runtime_error(ss.str());  	
+		}
+
+		m_symtab.emplace(s.name, s); 
+
+	}
 
 }
 
 void Linker::link(const char* outFile)
 {
+	// Add a global symbol (marked as deleted) for "."
+
+	{
+		LinkerSymbol s;
+		s.section = "ABS";
+		s.name = ".";
+		s.value = 0;
+		s.bind = STB_GLOBAL;
+		s.deleted = true;
+		m_symtab.emplace(s.name, s); 
+	}
+
+
 	// Process global assignments. Create symbol table
 
 	for (auto& a : m_ast->getGlobalAssignments())
@@ -262,13 +367,24 @@ void Linker::link(const char* outFile)
 		int32_t val = 0;
 		bool canEval = a.expression.evaluate(m_symtab, val);
 
-		LinkerSymbol s;
-		s.section = "ABS";
-		s.name = a.symbol;
-		s.value = val;
-		s.bind = STB_GLOBAL;
+		if (canEval)
+		{
+			LinkerSymbol s;
+			s.section = "ABS";
+			s.name = a.symbol;
+			s.value = val;
+			s.bind = STB_GLOBAL;
+			s.type = STT_NOTYPE;
+			m_symtab.emplace(s.name, s); 
+		} 
+		else
+		{
 
-		m_symtab.emplace(s.name, s); 
+			std::stringstream ss;
+			ss << "Error: could not evalute expression on line " << a.expression.lineNum << std::endl;
+			throw std::runtime_error(ss.str());  	
+	
+		}
 	}
 
 	// Process MEMORY statements to create LinkerMemory structs
@@ -310,7 +426,7 @@ void Linker::link(const char* outFile)
 
 	m_currentOffset = 0;
 
-	for (const auto& s : m_ast->getSectionsStatements())
+	for (auto& s : m_ast->getSectionsStatements())
 	{
 		switch (s.type)
 		{
@@ -318,8 +434,10 @@ void Linker::link(const char* outFile)
 				processSectionBlock(s);
 				break;
 			case SECTIONS_STATEMENT_TYPE_ASSIGNMENT:
+				processAssignment(m_outputSections.back(), s.assignment);
+				break;
 			case SECTIONS_STATEMENT_TYPE_PROVIDE:
-
+				//processProvide(s);
 				break;
 		}
 	}
@@ -342,7 +460,6 @@ void Linker::link(const char* outFile)
 
 				if (m_symtab.find(weak) == m_symtab.end())
 				{
-
 					std::stringstream ss;
 					ss << "Error: symbol '" << rela.symbol << "' could not be resolved. " << std::endl;
 					throw std::runtime_error(ss.str());  
@@ -373,13 +490,23 @@ void Linker::link(const char* outFile)
 		if (sym.type == STT_FUNC && !sym.referenced)
 		{
 			std::cout << "\t - Function '" << sym.name << "' unused. Garbage collecting." << std::endl;
+
+			deleteFunction(&sym);
+
 		}
 
 	}
 
 	// Perform relocations
 
+	std::cout << "Performing relocations..." << std::endl;
 	
+	for (auto& sec : m_outputSections)
+	{
+		for (auto& rela : sec.relocation_table)
+			performRelocation(sec, rela);
+	}	
+
 	// Create linked output file.
 
 	std::cout << "Creating output file: " << outFile << std::endl;
@@ -396,7 +523,8 @@ void Linker::link(const char* outFile)
 	for (const auto &p : m_symtab)
 	{
 		const LinkerSymbol& sym = p.second;
-		e.addSymbol(sym.name, sym.section, sym.value, sym.bind, sym.type);
+		if (!sym.deleted)
+			e.addSymbol(sym.name, sym.section, sym.value, sym.bind, sym.type);
 	}
 
 	e.finaliseSymbolTable();
@@ -409,7 +537,8 @@ void Linker::link(const char* outFile)
 
 			for (const auto& rel : sec.relocation_table)
 			{
-				e.addRelocation(rel.symbol, rel.addend, rel.offset);
+				if (!rel.deleted)
+					e.addRelocation(rel.symbol, rel.addend, rel.offset);
 			}
 
 			e.finaliseRelocationTable();
@@ -422,4 +551,128 @@ void Linker::link(const char* outFile)
 
 	e.writeOutput(outFile);
 
-}	
+}
+
+void Linker::deleteFunction(LinkerSymbol* sym)
+{
+
+	uint32_t funcAddr = sym->value;
+	uint32_t funcSize = sym->size;
+	const std::string& funcSection = sym->section;
+
+	// Delete function text
+	
+	for (auto & sec : m_outputSections)
+	{
+		if (sec.name == funcSection)
+		{
+			sec.data.erase(sec.data.begin() + (funcAddr - sec.load_address), sec.data.begin() + (funcAddr + funcSize - sec.load_address));
+
+			// For all relocations in this section: if in range of function, delete, if after function, shift down.
+
+			for (auto& rela : sec.relocation_table)
+			{
+				if (rela.offset >= (funcAddr) && rela.offset < (funcAddr + funcSize))
+				{
+					rela.deleted = true;
+				}
+				else if (rela.offset >= (funcAddr + funcSize))
+				{
+					rela.offset -= funcSize;
+				}
+			}
+
+		}
+	/*	else 
+		{
+			// If this section is loaded above the impacted section, shift it and all relocations down.
+			if (sec.load_address >= funcAddr + funcSize)
+			{
+				sec.load_address -= funcSize;
+
+				for (auto& rela : sec.relocation_table)
+				{
+					rela.offset -= funcSize;
+				}
+			
+			}
+
+		}
+	*/
+	}
+
+	// Delete symbol
+	sym->deleted = true;
+
+	// For all symbols: if in range of function, delete, if after function, shift down.
+	for (auto& p : m_symtab)
+	{
+		auto& sym = p.second;
+
+		if (sym.type == STT_NOTYPE)
+			continue;
+
+		if (sym.value >= funcAddr && sym.value < (funcAddr + funcSize))
+		{
+			sym.deleted = true;
+		}
+		else if (sym.value >= (funcAddr + funcSize))
+		{
+			sym.value -= funcSize;
+		}
+
+	}	
+
+}
+	
+void Linker::performRelocation(LinkerSection& sec, LinkerRelocation& rela)
+{
+
+	if (rela.deleted)
+		return;
+
+	uint32_t dat_offset = rela.offset - sec.load_address;
+
+	std::cout << "Relocation address : " << dat_offset << std::endl;
+
+	uint8_t lo = sec.data[rela.offset - sec.load_address];
+	uint8_t hi = sec.data[rela.offset - sec.load_address + 1];
+	uint8_t lo2 = sec.data[rela.offset - sec.load_address + 2];
+	uint8_t hi2 = sec.data[rela.offset - sec.load_address + 3];
+
+	if (rela._sym == nullptr || rela._sym->deleted)
+	{
+		std::stringstream ss;
+		ss << "Error: relocation @ " << sec.name << ":" << rela.offset << " could not be resolved: symbol " << rela.symbol << " not found." << std::endl;
+		throw std::runtime_error(ss.str());  
+	}
+
+	uint32_t val = rela._sym->value + rela.addend;
+
+	if (hi == 0x10 && lo == 0x00)
+	{
+		// Imm
+
+		lo = (val >> 4);  
+		hi |= (val >> 12);
+		lo2 |= (val & 0xf);
+		sec.data[rela.offset - sec.load_address] = lo;
+		sec.data[rela.offset - sec.load_address + 1] = hi;
+		sec.data[rela.offset - sec.load_address + 2] = lo2;
+	}
+	else if (lo == 0x00 && hi == 0x00)
+	{
+		lo = val & 0xff;
+		hi = val >> 8;
+		sec.data[rela.offset - sec.load_address] = lo;
+		sec.data[rela.offset - sec.load_address + 1] = hi;
+	}
+	else
+	{
+		std::stringstream ss;
+		ss << "Error: relocation @ " << sec.name << ":" << rela.offset << " could not be resolved: was not an IMM or a blank data word : " << std::hex << (int)lo << " " << (int)hi << std::endl;
+		throw std::runtime_error(ss.str());  
+	}
+
+}
+

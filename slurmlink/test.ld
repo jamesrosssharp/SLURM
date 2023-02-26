@@ -17,7 +17,7 @@ SECTIONS
 	} > ram
 
 	.data : {
-		. = ALIGN(2);
+		. = ALIGN(32);
 		*( .data )
 	} > ram
 

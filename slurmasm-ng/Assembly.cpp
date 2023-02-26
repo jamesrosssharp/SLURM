@@ -198,12 +198,12 @@ static uint16_t makeImm(int linenum, int expressionValue)
 	return imm;
 }
 
-void Assembly::assembleRegisterImmediateALUOp(int linenum, OpCode opcode, Register regDest, int expressionValue, std::vector<uint8_t>& assembledBytes)
+void Assembly::assembleRegisterImmediateALUOp(int linenum, OpCode opcode, Register regDest, int expressionValue, std::vector<uint8_t>& assembledBytes, bool forceImm)
 {
 	uint16_t aluOp = 0;
 	get_aluOp(opcode, linenum, aluOp);
 
-	if (expressionValue < 0 || expressionValue > 15)
+	if (expressionValue < 0 || expressionValue > 15 || forceImm)
 	{
 		uint16_t imm = makeImm(linenum, expressionValue);
 

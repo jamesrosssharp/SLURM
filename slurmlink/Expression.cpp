@@ -114,11 +114,19 @@ static int recurse_evaluate_with_symbol_table(struct ExpressionNode* item, Linke
 			return recurse_evaluate_with_symbol_table(item->left, tab, success) / recurse_evaluate_with_symbol_table(item->right, tab, success);
 		case ITEM_UNARY_NEG:
 			return - recurse_evaluate_with_symbol_table(item->left, tab, success);
+		case ITEM_ALIGN:
+			// We should never encounter aligns in the body of an expression. Raise an error.
+			{
+				throw std::runtime_error("Expression cannot contain ALIGN in the body");
+			}
+
+			break;
+
 	}
 	return 0;
 }
 
-bool Expression::evaluate(LinkerSymtab &tab, int &value)
+bool Expression::evaluate(LinkerSymtab &tab, int &value) const
 {
 
 	bool success = true;
@@ -340,6 +348,35 @@ std::ostream& operator << (std::ostream& os, const ExpressionNode& e)
 	os << ")";
 
 	return os;
+
+}
+
+bool Expression::is_align() const
+{
+	if (root->type == ITEM_ALIGN)
+		return true;
+	return false;
+}
+
+bool Expression::evaluate_align (LinkerSymtab &tab, int &value) const
+{
+	if (!is_align())
+		return false;
+
+	bool success = true;
+
+        try {
+                value = recurse_evaluate_with_symbol_table(root->left, tab, success);
+        }
+        catch (const std::runtime_error& e)
+        {
+                std::stringstream ss;
+                ss << "Expression on line " << lineNum << " could not be evaluated: " << e.what() << std::endl;
+
+                throw std::runtime_error(ss.str());
+        }
+
+        return success;
 
 }
 
