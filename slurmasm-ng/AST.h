@@ -92,6 +92,7 @@ class AST {
 		void push_binary(enum ItemType type);
 
 		std::string m_currentSection = ".text";
+		std::string m_prevSection;
 	
 		std::deque<ExpressionNode*> m_stack;
 

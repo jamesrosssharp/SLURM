@@ -67,6 +67,15 @@ void Linker::consumeFileSections(LinkerSection& lsec, ElfFile* e, const std::vec
 		
 				std::cout << "\t\t\t\t\t" << "Section " << esec.name << " matches wildcard " << sec << std::endl;
 
+				// Check blacklist
+
+				if (m_sectionBlacklist.find(e->getUniqueId() + esec.name) != m_sectionBlacklist.end())
+				{
+					std::cout << "\t\t\t\t\t\t" << "Section " << esec.name << " blacklisted. " << sec << std::endl;
+					continue;
+				}
+
+
 				// Consume section data
 
 				/* TODO: The relocation of sections requires more thought. */
@@ -347,6 +356,13 @@ void Linker::processAssignment(LinkerSection& sec, const Assignment& ass)
 
 void Linker::link(const char* outFile)
 {
+
+	// Analyze files : find section blacklist
+
+	std::cout << "Analyzing input files..." << std::endl;
+
+	analyzeFiles();
+
 	// Add a global symbol (marked as deleted) for "."
 
 	{
@@ -479,6 +495,7 @@ void Linker::link(const char* outFile)
 		}
 	}	
 
+	#if 0
 	// Garbage collect unused functions.
 
 	std::cout << "Garbage collecting unused functions..." << std::endl;
@@ -496,6 +513,7 @@ void Linker::link(const char* outFile)
 		}
 
 	}
+	#endif
 
 	// Perform relocations
 
@@ -553,6 +571,7 @@ void Linker::link(const char* outFile)
 
 }
 
+#if 0
 void Linker::deleteFunction(LinkerSymbol* sym)
 {
 
@@ -624,6 +643,7 @@ void Linker::deleteFunction(LinkerSymbol* sym)
 	}	
 
 }
+#endif
 	
 void Linker::performRelocation(LinkerSection& sec, LinkerRelocation& rela)
 {
@@ -675,4 +695,238 @@ void Linker::performRelocation(LinkerSection& sec, LinkerRelocation& rela)
 	}
 
 }
+
+bool Linker::includedSectionUsed(LinkerSection& sec)
+{
+
+	// For each symbol in the section
+
+	for (auto& psym : m_includedSymtab)
+	{
+		
+		if (psym.second.section == sec.name)
+		{
+
+			// Find relocations in other sections that reference the symbol. Return true immediately if found.
+
+			for (auto& othersec : m_includedSections)
+			{
+				if (othersec.name == sec.name || othersec.deleted)
+					continue;
+
+				for (auto& rela : othersec.relocation_table)
+				{
+					if (rela.symbol == psym.second.name)
+						return true; 
+
+				}
+			}
+		}
+
+	}
+
+	// No relocations found - return false
+	return false;
+
+} 
+
+void Linker::analyzeFiles()
+{
+	m_currentOffset = 0;
+
+	for (auto& s : m_ast->getSectionsStatements())
+	{
+		switch (s.type)
+		{
+			case SECTIONS_STATEMENT_TYPE_SECTION_BLOCK:
+				analyzeSectionBlock(s);
+				break;
+			case SECTIONS_STATEMENT_TYPE_ASSIGNMENT:
+				break;
+			case SECTIONS_STATEMENT_TYPE_PROVIDE:
+				break;
+		}
+	}
+
+	// For each of the included sections, see if it is used. Otherwise, mark it as deleted. Repeat until no more sections can be deleted. 
+
+	bool deleted = false;
+	do 
+	{
+		deleted = false;
+		for (auto& sec : m_includedSections)
+		{
+			if (sec.keep || sec.deleted)
+				continue;
+
+			std::cout << "Checking if " << sec.name << " is used...";
+
+			if (! includedSectionUsed(sec))
+			{
+				std::cout << "No!" << std::endl;
+				sec.deleted = true;
+				deleted = true;
+			}
+			else {
+				std::cout << "Yes!" << std::endl;
+			}
+		}
+	} while (deleted);
+
+	// Build up the section blacklist
+
+	for (auto& sec : m_includedSections)
+	{
+		if (sec.deleted)
+			m_sectionBlacklist.emplace(sec.name, 1);
+	}
+	
+
+
+}
+
+void Linker::analyzeFileSections(ElfFile* e, const std::vector<std::string>& sections, bool keep)
+{
+
+	// Iterate over all sections
+	for (const auto & sec : sections)
+	{
+		// Iterate over all sections in e
+
+		for (const auto& esec : e->getSections())
+		{	
+			if (esec.type != SHT_PROGBITS && esec.type != SHT_NOBITS)
+				continue;			
+
+			// Match wildcard?
+			if (matchStringToWildcard(esec.name, sec))
+			{
+		
+				LinkerSection lsec;
+
+				lsec.keep = keep;
+
+				lsec.name = e->getUniqueId() + esec.name;
+
+				std::cout << "\t\t\t\t\t" << "Section " << esec.name << " matches wildcard " << sec << std::endl;
+
+				// Consume section data
+
+				/* TODO: The relocation of sections requires more thought. */
+				uint32_t address_shift = m_currentOffset;
+
+				m_currentOffset += esec.size;
+	
+				// Add section symbols to symbol table - move to new offset
+
+				for (const auto& sym : e->getSymbols())
+				{
+					if (sym.section == esec.name)
+					{
+						std::cout << "\t\t\t\t\t\t" << "Adding symbol " << sym.name << " to symbol table " << std::endl;
+
+						LinkerSymbol lsym;
+
+						if (sym.is_local())
+						{
+							// Local symbols get prefixed with unique id
+							lsym.name = e->getUniqueId() + "." + sym.name;	
+						}
+						else if (sym.is_weak())
+						{
+							// Weak symbols get prefixed with ".weak.":
+							// We will link them later if there is no GLOBAL with the same (unprefixed) name.
+							lsym.name = ".weak." + sym.name;	
+						}
+						else 
+						{
+							lsym.name = sym.name;
+						}	
+					
+						lsym.section = lsec.name;
+						lsym.value = sym.value + address_shift;
+						lsym.size = sym.size;					
+	
+						sym.get_bind_type(lsym.bind, lsym.type);
+
+						if (m_includedSymtab.find(lsym.name) != m_includedSymtab.end())
+						{
+							std::stringstream ss;
+							ss << "Error: duplicate symbol '" << lsym.name << "' redefined in " << e->getFileName() << std::endl;
+							throw std::runtime_error(ss.str());  
+						}
+
+
+						m_includedSymtab.emplace(lsym.name, lsym);	
+					}
+				}	
+
+				// Add relocations 
+	
+				for (const auto& rela : esec.relocation_table)
+				{
+					int idx = rela.getSymbolIndex();
+					std::string sym_name = e->getSymbols()[idx].name;
+
+					if (e->getSymbols()[idx].is_local())
+					{
+						sym_name = e->getUniqueId() + "." + sym_name;
+					}
+
+					std::cout << "\t\t\t\t\t\t " << "Adding relocation " << (rela.offset + address_shift) << " : " << sym_name << " + " << rela.addend << std::endl;
+
+					lsec.relocation_table.emplace_back(rela.offset + address_shift, sym_name, rela.addend);	
+				}		
+
+				m_includedSections.push_back(std::move(lsec));
+
+			}
+		}
+	}
+}
+
+void Linker::analyzeSections(const SectionBlockStatementSectionList& seclist, bool keep) 
+{
+	// Match the file wildcards to generate a list of files to consume sections from
+
+	std::cout << "\t\t\tConsuming pattern " << seclist.file_name << std::endl;
+
+	for (const auto& p : m_files)
+	{
+		std::string fpath = p.first;
+
+		if (matchPathToWildcard(fpath, seclist.file_name))
+		{
+			std::cout << "\t\t\t\tChecking file " << fpath << std::endl;
+			//std::cout << "Fpath: " << fpath << " matched to wildcard: " << seclist.file_name << std::endl;
+			analyzeFileSections(p.second, seclist.sections, keep);
+		}
+	}
+}
+
+void Linker::analyzeSectionBlock(const SectionsStatement& stat)
+{
+	// Iterate over all statements in the section block	
+
+	for (const auto& blockStat : stat.statements)
+	{
+		std::cout << "\t\tProcessing " << blockStat << std::endl;
+
+		switch (blockStat.type)
+		{
+			case SECTION_BLOCK_STATEMENT_TYPE_SECTION_LIST:
+				analyzeSections(blockStat.section_list, false);
+				break;
+			case SECTION_BLOCK_STATEMENT_TYPE_KEEP:
+				analyzeSections(blockStat.section_list, true);
+				std::cout << "Section kept!" << std::endl;
+				break;
+			case SECTION_BLOCK_STATEMENT_TYPE_ASSIGNMENT:
+				break;
+		}
+
+	}
+
+}
+
 

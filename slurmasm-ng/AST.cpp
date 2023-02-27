@@ -308,11 +308,14 @@ void AST::addPseudoOp(int line_num, char *pseudo_op)
 	m_currentStatement.pseudoOp = convertPseudoOp(pseudo_op);
 	m_currentStatement.type = StatementType::PSEUDO_OP;
 
+	m_sectionStatements[m_currentSection].push_back(m_currentStatement);
+	
 	// Sanity check
 
 	switch (m_currentStatement.pseudoOp)
 	{
 		case PseudoOp::ENDFUNC:
+			m_currentSection = m_prevSection;
 			break;
 		default:
 		{
@@ -323,7 +326,6 @@ void AST::addPseudoOp(int line_num, char *pseudo_op)
 	}
 
 
-	m_sectionStatements[m_currentSection].push_back(m_currentStatement);
 	m_currentStatement.reset();
 }
 
@@ -352,6 +354,7 @@ void AST::addPseudoOpWithExpression(int line_num, char *pseudo_op)
 				ss << "Pseudo Op " << m_currentStatement.pseudoOp << "takes only a single string (section name) on line " << line_num << std::endl;	
 				throw std::runtime_error(ss.str());
 			}
+			break;
 		case PseudoOp::EXTERN:
 			if (m_currentStatement.expression.isString())
 			{
@@ -363,6 +366,20 @@ void AST::addPseudoOpWithExpression(int line_num, char *pseudo_op)
 				ss << "Pseudo Op " << m_currentStatement.pseudoOp << "takes only a single string (symbol name) on line " << line_num << std::endl;	
 				throw std::runtime_error(ss.str());
 			}
+			break;
+		case PseudoOp::FUNCTION:
+			if (m_currentStatement.expression.isString())
+			{
+				m_prevSection = m_currentSection;
+				m_currentSection = m_currentSection + "." + std::string(m_currentStatement.expression.getString());
+			}
+			else
+			{
+				std::stringstream ss;
+				ss << "Pseudo Op " << m_currentStatement.pseudoOp << "takes only a single string (symbol name) on line " << line_num << std::endl;	
+				throw std::runtime_error(ss.str());
+			}
+			break;
 		default:
 			break;
 	}

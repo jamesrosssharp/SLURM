@@ -30,6 +30,8 @@ struct LinkerSection
 		data = std::move(from.data);
 		load_address = from.load_address;
 		relocation_table = std::move(from.relocation_table);
+		deleted = from.deleted;
+		keep = from.keep;
 	}	
 
 	std::string name;
@@ -39,4 +41,8 @@ struct LinkerSection
 	uint32_t load_address;
 	
 	std::vector<LinkerRelocation> relocation_table;
+
+	bool keep = false;
+
+	bool deleted = false;
 };

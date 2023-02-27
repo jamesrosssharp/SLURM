@@ -46,14 +46,24 @@ class Linker {
 		void consumeSections(LinkerSection& lsec, const SectionBlockStatementSectionList& seclist);
 		void consumeFileSections(LinkerSection& lsec, ElfFile* e, const std::vector<std::string>& sections);
 
+		void analyzeSectionBlock(const SectionsStatement& stat);
+		void analyzeSections(const SectionBlockStatementSectionList& seclist, bool keep);
+		void analyzeFileSections(ElfFile* e, const std::vector<std::string>& sections, bool keep);
+
 		void processAssignment(LinkerSection& lsec, const Assignment& ass);
 
 		bool matchStringToWildcard(const std::string& str, const std::string& wildcard);
 		bool matchPathToWildcard(const std::string& path, const std::string& wildcard);
+
+		bool includedSectionUsed(LinkerSection& sec);  
 		
+		#if 0
 		void deleteFunction(LinkerSymbol* sym);
-	
+		#endif	
+
 		void performRelocation(LinkerSection& sec, LinkerRelocation& rela);
+
+		void analyzeFiles();
 	
 		AST* m_ast;
 		std::map<std::string, ElfFile*> m_files;	
@@ -63,5 +73,10 @@ class Linker {
 		std::map<std::string, LinkerMemory> m_memoryMap;
 
 		uint32_t m_currentOffset;
+
+		std::vector<LinkerSection> m_includedSections;
+		LinkerSymtab m_includedSymtab;
+
+		std::map<std::string, int> m_sectionBlacklist;
 
 };
