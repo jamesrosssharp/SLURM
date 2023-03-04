@@ -3,6 +3,7 @@ CPP=cpp
 AS=../../slurmasm-ng/slurmasm-ng
 LD=../../slurmlink/slurmlink
 OBJDUMP=../../slurm-objdump/slurm-objdump
+OBJCOPY=../../slurm-objcopy/slurm-objcopy
 
 SRC_DIR=src
 
@@ -22,6 +23,10 @@ ASM_OBJ = $(patsubst %.s,$(BUILD_DIR)/%.asmo,$(notdir $(ASM_SRC)))
 
 TARGET_ELF=$(patsubst %.bin, %.elf, $(TARGET))
 
+.PRECIOUS: $(C_ASM_SRC) $(CPP_SRC)
+
+all: $(TARGET)
+
 $(BUILD_DIR)/%.c1: $(SRC_DIR)/%.c
 	mkdir -p $(BUILD_DIR)
 	$(CPP) $< -o $@
@@ -38,7 +43,8 @@ $(BUILD_DIR)/%.asmo : $(SRC_DIR)/%.s
 $(TARGET_ELF): $(C_OBJ) $(ASM_OBJ) $(LINKER_SCRIPT)
 	$(LD) -s $(LINKER_SCRIPT) -o $@ $(ASM_OBJ) $(C_OBJ)
 
-all: $(TARGET_ELF)
+$(TARGET): $(TARGET_ELF)
+	$(OBJCOPY) $< $@
 
 clean:
 	rm -r build

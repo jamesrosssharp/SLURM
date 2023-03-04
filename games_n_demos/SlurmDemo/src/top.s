@@ -20,6 +20,9 @@ VECTORS:
 	.function start
 	.global start
 start:
+//	mov r1, 0x41
+//	out [r0, 0], r1
+
 	// Zero regs (makes it easier to debug waveforms)
 	mov r1, r0
 	mov r2, r0

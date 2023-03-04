@@ -598,6 +598,7 @@ void AST::reduceAllExpressions()
 				case StatementType::ONE_REGISTER_INDIRECT_OPCODE_AND_EXPRESSION:
 				case StatementType::TWO_REGISTER_INDIRECT_OPCODE_AND_EXPRESSION_A:
 				case StatementType::TWO_REGISTER_INDIRECT_OPCODE_AND_EXPRESSION_B:
+					s.expression.add_undefined_symbols_to_symtab(s, m_symbolTable);
 					s.expression.reduce_to_label_plus_const(m_symbolTable.symtab);
 					break;
 				case StatementType::PSEUDO_OP_WITH_EXPRESSION:

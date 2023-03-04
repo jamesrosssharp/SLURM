@@ -53,7 +53,7 @@ struct Statement
 
 	StatementType type;
 
-	char*		label;
+	std::string		label;
 
 	std::vector<uint8_t> assembledBytes;
 	

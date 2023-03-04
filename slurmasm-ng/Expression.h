@@ -7,6 +7,8 @@
 
 #include "SymTab_t.h"
 
+struct SymbolTable;
+
 struct Expression {
 
 	int lineNum;
@@ -25,10 +27,12 @@ struct Expression {
 	bool isString();
 	char* getString();	
 
+	void add_undefined_symbols_to_symtab(Statement& s, SymbolTable &tab);
 };
 
 void simplify_expression(ExpressionNode* exp);
 void print_expression(struct ExpressionNode* item);
+
 
 std::ostream& operator << (std::ostream& os, const Expression& e);
 std::ostream& operator << (std::ostream& os, const ExpressionNode*& e);

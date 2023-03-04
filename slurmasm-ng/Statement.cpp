@@ -497,7 +497,7 @@ void Statement::reset()
 
 	type = StatementType::None;
 
-	label = nullptr;
+	label = "";
 
 	assembledBytes.clear();
 
@@ -532,12 +532,11 @@ bool Statement::createRelocation(Relocation& rel, SymTab_t &symtab, std::string 
 				return false;
 		}
 	}	
-		
 
 	if (!expression.is_label_plus_const)
 		return false;
 
-	rel.sym = &symtab[expression.root->left->val.name];
+	rel.sym = &symtab.at(expression.root->left->val.name);
 
 	rel.offset = expression.root->right->val.value;
 	rel.address = address;

@@ -32,7 +32,7 @@ INCLUDE =	AST.h	\
 
 
 slurmasm-ng:	$(SRC) $(INCLUDE)
-	g++ $(SRC) -std=c++11 -lfl -I../common -o slurmasm-ng
+	g++ $(SRC) -ggdb -std=c++11 -lfl -I../common -o slurmasm-ng
 
 slurmasm-ng.tab.c: slurmasm-ng.y
 	bison -d slurmasm-ng.y

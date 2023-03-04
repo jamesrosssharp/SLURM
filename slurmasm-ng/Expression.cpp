@@ -165,7 +165,16 @@ static void recurse_replace_evaluated_symbols(struct ExpressionNode** it, SymTab
 			Symbol* s;
 
 			std::string n = item->val.name;
-			s = &tab[n];
+
+			if (tab.find(n) == tab.end())
+			{
+				std::stringstream ss;
+				ss << "Undefined symbol: " << item->val.name  << std::endl;
+
+				throw std::runtime_error(ss.str());	
+			}
+
+			s = &tab.at(n);
 
 			if (s->evaluated)
 			{
@@ -395,6 +404,39 @@ char* Expression::getString()
 	return root->val.name;
 }
 
+static void recurse_add_undefined_symbols(Statement& stat, struct ExpressionNode* it, SymbolTable& tab)
+{
+
+	if (it == nullptr)
+		return;
+
+	struct ExpressionNode* item = it;
+
+	switch (item->type)
+	{
+		case ITEM_SYMBOL:
+		{
+			Symbol* s;
+
+			std::string n = item->val.name;
+
+			if (tab.symtab.find(n) == tab.symtab.end())
+			{
+				stat.label = n;
+				tab.addSymbol(stat, "");		
+			}
+		}
+		break;
+		default: break;
+	}
+	
+	recurse_add_undefined_symbols(stat, item->left, tab);
+	recurse_add_undefined_symbols(stat, item->right, tab);
+}
 
 
 
+void Expression::add_undefined_symbols_to_symtab(Statement& s, SymbolTable &tab)
+{
+	recurse_add_undefined_symbols(s, root, tab);
+}

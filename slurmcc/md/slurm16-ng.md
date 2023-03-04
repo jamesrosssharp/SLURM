@@ -862,7 +862,7 @@ static void address(Symbol q, Symbol p, long n) {
 }
 static void global(Symbol p) {
         if (p->u.seg == BSS) {
-				print(".section bss");
+				print("\t.section bss\n");
 				print("%s:\n", p->x.name);
 				for (int i = 0; i < p->type->size; i+= 2)
 					print("\tdw 0\n");
@@ -876,7 +876,7 @@ static void global(Symbol p) {
                 && (p->type->size == 0 || p->type->size > gnum))
                         print("\t.section data\n");
                 else if (p->u.seg == DATA)
-                        print("\t section data\n");
+                        print("\t.section data\n");
                 //print(".align %c\n", ".01.2...3"[p->type->align]);
                 print("%s:\n", p->x.name);
 				
