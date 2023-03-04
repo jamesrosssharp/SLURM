@@ -299,7 +299,7 @@ void Assembly::assembleOneRegAluOp(int lineNum, OpCode opcode, Register regDest,
 	uint16_t aluOp = 0;
 	get_aluOp(opcode, lineNum, aluOp);
 
-	uint16_t op = SLRM_ALU_SINGLE_REG_INSTRUCTION | ((int)regDest << 8) | (((uint16_t)aluOp & 0xf) << 4) | ((uint16_t)regDest);
+	uint16_t op = SLRM_ALU_SINGLE_REG_INSTRUCTION | (((uint16_t)aluOp & 0xf) << 4) | ((uint16_t)regDest);
 
 	assembledBytes.push_back(op & 0xff);
 	assembledBytes.push_back(op >> 8);

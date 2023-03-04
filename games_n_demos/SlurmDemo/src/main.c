@@ -4,13 +4,8 @@
 
 int main()
 {
-//	while(1)
-//	{
-//		putc('A');
-//	}
 
-
-	my_printf("Hello world %x!\n", 22);
+	my_printf("Hello world Slurm Demo!\n");
 
 	return 0;
 }
