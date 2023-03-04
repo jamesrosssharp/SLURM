@@ -206,7 +206,7 @@ int main(int argc, char** argv) {
 
 	char *linkerScript = nullptr; 
 
-	while ((c = getopt (argc, argv, "os:")) != -1)
+	while ((c = getopt (argc, argv, "o:s:")) != -1)
 	switch (c)
 	{
 		case 'o':
