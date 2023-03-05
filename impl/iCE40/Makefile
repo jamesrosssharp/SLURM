@@ -64,8 +64,9 @@ CHIPTUNE_BIN=../../games_n_demos/ChipTune/build/chiptune.bin
 CHIPTUNEMEM_BIN=../../games_n_demos/ChipTuneMem/build/chiptunemem.bin
 DRUM_BIN=../../games_n_demos/DrumMachine/build/drummachine.bin
 JPTA_BIN=../../games_n_demos/JPTA/build/jpta.bin
+DEMO_BIN=../../games_n_demos/SlurmDemo/build/slurm_demo.bin
 
-GAME_BIN=$(BLOODLIST_BIN)
+GAME_BIN=$(DEMO_BIN)
 
 #BOOTLOADER_ASM=../../games_n_demos/bootloader/src/Bootloader.asm
 BOOTLOADER_ASM=Bootloader.asm
@@ -155,6 +156,11 @@ drum: $(PROJ).bin
 jpta: $(PROJ).bin
 	$(ICEPROG) $(PROJ).bin
 	$(ICEPROG) -o 1M  $(JPTA_BIN) 
+
+.PHONY: demo
+demo: $(PROJ).bin
+	$(ICEPROG) $(PROJ).bin
+	$(ICEPROG) -o 1M  $(DEMO_BIN) 
 
 
 

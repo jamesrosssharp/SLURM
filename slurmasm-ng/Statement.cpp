@@ -94,6 +94,14 @@ void Statement::_assemble_standalone_opcode()
 		case OpCode::NOP:
 			Assembly::assembleNop(lineNum, assembledBytes);
 			break;
+		case OpCode::CC:
+		case OpCode::CS:
+		case OpCode::CZ:
+		case OpCode::SC:
+		case OpCode::SS:
+		case OpCode::SZ:
+			Assembly::assembleOneRegAluOp(lineNum, opcode, Register::r0, assembledBytes);
+			break;
 		default: {
 			std::stringstream ss;
 			ss << "Unsupported standalone opcode on line " << lineNum << std::endl;	

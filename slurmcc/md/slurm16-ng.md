@@ -592,7 +592,7 @@ static void emit2(Node p) {
                 else if (q == NULL && ty == F)
                         print("s.d $f%d,%d($sp)\n", src, p->syms[2]->u.c.v.i);
                 else if (q == NULL)
-                        print("\tst r%d,[r13, %d]\n", src, p->syms[2]->u.c.v.i);
+                        print("\tst [r13, %d], r%d\n", p->syms[2]->u.c.v.i, src);
                 else if (ty == F && sz == 4 && q->x.regnode->set == IREG)
                         print("mfc1 $%d,$f%d\n", q->x.regnode->number, src);
                 else if (ty == F && q->x.regnode->set == IREG)

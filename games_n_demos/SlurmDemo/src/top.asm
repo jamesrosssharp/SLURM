@@ -10,7 +10,7 @@ VSYNC_VEC:
 AUDIO_VEC:
 	ba audio_handler
 SPI_FLASH:
-	ba dummy_handler
+	ba flash_handler
 GPIO_VEC:
 	ba dummy_handler
 VECTORS:
@@ -156,10 +156,28 @@ vsync_handler:
 
 	.function audio_handler
 audio_handler:
-	mov r1, 0x4
-	out [r0, 0x7001], r1
+	st [r13, -2], r1
+
 	mov r1, 1
-	st [r0, g_audio], r1
+	st [audio], r1
+	mov r1, 4
+	out [r0, 0x7001], r1
+	
+	ld r1, [r13, -2]
+	iret
+
+	.endfunc
+
+	.function flash_handler
+flash_handler:
+	st [r13, -2], r1
+
+	mov r1, 1
+	st [flash_complete], r1
+	mov r1, 8
+	out [r0, 0x7001], r1
+	
+	ld r1, [r13, -2]
 	iret
 	.endfunc
 

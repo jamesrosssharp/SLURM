@@ -71,7 +71,7 @@
 asm : body_section footer { cout << "Parsed asm file" << endl; } ;
 
 op_code : op_code_0 | op_code_1 | op_code_2 | op_code_3 | op_code_4 | op_code_5 | op_code_6 |
-	  op_code_7 | op_code_8 | op_code_9 | op_code_10 | op_code_11 | op_code_12 ; 
+	  op_code_7 | op_code_8 | op_code_9 | op_code_10 | op_code_11 | op_code_12 | op_code_13 | op_code_14 ; 
 
 /* one register + expression opcode */
 op_code_0 : OPCODE REG COMMA expression ENDL { g_ast.addOneRegisterAndExpressionOpcode(line_num, $1, $2); } ;
@@ -111,6 +111,16 @@ op_code_11: OPCODE OPEN_SQUARE_BRACKET REG CLOSE_SQUARE_BRACKET COMMA REG ENDL {
 
 /* two register indirect operation with expression - st, out */
 op_code_12: OPCODE OPEN_SQUARE_BRACKET REG COMMA expression CLOSE_SQUARE_BRACKET COMMA REG ENDL { g_ast.addTwoRegisterIndirectOpcodeWithExpressionB(line_num, $1, $3, $8); }; 
+
+/* two register indirect operation with expression - ld, in - r0 implied */
+op_code_13: OPCODE REG COMMA OPEN_SQUARE_BRACKET expression CLOSE_SQUARE_BRACKET ENDL { g_ast.addTwoRegisterIndirectOpcodeWithExpressionA(line_num, $1, $2, strdup("r0")); }; 
+
+/* two register indirect operation with expression - st, out - r0 implied */
+op_code_14: OPCODE OPEN_SQUARE_BRACKET expression CLOSE_SQUARE_BRACKET COMMA REG ENDL { g_ast.addTwoRegisterIndirectOpcodeWithExpressionB(line_num, $1, strdup("r0"), $6); }; 
+
+
+
+
 
 
 /* expressions */
@@ -178,12 +188,16 @@ int main(int argc, char** argv) {
 	char *outputFile = nullptr;
 	char *type = nullptr;
 	char c;
+	bool verbose = false;
 
-	while ((c = getopt (argc, argv, "o:")) != -1)
+	while ((c = getopt (argc, argv, "o:v")) != -1)
 	switch (c)
 	{
 		case 'o':
 			outputFile = strdup(optarg);
+			break;
+		case 'v':
+			verbose = true;
 			break;
 		default:
 			printUsage(argv[0]);
@@ -242,9 +256,12 @@ int main(int argc, char** argv) {
 	// Generate relocations for each section	
 	g_ast.generateRelocationTables();
 
-	g_ast.printSymbolTable();
-	g_ast.print();
-	g_ast.printRelocationTable();
+	if (verbose)
+	{
+		g_ast.printSymbolTable();
+		g_ast.print();
+		g_ast.printRelocationTable();
+	}
 
 	std::cout << "Generating ELF output..." << std::endl;
 
