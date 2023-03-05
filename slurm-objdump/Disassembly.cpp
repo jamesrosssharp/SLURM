@@ -382,7 +382,7 @@ static std::string handle_ldbsx(uint16_t op, uint16_t imm_hi)
 
 	uint16_t off = (imm_hi << 4) | (op & 0xf);
 	
-	dis << " , " << off << "]";
+	dis << " , 0x" << std::hex << off << "]";
 
 	return dis.str();
 }
@@ -406,7 +406,7 @@ static std::string handle_memb(uint16_t op, uint16_t imm_hi)
 
 	uint16_t off = (imm_hi << 4) | (op & 0xf);
 	
-	dis << " , " << off << "]";
+	dis << " , 0x" << std::hex << off << "]";
 
 	return dis.str();
 }
@@ -430,7 +430,7 @@ static std::string handle_mem(uint16_t op, uint16_t imm_hi)
 
 	uint16_t off = (imm_hi << 4) | (op & 0xf);
 	
-	dis << " , " << off << "]";
+	dis << " , 0x" << std::hex << off << "]";
 
 	return dis.str();
 }
@@ -454,7 +454,7 @@ static std::string handle_port(uint16_t op, uint16_t imm_hi)
 
 	uint16_t off = (imm_hi << 4) | (op & 0xf);
 	
-	dis << " , " << off << "]";
+	dis << " , 0x" << std::hex << off << "]";
 
 	return dis.str();
 }

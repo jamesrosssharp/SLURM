@@ -385,7 +385,7 @@ static int row = 0;
 static int cur_patt_buf = 0;
 static int ord = 2;
 
-short channels[] = {0,2,4,6,1,3,5,7};
+short channels[] = {0,4,1,5,2,6,3,7};
 
 void chip_tune_play()
 {
