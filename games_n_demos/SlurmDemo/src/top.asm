@@ -146,12 +146,16 @@ g_vsync:
 
 	.function vsync_handler
 vsync_handler:
-	
-	mov r1, 0x2
-	out [r0, 0x7001], r1
+	st [r13, -2], r1
+
 	mov r1, 1
-	st [r0, g_vsync], r1
+	st [vsync], r1
+	mov r1, 2
+	out [r0, 0x7001], r1
+	
+	ld r1, [r13, -2]
 	iret
+
 	.endfunc
 
 	.function audio_handler
