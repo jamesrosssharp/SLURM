@@ -6,7 +6,7 @@ All instructions are 16 bits wide. Instructions are separated into "classes", wi
 Class 0: General purpose
 ------------------------
 
-Class 0 has 4 sub-classes, bits 9 - 8 of the opcode.
+Class 0 has 16 sub-classes, bits 11 - 8 of the opcode.
 
 0. NOP - No operation
 
@@ -79,7 +79,8 @@ Class 1:  Immediate load
 |0  | 0  | 0  | 1  | IMM_HI |
 
     IMM_HI: the upper 12 bits of the immediate register, available to the following instruction
-    to construct a 16 bit immediate value for branches and alu operations
+    to construct a 16 bit immediate value for branches and alu operations. Also used for extended
+    instructions.
 
 Class 2: Register to register ALU operation
 -------------------------------------------
@@ -181,13 +182,62 @@ Conditional move reg to reg
 	if COND, DEST <= SRC
 
 
-Class 6:
---------
-  
-Class 7:
---------
+Class 6: extended register ALU operation
+----------------------------------------
 
-Reserved
+Encoded as two words, first word being an immediate value
+
+|31 | 30 | 29 | 28  | 27 - 24 | 23 - 20 | 19 - 16  |
+|---|----|----|-----|---------|---------|----------|
+| 0 | 0  | 0  | 1   | SRC1_HI | SRC2_HI |  ALU OP  |
+
+|15 | 14 | 13 | 12  | 11 - 8  | 7  - 4 | 3 - 0  |
+|---|----|----|-----|---------|--------|--------|
+| 0 | 1  | 1  | 0   |   DEST  |SRC1 - A|SRC2 - B|
+
+
+    ALU OP: 4 bits ALU operation
+        0 - mov : DEST <- SRC
+        1 - add : DEST <- SRC1 + SRC2
+        2 - adc : DEST <- SRC1 + SRC2 + Carry
+        3 - sub : DEST <- SRC1 - SRC2
+        4 - sbb : DEST <- SRC1 - SRC2 - Carry
+        5 - and : DEST <- SRC1 & SRC2
+        6 - or  : DEST <- SRC1 | SRC2
+        7 - xor : DEST <- SRC1 ^ SRC2
+    	8 - mul : DEST <- SRC1 * SRC2 (LO)
+        9 - mulu : DEST <- SRC1 * SRC2 (HI)
+        10 - 11 : reserved
+        12: cmp 
+        13: test
+        14 - umulu : DEST <- (UNSIGNED) SRC1 * (UNSIGNED) SRC2 (HI) 
+        15 - reserved
+  
+This instruction can perform ALU operations on all 256 registers. SRC1_EXT = {SRC1_HI:SRC1},
+SRC2_EXT = {SRC2_HI:SRC2}, DEST_EXT = {SRC1_HI, DEST} etc.
+
+	e.g. add.ex r255, r254, r3
+  
+Class 7: upper bank memory operations
+-----------------------------------
+
+Encoded as two words, first word being an immediate value
+
+|31 | 30 | 29 | 28  | 27 | 26 | 25 | 24 - 16  |
+|---|----|----|-----|----|----|----|----------|
+| 0 | 0  | 0  | 1   | L  | B  |  S |  IMM_HI  |
+
+|15 | 14 | 13 | 12  | 11 - 8  | 7  - 4 | 3 - 0  |
+|---|----|----|-----|---------|--------|--------|
+| 0 | 1  | 1  | 1   |   IDX   |   REG  | IMM    |
+
+	IMM: {IMM_HI, IMM} (13 bits)
+	L: 0 = LD, 1 = ST
+	B: 0 = word transfer, 1 = byte transfer
+	S: 0 = zero extend on load, 1 = sign extend on load
+
+e.g. ld.ex r5, [r6, 0x20] would access the 16 bit word address {1'b1, r6 + 0x20} and load the 
+word stored at that address into the r5 register.
 
 
 Class 8: immediate + register byte memory operation with sign extend
