@@ -302,13 +302,11 @@ void arpeggiate(short tick, int channel)
 	short sample = channel_info[channel].sample;
 	short note_hi, note_lo;
 
-//	if (tick == 1 || tick == 3)
 	if (tick == 2)
 	{
 		dev = ((channel_info[channel].param & 0xf0) >> 4);
 	}
-//	else if (tick == 2)
-	else if (tick == 1 || tick == 3)
+	else if (tick == 1)
 	{
 		dev = (channel_info[channel].param & 0xf);
 	}
@@ -332,7 +330,7 @@ void update_tick(short tick)
 		switch (channel_info[i].effect)
 		{
 			case 2:	/* arpeggio */
-				arpeggiate(tick & 3, i);
+				arpeggiate(tick % 3, i);
 				break;			
 			default: 
 				break;
@@ -365,6 +363,29 @@ void init_audio()
 
 }
 
+static short bufsize = 0;
+static short ticks_per_frame = 3;
+static short buf_remaining = 0;
+static short buf_offset = 0;
+static short buf_mixed = 0;
+
+short speed_lookup[] = {
+
+1916,1916,1916,1916,1916,1916,1916,1916,1916,1916,1916,1916,1916,1916,1916,1916,
+1916,1916,1916,1916,1916,1916,1916,1916,1916,1916,1916,1916,1916,1916,1916,1916,
+1916,1858,1804,1752,1703,1657,1614,1572,1533,1496,1460,1426,1394,1363,1333,1305,
+1277,1251,1226,1202,1179,1157,1135,1115,1095,1076,1057,1039,1022,1005,989,973,958,
+943,929,915,902,888,876,863,851,840,828,817,807,796,786,776,766,757,748,739,730,
+721,713,705,697,689,681,674,666,659,652,645,638,632,625,619,613,607,601,595,589,
+584,578,573,567,562,557,552,547,542,538,533,528,524,519,515,511,506,502,498,494,
+490,486,482,479,475,471,468,464,461,457,454,451,447,444,441,438,435,431,428,425,
+423,420,417,414,411,408,406,403,400,398,395,393,390,388,385,383,380,378,376,374,
+371,369,367,365,362,360,358,356,354,352,350,348,346,344,342,340,338,337,335,333,
+331,329,328,326,324,322,321,319,317,316,314,312,311,309,308,306,305,303,302,300,
+299,297,296,294,293,292,290,289,287,286,285,283,282,281,280,278,277,276,275,273,
+272,271,270,269,267,266,265,264,263,262,261,259,258,257,256,255,254,253,252,251,
+250,249,248,247,246,245,244,243,242,241,240
+};
 
 
 void init_music_player()
@@ -372,6 +393,12 @@ void init_music_player()
 	int i;
 
 	load_slurm_sng();
+
+	bufsize = speed_lookup[sng_hdr.initial_tempo];
+	buf_remaining = bufsize;
+	ticks_per_frame = sng_hdr.initial_speed;
+
+	my_printf("bufsize= %d, ticks_per_frame=%d\n", bufsize, ticks_per_frame);
 
 	for (i = 0; i < MIX_CHANNELS; i++)
 		play_sample(i, 0, 0, 0, 0, 0, 0, 0);
@@ -387,107 +414,129 @@ static int ord = 2;
 
 short channels[] = {0,4,1,5,2,6,3,7};
 
+
 void chip_tune_play()
 {
 
 	char* row_offset;
 	int i;
 
-	count += 1;
-	if (count == 5)
+	buf_mixed = 0;
+
+	while (buf_mixed < 256)
 	{
 
-		row_offset = (cur_patt_buf ? &pattern_B : &pattern_A) + row*32;	
+		short buf_this_tick = (buf_remaining < (256 - buf_offset)) ? buf_remaining : (256 - buf_offset);
+		
+		mix_audio_2(buf_offset, buf_this_tick);
 
-		//if (row >= 40) 
-		//	my_printf("row: %d patt: %d\r\n", row, ord);
+		buf_mixed += buf_this_tick;
+		buf_offset += buf_this_tick;
 
-		//trace_dec(ord*64 + row);
-	
-		for (i = 0; i < MIX_CHANNELS; i++)
+		if (buf_offset >= 256)
+			buf_offset = 0;
+
+		buf_remaining -= buf_this_tick;
+
+
+		if (buf_remaining == 0)
 		{
-			char note;
-			char volume;
-			char sample;
-			char effect;
-			char effect_param;	
-
-			note = *row_offset++;
-			volume = *row_offset++;			
-			sample = *row_offset++;
-			effect = sample & 0xf;
-			sample >>= 4;
-			effect_param = *row_offset++;
-
-			//if (row >= 40)
-			//{
-		//		my_printf("channel: %d, sample: %d note %d\r\n", channels[i], sample, note);
-			//	my_printf("%d-%d-%d  ", sample, note, volume);
-		//	}
-
-			if (note)
+			buf_remaining = bufsize;
+			count += 1;
+			if (count == ticks_per_frame)
 			{
-				short note_lo, note_hi;
-				note --;
 
-				note_lo = note_table_lo[note];
-				note_hi = note_table_hi[note];
+				row_offset = (cur_patt_buf ? &pattern_B : &pattern_A) + row*32;	
 
-				play_sample(channels[i], volume, note_lo, note_hi, --sample, effect, effect_param, note);
+				//if (row >= 40) 
+				//	my_printf("row: %d patt: %d\r\n", row, ord);
+
+				//trace_dec(ord*64 + row);
 			
+				for (i = 0; i < MIX_CHANNELS; i++)
+				{
+					char note;
+					char volume;
+					char sample;
+					char effect;
+					char effect_param;	
+
+					note = *row_offset++;
+					volume = *row_offset++;			
+					sample = *row_offset++;
+					effect = sample & 0xf;
+					sample >>= 4;
+					effect_param = *row_offset++;
+
+					//if (row >= 40)
+					//{
+				//		my_printf("channel: %d, sample: %d note %d\r\n", channels[i], sample, note);
+					//	my_printf("%d-%d-%d  ", sample, note, volume);
+				//	}
+
+					if (note)
+					{
+						short note_lo, note_hi;
+						note --;
+
+						note_lo = note_table_lo[note];
+						note_hi = note_table_hi[note];
+
+						play_sample(channels[i], volume, note_lo, note_hi, --sample, effect, effect_param, note);
+					
+					}
+					else
+						set_volume(channels[i], volume);
+				}
+
+				//my_printf("\r\n");
+
+				row += 1;
+				//row &= 31;
+				if (row == 64)
+				{
+					char pattern;
+					char pad;
+					unsigned short offset_lo;
+					unsigned short offset_hi;
+					int i;
+
+					cur_patt_buf = !cur_patt_buf;
+					row = 0;
+
+					pattern = pl.pl[ord++];
+
+					my_printf("Pattern: %d ord: %d len: %d\r\n", pattern, ord, pl.pl_len);
+
+					if (pattern == 0xff)
+					{
+						ord = 1;
+						pattern = pl.pl[0];
+						my_printf("Now -> Pattern: %d ord: %d len: %d\r\n", pattern, ord, pl.pl_len);
+					}
+
+					my_printf("Loading pattern %d\r\n", pattern);
+
+					offset_lo = sng_hdr.pattern_offset_lo;
+					offset_hi = sng_hdr.pattern_offset_hi;
+
+					// Skip magic
+					add_offset(&offset_lo, &offset_hi, 4, 0);
+					
+					for (i = 0; i < pattern; i++)
+						add_offset(&offset_lo, &offset_hi, SLURM_PATTERN_SIZE, 0);
+					
+					_do_flash_dma(chiptune_rom_offset_lo, chiptune_rom_offset_hi, offset_lo, offset_hi, cur_patt_buf ? &pattern_B : &pattern_A, (SLURM_PATTERN_SIZE >> 1) - 1, 0);
+					
+				}
+				count = 0;
 			}
 			else
-				set_volume(channels[i], volume);
-		}
-
-		//my_printf("\r\n");
-
-		row += 1;
-		//row &= 31;
-		if (row == 64)
-		{
-			char pattern;
-			char pad;
-			unsigned short offset_lo;
-			unsigned short offset_hi;
-			int i;
-
-			cur_patt_buf = !cur_patt_buf;
-			row = 0;
-
-			pattern = pl.pl[ord++];
-
-			my_printf("Pattern: %d ord: %d len: %d\r\n", pattern, ord, pl.pl_len);
-
-			if (pattern == 0xff)
 			{
-				ord = 1;
-				pattern = pl.pl[0];
-				my_printf("Now -> Pattern: %d ord: %d len: %d\r\n", pattern, ord, pl.pl_len);
+				update_tick(count);
 			}
-
-			my_printf("Loading pattern %d\r\n", pattern);
-
-			offset_lo = sng_hdr.pattern_offset_lo;
-			offset_hi = sng_hdr.pattern_offset_hi;
-
-			// Skip magic
-			add_offset(&offset_lo, &offset_hi, 4, 0);
-			
-			for (i = 0; i < pattern; i++)
-				add_offset(&offset_lo, &offset_hi, SLURM_PATTERN_SIZE, 0);
-			
-			_do_flash_dma(chiptune_rom_offset_lo, chiptune_rom_offset_hi, offset_lo, offset_hi, cur_patt_buf ? &pattern_B : &pattern_A, (SLURM_PATTERN_SIZE >> 1) - 1, 0);
-			
 		}
-		count = 0;
 	}
-	else
-	{
-		update_tick(count);
-	}
-
-	mix_audio_2(0, 256);
 
 }
 
