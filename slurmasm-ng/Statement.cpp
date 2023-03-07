@@ -258,7 +258,7 @@ void Statement::_assemble_two_register_indirect_opcode_and_expression_A(int expr
 		case OpCode::LDB:
 		case OpCode::LDBSX:
 		case OpCode::IN:
-			Assembly::assembleMemoryOp(lineNum, opcode, regDest, regInd, expressionValue, assembledBytes);
+			Assembly::assembleMemoryOp(lineNum, opcode, regDest, regInd, expressionValue, assembledBytes, forceImm);
 			break;
 		default: {
 			std::stringstream ss;
@@ -276,7 +276,7 @@ void Statement::_assemble_two_register_indirect_opcode_and_expression_B(int expr
 		case OpCode::ST:
 		case OpCode::STB:
 		case OpCode::OUT:
-			Assembly::assembleMemoryOp(lineNum, opcode, regDest, regInd, expressionValue, assembledBytes);
+			Assembly::assembleMemoryOp(lineNum, opcode, regDest, regInd, expressionValue, assembledBytes, forceImm);
 			break;
 		default: {
 			std::stringstream ss;

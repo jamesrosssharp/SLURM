@@ -49,11 +49,11 @@ SECTIONS
    	_end = . ;
 
 	.data_mixer : {
-		*( .mixer.data )
+		*( .mixer2.data )
 	} > ram2
 
 	.text_mixer : {
-		*( .mixer.text )
+		*( .mixer2.text )
 	} > ram2
 
 }

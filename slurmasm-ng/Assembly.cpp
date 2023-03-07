@@ -306,7 +306,7 @@ void Assembly::assembleOneRegAluOp(int lineNum, OpCode opcode, Register regDest,
 
 }
 
-void Assembly::assembleMemoryOp(int lineNum, OpCode opcode, Register regDest, Register regInd, int expressionValue, std::vector<uint8_t>& assembledBytes)
+void Assembly::assembleMemoryOp(int lineNum, OpCode opcode, Register regDest, Register regInd, int expressionValue, std::vector<uint8_t>& assembledBytes, bool forceImm)
 {
 	uint16_t op;
 
@@ -334,13 +334,15 @@ void Assembly::assembleMemoryOp(int lineNum, OpCode opcode, Register regDest, Re
 			op = SLRM_PORT_INSTRUCTION | 0x1000;
 			break;
 	}
+	if (expressionValue < 0 || expressionValue > 15 || forceImm)
+	{
+		uint16_t imm = makeImm(lineNum, expressionValue);
 
-	uint16_t imm = makeImm(lineNum, expressionValue);
-
+		assembledBytes.push_back(imm & 0xff);
+		assembledBytes.push_back(imm >> 8);
+	}
+	
 	op |= ((int)regDest << 4) | ((int)regInd << 8) | (expressionValue & 0xf);
-
-	assembledBytes.push_back(imm & 0xff);
-	assembledBytes.push_back(imm >> 8);
 
 	assembledBytes.push_back(op & 0xff);
 	assembledBytes.push_back(op >> 8);

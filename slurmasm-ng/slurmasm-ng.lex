@@ -25,6 +25,7 @@ int g_str_idx = 0;
 \/\/    { BEGIN(COMMENT); }
 <COMMENT>\n { ++line_num; BEGIN(INITIAL); return ENDL; }
 <COMMENT>. ;
+\#    { BEGIN(COMMENT); }
 \"  { g_str_idx = 0; BEGIN(STRING_LITERAL); }
 <STRING_LITERAL>\n { ++line_num; }
 <STRING_LITERAL>\" { BEGIN(INITIAL); g_string[g_str_idx] = '\0'; yylval.sval = strdup(g_string); return STR_LITERAL; }

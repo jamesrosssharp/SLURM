@@ -487,7 +487,7 @@ void chip_tune_play()
 		update_tick(count);
 	}
 
-	mix_audio_2();
+	mix_audio_2(0, 256);
 
 }
 

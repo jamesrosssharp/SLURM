@@ -97,8 +97,8 @@ SCRATCH_PAD equ	0x8000
 
 .align 0x100
 
-	.global mix_audio_2
-mix_audio_2:
+	.global mix_audio
+mix_audio:
 	sub r13, 32
 
 	// Preserve registers
