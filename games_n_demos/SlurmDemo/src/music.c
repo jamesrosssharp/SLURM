@@ -414,6 +414,7 @@ static int ord = 2;
 
 short channels[] = {0,4,1,5,2,6,3,7};
 
+static short global_count = 0;
 
 void chip_tune_play()
 {
@@ -515,7 +516,7 @@ void chip_tune_play()
 						my_printf("Now -> Pattern: %d ord: %d len: %d\r\n", pattern, ord, pl.pl_len);
 					}
 
-					my_printf("Loading pattern %d\r\n", pattern);
+					my_printf("Loading pattern %d -> global count %d\r\n", pattern, global_count++);
 
 					offset_lo = sng_hdr.pattern_offset_lo;
 					offset_hi = sng_hdr.pattern_offset_hi;

@@ -89,7 +89,9 @@ module slurm16_cpu_pipeline #(parameter REGISTER_BITS = 4, BITS = 16, ADDRESS_BI
 
 	/* Debugger stuff */
 
-	output reg cpu_debug_pin	/* This is basically a crude serial interface that transmits PC so we know where we are if there is a lock up */
+	output reg cpu_debug_pin,	/* This is basically a crude serial interface that transmits PC so we know where we are if there is a lock up */
+	
+	input [31:0] cpu_debug_wire	/* debugging info from one level up */
 
 );
 
@@ -828,7 +830,7 @@ wire [15:0] debug_pc = {pc_r, 1'b0};
 
 /* Debug PIN */
 
-localparam debug_state_idle = 4'd0;
+/*localparam debug_state_idle = 4'd0;
 localparam debug_state_start = 4'd1;
 localparam debug_state_start_bit = 4'd2;
 localparam debug_state_bits = 4'd3;
@@ -871,5 +873,20 @@ begin
 		end
 	endcase
 end
+*/
+
+cpu_debug_core cr0 (
+	CLK,
+	RSTb,
+	
+	{pc_r, 1'b0, 4'd0, state_r /* 4 bits */, 3'd0, interrupt_flag_r /* 1 bit */, irq /* 4 bits */},
+//	{pc_r, 1'b0, pip0[INS_MSB:INS_LSB]},
+//	cpu_debug_wire,
+	1'b0,
+
+	cpu_debug_pin
+);
+
+
 
 endmodule

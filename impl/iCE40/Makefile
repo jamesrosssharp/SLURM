@@ -43,6 +43,7 @@ $(SRCDIR)/slurm16_soc.v			\
 $(SRCDIR)/interrupt_controller.v	\
 $(SRCDIR)/slurm16_cpu_instruction_cache.v	\
 $(SRCDIR)/port_controller.v		\
+$(SRCDIR)/cpu_debug_core.v		\
 slurm16_ice40.v 
 
 

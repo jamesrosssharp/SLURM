@@ -107,6 +107,8 @@ wire store_memory;
 
 wire data_memory_success;
 
+wire [31:0] cpu_debug_wire = {port_wr, port_address[14:0], port_out};
+
 slurm16_cpu_pipeline pip0 (
 	CLK,
 	RSTb,
@@ -175,7 +177,9 @@ slurm16_cpu_pipeline pip0 (
 
 	cond_pass_stage4,
 
-	cpu_debug_pin
+	cpu_debug_pin,
+
+	cpu_debug_wire
 );
 
 wire [14:0] instruction_memory_address;

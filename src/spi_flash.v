@@ -35,7 +35,7 @@ localparam get_data = 3'b011;
 localparam mem_wr1	= 3'b100;
 localparam mem_wr2	= 3'b101;
 localparam done		= 3'b110;
-localparam send_wake_cmd = 3'b101;
+localparam send_wake_cmd = 3'b111;
 
 reg [2:0] state_r;
 reg [2:0] state_r_next;
@@ -304,8 +304,12 @@ begin
 		end
 		mem_wr1: begin
 			wvalid_r = 1'b1;
+			state_r_next = mem_wr2;
+			end
+		mem_wr2: begin
+			wvalid_r = 1'b1;
 			if (wready == 1'b1) begin
-				wvalid_r = 1'b0;
+				//wvalid_r = 1'b0;
 				dma_memory_address2_r_next = dma_memory_address2_r + 1;
 				dma_count2_r_next = dma_count2_r - 1;
 				if (dma_count2_r == 16'd0)
@@ -316,9 +320,6 @@ begin
 					state_r_next = get_data;
 				end
 			end
-		end
-		mem_wr2: begin
-
 		end
 		done: begin
 			CSb_r_next 	= 1'b1;

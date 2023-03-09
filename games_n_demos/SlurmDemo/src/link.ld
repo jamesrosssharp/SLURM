@@ -17,6 +17,7 @@ SECTIONS
 		*( .text .text.* )
 	} > ram1
 
+
 	.data : {
 		. = ALIGN(32);
 		*( .data )
@@ -53,6 +54,7 @@ SECTIONS
 	} > ram2
 
 	.text_mixer : {
+		. = ALIGN(0x100);
 		*( .mixer2.text )
 	} > ram2
 
