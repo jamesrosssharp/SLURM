@@ -98,6 +98,30 @@ SCRATCH_PAD equ	0x8000
 
 	.global mix_audio_2
 mix_audio_2:
+
+
+	// Args: r4 = offset in buffer, r5 = mix count
+
+	cmp r4, 0
+	bge pass1
+	ret
+pass1:
+	cmp r4, 256
+	blt pass2
+	ret
+pass2:
+	cmp r5, 0
+	bgt pass3
+	ret
+pass3:
+	cmp r5, 256
+	ble mixer2.okay
+	ret
+
+
+mixer2.okay:
+
+
 	sub r13, 64
 
 	// Preserve registers
@@ -114,8 +138,6 @@ mix_audio_2:
 	st [r13, 20], r12
 	st [r13, 22], r1
 	st [r13, 24], r15 
-
-	// Args: r4 = offset in buffer, r5 = mix count
 
 	in r2, [r0, AUDIO_RIGHT_PTR]
 	and r2, 0x100

@@ -878,6 +878,8 @@ end
 cpu_debug_core cr0 (
 	CLK,
 	RSTb,
+
+	state_r == st_ins_stall1, 
 	
 	{pc_r, 1'b0, 4'd0, state_r /* 4 bits */, 3'd0, interrupt_flag_r /* 1 bit */, irq /* 4 bits */},
 //	{pc_r, 1'b0, pip0[INS_MSB:INS_LSB]},

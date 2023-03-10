@@ -1,6 +1,8 @@
 module cpu_debug_core(
 	input CLK,
 	input RSTb,
+
+	input trigger,
 	
 	input [31:0] debug_in,
 	input tickle_watchdog,
@@ -36,7 +38,8 @@ localparam st_idle 		= 4'd0;
 localparam st_latch_value 	= 4'd1;
 localparam st_uart_tx 		= 4'd2;
 localparam st_wait_uart_done	= 4'd3;
-localparam st_shift_value	= 4'd4;
+localparam st_wait_no_done	= 4'd4;
+localparam st_shift_value	= 4'd5;
 
 reg [31:0] val;
 
@@ -52,21 +55,31 @@ begin
 			go <= 1'b0;
 		end
 		st_latch_value: begin
-			val <= debug_in;
-			state <= st_uart_tx;
+			if (trigger) begin
+				val <= debug_in;
+				state <= st_uart_tx;
+			end
 			count <= 4'd0;
+			go <= 1'b0;
 		end
 		st_uart_tx: begin
-			state <= st_wait_uart_done;
+			state <= st_wait_no_done;
 			go <= 1'b1;
 		end
+		st_wait_no_done: begin
+			if (!done_sig) begin
+				go <= 1'b0;
+				state <= st_wait_uart_done;
+			end
+		end
 		st_wait_uart_done: begin
-			if (done_sig)
+			if (done_sig) begin
 				state <= st_shift_value;
+			end
 		end
 		st_shift_value: begin
 			count <= count + 1;
-		
+	
 			val <= {val[27:0], 4'd0};
 			if (count == 4'd9)
 				state <= st_latch_value;
