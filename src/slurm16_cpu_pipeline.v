@@ -544,10 +544,11 @@ always @(posedge CLK)
 begin
 
 	pip2[HAZ_FLAG_BIT : INS_LSB] 	<= pip1[HAZ_FLAG_BIT : INS_LSB];
-	pip2[FLAG_C]			<= C_in;
+	// We actually need to get flags in stage 3
+/*	pip2[FLAG_C]			<= C_in;
 	pip2[FLAG_Z]			<= Z_in;
 	pip2[FLAG_S]			<= S_in;
-	pip2[FLAG_V]			<= V_in;
+	pip2[FLAG_V]			<= V_in; */
 	pip2[MEM_RQ_BIT]		<= 1'b0;
 	pip2[COND_PASS_BIT] 		<= 1'b0;
 
@@ -576,7 +577,11 @@ begin
 	pip3[MEM_RQ_BIT]		<= is_mem_request;
 	pip3[COND_PASS_BIT] 		<= cond_pass_in;
 	pip3[IMM_MSB : IMM_LSB] 	<= imm_r;
-	
+	pip3[FLAG_C]			<= C_in;
+	pip3[FLAG_Z]			<= Z_in;
+	pip3[FLAG_S]			<= S_in;
+	pip3[FLAG_V]			<= V_in; 
+
 	// Nop out instruction in st_reset, st_interrupt, st_mem_except1, st_halt, st_halt2
 	case (state_r)
 		st_reset, st_interrupt, st_mem_except1, st_halt, st_halt2:
@@ -685,6 +690,10 @@ begin
 		int_S_r <= pip4[FLAG_S];
 		int_Z_r <= pip4[FLAG_Z];
 		int_V_r <= pip4[FLAG_V];
+	/*	int_C_r <= C_in;
+		int_S_r <= S_in;
+		int_Z_r <= Z_in;
+		int_V_r <= V_in;*/
  	end
 end
 
@@ -875,20 +884,21 @@ begin
 end
 */
 
-cpu_debug_core cr0 (
+/*cpu_debug_core cr0 (
 	CLK,
 	RSTb,
 
 	state_r == st_ins_stall1, 
 	
-	{pc_r, 1'b0, 4'd0, state_r /* 4 bits */, 3'd0, interrupt_flag_r /* 1 bit */, irq /* 4 bits */},
+	{pc_r, 1'b0, 4'd0, state_r, 3'd0, interrupt_flag_r, irq},
 //	{pc_r, 1'b0, pip0[INS_MSB:INS_LSB]},
 //	cpu_debug_wire,
 	1'b0,
 
 	cpu_debug_pin
 );
-
+*/
+assign cpu_debug_pin = 1'b1;
 
 
 endmodule

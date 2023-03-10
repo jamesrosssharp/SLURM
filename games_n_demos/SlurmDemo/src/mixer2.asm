@@ -102,7 +102,7 @@ mix_audio_2:
 
 	// Args: r4 = offset in buffer, r5 = mix count
 
-	cmp r4, 0
+/*	cmp r4, 0
 	bge pass1
 	ret
 pass1:
@@ -120,7 +120,7 @@ pass3:
 
 
 mixer2.okay:
-
+*/
 
 	sub r13, 64
 
