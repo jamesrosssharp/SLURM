@@ -289,6 +289,9 @@ unsigned short note_mul32_asm_hi(unsigned short lo, unsigned short hi, unsigned 
 
 void set_volume(short channel, short volume)
 {
+	if ((volume & 0xff) == 0xff)
+		return;
+
 	if (volume < 64)
 	{
 		channel_info[channel].volume = volume >> 1;

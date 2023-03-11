@@ -152,7 +152,7 @@ class pattern:
 
 		self.note	= [[0 for r in range(rows)] for i in range(64)]
 		self.sample = [[0 for r in range(rows)] for i in range(64)]
-		self.volume = [[0 for r in range(rows)] for i in range(64)]
+		self.volume = [[-1 for r in range(rows)] for i in range(64)]
 		self.effect = [[0 for r in range(rows)] for i in range(64)]
 		self.param	= [[0 for r in range(rows)] for i in range(64)]
 
@@ -344,12 +344,12 @@ def load_pattern(filep, offset):
 
 		if maskvar & ITNOTE_SAME_NOTE:
 			patt.note[chan][cur_row] = patt.last_note[chan]
-			patt.volume[chan][cur_row] = 31
+			#patt.volume[chan][cur_row] = 31
 		if maskvar & ITNOTE_SAME_SAMPLE:
 			patt.sample[chan][cur_row] = patt.last_sample[chan]
-			patt.volume[chan][cur_row] = 31
-		#if maskvar & ITNOTE_SAME_VOLUME:
-		patt.volume[chan][cur_row] = patt.last_volume[chan]
+			#patt.volume[chan][cur_row] = 31
+		if maskvar & ITNOTE_SAME_VOLUME:
+			patt.volume[chan][cur_row] = patt.last_volume[chan]
 		if maskvar & ITNOTE_SAME_EFFECT:
 			patt.effect[chan][cur_row] = patt.last_effect[chan]
 			patt.param[chan][cur_row] = patt.last_param[chan]
