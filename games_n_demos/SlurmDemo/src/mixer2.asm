@@ -19,7 +19,6 @@ pattern_B:
 music_heap:
 	.times 24*1024 db 0
 
-	.section mixer2.text
 
 // Sound mixing routines + stack (located in this bank so we have easy fast to sample data)
 // Must fit in 4kB
@@ -64,12 +63,13 @@ CHANNEL_STRUCT_PHASE	    equ 10
 CHANNEL_STRUCT_PHASE_HI	    equ 12	
 CHANNEL_STRUCT_VOLUME	    equ 14
 
-old_stack:	// We save the previous stack here, and substitute to our own stack
-	dw 0
+	.section data
 
 	.global channel_info
 channel_info:
 	.times 8*CHANNEL_STRUCT_SIZE db 0 
+
+	.section mixer2.text
 
 
 // Register definitions for audio core
@@ -101,26 +101,6 @@ mix_audio_2:
 
 
 	// Args: r4 = offset in buffer, r5 = mix count
-
-/*	cmp r4, 0
-	bge pass1
-	ret
-pass1:
-	cmp r4, 256
-	blt pass2
-	ret
-pass2:
-	cmp r5, 0
-	bgt pass3
-	ret
-pass3:
-	cmp r5, 256
-	ble mixer2.okay
-	ret
-
-
-mixer2.okay:
-*/
 
 	sub r13, 64
 

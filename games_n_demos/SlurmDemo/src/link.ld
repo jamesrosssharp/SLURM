@@ -17,6 +17,11 @@ SECTIONS
 		*( .text .text.* )
 	} > ram1
 
+	.text_mixer : {
+		. = ALIGN(0x100);
+		*( .mixer2.text )
+	} > ram1
+
 
 	.data : {
 		. = ALIGN(32);
@@ -41,21 +46,8 @@ SECTIONS
       		_estack = .;
    	} > ram1
 
-	/* heap */
-
-	. = ALIGN(4);
-
-	/* PROVIDE provides the symbol only if it is referenced, but not defined */
-   	PROVIDE(_heap_start = .);
-   	_end = . ;
-
 	.data_mixer : {
 		*( .mixer2.data )
-	} > ram2
-
-	.text_mixer : {
-		. = ALIGN(0x100);
-		*( .mixer2.text )
 	} > ram2
 
 }

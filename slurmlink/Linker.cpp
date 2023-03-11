@@ -18,6 +18,10 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <string>
 #include "Linker.h"
 
+bool g_verbose = false;
+
+#define MY_COUT(x) if (g_verbose) { x }
+
 Linker::Linker(AST* ast) : m_ast(ast) 
 {
 
@@ -31,7 +35,7 @@ Linker::~Linker()
 
 void Linker::loadElfFile(const char* name)
 {
-	std::cout << "\tLoading Elf: " << name << std::endl;
+	MY_COUT(std::cout << "\tLoading Elf: " << name << std::endl;)
 
 	if (m_files.find(name) != m_files.end())
 	{
@@ -65,13 +69,13 @@ void Linker::consumeFileSections(LinkerSection& lsec, ElfFile* e, const std::vec
 			if (matchStringToWildcard(esec.name, sec))
 			{
 		
-				std::cout << "\t\t\t\t\t" << "Section " << esec.name << " matches wildcard " << sec << std::endl;
+				MY_COUT(std::cout << "\t\t\t\t\t" << "Section " << esec.name << " matches wildcard " << sec << std::endl;)
 
 				// Check blacklist
 
 				if (m_sectionBlacklist.find(e->getUniqueId() + esec.name) != m_sectionBlacklist.end())
 				{
-					std::cout << "\t\t\t\t\t\t" << "Section " << esec.name << " blacklisted. " << sec << std::endl;
+					MY_COUT(std::cout << "\t\t\t\t\t\t" << "Section " << esec.name << " blacklisted. " << sec << std::endl;)
 					continue;
 				}
 
@@ -92,7 +96,7 @@ void Linker::consumeFileSections(LinkerSection& lsec, ElfFile* e, const std::vec
 				{
 					if (sym.section == esec.name)
 					{
-						std::cout << "\t\t\t\t\t\t" << "Adding symbol " << sym.name << " to symbol table : moving to " << (sym.value + address_shift) << std::endl;
+						MY_COUT(std::cout << "\t\t\t\t\t\t" << "Adding symbol " << sym.name << " to symbol table : moving to " << (sym.value + address_shift) << std::endl;)
 
 						LinkerSymbol lsym;
 
@@ -142,7 +146,7 @@ void Linker::consumeFileSections(LinkerSection& lsec, ElfFile* e, const std::vec
 						sym_name = e->getUniqueId() + "." + sym_name;
 					}
 
-					std::cout << "\t\t\t\t\t\t " << "Adding relocation " << (rela.offset + address_shift) << " : " << sym_name << " + " << rela.addend << std::endl;
+					MY_COUT(std::cout << "\t\t\t\t\t\t " << "Adding relocation " << (rela.offset + address_shift) << " : " << sym_name << " + " << rela.addend << std::endl;)
 
 					lsec.relocation_table.emplace_back(rela.offset + address_shift, sym_name, rela.addend);	
 				}		
@@ -204,7 +208,7 @@ void Linker::consumeSections(LinkerSection& lsec, const SectionBlockStatementSec
 {
 	// Match the file wildcards to generate a list of files to consume sections from
 
-	std::cout << "\t\t\tConsuming pattern " << seclist.file_name << std::endl;
+	MY_COUT(std::cout << "\t\t\tConsuming pattern " << seclist.file_name << std::endl;)
 
 	for (const auto& p : m_files)
 	{
@@ -212,7 +216,7 @@ void Linker::consumeSections(LinkerSection& lsec, const SectionBlockStatementSec
 
 		if (matchPathToWildcard(fpath, seclist.file_name))
 		{
-			std::cout << "\t\t\t\tChecking file " << fpath << std::endl;
+			MY_COUT(std::cout << "\t\t\t\tChecking file " << fpath << std::endl;)
 			//std::cout << "Fpath: " << fpath << " matched to wildcard: " << seclist.file_name << std::endl;
 			consumeFileSections(lsec, p.second, seclist.sections);
 		}
@@ -221,7 +225,7 @@ void Linker::consumeSections(LinkerSection& lsec, const SectionBlockStatementSec
 
 void Linker::processSectionBlock(const SectionsStatement& stat)
 {
-	std::cout << "\tCreating output section " << stat.section_block_name << std::endl;
+	MY_COUT(std::cout << "\tCreating output section " << stat.section_block_name << std::endl;)
 
 	LinkerSection s;
 
@@ -242,7 +246,7 @@ void Linker::processSectionBlock(const SectionsStatement& stat)
 
 	for (const auto& blockStat : stat.statements)
 	{
-		std::cout << "\t\tProcessing " << blockStat << std::endl;
+		MY_COUT(std::cout << "\t\tProcessing " << blockStat << std::endl;)
 
 		switch (blockStat.type)
 		{
@@ -286,7 +290,7 @@ void Linker::processAssignment(LinkerSection& sec, const Assignment& ass)
 		
 		if (ass.expression.is_align())
 		{
-			std::cout << "Sections statement on line " << ass.line_num << " is an align of current address " << std::endl;
+			MY_COUT(std::cout << "Sections statement on line " << ass.line_num << " is an align of current address " << std::endl;)
 
 			int32_t align_val = 0;
 
@@ -359,7 +363,7 @@ void Linker::link(const char* outFile)
 
 	// Analyze files : find section blacklist
 
-	std::cout << "Analyzing input files..." << std::endl;
+	MY_COUT(std::cout << "Analyzing input files..." << std::endl;)
 
 	analyzeFiles();
 
@@ -460,7 +464,7 @@ void Linker::link(const char* outFile)
 
 	// Perform linking of symbols.
 
-	std::cout << "Resolving symbols..." << std::endl;
+	MY_COUT(std::cout << "Resolving symbols..." << std::endl;)
 
 	// 1. resolve all relocations to actual symbols - resolve weak symbols if they are not overridden. Mark symbol as 
 	// referenced if it is referenced.
@@ -495,29 +499,9 @@ void Linker::link(const char* outFile)
 		}
 	}	
 
-	#if 0
-	// Garbage collect unused functions.
-
-	std::cout << "Garbage collecting unused functions..." << std::endl;
-
-	for (auto& p : m_symtab)
-	{
-		auto& sym = p.second;
-
-		if (sym.type == STT_FUNC && !sym.referenced)
-		{
-			std::cout << "\t - Function '" << sym.name << "' unused. Garbage collecting." << std::endl;
-
-			deleteFunction(&sym);
-
-		}
-
-	}
-	#endif
-
 	// Perform relocations
 
-	std::cout << "Performing relocations..." << std::endl;
+	MY_COUT(std::cout << "Performing relocations..." << std::endl;)
 	
 	for (auto& sec : m_outputSections)
 	{
@@ -569,82 +553,19 @@ void Linker::link(const char* outFile)
 
 	e.writeOutput(outFile);
 
-}
+	// Summary memory usage
 
-#if 0
-void Linker::deleteFunction(LinkerSymbol* sym)
-{
-
-	uint32_t funcAddr = sym->value;
-	uint32_t funcSize = sym->size;
-	const std::string& funcSection = sym->section;
-
-	// Delete function text
-	
-	for (auto & sec : m_outputSections)
+	std::cout << "Memory usage: " << std::endl;
+	for (auto &p : m_memoryMap)
 	{
-		if (sec.name == funcSection)
-		{
-			sec.data.erase(sec.data.begin() + (funcAddr - sec.load_address), sec.data.begin() + (funcAddr + funcSize - sec.load_address));
-
-			// For all relocations in this section: if in range of function, delete, if after function, shift down.
-
-			for (auto& rela : sec.relocation_table)
-			{
-				if (rela.offset >= (funcAddr) && rela.offset < (funcAddr + funcSize))
-				{
-					rela.deleted = true;
-				}
-				else if (rela.offset >= (funcAddr + funcSize))
-				{
-					rela.offset -= funcSize;
-				}
-			}
-
-		}
-	/*	else 
-		{
-			// If this section is loaded above the impacted section, shift it and all relocations down.
-			if (sec.load_address >= funcAddr + funcSize)
-			{
-				sec.load_address -= funcSize;
-
-				for (auto& rela : sec.relocation_table)
-				{
-					rela.offset -= funcSize;
-				}
-			
-			}
-
-		}
-	*/
+		std::cout << p.second << std::endl;
 	}
 
-	// Delete symbol
-	sym->deleted = true;
 
-	// For all symbols: if in range of function, delete, if after function, shift down.
-	for (auto& p : m_symtab)
-	{
-		auto& sym = p.second;
-
-		if (sym.type == STT_NOTYPE)
-			continue;
-
-		if (sym.value >= funcAddr && sym.value < (funcAddr + funcSize))
-		{
-			sym.deleted = true;
-		}
-		else if (sym.value >= (funcAddr + funcSize))
-		{
-			sym.value -= funcSize;
-		}
-
-	}	
+	std::cout << "Linking complete" << std::endl;
 
 }
-#endif
-	
+
 void Linker::performRelocation(LinkerSection& sec, LinkerRelocation& rela)
 {
 
@@ -653,7 +574,7 @@ void Linker::performRelocation(LinkerSection& sec, LinkerRelocation& rela)
 
 	uint32_t dat_offset = rela.offset - sec.load_address;
 
-	std::cout << "Relocation address : " << dat_offset << std::endl;
+	MY_COUT(std::cout << "Relocation address : " << dat_offset << std::endl;)
 
 	uint8_t lo = sec.data[rela.offset - sec.load_address];
 	uint8_t hi = sec.data[rela.offset - sec.load_address + 1];
@@ -759,16 +680,16 @@ void Linker::analyzeFiles()
 			if (sec.keep || sec.deleted)
 				continue;
 
-			std::cout << "Checking if " << sec.name << " is used...";
+			MY_COUT(std::cout << "Checking if " << sec.name << " is used...";)
 
 			if (! includedSectionUsed(sec))
 			{
-				std::cout << "No!" << std::endl;
+				MY_COUT(std::cout << "No!" << std::endl;)
 				sec.deleted = true;
 				deleted = true;
 			}
 			else {
-				std::cout << "Yes!" << std::endl;
+				MY_COUT(std::cout << "Yes!" << std::endl;)
 			}
 		}
 	} while (deleted);
@@ -808,7 +729,7 @@ void Linker::analyzeFileSections(ElfFile* e, const std::vector<std::string>& sec
 
 				lsec.name = e->getUniqueId() + esec.name;
 
-				std::cout << "\t\t\t\t\t" << "Section " << esec.name << " matches wildcard " << sec << std::endl;
+				MY_COUT(std::cout << "\t\t\t\t\t" << "Section " << esec.name << " matches wildcard " << sec << std::endl;)
 
 				// Consume section data
 
@@ -823,7 +744,7 @@ void Linker::analyzeFileSections(ElfFile* e, const std::vector<std::string>& sec
 				{
 					if (sym.section == esec.name)
 					{
-						std::cout << "\t\t\t\t\t\t" << "Adding symbol " << sym.name << " to symbol table " << std::endl;
+						MY_COUT(std::cout << "\t\t\t\t\t\t" << "Adding symbol " << sym.name << " to symbol table " << std::endl;)
 
 						LinkerSymbol lsym;
 
@@ -873,7 +794,7 @@ void Linker::analyzeFileSections(ElfFile* e, const std::vector<std::string>& sec
 						sym_name = e->getUniqueId() + "." + sym_name;
 					}
 
-					std::cout << "\t\t\t\t\t\t " << "Adding relocation " << (rela.offset + address_shift) << " : " << sym_name << " + " << rela.addend << std::endl;
+					MY_COUT(std::cout << "\t\t\t\t\t\t " << "Adding relocation " << (rela.offset + address_shift) << " : " << sym_name << " + " << rela.addend << std::endl;)
 
 					lsec.relocation_table.emplace_back(rela.offset + address_shift, sym_name, rela.addend);	
 				}		
@@ -889,7 +810,7 @@ void Linker::analyzeSections(const SectionBlockStatementSectionList& seclist, bo
 {
 	// Match the file wildcards to generate a list of files to consume sections from
 
-	std::cout << "\t\t\tConsuming pattern " << seclist.file_name << std::endl;
+	MY_COUT(std::cout << "\t\t\tConsuming pattern " << seclist.file_name << std::endl;)
 
 	for (const auto& p : m_files)
 	{
@@ -897,7 +818,7 @@ void Linker::analyzeSections(const SectionBlockStatementSectionList& seclist, bo
 
 		if (matchPathToWildcard(fpath, seclist.file_name))
 		{
-			std::cout << "\t\t\t\tChecking file " << fpath << std::endl;
+			MY_COUT(std::cout << "\t\t\t\tChecking file " << fpath << std::endl;)
 			//std::cout << "Fpath: " << fpath << " matched to wildcard: " << seclist.file_name << std::endl;
 			analyzeFileSections(p.second, seclist.sections, keep);
 		}
@@ -910,7 +831,7 @@ void Linker::analyzeSectionBlock(const SectionsStatement& stat)
 
 	for (const auto& blockStat : stat.statements)
 	{
-		std::cout << "\t\tProcessing " << blockStat << std::endl;
+		MY_COUT(std::cout << "\t\tProcessing " << blockStat << std::endl;)
 
 		switch (blockStat.type)
 		{
@@ -919,7 +840,7 @@ void Linker::analyzeSectionBlock(const SectionsStatement& stat)
 				break;
 			case SECTION_BLOCK_STATEMENT_TYPE_KEEP:
 				analyzeSections(blockStat.section_list, true);
-				std::cout << "Section kept!" << std::endl;
+				MY_COUT(std::cout << "Section kept!" << std::endl;)
 				break;
 			case SECTION_BLOCK_STATEMENT_TYPE_ASSIGNMENT:
 				break;

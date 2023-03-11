@@ -7,6 +7,8 @@
 
 #define MIX_CHANNELS 8 
 
+#include "slide_tables.h"
+
 unsigned short note_table_hi[] = {
 	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
 	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
@@ -96,9 +98,9 @@ void _do_flash_dma(unsigned short base_lo, unsigned short base_hi, unsigned shor
 	unsigned short lo = calculate_flash_offset_lo(base_lo, base_hi, offset_lo, offset_hi);
 	unsigned short hi = calculate_flash_offset_hi(base_lo, base_hi, offset_lo, offset_hi);
 
-	my_printf("Offset hi: %x\r\n", hi);
-	my_printf("Offset lo: %x\r\n", lo);
-	my_printf("address: %x count: %d\r\n", address, count);
+	//my_printf("Offset hi: %x\r\n", hi);
+	//my_printf("Offset lo: %x\r\n", lo);
+	//my_printf("address: %x count: %d\r\n", address, count);
 
 	__out(SPI_FLASH_ADDR_LO, lo);
 	__out(SPI_FLASH_ADDR_HI, hi);
@@ -398,7 +400,7 @@ void init_music_player()
 	buf_remaining = bufsize;
 	ticks_per_frame = sng_hdr.initial_speed;
 
-	my_printf("bufsize= %d, ticks_per_frame=%d\n", bufsize, ticks_per_frame);
+	my_printf("bufsize= %d, ticks_per_frame=%d\r\n", bufsize, ticks_per_frame);
 
 	for (i = 0; i < MIX_CHANNELS; i++)
 		play_sample(i, 0, 0, 0, 0, 0, 0, 0);
@@ -509,13 +511,13 @@ void chip_tune_play()
 
 					pattern = pl.pl[ord++];
 
-					my_printf("Pattern: %d ord: %d len: %d\r\n", pattern, ord, pl.pl_len);
+					//my_printf("Pattern: %d ord: %d len: %d\r\n", pattern, ord, pl.pl_len);
 
 					if (pattern == 0xff)
 					{
 						ord = 1;
 						pattern = pl.pl[0];
-						my_printf("Now -> Pattern: %d ord: %d len: %d\r\n", pattern, ord, pl.pl_len);
+						//my_printf("Now -> Pattern: %d ord: %d len: %d\r\n", pattern, ord, pl.pl_len);
 					}
 
 					my_printf("Loading pattern %d -> global count %d\r\n", pattern, global_count++);

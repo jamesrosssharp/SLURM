@@ -11,7 +11,8 @@ SRC	=	slurmlink.tab.c	\
 		SectionBlockStatement.cpp	\
 		SectionBlockStatementSectionList.cpp	\
 		Linker.cpp				\
-		../common/host/ELF/ElfFile.cpp	
+		../common/host/ELF/ElfFile.cpp		\
+		LinkerMemory.cpp	
 
 HEADERS = 	AST.h			\
 		Expression.h		\
