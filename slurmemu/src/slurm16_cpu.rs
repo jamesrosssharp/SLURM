@@ -113,7 +113,7 @@ impl Slurm16CPU {
 		}
 		self.c = sum > 65535;
 
-		self.v = (((a ^ b) & 0x8000) == 0x8000) && !(((a ^ sum) & 0x8000) == 0x8000);
+		self.v = (((a ^ b) & 0x8000) == 0x8000) && !(((b ^ sum) & 0x8000) == 0x8000);
 	}
 
 	pub fn alu_sbb(&mut self, reg_dest: usize, src1_a : u16, src2_b : u16) {
@@ -131,7 +131,7 @@ impl Slurm16CPU {
 		}
 		self.c = sum > 65535;
 	
-		self.v = (((a ^ b) & 0x8000) == 0x8000) && !(((a ^ sum) & 0x8000) == 0x8000);
+		self.v = (((a ^ b) & 0x8000) == 0x8000) && !(((b ^ sum) & 0x8000) == 0x8000);
 	}
 
 	pub fn alu_cmp(&mut self, _reg_dest: usize, src1_a : u16, src2_b : u16) {
@@ -146,7 +146,7 @@ impl Slurm16CPU {
 			_ => self.s = false
 		}
 		self.c = sum > 65535;
-		self.v = (((a ^ b) & 0x8000) == 0x8000) && !(((a ^ sum) & 0x8000) == 0x8000);
+		self.v = (((a ^ b) & 0x8000) == 0x8000) && !(((b ^ sum) & 0x8000) == 0x8000);
 	}
 
 	pub fn alu_and(&mut self, reg_dest: usize, src1_a : u16, src2_b : u16) {
@@ -287,6 +287,11 @@ impl Slurm16CPU {
 		
 		let a = src as i16;
 		let shift = a >> 1;
+
+		/*if ((src & 0x8000) == 0x8000)
+		{
+			println!("\n\nASR = {:#01x} {:#01x}", src, shift);
+		}*/
 
 		self.registers[reg_dest] = shift as u16;
 		self.z = shift == 0;

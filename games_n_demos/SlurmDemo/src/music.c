@@ -33,7 +33,7 @@ unsigned short note_table_lo[] = {
 	250,	31326,	64408,	33958,	5513,	44734,	20801,	64909,	46113,	30199,	17041,	7142
 };
 
-short sine_table[256] = {
+char sine_table[256] = {
           0,  2,  3,  5,  6,  8,  9, 11, 12, 14, 16, 17, 19, 20, 22, 23,
          24, 26, 27, 29, 30, 32, 33, 34, 36, 37, 38, 39, 41, 42, 43, 44,
          45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 56, 57, 58, 59,
@@ -105,7 +105,7 @@ struct channel_t {
 	char   volume_effect;
 	char   vol_param;
 	char   sample;
-	char   vib_pos;
+	unsigned char   vib_pos;
 	
 	short base_freq_lo;	
 	short base_freq_hi;	
@@ -387,8 +387,11 @@ void do_freq_slide(short channel, short val, unsigned short f_lo, unsigned short
 	unsigned short lo;
 	unsigned short hi;
 
+	//my_printf("%x\n", n);
+	
 	if (n > 255*4) n = 255*4;
 
+	//my_printf("%x\n", n);
 	
 	if (n < 16)
 	{
@@ -474,7 +477,7 @@ void vibrato(short tick, short channel)
 
 	channel_info[channel].vib_pos = vibpos;
 
-//	my_printf("vib: %d vdelta: %d vdelta2: %d\r\n", channel_info[channel].vib_pos, vdelta, vdelta2);
+	//my_printf("vib: %x vdelta: %x vdelta: %x\r\n", channel_info[channel].vib_pos, vdelta, vdelta2);
 
 }
 
@@ -673,7 +676,7 @@ void chip_tune_play()
 				//row &= 31;
 				if (row == 64)
 				{
-					char pattern;
+					unsigned char pattern;
 					char pad;
 					unsigned short offset_lo;
 					unsigned short offset_hi;

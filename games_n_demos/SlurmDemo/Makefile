@@ -26,7 +26,7 @@ TARGET_ELF=$(patsubst %.bin, %.elf, $(TARGET))
 
 .PRECIOUS: $(C_ASM_SRC) $(CPP_SRC) $(CPP_ASM)
 
-CHIPTUNE = assets/chiptune.it
+CHIPTUNE = assets/demo.it
 ASSETS_SRC = assets/demo.slurmsng
 ASSETS_H   = assets/bundle.h
 BUNDLE     = assets/bundle.bin
