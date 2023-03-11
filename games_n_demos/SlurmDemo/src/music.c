@@ -33,7 +33,7 @@ unsigned short note_table_lo[] = {
 	250,	31326,	64408,	33958,	5513,	44734,	20801,	64909,	46113,	30199,	17041,	7142
 };
 
-short sine_table[256] = {
+char sine_table[256] = {
           0,  2,  3,  5,  6,  8,  9, 11, 12, 14, 16, 17, 19, 20, 22, 23,
          24, 26, 27, 29, 30, 32, 33, 34, 36, 37, 38, 39, 41, 42, 43, 44,
          45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 56, 57, 58, 59,
@@ -681,13 +681,13 @@ void chip_tune_play()
 
 					pattern = pl.pl[ord++];
 
-					//my_printf("Pattern: %d ord: %d len: %d\r\n", pattern, ord, pl.pl_len);
+					my_printf("Pattern: %d ord: %d len: %d\r\n", pattern, ord, pl.pl_len);
 
 					if (pattern == 0xff)
 					{
 						ord = 1;
 						pattern = pl.pl[0];
-						//my_printf("Now -> Pattern: %d ord: %d len: %d\r\n", pattern, ord, pl.pl_len);
+						my_printf("Now -> Pattern: %d ord: %d len: %d\r\n", pattern, ord, pl.pl_len);
 					}
 
 					my_printf("Loading pattern %d -> global count %d\r\n", pattern, global_count++);

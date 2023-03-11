@@ -26,6 +26,7 @@ TARGET_ELF=$(patsubst %.bin, %.elf, $(TARGET))
 
 .PRECIOUS: $(C_ASM_SRC) $(CPP_SRC) $(CPP_ASM)
 
+CHIPTUNE = assets/demo.it
 ASSETS_SRC = assets/demo.slurmsng
 ASSETS_H   = assets/bundle.h
 BUNDLE     = assets/bundle.bin
@@ -34,8 +35,8 @@ $(info $(ASM_OBJ))
 
 all: $(TARGET)
 
-assets/demo.slurmsng: assets/chiptune.it
-	python3 ../../scripts/it2slurmsng.py assets/chiptune.it assets/demo.slurmsng
+assets/demo.slurmsng: $(CHIPTUNE) Makefile
+	python3 ../../scripts/it2slurmsng.py $(CHIPTUNE) assets/demo.slurmsng
 
 $(ASSETS_H): $(ASSETS_SRC) assets/gen-assets.py
 	cd assets; python3 gen-assets.py

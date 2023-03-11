@@ -258,9 +258,9 @@ reg:  INDIRI4(addr)     "\tld r%c,[%0]\n"  1
 reg:  INDIRU4(addr)     "\tld r%c,[%0]\n"  1
 reg:  INDIRP2(addr)     "\tld r%c,[%0]\n"  1
 
-reg:  CVII2(INDIRI1(addr))     "\tldb r%c,[%0]\n\tand r%c, 0xff\n"  1
-reg:  CVUU2(INDIRU1(addr))     "\tldb r%c,[%0]\n\tand r%c, 0xff\n"  1
-reg:  CVUI2(INDIRU1(addr))     "\tldb r%c,[%0]\n\tand r%c, 0xff\n"  1
+reg:  CVII2(INDIRI1(addr))     "\tldbsx r%c,[%0]\n\t\n"  1
+reg:  CVUU2(INDIRU1(addr))     "\tldb r%c,[%0]\n"  1
+reg:  CVUI2(INDIRU1(addr))     "\tldb r%c,[%0]\n"  1
 reg:  CVII4(INDIRI1(addr))     "\tldb r%c,[%0]\n\tand r%c, 0xff\n"  1
 reg:  CVII4(INDIRI2(addr))     "\tld r%c,[%0]\n"  1
 reg:  CVUU4(INDIRU1(addr))     "\tldb r%c,[%0]\n"  1
