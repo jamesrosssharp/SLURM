@@ -11,6 +11,10 @@ slide_up_hi = []
 slide_down_lo = []
 slide_down_hi = []
 
+fine_slide_up_lo = []
+fine_slide_up_hi = []
+fine_slide_down_lo = []
+fine_slide_down_hi = []
 
 for i in range(0, 256):
 	val = int(math.floor(65536 * 2**(i / 192)))
@@ -25,6 +29,22 @@ for i in range(0, 256):
 	hi = val >> 16
 	slide_down_lo.append(lo)
 	slide_down_hi.append(hi)
+
+for i in range(0, 16):
+	val = int(math.floor(65536 * 2**(i / 768)))
+	lo = val & 0xffff
+	hi = val >> 16
+	fine_slide_up_lo.append(lo)
+	fine_slide_up_hi.append(hi)
+
+for i in range(0, 16):
+	val = int(math.floor(65536 * 2**(-i / 768)))
+	lo = val & 0xffff
+	hi = val >> 16
+	fine_slide_down_lo.append(lo)
+	fine_slide_down_hi.append(hi)
+
+
 
 def print_table(table, title):
 
@@ -41,3 +61,12 @@ print_table(slide_up_lo, "slide_up_lo")
 print_table(slide_up_hi, "slide_up_hi")
 print_table(slide_down_lo, "slide_down_lo")
 print_table(slide_down_hi, "slide_down_hi")
+
+print_table(fine_slide_up_lo, "fine_slide_up_lo")
+print_table(fine_slide_up_hi, "fine_slide_up_hi")
+print_table(fine_slide_down_lo, "fine_slide_down_lo")
+print_table(fine_slide_down_hi, "fine_slide_down_hi")
+
+
+
+

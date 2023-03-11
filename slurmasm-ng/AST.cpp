@@ -867,8 +867,18 @@ void AST::handleGlobalAndWeakSymbols()
 							if (s.expression.isString())
 							{
 								std::string n = s.expression.getString();
-								Symbol& sym = m_symbolTable.symtab.at(n);
-								sym.e_bind = STB_GLOBAL;
+
+								try {
+									Symbol& sym = m_symbolTable.symtab.at(n);
+									sym.e_bind = STB_GLOBAL;
+								} 
+								catch (...)
+								{
+									std::stringstream ss;
+									ss << ".GLOBAL statement for undeclared symbol '" << n << "'on line " << s.lineNum << std::endl;	
+									throw std::runtime_error(ss.str());
+								}
+
 							}
 							else
 							{
@@ -956,10 +966,18 @@ void AST::determineFunctionsAndLengths()
 					{
 						case PseudoOp::ENDFUNC:
 						{	uint32_t size = sec_address - func_start;
-
-							Symbol& sym = m_symbolTable.symtab.at(cur_func);
-							sym.size = size;
-							sym.e_type = STT_FUNC;
+						
+							try {
+								Symbol& sym = m_symbolTable.symtab.at(cur_func);
+								sym.size = size;
+								sym.e_type = STT_FUNC;
+							} 
+							catch (...)
+							{
+								std::stringstream ss;
+								ss << ".ENDFUNC without a function on line " << s.lineNum << std::endl;	
+								throw std::runtime_error(ss.str());
+							}
 
 							break;
 						}

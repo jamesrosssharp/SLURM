@@ -348,8 +348,8 @@ def load_pattern(filep, offset):
 		if maskvar & ITNOTE_SAME_SAMPLE:
 			patt.sample[chan][cur_row] = patt.last_sample[chan]
 			patt.volume[chan][cur_row] = 31
-		if maskvar & ITNOTE_SAME_VOLUME:
-			patt.volume[chan][cur_row] = patt.last_volume[chan]
+		#if maskvar & ITNOTE_SAME_VOLUME:
+		patt.volume[chan][cur_row] = patt.last_volume[chan]
 		if maskvar & ITNOTE_SAME_EFFECT:
 			patt.effect[chan][cur_row] = patt.last_effect[chan]
 			patt.param[chan][cur_row] = patt.last_param[chan]

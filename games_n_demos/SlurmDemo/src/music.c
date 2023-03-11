@@ -33,6 +33,25 @@ unsigned short note_table_lo[] = {
 	250,	31326,	64408,	33958,	5513,	44734,	20801,	64909,	46113,	30199,	17041,	7142
 };
 
+short sine_table[256] = {
+          0,  2,  3,  5,  6,  8,  9, 11, 12, 14, 16, 17, 19, 20, 22, 23,
+         24, 26, 27, 29, 30, 32, 33, 34, 36, 37, 38, 39, 41, 42, 43, 44,
+         45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 56, 57, 58, 59,
+         59, 60, 60, 61, 61, 62, 62, 62, 63, 63, 63, 64, 64, 64, 64, 64,
+         64, 64, 64, 64, 64, 64, 63, 63, 63, 62, 62, 62, 61, 61, 60, 60,
+         59, 59, 58, 57, 56, 56, 55, 54, 53, 52, 51, 50, 49, 48, 47, 46,
+         45, 44, 43, 42, 41, 39, 38, 37, 36, 34, 33, 32, 30, 29, 27, 26,
+         24, 23, 22, 20, 19, 17, 16, 14, 12, 11,  9,  8,  6,  5,  3,  2,
+          0, -2, -3, -5, -6, -8, -9,-11,-12,-14,-16,-17,-19,-20,-22,-23,
+        -24,-26,-27,-29,-30,-32,-33,-34,-36,-37,-38,-39,-41,-42,-43,-44,
+        -45,-46,-47,-48,-49,-50,-51,-52,-53,-54,-55,-56,-56,-57,-58,-59,
+        -59,-60,-60,-61,-61,-62,-62,-62,-63,-63,-63,-64,-64,-64,-64,-64,
+        -64,-64,-64,-64,-64,-64,-63,-63,-63,-62,-62,-62,-61,-61,-60,-60,
+        -59,-59,-58,-57,-56,-56,-55,-54,-53,-52,-51,-50,-49,-48,-47,-46,
+        -45,-44,-43,-42,-41,-39,-38,-37,-36,-34,-33,-32,-30,-29,-27,-26,
+        -24,-23,-22,-20,-19,-17,-16,-14,-12,-11, -9, -8, -6, -5, -3, -2,
+};
+
 extern volatile short flash_complete;
 
 struct slurmsng_header 		sng_hdr;
@@ -83,10 +102,15 @@ struct channel_t {
 	char   param;
 	char   base_note;
 	char   note_deviation;  // fine note slide in 4.4 format
-	short  volume_effect;
+	char   volume_effect;
+	char   vol_param;
 	char   sample;
-	char   pad;
+	char   vib_pos;
 	
+	short base_freq_lo;	
+	short base_freq_hi;	
+	short volume_fine;
+
 };
 
 extern struct channel_t channel_info[]; 
@@ -258,16 +282,41 @@ int load_slurm_sng()
 
 unsigned short note_mul_asm(unsigned short lo, unsigned short hi, unsigned short c5speed);
 unsigned short note_mul_asm_hi(unsigned short lo, unsigned short hi, unsigned short c5speed);
+unsigned short note_mul32_asm(unsigned short lo, unsigned short hi, unsigned short c, unsigned short d);
+unsigned short note_mul32_asm_hi(unsigned short lo, unsigned short hi, unsigned short c, unsigned short d);
+
+#define VOL_EFFECT_VOLSLIDE_DOWN 1
+
+void set_volume(short channel, short volume)
+{
+	if (volume < 64)
+	{
+		channel_info[channel].volume = volume >> 1;
+		channel_info[channel].volume_effect = 0;
+	}
+	else {
+		// Volume column effect
+		if (volume >= 75 && volume < 84)
+		{
+			// Vol slide down
+			channel_info[channel].volume_effect = VOL_EFFECT_VOLSLIDE_DOWN;
+			channel_info[channel].vol_param = volume - 75;
+			channel_info[channel].volume_fine = channel_info[channel].volume << 4;
+		} 
+
+	}
+	
+}
+
+void set_effect(short channel, char effect, char param)
+{
+	channel_info[channel].effect = effect;
+	channel_info[channel].param = param;
+
+}
 
 void play_sample(short channel, short volume, short note_lo, short note_hi, short SAMPLE, char effect, char param, char note)
 {
-	//if (channel < 0 || channel >= 8)
-	//	my_printf("Bad channel: %d\n", channel);
-
-	//if (SAMPLE < 0 || SAMPLE >= 8)
-	//	my_printf("Bad channel: %d\n", SAMPLE);
-
-
 
 	if (g_samples[SAMPLE].loop != 0)
 	{
@@ -283,6 +332,10 @@ void play_sample(short channel, short volume, short note_lo, short note_hi, shor
 	channel_info[channel].sample_pos = g_samples[SAMPLE].offset;
 	channel_info[channel].frequency  = note_mul_asm(note_lo, note_hi, g_samples[SAMPLE].speed);	
 	channel_info[channel].frequency_hi = note_mul_asm_hi(note_lo, note_hi, g_samples[SAMPLE].speed);	
+
+	channel_info[channel].base_freq_lo  = channel_info[channel].frequency;	
+	channel_info[channel].base_freq_hi = channel_info[channel].frequency_hi;
+
 	channel_info[channel].phase = 0;
 
 	channel_info[channel].effect = effect;
@@ -292,10 +345,9 @@ void play_sample(short channel, short volume, short note_lo, short note_hi, shor
 
 	channel_info[channel].sample = SAMPLE;
 
-	if (volume < 64)
-	{
-		channel_info[channel].volume = volume >> 1;
-	}
+	channel_info[channel].vib_pos = 0;
+
+	set_volume(channel, volume);
 }
 
 void arpeggiate(short tick, int channel)
@@ -323,6 +375,106 @@ void arpeggiate(short tick, int channel)
 	
 }
 
+void do_freq_slide(short channel, short val, unsigned short f_lo, unsigned short f_hi)
+{
+
+	unsigned short n = (val < 0) ? -val : val;
+	unsigned short a;
+	unsigned short b;
+	unsigned short lo;
+	unsigned short hi;
+
+	if (n > 255*4) n = 255*4;
+
+	
+	if (n < 16)
+	{
+		// Fine slide
+		if (val < 0)
+		{
+			a = fine_slide_down_lo[n];
+			b = fine_slide_down_hi[n];
+		}
+		else
+		{
+			a = fine_slide_up_lo[n];
+			b = fine_slide_up_hi[n];
+		}
+	}
+	else
+	{
+		n >>= 2;
+
+		if (val < 0)
+		{
+			a = slide_down_lo[n];
+			b = slide_down_hi[n];
+		}
+		else
+		{
+			a = slide_up_lo[n];
+			b = slide_up_hi[n];
+		}
+
+	}
+
+	lo = note_mul32_asm(f_lo, f_hi, a, b);	
+	hi = note_mul32_asm_hi(f_lo, f_hi, a, b); 
+
+	channel_info[channel].frequency     = lo;	
+	channel_info[channel].frequency_hi  = hi;		
+	
+/*	if (f_hi)
+	{
+		my_printf("Calc: %x %x %x %x -> ", f_lo, f_hi, a, b);
+		my_printf("%x %x\r\n", lo, hi);
+	}
+*/
+}
+
+void port_up(short tick, short channel)
+{
+	short param = channel_info[channel].param;
+
+	if (tick != 0)
+		do_freq_slide(channel, param * 4, channel_info[channel].frequency, channel_info[channel].frequency_hi);
+
+	channel_info[channel].base_freq_lo  = channel_info[channel].frequency;	
+	channel_info[channel].base_freq_hi = channel_info[channel].frequency_hi;
+}
+
+void port_down(short tick, short channel)
+{
+	short param = channel_info[channel].param;
+
+	if (tick != 0)
+		do_freq_slide(channel, -param * 4, channel_info[channel].frequency, channel_info[channel].frequency_hi);
+
+	channel_info[channel].base_freq_lo  = channel_info[channel].frequency;	
+	channel_info[channel].base_freq_hi = channel_info[channel].frequency_hi;
+
+}
+
+void vibrato(short tick, short channel)
+{
+	short vibpos = channel_info[channel].vib_pos & 0xff;
+
+	short vdelta = sine_table[vibpos];
+
+	short vibdepth = (channel_info[channel].param & 0xf) << 2;
+
+	short vdelta2 = (vdelta * vibdepth) >> 6;
+
+	do_freq_slide(channel, vdelta2, channel_info[channel].base_freq_lo, channel_info[channel].base_freq_hi);
+
+	vibpos += (((channel_info[channel].param) & 0xf0) >> 4) * 4;
+
+	channel_info[channel].vib_pos = vibpos;
+
+//	my_printf("vib: %d vdelta: %d vdelta2: %d\r\n", channel_info[channel].vib_pos, vdelta, vdelta2);
+
+}
+
 void update_tick(short tick)
 {
 	int i = 0;
@@ -331,24 +483,39 @@ void update_tick(short tick)
 	{
 		switch (channel_info[i].effect)
 		{
+			case 1: /* vibrato */
+				vibrato(tick, i);
+				break;
 			case 2:	/* arpeggio */
 				arpeggiate(tick % 3, i);
-				break;			
+				break;		
+			case 3: /* portamento down */
+				port_down(tick, i);
+				break; 
+			case 4: /* portamento up */
+				//my_printf("Port up!\r\n");
+				port_up(tick, i);
+				break; 
 			default: 
+				break;
+		}
+
+		switch (channel_info[i].volume_effect)
+		{
+			case VOL_EFFECT_VOLSLIDE_DOWN:
+				if (channel_info[i].volume_fine > 0) 
+					channel_info[i].volume_fine -= channel_info[i].vol_param;
+				channel_info[i].volume = channel_info[i].volume_fine >> 4;
+				break;
+			deafult:
 				break;
 		}
 	}		
 	
 }
 
-void set_volume(short channel, short volume)
-{
-	if (volume < 64)
-	{
-		channel_info[channel].volume = volume >> 1;
-	}
-	
-}
+
+
 
 void init_audio()
 {
@@ -491,7 +658,10 @@ void chip_tune_play()
 					
 					}
 					else
+					{
 						set_volume(channels[i], volume);
+						set_effect(channels[i], effect, effect_param);
+					}
 				}
 
 				//my_printf("\r\n");

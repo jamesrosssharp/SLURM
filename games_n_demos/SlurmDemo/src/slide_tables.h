@@ -142,3 +142,20 @@ const unsigned short slide_down_hi[256] = {
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	};
+
+const unsigned short fine_slide_up_lo[256] = {
+	0, 59, 118, 177, 237, 296, 355, 415, 
+	474, 534, 594, 653, 713, 773, 833, 893, 
+	};
+const unsigned short fine_slide_up_hi[256] = {
+	1, 1, 1, 1, 1, 1, 1, 1, 
+	1, 1, 1, 1, 1, 1, 1, 1, 
+	};
+const unsigned short fine_slide_down_lo[256] = {
+	0, 65476, 65417, 65358, 65299, 65240, 65182, 65123, 
+	65064, 65005, 64947, 64888, 64830, 64771, 64713, 64654, 
+	};
+const unsigned short fine_slide_down_hi[256] = {
+	1, 0, 0, 0, 0, 0, 0, 0, 
+	0, 0, 0, 0, 0, 0, 0, 0, 
+	};

@@ -34,8 +34,8 @@ $(info $(ASM_OBJ))
 
 all: $(TARGET)
 
-assets/demo.slurmsng: assets/demo.it
-	python3 ../../scripts/it2slurmsng.py assets/demo.it assets/demo.slurmsng
+assets/demo.slurmsng: assets/chiptune.it
+	python3 ../../scripts/it2slurmsng.py assets/chiptune.it assets/demo.slurmsng
 
 $(ASSETS_H): $(ASSETS_SRC) assets/gen-assets.py
 	cd assets; python3 gen-assets.py
@@ -68,6 +68,7 @@ $(TARGET): $(TARGET_ELF) $(BUNDLE)
 
 clean:
 	rm -r build
+	rm $(ASSETS_SRC) $(ASSETS_H) $(BUNDLE)
 
 dump:	$(TARGET_ELF)
 	$(OBJDUMP) $(TARGET_ELF)

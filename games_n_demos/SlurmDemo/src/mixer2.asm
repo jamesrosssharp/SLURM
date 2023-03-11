@@ -46,13 +46,15 @@ struct channel_t {
 	char   sample;          // 22
 	char   pad;		// 23
 
-
+	short base_freq_lo;	// 24
+	short base_freq_hi;	// 26
+	short volume_fine	// 28
 };
 
 We store 8 channels worth of channel_t here to tell us what to mix.
 */
 
-CHANNEL_STRUCT_SIZE equ 24
+CHANNEL_STRUCT_SIZE equ 30
 
 CHANNEL_STRUCT_LOOP_START   equ 0
 CHANNEL_STRUCT_LOOP_END	    equ 2
