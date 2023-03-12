@@ -1,9 +1,24 @@
+/*
+
+music.c: SlurmSng module player
+
+License: MIT License
+
+Copyright 2023 J.R.Sharp
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
 
 #include <slurmsng.h>
 #include <slurminterrupt.h>
-#include <slurmflash.h>
-
 #include <bundle.h>
+
+#include "flash_control.h"
 
 #define MIX_CHANNELS 8 
 
@@ -52,7 +67,10 @@ char sine_table[256] = {
         -24,-23,-22,-20,-19,-17,-16,-14,-12,-11, -9, -8, -6, -5, -3, -2,
 };
 
-extern volatile short flash_complete;
+unsigned short song_flash_offset_lo = demo_song_flash_offset_lo;
+unsigned short song_flash_offset_hi = demo_song_flash_offset_hi;
+
+
 
 struct slurmsng_header 		sng_hdr;
 struct slurmsng_playlist 	pl_hdr;
@@ -117,33 +135,6 @@ extern struct channel_t channel_info[];
 
 #define MUSIC_HEAP_SIZE_BYTES 24*1024
 
-void _do_flash_dma(unsigned short base_lo, unsigned short base_hi, unsigned short offset_lo, unsigned short offset_hi, void* address, short count, short wait)
-{
-	unsigned short lo = calculate_flash_offset_lo(base_lo, base_hi, offset_lo, offset_hi);
-	unsigned short hi = calculate_flash_offset_hi(base_lo, base_hi, offset_lo, offset_hi);
-
-	//my_printf("Offset hi: %x\r\n", hi);
-	//my_printf("Offset lo: %x\r\n", lo);
-	//my_printf("address: %x count: %d\r\n", address, count);
-
-	__out(SPI_FLASH_ADDR_LO, lo);
-	__out(SPI_FLASH_ADDR_HI, hi);
-	__out(SPI_FLASH_DMA_ADDR, (unsigned short)address >> 1);
-	__out(SPI_FLASH_DMA_COUNT, count);
-	
-	flash_complete = 0;
-	__out(SPI_FLASH_CMD, 1);
-
-	if (wait)
-		while (!flash_complete)
-			__sleep();
-}
-
-void do_flash_dma(unsigned short base_lo, unsigned short base_hi, unsigned short offset_lo, unsigned short offset_hi, void* address, short count)
-{
-	_do_flash_dma(base_lo, base_hi, offset_lo, offset_hi, address, count, 1);
-}
-
 short my_add(short a, short b)
 {
 	return a + b;
@@ -163,7 +154,7 @@ int load_slurm_sng()
 
 	my_printf("Hello world! %d\r\n", 22);		
 
-	do_flash_dma(chiptune_rom_offset_lo, chiptune_rom_offset_hi, 0, 0, (void*)&sng_hdr, sizeof(sng_hdr) / sizeof(short));
+	do_flash_dma(song_flash_offset_lo, song_flash_offset_hi, 0, 0, (void*)&sng_hdr, sizeof(sng_hdr) / sizeof(short));
 
 	my_printf("Playlist offset lo: %x hi: %x\r\n", sng_hdr.pl_offset_lo, sng_hdr.pl_offset_hi);
 	my_printf("Playlist len: %d\r\n", sng_hdr.playlist_size);
@@ -171,7 +162,7 @@ int load_slurm_sng()
 	offset_lo = sng_hdr.pl_offset_lo;
 	offset_hi = sng_hdr.pl_offset_hi;
 
-	do_flash_dma(chiptune_rom_offset_lo, chiptune_rom_offset_hi, offset_lo, offset_hi, (void*)&pl_hdr, sizeof(pl_hdr) / sizeof(short));
+	do_flash_dma(song_flash_offset_lo, song_flash_offset_hi, offset_lo, offset_hi, (void*)&pl_hdr, sizeof(pl_hdr) / sizeof(short));
 
 	my_printf("Playlist chunk len: %d\r\n", pl_hdr.chunklen);
 
@@ -179,7 +170,7 @@ int load_slurm_sng()
 
 	my_printf("Heap: %x\n", heap);
 
-	do_flash_dma(chiptune_rom_offset_lo, chiptune_rom_offset_hi, offset_lo, offset_hi, heap, pl_hdr.chunklen >> 1);
+	do_flash_dma(song_flash_offset_lo, song_flash_offset_hi, offset_lo, offset_hi, heap, pl_hdr.chunklen >> 1);
 
 	for (i = 0; i < sng_hdr.playlist_size; i++)
 		my_printf("Pl %d: %d\r\n", i, heap[i]);
@@ -200,7 +191,7 @@ int load_slurm_sng()
 	for (i = 0; i < sng_hdr.num_samples; i++)
 	{
 		struct sample* samp = (struct sample*)&g_samples[i];
-		do_flash_dma(chiptune_rom_offset_lo, chiptune_rom_offset_hi, offset_lo, offset_hi, (void*)samp, sizeof(struct slurmsng_sample) / sizeof(short));
+		do_flash_dma(song_flash_offset_lo, song_flash_offset_hi, offset_lo, offset_hi, (void*)samp, sizeof(struct slurmsng_sample) / sizeof(short));
 		my_printf("Sample: %d len: %d\r\n", i, samp->sample_len);
 
 		add_offset(&offset_lo, &offset_hi, sizeof(struct slurmsng_sample), 0);
@@ -213,7 +204,7 @@ int load_slurm_sng()
 
 		samp->offset = heap;
 
-		do_flash_dma(chiptune_rom_offset_lo, chiptune_rom_offset_hi, offset_lo, offset_hi, (void*)heap, samp->sample_len >> 1);
+		do_flash_dma(song_flash_offset_lo, song_flash_offset_hi, offset_lo, offset_hi, (void*)heap, samp->sample_len >> 1);
 
 		heap = (char*)my_add((short)heap, (short)samp->sample_len);
 
@@ -237,7 +228,7 @@ int load_slurm_sng()
 	for (i = 0; i < pattern; i++)
 		add_offset(&offset_lo, &offset_hi, SLURM_PATTERN_SIZE, 0);
 	
-	do_flash_dma(chiptune_rom_offset_lo, chiptune_rom_offset_hi, offset_lo, offset_hi, (void*)&pattern_A, (SLURM_PATTERN_SIZE >> 1) - 1);
+	do_flash_dma(song_flash_offset_lo, song_flash_offset_hi, offset_lo, offset_hi, (void*)&pattern_A, (SLURM_PATTERN_SIZE >> 1) - 1);
 
 	// Preload next pattern
 
@@ -254,7 +245,7 @@ int load_slurm_sng()
 	for (i = 0; i < pattern; i++)
 		add_offset(&offset_lo, &offset_hi, SLURM_PATTERN_SIZE, 0);
 	
-	do_flash_dma(chiptune_rom_offset_lo, chiptune_rom_offset_hi, offset_lo, offset_hi, (void*)&pattern_B, (SLURM_PATTERN_SIZE >> 1) - 1);
+	do_flash_dma(song_flash_offset_lo, song_flash_offset_hi, offset_lo, offset_hi, (void*)&pattern_B, (SLURM_PATTERN_SIZE >> 1) - 1);
 
 	for (i = 0; i < MIX_CHANNELS; i ++)
 	{
@@ -693,7 +684,7 @@ void chip_tune_play()
 					for (i = 0; i < pattern; i++)
 						add_offset(&offset_lo, &offset_hi, SLURM_PATTERN_SIZE, 0);
 					
-					_do_flash_dma(chiptune_rom_offset_lo, chiptune_rom_offset_hi, offset_lo, offset_hi, cur_patt_buf ? &pattern_B : &pattern_A, (SLURM_PATTERN_SIZE >> 1) - 1, 0);
+					do_flash_dma(song_flash_offset_lo, song_flash_offset_hi, offset_lo, offset_hi, cur_patt_buf ? &pattern_B : &pattern_A, (SLURM_PATTERN_SIZE >> 1) - 1);
 					
 					cur_patt_buf = !cur_patt_buf;
 					row = 0;

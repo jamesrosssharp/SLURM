@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="1121"
+   height="611"
+   viewBox="0 0 1121 611"
+   version="1.1"
+   id="svg20"
+   sodipodi:docname="SlurmLogo.svg"
+   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview22"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     showgrid="false"
+     inkscape:zoom="0.59410802"
+     inkscape:cx="554.61295"
+     inkscape:cy="304.6584"
+     inkscape:window-width="1920"
+     inkscape:window-height="992"
+     inkscape:window-x="0"
+     inkscape:window-y="29"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg20" />
+  <defs
+     id="defs5">
+    <clipPath
+       id="clip-Artboard_1">
+      <rect
+         width="1121"
+         height="611"
+         id="rect2" />
+    </clipPath>
+  </defs>
+  <rect
+     width="1121"
+     height="611"
+     fill="#ffffff"
+     id="rect7"
+     x="0"
+     y="0" />
+  <g
+     id="g6598">
+    <path
+       id="Union_8"
+       data-name="Union 8"
+       d="m 817,542.5 v 0 H 255 c -79.52906,0 -143.99994,-64.471 -143.99994,-144 0,-79.529 64.47088,-144 143.99994,-144 h 190.066 c 65.163,-25.322 57.821,-43.324 98,-77.1 49.161,-41.327 87.91125,-37.56517 87.91125,-37.56517 0,0 0,0 38.02675,-0.0838 v -34.257 c -0.166,0 -0.333,0.007 -0.5,0.007 -17.98043,-0.014 -25.35132,-23.084725 -10.71942,-33.525085 C 672.41647,61.535554 691.83522,76.00976 686,93.017 v 46.02 c 7.824,-0.205 15.957,-0.235 24,0.021 V 87.5 h 0.007 C 710.007,87.334 710,87.167 710,87 710,70.517114 729.92706,62.265441 741.58081,73.919189 753.23456,85.572937 744.98289,105.5 728.5,105.5 c -0.167,0 -0.334,0 -0.5,-0.007 v 34.692 c 19.408,1.906 36.266,6.175 44.048,14.586 24.581,26.567 22.964,42.8 -10.35,61.006 -18.03,9.852 -40.323,8.824 -63.6,7.795 -19.729,-0.871 -40.163,-1.743 -59.3,4.013 -19.053,5.729 -29.878,16.693 -36.016,26.914 H 817 v 0 h 1 c 79.52906,0 143.99994,64.471 143.99994,144 0,79.529 -64.47088,144 -143.99994,144 z"
+       fill="#ffffff"
+       stroke="#707070"
+       stroke-width="1"
+       style="fill:#4ba9bb;fill-opacity:1;stroke:none;stroke-width:10;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       sodipodi:nodetypes="ccsssccccccscccccssscccccccccsscc"
+       inkscape:export-filename="/home/jrsharp/home_mnt/code/FPGA/SLURM/games_n_demos/SlurmDemo/assets/SlurmLogo64x36.png"
+       inkscape:export-xdpi="7.2199998"
+       inkscape:export-ydpi="7.2199998" />
+  </g>
+  <g
+     id="Rectangle_12"
+     data-name="Rectangle 12"
+     transform="translate(642.5,162)"
+     stroke="#707070"
+     stroke-width="1"
+     style="fill:#ffffff"
+     inkscape:export-filename="/home/jrsharp/home_mnt/code/FPGA/SLURM/games_n_demos/SlurmDemo/assets/SlurmLogo64x36.png"
+     inkscape:export-xdpi="7.2199998"
+     inkscape:export-ydpi="7.2199998">
+    <rect
+       width="116"
+       height="43"
+       rx="10"
+       stroke="none"
+       id="rect10"
+       x="0"
+       y="0"
+       style="fill:#ffffff" />
+    <rect
+       x="0.5"
+       y="0.5"
+       width="115"
+       height="42"
+       rx="9.5"
+       fill="none"
+       id="rect12"
+       style="fill:#ffffff" />
+  </g>
+  <text
+     id="SLURM16"
+     font-size="150px"
+     font-family="SegoeUI-Bold, 'Segoe UI'"
+     font-weight="700"
+     x="193"
+     y="460"
+     style="font-weight:700;font-size:150px;font-family:SegoeUI-Bold, 'Segoe UI';fill:#ffffff"
+     inkscape:export-filename="/home/jrsharp/home_mnt/code/FPGA/SLURM/games_n_demos/SlurmDemo/assets/SlurmLogo64x36.png"
+     inkscape:export-xdpi="7.2199998"
+     inkscape:export-ydpi="7.2199998"><tspan
+       x="193"
+       y="460"
+       id="tspan15"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:160px;font-family:Cantarell;-inkscape-font-specification:'Cantarell, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#ffffff">SLURM16</tspan></text>
+</svg>

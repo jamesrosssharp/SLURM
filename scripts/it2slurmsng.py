@@ -45,7 +45,7 @@ class sample(object):
 		
 		if self.depth == 0: # 8 bit
 
-			print("8-bit!")
+			#print("8-bit!")
 
 			smplen = ((len(self.samples) + 1) // 2) * 2
 			slmsngfile.write(struct.pack('H', smplen))
@@ -104,7 +104,7 @@ def load_sample(filep, offset):
 	smp.susloop_end = struct.unpack('I', binf.read(4))[0]
 	smp.sample_pointer = struct.unpack('I', binf.read(4))[0]
 
-	print("CVT: %02x" % smp.cvt)
+	#print("CVT: %02x" % smp.cvt)
 
 	# Ignore vibrato parameters
 	#uint8_t vis, vid, vir, vit;
@@ -253,7 +253,7 @@ class pattern:
 
 		for i in range(0, 64):
 			for j in range(0, 8):
-				print("Vol: %d" % self.slm_volume[j][i])	
+				#print("Vol: %d" % self.slm_volume[j][i])	
 				slmsngfile.write(struct.pack('b', self.slm_note[j][i]))
 				slmsngfile.write(struct.pack('b', self.slm_volume[j][i]))
 				slmsngfile.write(struct.pack('b', self.slm_sample[j][i] << 4 | self.slm_effect[j][i]))
@@ -283,7 +283,7 @@ def load_pattern(filep, offset):
 
 	_rows = struct.unpack('H', binf.read(2))[0]
 
-	print("Bytes: %d Rows: %d" % (_bytes, _rows))
+	#print("Bytes: %d Rows: %d" % (_bytes, _rows))
 
 	if _rows != 64:
 		print("Rows not 64! Cannot convert to slurmsng")
@@ -354,7 +354,7 @@ def load_pattern(filep, offset):
 			patt.effect[chan][cur_row] = patt.last_effect[chan]
 			patt.param[chan][cur_row] = patt.last_param[chan]
 
-	print("Bytes: %d" % (filep.tell() - offset))
+	#print("Bytes: %d" % (filep.tell() - offset))
 
 	return patt
 
@@ -423,7 +423,7 @@ with open(itFile, "rb") as binf:
 	gv = struct.unpack('b', binf.read(1))[0]
 	mv = struct.unpack('b', binf.read(1))[0]
 	_is = struct.unpack('b', binf.read(1))[0]
-	it = struct.unpack('b', binf.read(1))[0]
+	it = struct.unpack('B', binf.read(1))[0]
 	sep = struct.unpack('b', binf.read(1))[0]
 	pwd = struct.unpack('b', binf.read(1))[0]
 
@@ -461,7 +461,7 @@ with open(itFile, "rb") as binf:
 		_samp = load_sample(binf, smp)
 		samples.append(_samp)
 	
-	print(samples)
+	#print(samples)
 
 	# Load patterns
 
@@ -485,7 +485,7 @@ with open(itFile, "rb") as binf:
 		slmsngfile.write(b'\x00')
 
 		slmsngfile.write(struct.pack('b', _is))
-		slmsngfile.write(struct.pack('b', it))
+		slmsngfile.write(struct.pack('B', it))
 		slmsngfile.write(b'\x00\x00')
 
 		# Place holders for offsets (we'll fill them in later)
@@ -522,14 +522,15 @@ with open(itFile, "rb") as binf:
 		for patt in patterns:
 			patt.write_to_file(slmsngfile)
 
-		print("PLOFF: %x" % ploff)
-		print("SMPOFF: %x" % sampoff)
-		print("PATOFF: %x" % pattoff)
+		#print("PLOFF: %x" % ploff)
+		#print("SMPOFF: %x" % sampoff)
+		#print("PATOFF: %x" % pattoff)
 
 		slmsngfile.seek(16)
 		slmsngfile.write(struct.pack('I', ploff))
 		slmsngfile.write(struct.pack('I', sampoff))
 		slmsngfile.write(struct.pack('I', pattoff))
 
-
-
+		slmsngfile.seek(0, 2)
+		print("Wrote slurmsng. File is {} bytes".format(slmsngfile.tell()))
+		print("================================\n\n")

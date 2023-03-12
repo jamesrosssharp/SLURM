@@ -555,12 +555,16 @@ void Linker::link(const char* outFile)
 
 	// Summary memory usage
 
+	std::cout << std::endl;
 	std::cout << "Memory usage: " << std::endl;
+	std::cout << "================================" << std::endl;
 	for (auto &p : m_memoryMap)
 	{
 		std::cout << p.second << std::endl;
 	}
 
+	std::cout << "================================" << std::endl;
+	std::cout << std::endl;
 
 	std::cout << "Linking complete" << std::endl;
 

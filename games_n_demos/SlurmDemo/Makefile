@@ -26,28 +26,27 @@ TARGET_ELF=$(patsubst %.bin, %.elf, $(TARGET))
 
 .PRECIOUS: $(C_ASM_SRC) $(CPP_SRC) $(CPP_ASM)
 
-CHIPTUNE = assets/demo.it
-ASSETS_SRC = assets/demo.slurmsng
-ASSETS_H   = assets/bundle.h
-BUNDLE     = assets/bundle.bin
-
-$(info $(ASM_OBJ))
+CHIPTUNE = assets/songs/demo.it
+CHIPTUNE_SLMSNG = $(BUILD_DIR)/demo.slurmsng
+ASSETS_H   = $(BUILD_DIR)/bundle.h
+BUNDLE     = $(BUILD_DIR)/bundle.bin
 
 all: $(TARGET)
 
-assets/demo.slurmsng: $(CHIPTUNE) Makefile
-	python3 ../../scripts/it2slurmsng.py $(CHIPTUNE) assets/demo.slurmsng
+$(CHIPTUNE_SLMSNG): $(CHIPTUNE) Makefile
+	mkdir -p $(BUILD_DIR)
+	python3 ../../scripts/it2slurmsng.py $(CHIPTUNE) $(CHIPTUNE_SLMSNG)
 
-$(ASSETS_H): $(ASSETS_SRC) assets/gen-assets.py
+$(ASSETS_H): $(ASSETS_SRC) assets/gen-assets.py $(CHIPTUNE_SLMSNG)
 	cd assets; python3 gen-assets.py
 
 $(BUILD_DIR)/%.c1: $(SRC_DIR)/%.c $(ASSETS_H)
 	mkdir -p $(BUILD_DIR)
-	$(CPP) -o $@ -I../../include -Iassets $<
+	$(CPP) -o $@ -I../../include -I$(BUILD_DIR) $<
 
 $(BUILD_DIR)/%.asm1: $(SRC_DIR)/%.asm
 	mkdir -p $(BUILD_DIR)
-	$(CPP) -o $@ -I../../include -Iassets $<
+	$(CPP) -o $@ -I../../include -I$(BUILD_DIR) $<
 
 $(BUILD_DIR)/%.asm: $(BUILD_DIR)/%.c1
 	$(CC) -target=slurm16_ng -c $< -o $@
@@ -69,7 +68,6 @@ $(TARGET): $(TARGET_ELF) $(BUNDLE)
 
 clean:
 	rm -r build
-	rm $(ASSETS_SRC) $(ASSETS_H) $(BUNDLE)
 
 dump:	$(TARGET_ELF)
 	$(OBJDUMP) $(TARGET_ELF)
