@@ -100,6 +100,8 @@ impl SpriteCore {
 
 				if y >= sprite_y && y <= sprite_end_y && sprite_enable {
 
+					//println!("SPRITE_DEBUG: {} {} {} {}".format(sprite_x, sprite_y, sprite_width, sprite_end_y);
+
 					let mut xcoord = sprite_x;
 					let mut xcoord_count = sprite_x;
 		

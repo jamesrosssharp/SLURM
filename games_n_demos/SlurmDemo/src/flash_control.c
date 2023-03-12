@@ -29,7 +29,7 @@ void _do_flash_dma(unsigned short base_lo, unsigned short base_hi, unsigned shor
 
 	__out(SPI_FLASH_ADDR_LO, lo);
 	__out(SPI_FLASH_ADDR_HI, hi);
-	__out(SPI_FLASH_DMA_ADDR, (unsigned short)address >> 1);
+	__out(SPI_FLASH_DMA_ADDR, (unsigned short)address);
 	__out(SPI_FLASH_DMA_COUNT, count);
 	
 	flash_complete = 0;
@@ -42,7 +42,10 @@ void _do_flash_dma(unsigned short base_lo, unsigned short base_hi, unsigned shor
 
 void do_flash_dma(unsigned short base_lo, unsigned short base_hi, unsigned short offset_lo, unsigned short offset_hi, void* address, short count)
 {
-	_do_flash_dma(base_lo, base_hi, offset_lo, offset_hi, address, count, 1);
+	_do_flash_dma(base_lo, base_hi, offset_lo, offset_hi, (void*)((unsigned short)address >> 1), count, 1);
 }
 
-
+void do_flash_dma_full_address(unsigned short base_lo, unsigned short base_hi, unsigned short offset_lo, unsigned short offset_hi, void* address, short count)
+{
+	_do_flash_dma(base_lo, base_hi, offset_lo, offset_hi, address, count, 1);
+}

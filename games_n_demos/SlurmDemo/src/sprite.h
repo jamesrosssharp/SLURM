@@ -28,9 +28,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define SPRITE_H
 
 enum SpriteStride {
-	SPRITE_STRIDE_256,	
-	SPRITE_STRIDE_320
+	SPRITE_STRIDE_256 = 1,	
+	SPRITE_STRIDE_320 = 0
 };
+
+void sprite_init_sprites();
 
 /*
  *	Display a sprite
@@ -38,10 +40,10 @@ enum SpriteStride {
  * 	Returns: number of sprite channels consumed to display the sprite
  */
 short sprite_display(unsigned char sprite_index, 
-		     unsigned char* sprite_pointer,
+		     unsigned short sprite_pointer,
 		     enum SpriteStride stride, 
-		     short width, 
-		     short height, 
+		     unsigned short width, 
+		     unsigned short height, 
 		     short x, 
 		     short y);
 

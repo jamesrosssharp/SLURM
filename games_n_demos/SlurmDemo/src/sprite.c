@@ -28,26 +28,97 @@ SOFTWARE.
 #include "sprite.h"
 
 struct sprite {
-	short x;
-	short y;
-	short width;
-	short height;
-	char n_sprites_used;
-	char stride;
+	short x; 
+	short y; 
+	short width; 
+	short height; 
+	char n_sprites_used; // zero means disabled 
+	char stride;         
+	unsigned short sprite_pointer; 
 };
 
 struct sprite sprites[256];
 
+#define MAKE_SPRITE_X(x, en, pal, stride) ((x & 0x3ff) | ((en & 0x1) << 10) | ((pal & 0xf) << 11) | ((stride & 1) << 15))
+#define MAKE_SPRITE_Y(y, width) ((y & 0x3ff) | ((width & 0x3f) << 10)) 
+#define MAKE_SPRITE_H(y) ((y & 0x3ff))
+#define MAKE_SPRITE_A(a) (a)
+
+extern void load_sprite_x(short sprite, short x);
+extern void load_sprite_y(short sprite, short y);
+extern void load_sprite_h(short sprite, short h);
+extern void load_sprite_a(short sprite, short a);
+
+void sprite_init_sprites()
+{
+	int i;
+
+	for (i = 0; i < 256; i++)
+		sprites[i].n_sprites_used = 0;
+
+}
+
+void sprite_update_sprites()
+{
+	int i;
+
+	struct sprite* sp = sprites;
+	
+	for (i = 0; i < 256; i++)
+	{
+		short x = MAKE_SPRITE_X(sp->x, !!sp->n_sprites_used, 0, sp->stride);
+		short y = MAKE_SPRITE_Y(sp->y, sp->width);
+		short h = MAKE_SPRITE_H(sp->y + sp->height - 1);
+		short a = MAKE_SPRITE_A(sp->sprite_pointer);
+
+		my_printf("Sprite: %d %x %x ", i, x, y);
+		my_printf("%x %x \r\n", h, a);
+
+
+		load_sprite_x(i, x);
+		load_sprite_y(i, y);
+		load_sprite_h(i, h);
+		load_sprite_a(i, a);
+
+		sp++;
+	}
+
+}
+
 short sprite_display(unsigned char sprite_index, 
-		     unsigned char* sprite_pointer,
+		     unsigned short sprite_pointer,
 		     enum SpriteStride stride, 
-		     short width, 
-		     short height, 
+		     unsigned short width, 
+		     unsigned short height, 
 		     short x, 
 		     short y)
 {
 
+	short processed_width = 0;
+	unsigned char n_sprites_processed = 0;
 
+	struct sprite* sp = &sprites[sprite_index];
+	while (width > 0)
+	{
+		unsigned char this_width = (width < 64) ? width : 64;
+		sp->x = x;
+		sp->y = y;
+		sp->width = this_width - 1;
+		sp->height = height;
+		sp->sprite_pointer = sprite_pointer;
+		sp->stride = stride;
+		sprite_pointer += this_width >> 2;
+		x += this_width;
+		width -= this_width;
+		sp->n_sprites_used = 1;
+		n_sprites_processed ++; 
+		sp++;
+	}
 
+	sprite_update_sprites();
+
+	sprites[sprite_index].n_sprites_used = n_sprites_processed; 
+
+	return n_sprites_processed;
 }
 

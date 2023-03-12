@@ -14,6 +14,7 @@ LINKER_SCRIPT=$(SRC_DIR)/link.ld
 
 C_SRC	= $(wildcard $(SRC_DIR)/*.c)
 ASM_SRC	= $(wildcard $(SRC_DIR)/*.asm)
+HEADERS	= $(wildcard $(SRC_DIR)/*.h)
 
 CPP_SRC = $(patsubst %.c,$(BUILD_DIR)/%.c1,$(notdir $(C_SRC)))
 C_ASM_SRC = $(patsubst %.c1,%.asm,$(CPP_SRC))
@@ -40,11 +41,11 @@ $(CHIPTUNE_SLMSNG): $(CHIPTUNE) Makefile
 $(ASSETS_H): $(ASSETS_SRC) assets/gen-assets.py $(CHIPTUNE_SLMSNG)
 	cd assets; python3 gen-assets.py
 
-$(BUILD_DIR)/%.c1: $(SRC_DIR)/%.c $(ASSETS_H)
+$(BUILD_DIR)/%.c1: $(SRC_DIR)/%.c $(ASSETS_H) $(HEADERS)
 	mkdir -p $(BUILD_DIR)
 	$(CPP) -o $@ -I../../include -I$(BUILD_DIR) $<
 
-$(BUILD_DIR)/%.asm1: $(SRC_DIR)/%.asm
+$(BUILD_DIR)/%.asm1: $(SRC_DIR)/%.asm $(HEADERS)
 	mkdir -p $(BUILD_DIR)
 	$(CPP) -o $@ -I../../include -I$(BUILD_DIR) $<
 
