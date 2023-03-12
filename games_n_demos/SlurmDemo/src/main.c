@@ -1,5 +1,7 @@
 /*
 
+	SlurmDemo : A demo to show off SlURM16
+
 main.c: Main function
 
 License: MIT License
