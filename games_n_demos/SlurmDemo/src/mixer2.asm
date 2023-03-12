@@ -12,8 +12,8 @@ pattern_A:
 pattern_B:
 	.times 64*8*4 db 0
 
-	//dw 0
-	//dw 0
+//	dw 0
+//	dw 0
 // Buffer for samples - 24k
 	.global music_heap
 music_heap:

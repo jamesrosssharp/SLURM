@@ -309,7 +309,7 @@ begin
 		mem_wr2: begin
 			wvalid_r = 1'b1;
 			if (wready == 1'b1) begin
-				//wvalid_r = 1'b0;
+				wvalid_r = 1'b0;
 				dma_memory_address2_r_next = dma_memory_address2_r + 1;
 				dma_count2_r_next = dma_count2_r - 1;
 				if (dma_count2_r == 16'd0)

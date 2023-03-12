@@ -82,8 +82,8 @@ extern short calculate_flash_offset_lo(unsigned short base_lo, unsigned short ba
 extern void  add_offset(unsigned short* base_lo, unsigned short* base_hi, unsigned short offset_lo, unsigned short offset_hi);
 
 extern char music_heap;
-extern char pattern_A;
-extern char pattern_B;
+extern unsigned char pattern_A;
+extern unsigned char pattern_B;
 
 struct channel_t {
 	char* loop_start;
@@ -594,7 +594,7 @@ static short global_count = 0;
 void chip_tune_play()
 {
 
-	char* row_offset;
+	unsigned char* row_offset;
 	int i;
 
 	buf_mixed = 0;
@@ -626,18 +626,13 @@ void chip_tune_play()
 
 				row_offset = (cur_patt_buf ? &pattern_B : &pattern_A) + row*32;	
 
-				//if (row >= 40) 
-				//	my_printf("row: %d patt: %d\r\n", row, ord);
-
-				//trace_dec(ord*64 + row);
-			
 				for (i = 0; i < MIX_CHANNELS; i++)
 				{
-					char note;
-					char volume;
-					char sample;
-					char effect;
-					char effect_param;	
+					unsigned char note;
+					unsigned char volume;
+					unsigned char sample;
+					unsigned char effect;
+					unsigned char effect_param;	
 
 					note = *row_offset++;
 					volume = *row_offset++;			
@@ -645,12 +640,6 @@ void chip_tune_play()
 					effect = sample & 0xf;
 					sample >>= 4;
 					effect_param = *row_offset++;
-
-					//if (row >= 40)
-					//{
-				//		my_printf("channel: %d, sample: %d note %d\r\n", channels[i], sample, note);
-					//	my_printf("%d-%d-%d  ", sample, note, volume);
-				//	}
 
 					if (note)
 					{
@@ -670,10 +659,7 @@ void chip_tune_play()
 					}
 				}
 
-				//my_printf("\r\n");
-
 				row += 1;
-				//row &= 31;
 				if (row == 64)
 				{
 					unsigned char pattern;
@@ -682,21 +668,21 @@ void chip_tune_play()
 					unsigned short offset_hi;
 					int i;
 
-					cur_patt_buf = !cur_patt_buf;
-					row = 0;
-
 					pattern = pl.pl[ord++];
 
 					my_printf("Pattern: %d ord: %d len: %d\r\n", pattern, ord, pl.pl_len);
-
+					//my_printf("ord[1]: %d\r\n", pl.pl[1]);
+					//my_printf("Ptrs: %x %x %x\r\n", pl.pl, &pattern_A, &pattern_B);
+					
 					if (pattern == 0xff)
 					{
 						ord = 1;
 						pattern = pl.pl[0];
 						my_printf("Now -> Pattern: %d ord: %d len: %d\r\n", pattern, ord, pl.pl_len);
+
 					}
 
-					my_printf("Loading pattern %d -> global count %d\r\n", pattern, global_count++);
+					my_printf("Loading pattern %d -> global count %d -> pb %d\r\n", pattern, global_count++, cur_patt_buf);
 
 					offset_lo = sng_hdr.pattern_offset_lo;
 					offset_hi = sng_hdr.pattern_offset_hi;
@@ -709,6 +695,9 @@ void chip_tune_play()
 					
 					_do_flash_dma(chiptune_rom_offset_lo, chiptune_rom_offset_hi, offset_lo, offset_hi, cur_patt_buf ? &pattern_B : &pattern_A, (SLURM_PATTERN_SIZE >> 1) - 1, 0);
 					
+					cur_patt_buf = !cur_patt_buf;
+					row = 0;
+
 				}
 				count = 0;
 			}
