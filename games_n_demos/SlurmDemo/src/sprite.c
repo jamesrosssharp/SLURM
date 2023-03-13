@@ -66,14 +66,21 @@ void sprite_update_sprites()
 	
 	for (i = 0; i < 256; i++)
 	{
-		short x = MAKE_SPRITE_X(sp->x, !!sp->n_sprites_used, 0, sp->stride);
-		short y = MAKE_SPRITE_Y(sp->y, sp->width);
-		short h = MAKE_SPRITE_H(sp->y + sp->height - 1);
-		short a = MAKE_SPRITE_A(sp->sprite_pointer);
+		short x; 
+		short y; 
+		short h; 
+		short a;
+		
+		/*if (sp->n_sprites_used == 0)
+		{
+			sp ++;
+			continue;
+		}*/
 
-		my_printf("Sprite: %d %x %x ", i, x, y);
-		my_printf("%x %x \r\n", h, a);
-
+		x = MAKE_SPRITE_X(sp->x, !!sp->n_sprites_used, 0, sp->stride);
+		y = MAKE_SPRITE_Y(sp->y, sp->width);
+		h = MAKE_SPRITE_H(sp->y + sp->height - 1);
+		a = MAKE_SPRITE_A(sp->sprite_pointer);
 
 		load_sprite_x(i, x);
 		load_sprite_y(i, y);
@@ -84,6 +91,36 @@ void sprite_update_sprites()
 	}
 
 }
+
+void sprite_update_sprite(unsigned char sprite_index)
+{
+	struct sprite* sp = &sprites[sprite_index];
+	int i;
+	int n = sp->n_sprites_used;
+
+	for (i = 0; i < n; i++)
+	{
+		short x; 
+		short y; 
+		short h; 
+		short a;
+		
+		x = MAKE_SPRITE_X(sp->x, !!sp->n_sprites_used, 0, sp->stride);
+		y = MAKE_SPRITE_Y(sp->y, sp->width);
+		h = MAKE_SPRITE_H(sp->y + sp->height - 1);
+		a = MAKE_SPRITE_A(sp->sprite_pointer);
+
+		load_sprite_x(i, x);
+		load_sprite_y(i, y);
+		load_sprite_h(i, h);
+		load_sprite_a(i, a);
+
+		sp++;
+	} 
+
+}
+
+
 
 short sprite_display(unsigned char sprite_index, 
 		     unsigned short sprite_pointer,
@@ -120,5 +157,22 @@ short sprite_display(unsigned char sprite_index,
 	sprites[sprite_index].n_sprites_used = n_sprites_processed; 
 
 	return n_sprites_processed;
+}
+
+void sprite_set_x_y(unsigned char sprite_index, short x, short y)
+{
+	struct sprite* sp = &sprites[sprite_index];
+	int i;
+	int n = sp->n_sprites_used;
+	int xx = sp->x;
+	int yy = sp->y;
+
+	for (i = 0; i < n; i++)
+	{
+		sp->x = sp->x - xx + x;
+		sp->y = sp->y - yy + y;
+		sp++;
+	} 
+
 }
 

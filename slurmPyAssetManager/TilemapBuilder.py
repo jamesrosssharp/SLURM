@@ -26,6 +26,30 @@
 #
 #
 
+import xml.etree.ElementTree as ET
+import struct
+
 def build(bfile, build_directory, file_name, typ, name, pad_align):
 
-	return (0, 0)
+	offset = bfile.tell()	
+	
+	tree = ET.parse(file_name)
+	root = tree.getroot()
+
+	for l in root.findall('layer'):
+		d = l.find('data')
+		i = 0
+		word = 0
+		for dat in d.text.split(','):
+			word >>= 8
+			dat2 = int(dat) - 1
+			if (dat2 < 0):
+				dat2 = 255
+			word = (word & 0xff)  | (dat2 << 8)
+			if (i & 1 == 1):
+				bfile.write(struct.pack('H', word))
+				word = 0
+			i += 1
+	size = bfile.tell() - offset
+	
+	return (offset, size)

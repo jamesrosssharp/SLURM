@@ -661,7 +661,7 @@ void chip_tune_play()
 
 					pattern = pl.pl[ord++];
 
-					my_printf("Pattern: %d ord: %d len: %d\r\n", pattern, ord, pl.pl_len);
+					//my_printf("Pattern: %d ord: %d len: %d\r\n", pattern, ord, pl.pl_len);
 					//my_printf("ord[1]: %d\r\n", pl.pl[1]);
 					//my_printf("Ptrs: %x %x %x\r\n", pl.pl, &pattern_A, &pattern_B);
 					
@@ -669,11 +669,11 @@ void chip_tune_play()
 					{
 						ord = 1;
 						pattern = pl.pl[0];
-						my_printf("Now -> Pattern: %d ord: %d len: %d\r\n", pattern, ord, pl.pl_len);
+						//my_printf("Now -> Pattern: %d ord: %d len: %d\r\n", pattern, ord, pl.pl_len);
 
 					}
 
-					my_printf("Loading pattern %d -> global count %d -> pb %d\r\n", pattern, global_count++, cur_patt_buf);
+					//my_printf("Loading pattern %d -> global count %d -> pb %d\r\n", pattern, global_count++, cur_patt_buf);
 
 					offset_lo = sng_hdr.pattern_offset_lo;
 					offset_hi = sng_hdr.pattern_offset_hi;
@@ -684,7 +684,8 @@ void chip_tune_play()
 					for (i = 0; i < pattern; i++)
 						add_offset(&offset_lo, &offset_hi, SLURM_PATTERN_SIZE, 0);
 					
-					do_flash_dma(song_flash_offset_lo, song_flash_offset_hi, offset_lo, offset_hi, cur_patt_buf ? &pattern_B : &pattern_A, (SLURM_PATTERN_SIZE >> 1) - 1);
+					_do_flash_dma(song_flash_offset_lo, song_flash_offset_hi, offset_lo, offset_hi,(void*)((unsigned short)(cur_patt_buf ? &pattern_B : &pattern_A) >> 1), 
+							(SLURM_PATTERN_SIZE >> 1) - 1, 0);
 					
 					cur_patt_buf = !cur_patt_buf;
 					row = 0;

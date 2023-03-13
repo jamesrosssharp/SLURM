@@ -281,7 +281,7 @@ copper cpr0 (
 	alpha_out
 );
 
-wire [11:0] color;
+wire [15:0] color;
 reg WR_pal;
 
 reg [7:0] color_index;
@@ -299,13 +299,13 @@ begin
 end
 
 
-bram #(.BITS(12), .ADDRESS_BITS(8)) pal0  (
+bram #(.BITS(16), .ADDRESS_BITS(8)) pal0  (
 	CLK,
 	color_index,
 	color,
 	
 	addr[7:0],
-	data_out_cpr[11:0],
+	data_out_cpr[15:0],
 	WR_pal  
 );
 

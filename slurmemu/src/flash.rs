@@ -92,7 +92,7 @@ impl FlashDMA {
                     self.dummy_cycles = 25 / 3 * 24;
                     self.flash_address2 = (((self.flash_address_hi as u32) << 16)  | (self.flash_address_lo as u32)) - 1024*1024/2; // Flash data starts at 1M
                     self.dma_address2 = self.dma_address;
-                    self.dma_count2 = self.dma_count;
+                    self.dma_count2 = self.dma_count + 1;
                 } 
                 else if self.wake {
                     self.state = FlashDMAState::WakeFlash;

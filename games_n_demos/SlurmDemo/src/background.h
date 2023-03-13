@@ -1,6 +1,6 @@
 /*
 
-sprite.h: Routines for programming the sprite hardware
+background.h: Routines for programming the background hardware
 
 License: MIT License
 
@@ -24,34 +24,33 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef SPRITE_H
-#define SPRITE_H
+#ifndef BACKGROUND_H
+#define BACKGROUND_H
 
-enum SpriteStride {
-	SPRITE_STRIDE_256 = 1,	
-	SPRITE_STRIDE_320 = 0
+enum TileWidth {
+	TILE_WIDTH_16X16 = 0,
+	TILE_WIDTH_8X8 = 1
 };
 
-void sprite_init_sprites();
+enum TileMapStride {
+	TILE_MAP_STRIDE_256 = 0,
+	TILE_MAP_STRIDE_128 = 1,
+	TILE_MAP_STRIDE_64 = 2,
+	TILE_MAP_STRIDE_32 = 3
+}; 
 
-/*
- *	Display a sprite
- *
- * 	Returns: number of sprite channels consumed to display the sprite
- */
-short sprite_display(unsigned char sprite_index, 
-		     unsigned short sprite_pointer,
-		     enum SpriteStride stride, 
-		     unsigned short width, 
-		     unsigned short height, 
-		     short x, 
-		     short y);
+void background_init();
+void background_set(int bg_idx, 
+		    unsigned char enable, 
+		    unsigned char palette,
+		    short x, 
+		    short y, 
+		    unsigned short tilemap_address, 
+		    unsigned short tileset_address,
+		    enum TileWidth tile_width,
+		    enum TileMapStride tile_stride);
 
-
-void sprite_set_x_y(unsigned char sprite_index, short x, short y);
-
-void sprite_update_sprites();
-
-void sprite_update_sprite(unsigned char sprite_index);
+void background_set_x_y(int bg_idx, short x, short y);
+void background_update();
 
 #endif

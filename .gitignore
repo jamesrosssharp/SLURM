@@ -1,3 +1,4 @@
 *.vcd
 datasheets
 LINE_COUNT.sh
+**/__pycache__/
