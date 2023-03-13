@@ -39,6 +39,7 @@ SOFTWARE.
 #include "flash_control.h"
 #include "sprite.h"
 #include "background.h"
+#include "demo.h"
 
 volatile short flash_complete 	= 0;
 volatile short vsync 		= 0;
@@ -48,12 +49,6 @@ volatile short audio 		= 0;
 #define SPRITE_WIDTH 128
 #define SPRITE_HEIGHT 75
 
-#define SPRITE_X_FUDGE 16
-#define SPRITE_Y_FUDGE 8
-
-#define BG_TILES_ADDRESS 0xc000
-#define BG_TILE_MAP_ADDRESS 0xb000
-
 void enable_interrupts()
 {
 	__out(0x7000, SLURM_INTERRUPT_VSYNC | SLURM_INTERRUPT_FLASH_DMA | SLURM_INTERRUPT_AUDIO);
@@ -62,7 +57,6 @@ void enable_interrupts()
 
 unsigned short sprite_palette[16];
 unsigned short bg_palette[16];
-
 
 extern char sine_table[];
 
@@ -88,6 +82,7 @@ int main()
 	enable_interrupts();
 	init_music_player();
 	sprite_init_sprites();
+	background_init();
 	
 	// Load the sprite sheet
 
@@ -107,91 +102,11 @@ int main()
 	do_flash_dma_full_address(bg_tilemap_flash_offset_lo, bg_tilemap_flash_offset_hi, 0, 0, (void*)BG_TILE_MAP_ADDRESS, (bg_tilemap_flash_size_lo>>1) - 1);
 	do_flash_dma(bg_tilemap_pal_flash_offset_lo, bg_tilemap_pal_flash_offset_hi, 0, 0, bg_palette, (sizeof(bg_palette)>>1) - 1);
 
-	for (i = 0; i < 16; i ++)
-	{
-		bg_palette[i] = (bg_palette[i] & 0xfff) | 0x0000;
-	}
-
-	
-	load_palette(bg_palette, 16, 16);
-
-	background_init();
-	background_set(0, 
-		    1, 
-		    1,
-		    0, 
-		    0, 
-		    BG_TILE_MAP_ADDRESS, 
-		    BG_TILES_ADDRESS,
-		    TILE_WIDTH_16X16,
-		    TILE_MAP_STRIDE_64);
-
-	background_update();
-
-	while (frame < 256)
-	{
-		if (vsync)
-		{
-			if (frame > 192)
-				__out(0x5d22, ((frame - 192) >> 2) * 0x1111U);
-			vsync = 0;
-			frame++;
-		}
-	
-		__sleep();
-
-	}
-
-	__out(0x5d22, 0xffff);
-
+	// Run effects
 
 	while (1)
 	{
-		if (audio)
-		{
-			chip_tune_play();
-			audio = 0;
-		}
-
-		if (vsync)
-		{
-			if (frame < 1000)
-				frame++;
-
-			if (frame > 300 + 60)
-			{
-				if (frame > 450)
-				{
-					if (frame < 450 + 64 + 1)
-					{
-						for (i = 0; i < 16; i ++)
-						{
-							bg_palette[i] = (bg_palette[i] & 0xfff) | ((frame < (450+64)) ? ((frame - 450) >> 2) << 12 : 0xf000);
-						}
-
-						load_palette(bg_palette, 16, 16);
-					}
-
-					bg_x_sin += 2;
-					bg_y_sin += 3;
-				}
-				sprite_set_x_y(0, slurm_x, slurm_y + (sine_table[slurm_sin] >> 3));
-				slurm_sin += 2;
-			}
-			else if (frame > 300)
-			{
-				slurm_y-=4;
-				sprite_set_x_y(0, slurm_x, slurm_y);
-			}
-
-			sprite_update_sprite(0);
-			
-			background_set_x_y(0, (sine_table[bg_x_sin]) + 256, (sine_table[bg_y_sin]) + 256);
-			background_update();
-			vsync = 0;
-		}
-
-		__sleep();
+		run_effect1();	
 	}
 
 	return 0;

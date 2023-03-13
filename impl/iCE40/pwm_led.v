@@ -21,7 +21,7 @@ reg pwm_b_next;
 reg pwm_r_next;
 
 
-localparam PWM_BITS = 2;
+localparam PWM_BITS = 6;
 
 reg [PWM_BITS - 1:0] red_reg;
 reg [PWM_BITS - 1:0] red_reg_next;

@@ -141,12 +141,13 @@ assign flash_miso = SPI_FLASH_MISO;
 
 assign UART_TX = uart_tx;
 
-reg [23:0] the_count;
+/*reg [23:0] the_count;
 
 always @(posedge clk)
 	the_count = the_count + 24'd1;
+*/
 
-assign RED_LED =   the_count[23]; //= led_r;
+assign RED_LED   = led_r;
 assign GREEN_LED = led_g;
 assign BLUE_LED  = led_b;
 
