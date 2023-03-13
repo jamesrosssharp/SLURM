@@ -67,12 +67,15 @@ void do_copper_bars()
 	the_copper_list[0] = COPPER_VWAIT(bar1_y);
 	for (i = 0; i < COPPER_BAR_HEIGHT; i++)
 	{
-		the_copper_list[i + 1] = COPPER_BG_WAIT(bar1_colors[i]);
+		if (bar1_y + i > 240)
+			the_copper_list[i + 1] = COPPER_BG_WAIT(0x0000);
+		else
+			the_copper_list[i + 1] = COPPER_BG_WAIT(bar1_colors[i]);
 	}
-	the_copper_list[17] = COPPER_BG(0x000);
-	the_copper_list[18] = COPPER_VWAIT(0xfff);
+	the_copper_list[i++] = COPPER_BG(0x000);
+	the_copper_list[i++] = COPPER_VWAIT(0xfff);
 
-	copper_list_load(the_copper_list, 19);
+	copper_list_load(the_copper_list, i);
 }
 
 
@@ -82,6 +85,9 @@ void run_effect2(void)
 	int frame = 0;
 
 	copper_control(1);
+
+	bar1_y = 0;
+	bar1_vy = 1;
 
 	while (frame < 1000)
 	{
@@ -98,6 +104,9 @@ void run_effect2(void)
 		{
 			do_copper_bars();
 		
+			if (frame < 64)
+				pwm_set(0, 0, frame);
+
 			bar1_y += bar1_vy;
 
 			if (bar1_vy > 0 && bar1_y > 230)
@@ -126,13 +135,17 @@ void run_effect2(void)
 		{
 			do_copper_bars();
 		
+			if (bar1_y > 250)
+				pwm_set(0, 0, 300 - bar1_y);
+
 			bar1_y += 2;
+
 
 		}
 		__sleep();
 	}
 
-
+	pwm_set(0, 0, 0);
 
 	copper_control(0);
 

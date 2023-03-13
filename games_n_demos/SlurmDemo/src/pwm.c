@@ -25,8 +25,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #define PWM_R 0x2000
-#define PWM_B 0x2001
-#define PWM_G 0x2002 
+#define PWM_G 0x2001
+#define PWM_B 0x2002 
 
 void pwm_set(short r, short g, short b)
 {
