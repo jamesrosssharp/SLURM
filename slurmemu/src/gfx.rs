@@ -157,7 +157,7 @@ impl Gfx {
 			r = ((self.palette[bg_idx as usize] & 0xf00) >> 4) as u8;
 			g = (self.palette[bg_idx as usize] & 0xf0) as u8;
 			b = ((self.palette[bg_idx as usize] & 0xf) << 4) as u8; 
-			a = ((self.palette[sprite_idx as usize] & 0xf000) >> 8) as u8;
+			a = ((self.palette[bg_idx as usize] & 0xf000) >> 8) as u8;
 		}
 
 		let (alpha_override, mut alpha) = self.copper.get_alpha();

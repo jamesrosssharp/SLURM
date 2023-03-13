@@ -107,6 +107,7 @@ int main()
 	while (1)
 	{
 		run_effect1();	
+		run_effect2();
 	}
 
 	return 0;
