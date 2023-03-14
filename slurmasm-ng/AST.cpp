@@ -8,6 +8,7 @@
 #include "Relocation.h"
 #include <host/ELF/ElfFile.h>
 
+#include "ExReg.h"
 
 AST::AST()
 {
@@ -405,12 +406,34 @@ void AST::addTimes(int line_num)
 
 void AST::addRegisterToExtendedRegisterALUOp(int line_num, char* opcode, char* extended_reg, char* reg)
 {
-	std::cout << "Reg2ex: " << line_num << " " << opcode << " " << extended_reg << "," << reg << std::endl;
+	//std::cout << "Reg2ex: " << line_num << " " << opcode << " " << extended_reg << "," << reg << std::endl;
+
+	m_currentStatement.regX.parse(line_num, extended_reg);
+
+	m_currentStatement.lineNum = line_num;
+	m_currentStatement.opcode = convertOpCode(opcode);
+	m_currentStatement.regSrc = convertReg(reg);
+	m_currentStatement.type = StatementType::REGISTER_TO_EXTENDED_REGISTER_ALU_OP;
+	
+	m_sectionStatements[m_currentSection].push_back(m_currentStatement);
+	m_currentStatement.reset();
+
 } 
 
 void AST::addExtendedRegisterToRegisterALUOp(int line_num, char* opcode, char* reg, char* extended_reg)
 {
 	std::cout << "ex2reg: " << line_num << " " << opcode << " " << reg << "," << extended_reg << std::endl;
+
+	m_currentStatement.regX.parse(line_num, extended_reg);
+
+	m_currentStatement.lineNum = line_num;
+	m_currentStatement.opcode = convertOpCode(opcode);
+	m_currentStatement.regDest = convertReg(reg);
+	m_currentStatement.type = StatementType::EXTENDED_REGISTER_TO_REGISTER_ALU_OP;
+
+	m_sectionStatements[m_currentSection].push_back(m_currentStatement);
+	m_currentStatement.reset();
+
 } 
 
 OpCode AST::convertOpCode(std::string s)

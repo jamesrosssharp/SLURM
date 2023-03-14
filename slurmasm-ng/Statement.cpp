@@ -313,7 +313,66 @@ void Statement::_assemble_pseudo_op_and_expression(int expressionValue)
 	}
 }
 
+void Statement::_assemble_register_to_extended_register_alu_op()
+{
+	switch (opcode)
+	{
+		case OpCode::ADD:
+		case OpCode::MOV:
+		case OpCode::ADC:
+		case OpCode::SUB:
+		case OpCode::SBB:
+		case OpCode::OR:
+		case OpCode::XOR:
+		case OpCode::AND:
+		case OpCode::BSWAP:
+		case OpCode::RRN:
+		case OpCode::RLN:
+		case OpCode::MUL:
+		case OpCode::MULU:
+		case OpCode::UMULU:
+		case OpCode::CMP:
+		case OpCode::TEST:
+			Assembly::assembleExRegAluOp(lineNum, opcode, true, regX, regSrc, assembledBytes);
+			break;
+		default: {
+			std::stringstream ss;
+			ss << "Unsupported three register conditional opcode on line " << lineNum << std::endl;	
+			throw std::runtime_error(ss.str());
 
+		}
+	}
+}
+
+void Statement::_assemble_extended_register_to_register_alu_op()
+{
+	switch (opcode)
+	{
+		case OpCode::ADD:
+		case OpCode::MOV:
+		case OpCode::ADC:
+		case OpCode::SUB:
+		case OpCode::SBB:
+		case OpCode::OR:
+		case OpCode::XOR:
+		case OpCode::AND:
+		case OpCode::BSWAP:
+		case OpCode::RRN:
+		case OpCode::RLN:
+		case OpCode::MUL:
+		case OpCode::MULU:
+		case OpCode::UMULU:
+		case OpCode::CMP:
+		case OpCode::TEST:
+			Assembly::assembleExRegAluOp(lineNum, opcode, false, regX, regSrc, assembledBytes);
+			break;
+		default: {
+			std::stringstream ss;
+			ss << "Unsupported three register conditional opcode on line " << lineNum << std::endl;	
+			throw std::runtime_error(ss.str());
+		}
+	}
+}
 
 
 void Statement::assemble()
@@ -485,6 +544,12 @@ void Statement::assemble()
 				break;
 			}
 			break;
+		case StatementType::REGISTER_TO_EXTENDED_REGISTER_ALU_OP:
+			_assemble_register_to_extended_register_alu_op();
+			break;
+		case StatementType::EXTENDED_REGISTER_TO_REGISTER_ALU_OP:
+			_assemble_extended_register_to_register_alu_op();
+			break;
 		default: {
 			std::stringstream ss;
 			ss << "Unsupported statement type on line " << lineNum << std::endl;	
@@ -508,6 +573,8 @@ void Statement::reset()
 	label = "";
 
 	assembledBytes.clear();
+
+	regX.r = 0;
 
 	hasTimes = false;
 	repetitionCount = 1;
@@ -635,6 +702,12 @@ std::ostream& operator << (std::ostream& os, const Statement& s)
 		break;
 		case StatementType::LABEL:
 			os << s.label << ":";
+		break;
+		case StatementType::REGISTER_TO_EXTENDED_REGISTER_ALU_OP:
+			os << s.opcode << " " << s.regX << ", " << s.regSrc;
+		break;
+		case StatementType::EXTENDED_REGISTER_TO_REGISTER_ALU_OP:
+			os << s.opcode << " " << s.regDest << ", " << s.regX;
 		break;
 		case StatementType::EQU:
 			os << "EQU" << " " << s.label << " " << s.expression;

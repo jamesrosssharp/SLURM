@@ -4,6 +4,7 @@
 #include "OpCode.h"
 #include "Cond.h"
 #include "types.h"
+#include "ExReg.h"
 
 #include <vector>
 
@@ -20,4 +21,5 @@ namespace Assembly
 	void assembleIntFlagOp(int lineNum, OpCode opcode, std::vector<uint8_t>& assembledBytes);
 	void assembleSleep(int lineNum, std::vector<uint8_t>& assembledBytes);
 	void assembleNop(int lineNum, std::vector<uint8_t>& assembledBytes);
+	void assembleExRegAluOp(int lineNum, OpCode opcode, bool xregIsDest, const ExReg& regX, Register reg, std::vector<uint8_t>& assembledBytes);
 }

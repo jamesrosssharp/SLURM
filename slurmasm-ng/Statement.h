@@ -12,6 +12,7 @@
 
 #include "SymTab_t.h"
 #include "Relocation.h"
+#include "ExReg.h"
 
 enum class StatementType
 {
@@ -33,6 +34,8 @@ enum class StatementType
 	TWO_REGISTER_INDIRECT_OPCODE_AND_EXPRESSION_B,
 	PSEUDO_OP,
 	PSEUDO_OP_WITH_EXPRESSION,
+	REGISTER_TO_EXTENDED_REGISTER_ALU_OP,
+	EXTENDED_REGISTER_TO_REGISTER_ALU_OP
 };
 
 struct Statement
@@ -46,6 +49,7 @@ struct Statement
 	Register    regSrc;
 	Register    regSrc2;
 	Register    regDest;
+	ExReg	    regX;
 
 	Register    regInd;
 
@@ -82,6 +86,8 @@ private:
 	void _assemble_two_register_indirect_opcode_and_expression_A(int expressionValue, bool forceImm = false);
 	void _assemble_two_register_indirect_opcode_and_expression_B(int expressionValue, bool forceImm = false);
 	void _assemble_pseudo_op_and_expression(int expressionValue);
+	void _assemble_register_to_extended_register_alu_op();
+	void _assemble_extended_register_to_register_alu_op();
 };
 
 

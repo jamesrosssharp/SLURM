@@ -383,3 +383,28 @@ void Assembly::assembleNop(int lineNum, std::vector<uint8_t>& assembledBytes)
 	assembledBytes.push_back(op >> 8);
 }
 
+void Assembly::assembleExRegAluOp(int lineNum, OpCode opcode, bool xregIsDest, const ExReg& regX, Register reg, std::vector<uint8_t>& assembledBytes)
+{
+	uint16_t aluOp = 0;
+	get_aluOp(opcode, lineNum, aluOp);
+
+	if (aluOp)
+	{
+		uint16_t imm = makeImm(lineNum, aluOp << 4);
+
+		assembledBytes.push_back(imm & 0xff);
+		assembledBytes.push_back(imm >> 8);
+	}
+
+	uint16_t op;
+
+	if (xregIsDest)
+		op = SLRM_REG_TO_EXREG_ALU_INSTRUCTION;
+	else
+		op = SLRM_EXREG_TO_REG_ALU_INSTRUCTION;
+
+	op |= (regX.r << 4) | (uint16_t)reg;
+
+	assembledBytes.push_back(op & 0xff);
+	assembledBytes.push_back(op >> 8);
+}
