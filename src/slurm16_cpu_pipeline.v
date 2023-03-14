@@ -5,7 +5,7 @@
  *
  */
 
-module slurm16_cpu_pipeline #(parameter REGISTER_BITS = 4, BITS = 16, ADDRESS_BITS = 16)
+module slurm16_cpu_pipeline #(parameter REGISTER_BITS = 7, BITS = 16, ADDRESS_BITS = 16)
 (
 	input CLK,
 	input RSTb,
@@ -116,7 +116,7 @@ localparam TOTAL_PIPELINE_SV_BITS = INS_BITS + NOP_BITS + PC_BITS + IMM_BITS + H
 /*
  *	Pipeline stage state vector (SLURM16):
  *
- * 	|    54  |   53   |  52 - 49    |    48    | 47 - 44  | 43 - 32 | 31 - 17 | 16 - 1 |  0  |
+ * 	|    57  |   56   |  55 - 52    |    51    | 50 - 44  | 43 - 32 | 31 - 17 | 16 - 1 |  0  |
  *	------------------------------------------------------------------------------------------
  *	|   COND | MEM RQ |   FLAGS     | HAZ FLAG |  HAZ REG |  IMM    |  PC     |  INS   | NOP |
  */
@@ -129,17 +129,17 @@ localparam PC_MSB  = 31;
 localparam IMM_LSB = 32;
 localparam IMM_MSB = 43;
 localparam HAZ_REG_LSB = 44;
-localparam HAZ_REG_MSB = 47;
-localparam HAZ_FLAG_BIT = 48;
-localparam FLAGS_LSB = 49;
-localparam FLAGS_MSB = 52;
-localparam FLAG_C = 49;
-localparam FLAG_Z = 50;
-localparam FLAG_S = 51;
-localparam FLAG_V = 52;
+localparam HAZ_REG_MSB = 50;
+localparam HAZ_FLAG_BIT = 51;
+localparam FLAGS_LSB = 52;
+localparam FLAGS_MSB = 55;
+localparam FLAG_C = 52;
+localparam FLAG_Z = 53;
+localparam FLAG_S = 54;
+localparam FLAG_V = 55;
 
-localparam MEM_RQ_BIT = 53;
-localparam COND_PASS_BIT = 54;
+localparam MEM_RQ_BIT = 56;
+localparam COND_PASS_BIT = 57;
 
 reg [TOTAL_PIPELINE_SV_BITS - 1:0] pip0 = {TOTAL_PIPELINE_SV_BITS{1'b0}};	// Fetch
 reg [TOTAL_PIPELINE_SV_BITS - 1:0] pip1 = {TOTAL_PIPELINE_SV_BITS{1'b0}};	// Decode

@@ -37,31 +37,31 @@ begin
 end
 endfunction
 
-function [3:0] reg_dest_from_ins;
+function [7:0] reg_dest_from_ins;
 input [15:0] ins;
 begin
-	reg_dest_from_ins = ins[7:4];
+	reg_dest_from_ins = {3'd0, ins[7:4]};
 end
 endfunction
 
-function [3:0] reg_3dest_from_ins;
+function [7:0] reg_3dest_from_ins;
 input [15:0] ins;
 begin
-	reg_3dest_from_ins = ins[11:8];
+	reg_3dest_from_ins = {3'd0, ins[11:8]};
 end
 endfunction
 
-function [3:0] reg_src_from_ins;
+function [7:0] reg_src_from_ins;
 input [15:0] ins;
 begin
-	reg_src_from_ins = ins[3:0];
+	reg_src_from_ins = {3'd0, ins[3:0]};
 end
 endfunction
 
-function [3:0] reg_idx_from_ins;
+function [7:0] reg_idx_from_ins;
 input [15:0] ins;
 begin
-	reg_idx_from_ins = ins[11:8];
+	reg_idx_from_ins = {3'd0, ins[11:8]};
 end
 endfunction
 
@@ -161,9 +161,9 @@ begin
 end
 endfunction
 
-function [3:0] reg_branch_ind_from_ins;
+function [7:0] reg_branch_ind_from_ins;
 input [15:0] ins;
-		reg_branch_ind_from_ins = {ins[7:4]};
+		reg_branch_ind_from_ins = {3'd0, ins[7:4]};
 endfunction
 
 function is_interrupt_enable_disable;

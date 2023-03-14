@@ -5,8 +5,8 @@
  */
 
 localparam NOP_INSTRUCTION		= {BITS{1'b0}};
-localparam LINK_REGISTER   		= 4'd15;
-localparam INTERRUPT_LINK_REGISTER   	= 4'd14;
+localparam LINK_REGISTER   		= 7'd15;
+localparam INTERRUPT_LINK_REGISTER   	= 7'd14;
 localparam R0 				= {REGISTER_BITS{1'b0}};
 localparam IRET_INSTRUCTION		= 16'h0101;
 

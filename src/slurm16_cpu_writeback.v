@@ -57,23 +57,23 @@ begin
 	else if (!is_nop)
 		casex (instruction)
 			INSTRUCTION_CASEX_ALUOP_SINGLE_REG : begin /* alu op reg */
-				reg_wr_addr_r 	= {3'd0, reg_src_from_ins(instruction)};
+				reg_wr_addr_r 	= reg_src_from_ins(instruction);
 				reg_out_r 	= aluOut; 	
 			end
 			INSTRUCTION_CASEX_ALUOP_REG_REG, INSTRUCTION_CASEX_ALUOP_REG_IMM: begin /* alu op */
-				reg_wr_addr_r 	= {3'd0, reg_dest_from_ins(instruction)};
+				reg_wr_addr_r 	= reg_dest_from_ins(instruction);
 				reg_out_r 	= aluOut; 	
 			end
 			INSTRUCTION_CASEX_BRANCH: begin /* branch */
 				if (is_branch_link_from_ins(instruction) == 1'b1) begin
-					reg_wr_addr_r   = {3'd0, LINK_REGISTER}; /* link register */
+					reg_wr_addr_r   = LINK_REGISTER; /* link register */
 					reg_out_r	= pc_stage4 + 16'd2;
 				end
 			end
 			INSTRUCTION_CASEX_BYTE_LOAD_STORE: begin /* byte wise load / store */
 				if (is_load_store_from_ins(instruction) == 1'b0) begin /* load */
 					// write back value 
-					reg_wr_addr_r = {3'd0, reg_dest_from_ins(instruction)};
+					reg_wr_addr_r = reg_dest_from_ins(instruction);
 					
 					case (memory_wr_mask_delayed)
 						2'b10:
@@ -85,7 +85,7 @@ begin
 				end	
 			end
 			INSTRUCTION_CASEX_BYTE_LOAD_SX: begin /* byte wise load with sign extend */
-					reg_wr_addr_r = {3'd0, reg_dest_from_ins(instruction)};
+					reg_wr_addr_r = reg_dest_from_ins(instruction);
 					
 					case (memory_wr_mask_delayed)
 						2'b10:
@@ -98,13 +98,13 @@ begin
 			INSTRUCTION_CASEX_LOAD_STORE:	begin /* load store */
 				if (is_load_store_from_ins(instruction) == 1'b0) begin /* load */
 					// write back value 
-					reg_wr_addr_r = {3'd0, reg_dest_from_ins(instruction)};
+					reg_wr_addr_r = reg_dest_from_ins(instruction);
 					reg_out_r = memory_in;
 				end	
 			end
 			INSTRUCTION_CASEX_PEEK_POKE: begin /* io peek? */
 				if (is_io_poke_from_ins(instruction) == 1'b0) begin
-					reg_wr_addr_r = {3'd0, reg_dest_from_ins(instruction)};
+					reg_wr_addr_r = reg_dest_from_ins(instruction);
 					reg_out_r = port_in;
 				end
 			end
@@ -112,13 +112,13 @@ begin
 				/* For best performance, cond mov, operates on flags in stage4, immediately after an alu op (e.g. cmp) */
 
 				if (branch_taken_from_ins(instruction, Z, S, C, V) == 1'b1) begin
-					reg_wr_addr_r = {3'd0, reg_dest_from_ins(instruction)};
+					reg_wr_addr_r = reg_dest_from_ins(instruction);
 					reg_out_r = aluOut;
 				end
 			end
 			INSTRUCTION_CASEX_THREE_REG_COND_ALU: begin
 				if (cond_pass == 1'b1) begin
-					reg_wr_addr_r = {3'd0, reg_3dest_from_ins(instruction)};
+					reg_wr_addr_r = reg_3dest_from_ins(instruction);
 					reg_out_r = aluOut;	
 				end
 			end

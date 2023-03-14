@@ -66,15 +66,15 @@ wire load_interrupt_return_address;
 
 wire cond_pass_in;
 
-wire [3:0] hazard_reg1;
-wire [3:0] hazard_reg2;
-wire [3:0] hazard_reg3;
+wire [REGISTER_BITS - 1:0] hazard_reg1;
+wire [REGISTER_BITS - 1:0] hazard_reg2;
+wire [REGISTER_BITS - 1:0] hazard_reg3;
 
 wire modifies_flags1;
 wire modifies_flags2;
 wire modifies_flags3;
 
-wire [3:0]  hazard_reg0;
+wire [REGISTER_BITS - 1:0]  hazard_reg0;
 wire modifies_flags0;
 
 wire hazard_1;

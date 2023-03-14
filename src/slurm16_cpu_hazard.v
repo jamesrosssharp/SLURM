@@ -5,7 +5,7 @@
  *
  */
 
-module slurm16_cpu_hazard #(parameter BITS = 16, REGISTER_BITS = 4) 
+module slurm16_cpu_hazard #(parameter BITS = 16, REGISTER_BITS = 7) 
 (
 	input [BITS - 1:0] instruction, /* p0 pipeline slot instruction*/
 
