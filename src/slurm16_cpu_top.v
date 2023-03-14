@@ -29,10 +29,10 @@ module slurm16_cpu_top
 
 //assign cpu_debug_pin = 1'b0;
 
-/* Machine is 16 bit with 16 bit address bus, and 16 registers */
+/* Machine is 16 bit with 16 bit address bus, and 128 registers */
 localparam BITS = 16;
 localparam ADDRESS_BITS = 16;
-localparam REGISTER_BITS = 4;
+localparam REGISTER_BITS = 7;
 
 wire instruction_request;
 wire instruction_valid;
@@ -383,7 +383,7 @@ slurm16_cpu_alu alu0
 
 );
 
-wire [3:0] reg_wr_sel;
+wire [REGISTER_BITS - 1:0] reg_wr_sel;
 wire [15:0] reg_out;
 
 assign regIn_sel = reg_wr_sel;
