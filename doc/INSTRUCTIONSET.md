@@ -187,57 +187,60 @@ Class 6: extended register ALU operation
 
 Encoded as two words, first word being an immediate value
 
-|31 | 30 | 29 | 28  | 27 - 24 | 23 - 20 | 19 - 16  |
-|---|----|----|-----|---------|---------|----------|
-| 0 | 0  | 0  | 1   | SRC1_HI | SRC2_HI |  ALU OP  |
+|31 | 30 | 29 | 28  |      27  - 20     | 19 - 16  |
+|---|----|----|-----|-------------------|----------|
+| 0 | 0  | 0  | 1   |         x         |  ALU OP  |
 
-|15 | 14 | 13 | 12  | 11 - 8  | 7  - 4 | 3 - 0  |
-|---|----|----|-----|---------|--------|--------|
-| 0 | 1  | 1  | 0   |   DEST  |SRC1 - A|SRC2 - B|
+|15 | 14 | 13 | 12  |  11 |  10  - 4   | 3 - 0  |
+|---|----|----|-----|-----|------------|--------|
+| 0 | 1  | 1  | 0   | DIR |  	RX     |  RL    |
 
+  DIR: if 0, DEST = RX, SRC = RL
+          1, DEST = RL, SRC = RX
 
-    ALU OP: 4 bits ALU operation
+  ALU OP: 4 bits ALU operation
         0 - mov : DEST <- SRC
-        1 - add : DEST <- SRC1 + SRC2
-        2 - adc : DEST <- SRC1 + SRC2 + Carry
-        3 - sub : DEST <- SRC1 - SRC2
-        4 - sbb : DEST <- SRC1 - SRC2 - Carry
-        5 - and : DEST <- SRC1 & SRC2
-        6 - or  : DEST <- SRC1 | SRC2
-        7 - xor : DEST <- SRC1 ^ SRC2
-    	8 - mul : DEST <- SRC1 * SRC2 (LO)
-        9 - mulu : DEST <- SRC1 * SRC2 (HI)
-        10 - 11 : reserved
+        1 - add : DEST <- DEST + SRC
+        2 - adc : DEST <- DEST + SRC + Carry
+        3 - sub : DEST <- DEST - SRC
+        4 - sbb : DEST <- DEST - SRC - Carry
+        5 - and : DEST <- DEST & SRC
+        6 - or  : DEST <- DEST | SRC
+        7 - xor : DEST <- DEST ^ SRC
+    	8 - mul : DEST <- DEST * SRC (LO)
+        9 - mulu : DEST <- DEST * SRC (HI)
+        10: - rrn : rotate nibble right
+	11: - rln : rotate nibble left
         12: cmp 
         13: test
-        14 - umulu : DEST <- (UNSIGNED) SRC1 * (UNSIGNED) SRC2 (HI) 
-        15 - reserved
-  
-This instruction can perform ALU operations on all 256 registers. SRC1_EXT = {SRC1_HI:SRC1},
-SRC2_EXT = {SRC2_HI:SRC2}, DEST_EXT = {SRC1_HI, DEST} etc.
+        14 - umulu : DEST <- (UNSIGNED) DEST * (UNSIGNED) SRC (HI) 
+        15 - bswap : DEST <- bytes swapped SRC
+ 
+This instruction can perform ALU operations between a low (r0 - r15) and an extended (x16 - x127) register
 
-	e.g. add.ex r255, r254, r3
+	e.g. add x127, r3
+
+Imm (bits 31-16) may be omitted, which will encode to a mov between a low to an extended register.
+
   
 Class 7: upper bank memory operations
 -----------------------------------
 
-Encoded as two words, first word being an immediate value
+|15 | 14 | 13 | 12  | 11 - 8  | 7  - 4 | 3 | 2 - 0  |
+|---|----|----|-----|---------|--------|---|--------|
+| 0 | 1  | 1  | 1   |   IDX   |   REG  | x |  FLG   |
 
-|31 | 30 | 29 | 28  | 27 | 26 | 25 | 24 - 16  |
-|---|----|----|-----|----|----|----|----------|
-| 0 | 0  | 0  | 1   | L  | B  |  S |  IMM_HI  |
+		Provides access to upper two banks of memory
 
-|15 | 14 | 13 | 12  | 11 - 8  | 7  - 4 | 3 - 0  |
-|---|----|----|-----|---------|--------|--------|
-| 0 | 1  | 1  | 1   |   IDX   |   REG  | IMM    |
+	IDX: index register
+	REG: source or destination register
+	FLG:
+		3'b000 :  LD
+		3'b001 :  LDB
+		3'b01x :  LDBSX
+		3'b100 :  ST
+		3'b11x :  STB
 
-	IMM: {IMM_HI, IMM} (13 bits)
-	L: 0 = LD, 1 = ST
-	B: 0 = word transfer, 1 = byte transfer
-	S: 0 = zero extend on load, 1 = sign extend on load
-
-e.g. ld.ex r5, [r6, 0x20] would access the 16 bit word address {1'b1, r6 + 0x20} and load the 
-word stored at that address into the r5 register.
 
 
 Class 8: immediate + register byte memory operation with sign extend
