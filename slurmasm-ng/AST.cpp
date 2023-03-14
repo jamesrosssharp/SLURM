@@ -403,6 +403,16 @@ void AST::addTimes(int line_num)
 
 }
 
+void AST::addRegisterToExtendedRegisterALUOp(int line_num, char* opcode, char* extended_reg, char* reg)
+{
+	std::cout << "Reg2ex: " << line_num << " " << opcode << " " << extended_reg << "," << reg << std::endl;
+} 
+
+void AST::addExtendedRegisterToRegisterALUOp(int line_num, char* opcode, char* reg, char* extended_reg)
+{
+	std::cout << "ex2reg: " << line_num << " " << opcode << " " << reg << "," << extended_reg << std::endl;
+} 
+
 OpCode AST::convertOpCode(std::string s)
 {
 

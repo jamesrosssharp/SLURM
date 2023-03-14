@@ -53,6 +53,8 @@ adc|add|and|asr|ba|bc|bl|bnc|bns|bnz|bs|bz|bv|bnv|cc|cs|cz|imm|iret|ld|lsl|lsr|m
  
 r0|r1|r2|r3|r4|r5|r6|r7|r8|r9|r10|r11|r12|r13|r14|r15 {yylval.regval = strdup(yytext); return REG; }
 
+x[0-9]+ {yylval.regval = strdup(yytext); return XREG; }
+
 [a-zA-Z_\.]+[a-zA-Z0-9_\.]*   {
     yylval.sval = strdup(yytext);
     return STRING;

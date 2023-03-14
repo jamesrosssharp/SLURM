@@ -60,6 +60,9 @@ class AST {
 		void addPseudoOpWithExpression(int line_num, char *pseudo_op);
 		void addTimes(int line_num);
 
+		void addRegisterToExtendedRegisterALUOp(int line_num, char* opcode, char* extended_reg, char* reg); 
+		void addExtendedRegisterToRegisterALUOp(int line_num, char* opcode, char* reg, char* extended_reg);
+ 
 		/* print out AST */
 		void print();
 

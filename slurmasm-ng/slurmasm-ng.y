@@ -61,6 +61,7 @@
 %token <lsval> STR_LITERAL
 %token <cval> CH_LITERAL
 %token <regval> REG
+%token <regval> XREG
 %token <opcval> OPCODE
 %token <pseudoopval> PSEUDOOP
 %token <sectionval> SECTION
@@ -71,7 +72,8 @@
 asm : body_section footer { cout << "Parsed asm file" << endl; } ;
 
 op_code : op_code_0 | op_code_1 | op_code_2 | op_code_3 | op_code_4 | op_code_5 | op_code_6 |
-	  op_code_7 | op_code_8 | op_code_9 | op_code_10 | op_code_11 | op_code_12 | op_code_13 | op_code_14 ; 
+	  op_code_7 | op_code_8 | op_code_9 | op_code_10 | op_code_11 | op_code_12 | op_code_13 | 
+	  op_code_14 | op_code_15 | op_code_16 ; 
 
 /* one register + expression opcode */
 op_code_0 : OPCODE REG COMMA expression ENDL { g_ast.addOneRegisterAndExpressionOpcode(line_num, $1, $2); } ;
@@ -118,10 +120,11 @@ op_code_13: OPCODE REG COMMA OPEN_SQUARE_BRACKET expression CLOSE_SQUARE_BRACKET
 /* two register indirect operation with expression - st, out - r0 implied */
 op_code_14: OPCODE OPEN_SQUARE_BRACKET expression CLOSE_SQUARE_BRACKET COMMA REG ENDL { g_ast.addTwoRegisterIndirectOpcodeWithExpressionB(line_num, $1, strdup("r0"), $6); }; 
 
+/* register to extended register ALU op */
+op_code_15: OPCODE XREG COMMA REG {g_ast.addRegisterToExtendedRegisterALUOp(line_num, $1, $2, $4); }
 
-
-
-
+/* extended register to register ALU op */
+op_code_16: OPCODE REG COMMA XREG {g_ast.addExtendedRegisterToRegisterALUOp(line_num, $1, $2, $4); }
 
 /* expressions */
 expression: 

@@ -51,6 +51,9 @@ my_func:
 	.times 6*3 asr r4
 	mov r3, 0x666
 	mov.gtu r2, r3
+	mov x127, r3
+	add r4, x127
+
 	ret
 	.endfunc
 
