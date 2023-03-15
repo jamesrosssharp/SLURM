@@ -495,6 +495,47 @@ static std::string handle_nop(uint16_t op, uint16_t imm_hi)
 	return dis.str();
 }
 
+static std::string handle_reg_exreg(uint16_t op, uint16_t imm_hi)
+{
+
+	std::stringstream dis;
+
+	uint16_t alu_op = (imm_hi & 0x000f);
+
+	createAluOp(alu_op, dis);
+
+	uint16_t rext = (op & 0x0ff0) >> 4; 
+
+	dis << " x" << rext;
+	
+	uint16_t rsrc = (op & 0x000f);
+
+	dis << ", r" <<  rsrc;
+
+	return dis.str();
+
+}
+
+static std::string handle_exreg_reg(uint16_t op, uint16_t imm_hi)
+{
+	std::stringstream dis;
+
+	uint16_t alu_op = (imm_hi & 0x000f);
+
+	createAluOp(alu_op, dis);
+
+	uint16_t rdest = (op & 0x000f);
+
+	dis << " r" <<  rdest;
+
+	uint16_t rext = (op & 0x0ff0) >> 4; 
+
+	dis << ", x" << rext;
+	
+	return dis.str();
+
+}
+
 std::vector<std::tuple<uint16_t, uint16_t, ins_handler_t>> ins_handlers = {
 	{SLRM_ALU_REG_IMM_INSTRUCTION, SLRM_ALU_REG_IMM_INSTRUCTION_MASK, handle_alu_reg_imm},
 	{SLRM_ALU_REG_REG_INSTRUCTION, SLRM_ALU_REG_REG_INSTRUCTION_MASK, handle_alu_reg_reg},
@@ -512,6 +553,8 @@ std::vector<std::tuple<uint16_t, uint16_t, ins_handler_t>> ins_handlers = {
 	{SLRM_CLI_INSTRUCTION,  SLRM_CLI_INSTRUCTION_MASK,  handle_cli},
 	{SLRM_SLEEP_INSTRUCTION,  SLRM_SLEEP_INSTRUCTION_MASK,  handle_sleep},
 	{SLRM_NOP_INSTRUCTION,  SLRM_NOP_INSTRUCTION_MASK,  handle_nop},
+	{SLRM_REG_TO_EXREG_ALU_INSTRUCTION,  SLRM_REG_TO_EXREG_ALU_INSTRUCTION_MASK,  handle_reg_exreg},
+	{SLRM_EXREG_TO_REG_ALU_INSTRUCTION,  SLRM_EXREG_TO_REG_ALU_INSTRUCTION_MASK,  handle_exreg_reg},
 }; 
 
 std::string Disassembly::disassemble(uint8_t* bytes)
