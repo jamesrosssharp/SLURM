@@ -59,6 +59,14 @@ begin
 			regB_sel 		= reg_idx_from_ins(instruction);	
 			regA_sel 		= reg_dest_from_ins(instruction);		
 		end
+		INSTRUCTION_CASEX_ALU_REG_EXREG: begin /* alu op, reg (src) to exreg (dest) */
+			regA_sel = reg_src_from_ins(instruction);
+			regB_sel = reg_extended_from_ins(instruction);
+		end
+		INSTRUCTION_CASEX_ALU_EXREG_REG: begin /* alu op, exreg (src) to reg (dest) */
+			regA_sel = reg_extended_from_ins(instruction);
+			regB_sel = reg_src_from_ins(instruction);
+		end
 		default: ;
 	endcase
 end

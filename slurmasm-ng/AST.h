@@ -33,6 +33,7 @@ class AST {
 		void push_mult();
 		void push_div();
 		void push_unary_neg();	
+		void push_char_literal(char *string);
 
 		void eval_stack();
 

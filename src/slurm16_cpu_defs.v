@@ -25,6 +25,10 @@ localparam INSTRUCTION_CASEX_THREE_REG_COND_ALU		= 16'h9xxx;
 localparam INSTRUCTION_CASEX_BYTE_LOAD_STORE		= 16'b101xxxxxxxxxxxxx;
 localparam INSTRUCTION_CASEX_LOAD_STORE			= 16'b110xxxxxxxxxxxxx;
 localparam INSTRUCTION_CASEX_PEEK_POKE			= 16'b111xxxxxxxxxxxxx;
+localparam INSTRUCTION_CASEX_ALU_REG_EXREG		= 16'b01100xxxxxxxxxxx;
+localparam INSTRUCTION_CASEX_ALU_EXREG_REG		= 16'b01101xxxxxxxxxxx;
+
+
 
 // Conditionals
 

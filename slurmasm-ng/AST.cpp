@@ -101,6 +101,15 @@ void AST::push_unary_neg()
 
 }
 
+void AST::push_char_literal(char *string)
+{
+	ExpressionNode* item = new ExpressionNode();
+	item->type = ITEM_NUMBER;
+	item->val.value = (int)string[0];
+	item->left = item->right = NULL;
+	push_stack(item);
+}
+
 void AST::push_symbol(char *symbol)
 {
 	ExpressionNode* item = new ExpressionNode();

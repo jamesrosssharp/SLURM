@@ -175,5 +175,11 @@ function is_ret_or_iret;
 input [15:0] ins;
 		is_ret_or_iret = ins[0];	// 1 = iret, 0 = ret
 endfunction
+
+function [7:0] reg_extended_from_ins;
+input [15:0] ins;
+		reg_extended_from_ins = {ins[10:4]};
+endfunction
+
 /* lint_on */
 

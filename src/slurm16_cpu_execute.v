@@ -129,6 +129,9 @@ begin
 						cond_pass_r = 1'b1;
 					end
 				end
+				INSTRUCTION_CASEX_ALU_REG_EXREG, INSTRUCTION_CASEX_ALU_EXREG_REG: begin /* alu op, exreg to reg / reg to exreg */
+					alu_op_r_next = imm_reg[3:0];
+				end
 				default: ;
 			endcase
 	end

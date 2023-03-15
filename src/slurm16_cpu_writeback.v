@@ -122,6 +122,14 @@ begin
 					reg_out_r = aluOut;	
 				end
 			end
+			INSTRUCTION_CASEX_ALU_REG_EXREG: begin
+					reg_wr_addr_r = reg_extended_from_ins(instruction);
+					reg_out_r = aluOut;	
+			end
+			INSTRUCTION_CASEX_ALU_EXREG_REG: begin /* alu op, exreg to reg / reg to exreg */
+					reg_wr_addr_r = reg_src_from_ins(instruction);
+					reg_out_r = aluOut;	
+			end
 			default: ;
 		endcase
 end

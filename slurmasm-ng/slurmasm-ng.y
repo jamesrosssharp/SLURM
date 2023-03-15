@@ -131,6 +131,7 @@ expression:
 	INT    { g_ast.push_number($1); 	} |
 	HEXVAL { g_ast.push_number($1); 	} |	
 	STRING { g_ast.push_symbol($1);		} |
+	CH_LITERAL 			{ g_ast.push_char_literal($1); } |
 	expression SHL expression	{ g_ast.push_lshift(); }    |
 	expression SHR expression	{ g_ast.push_rshift(); }    |
 	expression PLUS expression	{ g_ast.push_add(); }	    |	
