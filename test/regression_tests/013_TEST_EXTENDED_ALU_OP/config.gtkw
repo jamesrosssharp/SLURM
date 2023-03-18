@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Mon Dec 26 01:28:06 2022
+[*] Sat Mar 18 05:44:46 2023
 [*]
-[dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/001_ALU/dump.vcd"
-[dumpfile_mtime] "Mon Dec 26 01:21:48 2022"
-[dumpfile_size] 31259072
-[savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/001_ALU/config.gtkw"
-[timestart] 608544000
+[dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/013_TEST_EXTENDED_ALU_OP/dump.vcd"
+[dumpfile_mtime] "Sat Mar 18 05:43:16 2023"
+[dumpfile_size] 11536528
+[savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/013_TEST_EXTENDED_ALU_OP/config.gtkw"
+[timestart] 1418000
 [size] 1920 992
 [pos] 0 0
-*-18.194408 618100000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-19.194408 2900000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] alu_tb.
 [treeopen] alu_tb.cpu0.
 [treeopen] alu_tb.cpu0.cpu0.
@@ -25,14 +25,10 @@ alu_tb.cpu0.cpu0.RSTb
 -
 -
 @22
-alu_tb.cpu0.cpu0.memory_address[15:0]
 alu_tb.cpu0.cpu0.memory_in[15:0]
 alu_tb.cpu0.cpu0.memory_out[15:0]
 @28
 alu_tb.cpu0.cpu0.memory_wr
-alu_tb.cpu0.cpu0.memory_valid
-alu_tb.cpu0.cpu0.memory_ready
-alu_tb.cpu0.cpu0.mem0.state[1:0]
 @200
 -
 -
@@ -42,9 +38,8 @@ alu_tb.cpu0.cpu0.cache0.data_out[31:0]
 alu_tb.cpu0.cpu0.cache0.cache_miss
 @200
 -
-@23
-alu_tb.cpu0.cpu0.alu0.aluOp[4:0]
 @22
+alu_tb.cpu0.cpu0.alu0.aluOp[4:0]
 alu_tb.cpu0.cpu0.alu0.A[15:0]
 alu_tb.cpu0.cpu0.alu0.B[15:0]
 alu_tb.cpu0.cpu0.alu0.aluOut[15:0]
@@ -91,6 +86,13 @@ alu_tb.cpu0.cpu0.cache0.cache_request_address[14:0]
 alu_tb.cpu0.cpu0.cache0.data_out[31:0]
 @28
 alu_tb.cpu0.cpu0.cache0.cache_miss
+@200
+-
+@22
+alu_tb.cpu0.cpu0.wb0.reg_wr_addr_r[6:0]
+alu_tb.cpu0.cpu0.wb0.reg_wr_sel[6:0]
+@23
+alu_tb.cpu0.cpu0.wb0.reg_out[15:0]
 @200
 -
 @22
@@ -152,6 +154,7 @@ alu_tb.cpu0.cpu0.reg0.\regFileA[12][15:0]
 alu_tb.cpu0.cpu0.reg0.\regFileA[13][15:0]
 alu_tb.cpu0.cpu0.reg0.\regFileA[14][15:0]
 alu_tb.cpu0.cpu0.reg0.\regFileA[15][15:0]
+alu_tb.cpu0.cpu0.reg0.\regFileA[100][15:0]
 @200
 -
 -

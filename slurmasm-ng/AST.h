@@ -63,6 +63,8 @@ class AST {
 
 		void addRegisterToExtendedRegisterALUOp(int line_num, char* opcode, char* extended_reg, char* reg); 
 		void addExtendedRegisterToRegisterALUOp(int line_num, char* opcode, char* reg, char* extended_reg);
+
+		void addPseudoOpWithStringLiteral(int line_num, char* opcode, char* string); 
  
 		/* print out AST */
 		void print();

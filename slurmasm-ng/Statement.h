@@ -35,7 +35,8 @@ enum class StatementType
 	PSEUDO_OP,
 	PSEUDO_OP_WITH_EXPRESSION,
 	REGISTER_TO_EXTENDED_REGISTER_ALU_OP,
-	EXTENDED_REGISTER_TO_REGISTER_ALU_OP
+	EXTENDED_REGISTER_TO_REGISTER_ALU_OP,
+	PSEUDO_OP_WITH_STRING_LITERAL
 };
 
 struct Statement
@@ -65,6 +66,8 @@ struct Statement
 	Expression timesExpression;
 	int32_t repetitionCount = 1;
 
+	std::string str_literal;
+
 	void assemble();
 
 	void reset();
@@ -88,6 +91,7 @@ private:
 	void _assemble_pseudo_op_and_expression(int expressionValue);
 	void _assemble_register_to_extended_register_alu_op();
 	void _assemble_extended_register_to_register_alu_op();
+	void _assemble_pseudo_op_with_string_literal();
 };
 
 

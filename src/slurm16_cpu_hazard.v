@@ -75,7 +75,13 @@ begin
 		end
 		INSTRUCTION_CASEX_THREE_REG_COND_ALU: begin
 			hazard_reg0_r 	= reg_3dest_from_ins(instruction);
-		end	
+		end
+		INSTRUCTION_CASEX_ALU_REG_EXREG: begin
+			hazard_reg0_r = reg_extended_from_ins(instruction);
+		end
+		INSTRUCTION_CASEX_ALU_EXREG_REG: begin /* alu op, exreg to reg / reg to exreg */
+			hazard_reg0_r = reg_src_from_ins(instruction);
+		end
 		default: ;
 	endcase
 end

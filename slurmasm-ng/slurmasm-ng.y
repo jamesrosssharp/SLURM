@@ -146,13 +146,16 @@ expression:
 
 pseudo_op: pseudo_op_code | times;
 
-pseudo_op_code: pseudo_op1 | pseudo_op2;
+pseudo_op_code: pseudo_op1 | pseudo_op2 | pseudo_op3;
 
 /* e.g. .function, .global etc */
 pseudo_op1: PSEUDOOP expression ENDL { g_ast.addPseudoOpWithExpression(line_num, $1); };
 
 /* e.g. .endfunc */
 pseudo_op2: PSEUDOOP ENDL { g_ast.addPseudoOp(line_num, $1); };
+
+/* e.g. dw "Hello world!" */
+pseudo_op3: PSEUDOOP STR_LITERAL ENDL { g_ast.addPseudoOpWithStringLiteral(line_num, $1, $2); }
 
 times: TIMES expression op_code { g_ast.addTimes(line_num); } |
        TIMES expression pseudo_op_code { g_ast.addTimes(line_num); } ;

@@ -313,6 +313,31 @@ void Statement::_assemble_pseudo_op_and_expression(int expressionValue)
 	}
 }
 
+void Statement::_assemble_pseudo_op_with_string_literal()
+{
+	switch (pseudoOp)
+	{
+		case PseudoOp::DB:
+			for (auto c : str_literal)
+			{
+				assembledBytes.push_back(c);
+			}
+			break;
+		case PseudoOp::DW:
+			for (auto c : str_literal)
+			{
+				assembledBytes.push_back(c);
+				assembledBytes.push_back(0);
+			}
+			break;
+		default: {
+			std::stringstream ss;
+			ss << "Unsupported pseudo op with string literal on line " << lineNum << std::endl;	
+			throw std::runtime_error(ss.str());
+		}
+	}
+}
+
 void Statement::_assemble_register_to_extended_register_alu_op()
 {
 	switch (opcode)
@@ -364,7 +389,7 @@ void Statement::_assemble_extended_register_to_register_alu_op()
 		case OpCode::UMULU:
 		case OpCode::CMP:
 		case OpCode::TEST:
-			Assembly::assembleExRegAluOp(lineNum, opcode, false, regX, regSrc, assembledBytes);
+			Assembly::assembleExRegAluOp(lineNum, opcode, false, regX, regDest, assembledBytes);
 			break;
 		default: {
 			std::stringstream ss;
@@ -550,6 +575,9 @@ void Statement::assemble()
 		case StatementType::EXTENDED_REGISTER_TO_REGISTER_ALU_OP:
 			_assemble_extended_register_to_register_alu_op();
 			break;
+		case StatementType::PSEUDO_OP_WITH_STRING_LITERAL:
+			_assemble_pseudo_op_with_string_literal();
+			break;
 		default: {
 			std::stringstream ss;
 			ss << "Unsupported statement type on line " << lineNum << std::endl;	
@@ -575,6 +603,8 @@ void Statement::reset()
 	assembledBytes.clear();
 
 	regX.r = 0;
+
+	str_literal = "";
 
 	hasTimes = false;
 	repetitionCount = 1;

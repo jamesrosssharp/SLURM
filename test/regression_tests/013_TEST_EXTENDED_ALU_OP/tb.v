@@ -82,7 +82,7 @@ initial begin
 end
 
 genvar j;
-for (j = 0; j < 16; j = j + 1) begin
+for (j = 0; j < 128; j = j + 1) begin
     initial $dumpvars(0, cpu0.cpu0.reg0.regFileA[j]);
 end
 

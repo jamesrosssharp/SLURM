@@ -396,9 +396,60 @@ void AST::addPseudoOpWithExpression(int line_num, char *pseudo_op)
 
 	m_sectionStatements[m_currentSection].push_back(m_currentStatement);
 	m_currentStatement.reset();
-
-
 }
+
+std::string substituteSpecialChars(char* stringLit)
+{
+    std::string newString;
+
+    uint32_t pos = 0;
+    uint32_t newPos = 0;
+
+    while (1)
+    {
+        if (stringLit[pos] == '\0')
+        {
+            break;
+        }
+
+        if (stringLit[pos] == '\\')
+        {
+            pos++;
+            switch (stringLit[pos])
+            {
+                case 'n':
+                    newString  += '\n';
+                    break;
+                case 'r':
+                    newString  += '\r';
+                    break;
+                case '0':
+                    newString += '\0';
+                    break;
+            }
+        }
+        else
+        {
+            newString += stringLit[pos];
+        }
+        pos++;
+    }
+
+    return newString;
+}
+
+
+
+void AST::addPseudoOpWithStringLiteral(int line_num, char* pseudo_op, char* string)
+{
+
+	m_currentStatement.lineNum = line_num;
+	m_currentStatement.pseudoOp = convertPseudoOp(pseudo_op);
+	m_currentStatement.type = StatementType::PSEUDO_OP_WITH_STRING_LITERAL;
+	m_currentStatement.str_literal = substituteSpecialChars(string);
+	m_sectionStatements[m_currentSection].push_back(m_currentStatement);
+	m_currentStatement.reset();
+} 
 
 void AST::addTimes(int line_num)
 {

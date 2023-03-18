@@ -157,8 +157,9 @@ begin
 				disassemble = "in";
 			else
 				disassemble = "out";
-
-
+		INSTRUCTION_CASEX_ALU_REG_EXREG,
+		INSTRUCTION_CASEX_ALU_EXREG_REG:
+			disassemble = "alu.exreg";
 	endcase
 end
 endfunction

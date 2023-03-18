@@ -22,7 +22,7 @@ rom_image.meminit: Boot.asm
 %.mem: %.asm
 	$(AS_NG) $^ -o $(basename $@).o
 	$(LD) -s $(basename $@).ld -o $(basename $@).elf $(basename $@).o
-	$(OBJCOPY) $(basename).elf $(basename)
+	$(OBJCOPY) $(basename $@).elf $(basename $@)
 	python3 $(MEMCONV) $(basename $@) $@
 
 sim: $(SOURCE) tb.v rom_image.meminit $(MEM_INIT)
@@ -45,8 +45,12 @@ clean:
 	rm -f rom_image.meminit
 	rm -f rom_image.mem
 	rm -f mem_init1
+	rm -f mem_init1.o
+	rm -f mem_init1.elf
 	rm -f mem_init1.mem
 	rm -f mem_init2
+	rm -f mem_init2.o
+	rm -f mem_init2.elf
 	rm -f mem_init2.mem
 	rm -f mem_init3
 	rm -f mem_init3.mem
