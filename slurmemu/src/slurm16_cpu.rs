@@ -33,7 +33,7 @@ impl Slurm16CPU {
 			v: false,
 			imm_hi: 0,
 			pc: 0,
-			registers: vec![0; 16],
+			registers: vec![0; 128],
 			int_flag: false,
 			halt : false
 		}
@@ -976,6 +976,64 @@ impl Slurm16CPU {
 		self.imm_hi = 0;
 	}
 
+	pub fn alu_op_extreg(&mut self, instruction : u16) {
+
+		// TODO: Get src and dest etc. 
+
+		let reg_reg 		= (instruction & 0xf) as usize;
+		let reg_ext : usize	= ((instruction & 0x7f0) >> 4) as usize;
+		
+		let mut src = reg_ext;
+		let mut reg_dest = reg_reg;
+	
+		if instruction & 0x800 == 0x800
+		{
+			src = reg_reg;
+			reg_dest = reg_ext;
+		}
+
+		let src1_a 		= self.get_register(reg_dest);
+		let src2_b 		= self.get_register(src);
+		
+		match self.imm_hi & 0x000f {
+		//0 - mov : DEST <- IMM
+			0 => self.alu_mov(reg_dest, src1_a, src2_b), 
+		//1 - add : DEST <- DEST + IMM
+			1 => self.alu_add(reg_dest, src1_a, src2_b),
+		//2 - adc : DEST <- DEST + IMM + Carry
+			2 => self.alu_adc(reg_dest, src1_a, src2_b), 
+		//3 - sub : DEST <- DEST - IMM 
+			3 => self.alu_sub(reg_dest, src1_a, src2_b),
+		//4 - sbb : DEST <- DEST - IMM - Carry
+			4 => self.alu_sbb(reg_dest, src1_a, src2_b), 
+		//5 - and : DEST <- DEST & IMM
+			5 => self.alu_and(reg_dest, src1_a, src2_b),
+		//6 - or  : DEST <- DEST | IMM
+			6 => self.alu_or(reg_dest, src1_a, src2_b), 
+		//7 - xor : DEST <- DEST ^ IMM
+			7 => self.alu_xor(reg_dest, src1_a, src2_b), 
+		//8 - mul : DEST <- DEST * IMM (LO)
+			8 => self.alu_mul(reg_dest, src1_a, src2_b), 
+		//9 - mulu : DEST <- DEST * IMM (HI)
+			9 => self.alu_mulu(reg_dest, src1_a, src2_b),
+		//10 - rrn (rotate right nibble)
+			10 => self.alu_rrn(reg_dest, src1_a, src2_b),
+		//11 - rln (rotate left nibble)
+			11 => self.alu_rln(reg_dest, src1_a, src2_b),	
+			12 => self.alu_cmp(reg_dest, src1_a, src2_b),
+			13 => self.alu_test(reg_dest, src1_a, src2_b),
+		// 14 - umulu
+			14 => self.alu_umulu(reg_dest, src1_a, src2_b),
+		// 15 - bswap
+			15 => self.alu_bswap(reg_dest, src1_a, src2_b),
+			_ => self.nop()
+		}
+
+		// Clear immediate
+		self.imm_hi = 0;
+	}
+
+
 
 
 
@@ -1026,6 +1084,7 @@ impl Slurm16CPU {
 			"0011_????_????_????" => self.alu_op_reg_imm(instruction),
 			"0100_????_????_????" => self.branch_op(instruction),
 			"0101_????_????_????" => self.condmov_op(instruction),
+			"0110_????_????_????" => self.alu_op_extreg(instruction),
 			"1000_????_????_????" => self.byte_mem_op_sx(instruction, mem),
 			"1001_????_????_????" => self.three_reg_alu_op(instruction, mem),
 			"101?_????_????_????" => self.byte_mem_op(instruction, mem),
