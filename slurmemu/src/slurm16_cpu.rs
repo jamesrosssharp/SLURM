@@ -983,19 +983,21 @@ impl Slurm16CPU {
 		let reg_reg 		= (instruction & 0xf) as usize;
 		let reg_ext : usize	= ((instruction & 0x7f0) >> 4) as usize;
 		
-		let mut src = reg_ext;
-		let mut reg_dest = reg_reg;
+		let mut src = reg_reg;
+		let mut reg_dest = reg_ext;
 	
 		if instruction & 0x800 == 0x800
 		{
-			src = reg_reg;
-			reg_dest = reg_ext;
+			src = reg_ext;
+			reg_dest = reg_reg;
 		}
 
 		let src1_a 		= self.get_register(reg_dest);
 		let src2_b 		= self.get_register(src);
-		
-		match self.imm_hi & 0x000f {
+	
+		//println!("extreg {} {} {}", src, reg_dest, (self.imm_hi & 0x00f0) >> 4); 
+	
+		match (self.imm_hi & 0x00f0) >> 4 {
 		//0 - mov : DEST <- IMM
 			0 => self.alu_mov(reg_dest, src1_a, src2_b), 
 		//1 - add : DEST <- DEST + IMM

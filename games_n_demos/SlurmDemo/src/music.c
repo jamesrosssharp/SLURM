@@ -596,7 +596,7 @@ void chip_tune_play()
 		short buf_this_tick = (buf_remaining < (256 - buf_offset)) ? buf_remaining : (256 - buf_offset);
 
 		if ((buf_this_tick > 0) && (buf_this_tick <= 256))		
-			mix_audio_2(buf_offset, buf_this_tick);
+			mix_audio_3(buf_offset, buf_this_tick);
 		else
 			my_printf("!%d", buf_this_tick);
 

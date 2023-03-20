@@ -504,7 +504,7 @@ static std::string handle_reg_exreg(uint16_t op, uint16_t imm_hi)
 
 	createAluOp(alu_op, dis);
 
-	uint16_t rext = (op & 0x0ff0) >> 4; 
+	uint16_t rext = (op & 0x07f0) >> 4; 
 
 	dis << " x" << rext;
 	
@@ -528,7 +528,7 @@ static std::string handle_exreg_reg(uint16_t op, uint16_t imm_hi)
 
 	dis << " r" <<  rdest;
 
-	uint16_t rext = (op & 0x0ff0) >> 4; 
+	uint16_t rext = (op & 0x07f0) >> 4; 
 
 	dis << ", x" << rext;
 	

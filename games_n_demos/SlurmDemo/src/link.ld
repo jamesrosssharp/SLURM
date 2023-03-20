@@ -34,7 +34,7 @@ SECTIONS
 
 	.text_mixer : {
 		. = ALIGN(0x100);
-		*( .mixer2.text )
+		*( .mixer3.text )
 	} > ram1
 
 
@@ -62,7 +62,7 @@ SECTIONS
    	} > ram1
 
 	.data_mixer : {
-		*( .mixer2.data )
+		*( .mixer3.data )
 	} > ram2
 
 }
