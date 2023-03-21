@@ -157,6 +157,10 @@ mix_audio_3:
 
 	add r4, SCRATCH_PAD - 1  
 
+	ba  mix_loop.ch1
+
+	.align 0x100
+
 	/*
  	 *	Audio mixing: 25125000 Cks/s / 1024 / 256 ~= 100 frames / s
  	 *		      ~= 250,000 clocks / frame
@@ -197,13 +201,10 @@ mix_loop.ch1:
 	mov r4, x17
 	add r4, SCRATCH_PAD - 1  
 	mov r5, x18
-	//mov r15, x19
-	//add r15, AUDIO_LEFT_CHANNEL_BRAM_LO - 1
 
 	in  r6, [r4, 1]
 
 mix_loop.ch2:
-	//add   r15, 1
 	ldbsx  r10, [r1]   // load sample value; sign extend 8 bit to 16 bit
 	add   r2, r3       // add freq lo to phase
 	adc   r1, r8       // add with carry freq hi to sample pos
@@ -234,13 +235,10 @@ mix_loop.ch2:
 	mov r4, x17
 	add r4, SCRATCH_PAD - 1  
 	mov r5, x18
-	mov r15, x19
-	add r15, AUDIO_LEFT_CHANNEL_BRAM_LO - 1
 
 	in  r6, [r4, 1]
 
 mix_loop.ch3:
-	add   r15, 1
 	ldbsx  r10, [r1]   // load sample value; sign extend 8 bit to 16 bit
 	add   r2, r3       // add freq lo to phase
 	adc   r1, r8       // add with carry freq hi to sample pos
@@ -250,7 +248,7 @@ mix_loop.ch3:
 	mov.c r1,  r12 	   // if greater than (unsigned), move loop start to sample pos
 	add   r6, r10
 	sub   r5, 1        // decrement loop counter
-	out   [r15, 0], r6 // output sample
+	out   [r4, 0], r6 // output sample
 	in    r6, [r4, 1]
 	bnz   mix_loop.ch3 // loop
 
@@ -258,7 +256,184 @@ mix_loop.ch3:
 	st  [r6, CHANNEL_STRUCT_SAMPLE_POS], r1
 	st  [r6, CHANNEL_STRUCT_PHASE], r2
 
+	mov r6, channel_info + 3*CHANNEL_STRUCT_SIZE
+	ld  r1,  [r6, CHANNEL_STRUCT_SAMPLE_POS]
+	ld  r8,  [r6, CHANNEL_STRUCT_FREQUENCY_HI]
+	ld  r3,  [r6, CHANNEL_STRUCT_FREQUENCY]
+	ld  r2, [r6, CHANNEL_STRUCT_PHASE]
+	ld  r11, [r6, CHANNEL_STRUCT_VOLUME]
+	ld  r12, [r6, CHANNEL_STRUCT_LOOP_START]
+	ld  r9,  [r6, CHANNEL_STRUCT_LOOP_END]
 
+	mov r4, x17
+	add r4, SCRATCH_PAD - 1  
+	mov r5, x18
+
+	in  r6, [r4, 1]
+
+mix_loop.ch4:
+	ldbsx  r10, [r1]   // load sample value; sign extend 8 bit to 16 bit
+	add   r2, r3       // add freq lo to phase
+	adc   r1, r8       // add with carry freq hi to sample pos
+	mul   r10, r11     // multiply sample by volume
+	add   r4, 1        // increment pointer
+	cmp   r9, r1       // compare x23 (loop end) to sample pos
+	mov.c r1,  r12 	   // if greater than (unsigned), move loop start to sample pos
+	add   r6, r10
+	sub   r5, 1        // decrement loop counter
+	out   [r4, 0], r6 // output sample
+	in    r6, [r4, 1]
+	bnz   mix_loop.ch4 // loop
+
+	mov r6, channel_info + 3*CHANNEL_STRUCT_SIZE 
+	st  [r6, CHANNEL_STRUCT_SAMPLE_POS], r1
+	st  [r6, CHANNEL_STRUCT_PHASE], r2
+
+
+	mov r6, channel_info + 4*CHANNEL_STRUCT_SIZE
+	ld  r1,  [r6, CHANNEL_STRUCT_SAMPLE_POS]
+	ld  r8,  [r6, CHANNEL_STRUCT_FREQUENCY_HI]
+	ld  r3,  [r6, CHANNEL_STRUCT_FREQUENCY]
+	ld  r2,  [r6, CHANNEL_STRUCT_PHASE]
+	ld  r11, [r6, CHANNEL_STRUCT_VOLUME]
+	ld  r12, [r6, CHANNEL_STRUCT_LOOP_START]
+	ld  r9,  [r6, CHANNEL_STRUCT_LOOP_END]
+
+	mov r4, x17
+	add r4, SCRATCH_PAD + 0x100 - 1  
+	mov r5, x18
+
+	/*
+ 	 *	Audio mixing: 25125000 Cks/s / 1024 / 256 ~= 100 frames / s
+ 	 *		      ~= 250,000 clocks / frame
+ 	 *	This routine: ~12 clocks * 8 channels * 256 = ~25,000 clocks / frame
+ 	 *		      
+ 	 *		      So we should only have 10% CPU usage...
+ 	 *
+ 	 * 	We will mix to the scratchpad RAM. Our interrupt handler will swap the buffers for us.
+ 	 *
+ 	 */
+
+	ba mix_loop.ch5
+
+	.align 0x100
+	
+mix_loop.ch5:
+	ldbsx  r10, [r1]   // load sample value; sign extend 8 bit to 16 bit
+	add   r2, r3       // add freq lo to phase
+	adc   r1, r8       // add with carry freq hi to sample pos
+	mul   r10, r11     // multiply sample by volume
+	add   r4, 1        // increment pointer
+	cmp   r9, r1       // compare x23 (loop end) to sample pos
+	mov.c r1,  r12 	   // if greater than (unsigned), move loop start to sample pos
+	sub   r5, 1        // decrement loop counter
+	out   [r4, 0], r10 // output sample
+	bnz   mix_loop.ch5 // loop
+
+	mov r6, channel_info + 4*CHANNEL_STRUCT_SIZE 
+	st  [r6, CHANNEL_STRUCT_SAMPLE_POS], r1
+	st  [r6, CHANNEL_STRUCT_PHASE], r2
+
+
+	mov r6, channel_info + 5*CHANNEL_STRUCT_SIZE
+	ld  r1,  [r6, CHANNEL_STRUCT_SAMPLE_POS]
+	ld  r8,  [r6, CHANNEL_STRUCT_FREQUENCY_HI]
+	ld  r3,  [r6, CHANNEL_STRUCT_FREQUENCY]
+	ld  r2, [r6, CHANNEL_STRUCT_PHASE]
+	ld  r11, [r6, CHANNEL_STRUCT_VOLUME]
+	ld  r12, [r6, CHANNEL_STRUCT_LOOP_START]
+	ld  r9,  [r6, CHANNEL_STRUCT_LOOP_END]
+
+	mov r4, x17
+	add r4, SCRATCH_PAD + 0x100 - 1  
+	mov r5, x18
+
+	in  r6, [r4, 1]
+
+mix_loop.ch6:
+	ldbsx  r10, [r1]   // load sample value; sign extend 8 bit to 16 bit
+	add   r2, r3       // add freq lo to phase
+	adc   r1, r8       // add with carry freq hi to sample pos
+	mul   r10, r11     // multiply sample by volume
+	add   r4, 1        // increment pointer
+	cmp   r9, r1       // compare x23 (loop end) to sample pos
+	mov.c r1,  r12 	   // if greater than (unsigned), move loop start to sample pos
+	add   r6, r10
+	sub   r5, 1        // decrement loop counter
+	out   [r4, 0], r6 // output sample
+	in    r6, [r4, 1]
+	bnz   mix_loop.ch6 // loop
+
+	mov r6, channel_info + 5*CHANNEL_STRUCT_SIZE 
+	st  [r6, CHANNEL_STRUCT_SAMPLE_POS], r1
+	st  [r6, CHANNEL_STRUCT_PHASE], r2
+
+
+	mov r6, channel_info + 6*CHANNEL_STRUCT_SIZE
+	ld  r1,  [r6, CHANNEL_STRUCT_SAMPLE_POS]
+	ld  r8,  [r6, CHANNEL_STRUCT_FREQUENCY_HI]
+	ld  r3,  [r6, CHANNEL_STRUCT_FREQUENCY]
+	ld  r2, [r6, CHANNEL_STRUCT_PHASE]
+	ld  r11, [r6, CHANNEL_STRUCT_VOLUME]
+	ld  r12, [r6, CHANNEL_STRUCT_LOOP_START]
+	ld  r9,  [r6, CHANNEL_STRUCT_LOOP_END]
+
+	mov r4, x17
+	add r4, SCRATCH_PAD + 0x100 - 1  
+	mov r5, x18
+
+	in  r6, [r4, 1]
+
+mix_loop.ch7:
+	ldbsx  r10, [r1]   // load sample value; sign extend 8 bit to 16 bit
+	add   r2, r3       // add freq lo to phase
+	adc   r1, r8       // add with carry freq hi to sample pos
+	mul   r10, r11     // multiply sample by volume
+	add   r4, 1        // increment pointer
+	cmp   r9, r1       // compare x23 (loop end) to sample pos
+	mov.c r1,  r12 	   // if greater than (unsigned), move loop start to sample pos
+	add   r6, r10
+	sub   r5, 1        // decrement loop counter
+	out   [r4, 0], r6 // output sample
+	in    r6, [r4, 1]
+	bnz   mix_loop.ch7 // loop
+
+	mov r6, channel_info + 6*CHANNEL_STRUCT_SIZE 
+	st  [r6, CHANNEL_STRUCT_SAMPLE_POS], r1
+	st  [r6, CHANNEL_STRUCT_PHASE], r2
+
+	mov r6, channel_info + 7*CHANNEL_STRUCT_SIZE
+	ld  r1,  [r6, CHANNEL_STRUCT_SAMPLE_POS]
+	ld  r8,  [r6, CHANNEL_STRUCT_FREQUENCY_HI]
+	ld  r3,  [r6, CHANNEL_STRUCT_FREQUENCY]
+	ld  r2, [r6, CHANNEL_STRUCT_PHASE]
+	ld  r11, [r6, CHANNEL_STRUCT_VOLUME]
+	ld  r12, [r6, CHANNEL_STRUCT_LOOP_START]
+	ld  r9,  [r6, CHANNEL_STRUCT_LOOP_END]
+
+	mov r4, x17
+	add r4, SCRATCH_PAD + 0x100 - 1  
+	mov r5, x18
+
+	in  r6, [r4, 1]
+
+mix_loop.ch8:
+	ldbsx  r10, [r1]   // load sample value; sign extend 8 bit to 16 bit
+	add   r2, r3       // add freq lo to phase
+	adc   r1, r8       // add with carry freq hi to sample pos
+	mul   r10, r11     // multiply sample by volume
+	add   r4, 1        // increment pointer
+	cmp   r9, r1       // compare x23 (loop end) to sample pos
+	mov.c r1,  r12 	   // if greater than (unsigned), move loop start to sample pos
+	add   r6, r10
+	sub   r5, 1        // decrement loop counter
+	out   [r4, 0], r6 // output sample
+	in    r6, [r4, 1]
+	bnz   mix_loop.ch8 // loop
+
+	mov r6, channel_info + 7*CHANNEL_STRUCT_SIZE 
+	st  [r6, CHANNEL_STRUCT_SAMPLE_POS], r1
+	st  [r6, CHANNEL_STRUCT_PHASE], r2
 
 	ld r2, [r13, 0]
 	ld r3, [r13, 2]
@@ -278,5 +453,80 @@ mix_loop.ch3:
 
 	// Restore old stack pointer
 	ret
+
+	.global mix_audio_3_update
+
+mix_audio_3_update:
+	sub r13, 64
+
+	// Preserve registers
+	st [r13, 0], r2
+	st [r13, 2], r3
+	st [r13, 4], r4
+	st [r13, 6], r5
+	st [r13, 8], r6
+	st [r13, 10], r7
+	st [r13, 12], r8
+	st [r13, 14], r9
+	st [r13, 16], r10
+	st [r13, 18], r11
+	st [r13, 20], r12
+	st [r13, 22], r1
+	st [r13, 24], r15 
+
+	in r2, [r0, AUDIO_RIGHT_PTR]
+	and r2, 0x100
+	xor r2, 0x100 		// r2: mix index into buffer
+
+	mov r6, r2
+
+	add r2, AUDIO_LEFT_CHANNEL_BRAM_LO
+
+	mov r3, SCRATCH_PAD
+	mov r5, 0x100
+
+update_loop:
+	in r4, [r3, 0]
+	add r3, 1
+	out [r2, 0], r4
+	add r2, 1
+	sub r5, 1
+	nop
+	bnz update_loop
+
+	mov r2, r6
+	add r2, AUDIO_RIGHT_CHANNEL_BRAM_LO
+
+	mov r3, SCRATCH_PAD + 0x100
+	mov r5, 0x100
+
+update_loop2:
+	in r4, [r3, 0]
+	add r3, 1
+	out [r2, 0], r4
+	add r2, 1
+	sub r5, 1
+	nop
+	bnz update_loop2
+
+	ld r2, [r13, 0]
+	ld r3, [r13, 2]
+	ld r4, [r13, 4]
+	ld r5, [r13, 6]
+	ld r6, [r13, 8]
+	ld r7, [r13, 10]
+	ld r8, [r13, 12]
+	ld r9, [r13, 14]
+	ld r10, [r13, 16]
+	ld r11, [r13, 18]
+	ld r12, [r13, 20]
+	ld r1, [r13, 22]
+	ld r15, [r13, 24]
+
+	add r13, 64
+
+	// Restore old stack pointer
+	ret
+
 
 	.end

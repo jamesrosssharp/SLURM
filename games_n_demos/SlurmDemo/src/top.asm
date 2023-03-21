@@ -158,16 +158,24 @@ vsync_handler:
 
 	.endfunc
 
+
 	.function audio_handler
 audio_handler:
 	st [r13, -2], r1
+	st [r13, -4], r15
 
-	mov r1, 1
+	mov 	r1, 1
 	st [audio], r1
-	mov r1, 4
+	mov 	r1, 4
 	out [r0, 0x7001], r1
+
+	.extern mix_audio_3_update
+	// Update audio from scratch pad RAM
+	bl mix_audio_3_update
 	
 	ld r1, [r13, -2]
+	ld r15, [r13, -4]
+
 	iret
 
 	.endfunc
