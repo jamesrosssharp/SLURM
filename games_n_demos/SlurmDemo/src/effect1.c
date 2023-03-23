@@ -60,6 +60,7 @@ void run_effect1(void)
 		bg_palette[i] = (bg_palette[i] & 0xfff) | 0x0000;
 	}
 
+	__out(0x5f02, 1);
 	
 	load_palette(bg_palette, 16, 16);
 

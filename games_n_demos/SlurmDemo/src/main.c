@@ -108,6 +108,7 @@ int main()
 	{
 		run_effect1();	
 		run_effect2();
+		run_effect3();
 	}
 
 	return 0;
