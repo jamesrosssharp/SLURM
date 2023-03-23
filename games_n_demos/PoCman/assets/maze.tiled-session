@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "/home/jrsharp/home_mnt/code/FPGA/SLURM/games_n_demos/SlurmDemo/assets/SlurmTiledBG.tmx",
+    "activeFile": "/home/jrsharp/home_mnt/code/FPGA/SLURM/games_n_demos/SlurmDemo/assets/tiled/SlurmTiledBG.tmx",
     "automapping.whileDrawing": false,
     "expandedProjectPaths": [
     ],
@@ -51,6 +51,17 @@
             "viewCenter": {
                 "x": 504,
                 "y": 512.6666666666665
+            }
+        },
+        "/home/jrsharp/home_mnt/code/FPGA/SLURM/games_n_demos/SlurmDemo/assets/tiled/SlurmBG256X256.tsx": {
+            "scaleInDock": 1
+        },
+        "/home/jrsharp/home_mnt/code/FPGA/SLURM/games_n_demos/SlurmDemo/assets/tiled/SlurmTiledBG.tmx": {
+            "scale": 0.802490234375,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 512.1557651353817,
+                "y": 512.7788256769089
             }
         },
         "/home/jrsharp/home_mnt/code/FPGA/SLURM/games_n_demos/pacman/assets/background.tmx": {
@@ -102,11 +113,11 @@
     "map.tileWidth": 16,
     "map.width": 64,
     "openFiles": [
-        "/home/jrsharp/home_mnt/code/FPGA/SLURM/games_n_demos/SlurmDemo/assets/SlurmBG256X256.tsx",
-        "/home/jrsharp/home_mnt/code/FPGA/SLURM/games_n_demos/SlurmDemo/assets/SlurmTiledBG.tmx"
+        "/home/jrsharp/home_mnt/code/FPGA/SLURM/games_n_demos/SlurmDemo/assets/tiled/SlurmTiledBG.tmx"
     ],
     "project": "maze.tiled-project",
     "recentFiles": [
+        "/home/jrsharp/home_mnt/code/FPGA/SLURM/games_n_demos/SlurmDemo/assets/tiled/SlurmTiledBG.tmx",
         "/home/jrsharp/home_mnt/code/FPGA/SLURM/games_n_demos/SlurmDemo/assets/SlurmBG256X256.tsx",
         "/home/jrsharp/home_mnt/code/FPGA/SLURM/games_n_demos/SlurmDemo/assets/SlurmTiledBG.tmx",
         "/home/jrsharp/home_mnt/code/FPGA/SLURM/games_n_demos/Captor/assets/bg_tiles.tsx",

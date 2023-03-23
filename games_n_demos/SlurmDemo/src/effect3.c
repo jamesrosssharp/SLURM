@@ -40,19 +40,22 @@ extern short bg_palette[];
 
 extern void asm_plasma(unsigned char* fb);
 
+unsigned short plasma_palette[] = {
+	0xf001,	0xf004, 0xf008, 0xf00a,
+	0xf00d, 0xf02d, 0xf04d, 0xf06d,
+	0xf0ad, 0xf0df, 0xf2d0, 0xf4d0,
+	0xfad0, 0xff22, 0xff44, 0xff88
+	
+};
+
 void run_effect3(void)
 {
 	int frame = 0;
 	int i;
 
-	for (i = 0; i < 16; i ++)
-	{
-		bg_palette[i] = (bg_palette[i] & 0xfff) | 0xf000;
-	}
-
 	//__out(0x5f02, 0);
 	
-	load_palette(bg_palette, 16, 16);
+	load_palette(plasma_palette, 16, 16);
 
 
 	background_set(0, 
@@ -83,20 +86,12 @@ void run_effect3(void)
 
 			if (vsync)
 			{
-			   if (!(frame & 1))
-			   {
-				int x, y;
 				unsigned char* fb = (unsigned char*)(PLASMA_FRAMEBUFFER * 2);
 
 				asm_plasma(fb);
 
-				//for (y = 0; y < 64; y++)
-				//	for (x = 0; x < 30; x++)
-			
-				//		*fb++ = ((x + y + frame) & 0xf) + 48;
-			   }
-			   vsync = 0;
-			   frame++;
+				vsync = 0;
+				frame++;
 			}
 		}
 
