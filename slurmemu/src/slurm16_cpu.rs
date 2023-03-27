@@ -13,6 +13,11 @@ pub struct Slurm16CPU {
 	pub s: bool,
 	pub v: bool,
 
+	pub z_int: bool,
+	pub c_int: bool,
+	pub s_int: bool,
+	pub v_int: bool,
+
 	pub imm_hi: u16,
 
 	pub pc: u16,
@@ -31,6 +36,10 @@ impl Slurm16CPU {
 			c: false, 
 			s: false,
 			v: false,
+			z_int : false,
+			c_int : false,
+			s_int : false,
+			v_int : false,
 			imm_hi: 0,
 			pc: 0,
 			registers: vec![0; 128],
@@ -786,8 +795,11 @@ impl Slurm16CPU {
 			self.int_flag = true;
 			let addr = self.get_register(14);
 			self.pc = addr - 2; // This will get incremented
-
-
+			self.c = self.c_int;
+			self.v = self.v_int;
+			self.s = self.s_int;
+			self.z = self.z_int;
+			
 		} else {
 
 			let addr = self.get_register(15);
@@ -1058,6 +1070,11 @@ impl Slurm16CPU {
 			}
 
 			//println!("Int: flags: {} {} {}", self.c, self.z, self.s);
+
+			self.c_int = self.c;
+			self.z_int = self.z;
+			self.s_int = self.s;
+			self.v_int = self.v;
 
 
 			self.int_flag = false;
