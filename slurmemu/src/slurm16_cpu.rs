@@ -18,7 +18,8 @@ pub struct Slurm16CPU {
 	pub s_int: bool,
 	pub v_int: bool,
 
-	pub imm_hi: u16,
+	pub imm_hi  : u16,
+	pub imm_int : u16,
 
 	pub pc: u16,
 	pub registers: Vec<u16>,
@@ -41,6 +42,7 @@ impl Slurm16CPU {
 			s_int : false,
 			v_int : false,
 			imm_hi: 0,
+			imm_int: 0,
 			pc: 0,
 			registers: vec![0; 128],
 			int_flag: false,
@@ -791,6 +793,7 @@ impl Slurm16CPU {
 
 	pub fn ret_op(&mut self, instruction : u16) {
 		if (instruction & 1) == 1 {
+			// IRET
 			//println!("IRET: flags {} {} {} pc {:#01x} instruction {:#01x} ilr {:#01x}", self.c, self.z, self.s, self.pc, instruction, self.get_register(14));
 			self.int_flag = true;
 			let addr = self.get_register(14);
@@ -799,14 +802,13 @@ impl Slurm16CPU {
 			self.v = self.v_int;
 			self.s = self.s_int;
 			self.z = self.z_int;
-			
+			self.imm_hi = self.imm_int;
 		} else {
-
+			// RET
 			let addr = self.get_register(15);
 			self.pc = addr - 2; // This will get incremented
-
+			self.imm_hi = 0;
 		}
-		self.imm_hi = 0;
 	}
 
 	pub fn port_op(&mut self, instruction : u16, portcon:  & mut PortController) {
@@ -1048,6 +1050,37 @@ impl Slurm16CPU {
 	}
 
 
+	pub fn stix(&mut self, instruction : u16) {
+
+		// TODO: Get src and dest etc. 
+
+		let reg_reg 		= (instruction & 0xf) as usize;
+	
+
+		let x : u16 = self.imm_hi | (if self.v_int {0x0008} else {0}) | 
+					    (if self.s_int {0x0004} else {0}) |
+					    (if self.c_int {0x0002} else {0}) | 
+				 	    (if self.z_int {0x0001} else {0});
+	
+		self.registers[reg_reg] = x;
+
+	}
+
+	pub fn rsix(&mut self, instruction : u16) {
+
+		// TODO: Get src and dest etc. 
+
+		let reg_reg 		= (instruction & 0xf) as usize;
+	
+		let x = self.registers[reg_reg];
+
+		self.imm_hi = x & 0xfff0;
+		self.v_int = x & 0x0008 == 0x0008;
+		self.s_int = x & 0x0004 == 0x0004;
+		self.c_int = x & 0x0002 == 0x0002;
+		self.z_int = x & 0x0001 == 0x0001;
+	}
+
 
 
 
@@ -1057,17 +1090,9 @@ impl Slurm16CPU {
 		// Interrupt?
 		if (irq != 0) && self.int_flag {
 	   
-			// If the previous instruction is an imm, we need to make this two instruction
-			// unit atomic on interrupts, so we set return address back an instruction.
-			let ins_minus_1 = mem[((self.pc - 2)>>1) as usize];
-			if (ins_minus_1 & 0xf000) == 0x1000
-			{
-				self.registers[14] = self.pc - 2;
-			}
-			else
-			{
-				self.registers[14] = self.pc;
-			}
+			self.imm_int = self.imm_hi;
+
+			self.registers[14] = self.pc;
 
 			//println!("Int: flags: {} {} {}", self.c, self.z, self.s);
 
@@ -1094,6 +1119,8 @@ impl Slurm16CPU {
 		match instruction {
 			"0000_0000_0000_0000" => self.nop(),
 			"0000_0001_0000_000?" => self.ret_op(instruction),
+			"0000_0010_????_????" => self.stix(instruction),
+			"0000_0011_????_????" => self.rsix(instruction),
 			"0000_0100_????_????" => self.alu_op_single_reg(instruction),
 			"0000_0101_????_????" => self.int(instruction),
 			"0000_0110_????_????" => self.setif(instruction),
