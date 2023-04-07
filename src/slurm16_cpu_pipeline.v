@@ -91,7 +91,15 @@ module slurm16_cpu_pipeline #(parameter REGISTER_BITS = 7, BITS = 16, ADDRESS_BI
 
 	output reg cpu_debug_pin,	/* This is basically a crude serial interface that transmits PC so we know where we are if there is a lock up */
 	
-	input [31:0] cpu_debug_wire	/* debugging info from one level up */
+	input [31:0] cpu_debug_wire,	/* debugging info from one level up */
+
+	/* interrupt context output to writeback stage for STIX operation */
+
+	output [15:0] interrupt_context_out,
+
+	/* reg B input from decode stage - for RSIX operation */
+
+	input [15:0] reg_B_input_stage2
 
 );
 
@@ -172,6 +180,13 @@ reg int_C_r = 1'b0;
 reg int_S_r = 1'b0;
 reg int_Z_r = 1'b0;
 reg int_V_r = 1'b0;
+
+assign interrupt_context_out[15:4] = int_imm_r;
+assign interrupt_context_out[3] = int_V_r;
+assign interrupt_context_out[2] = int_S_r;
+assign interrupt_context_out[1] = int_C_r;
+assign interrupt_context_out[0] = int_Z_r;
+
 
 /*
  *	Combinational logic
@@ -508,7 +523,6 @@ begin
 		st_stall1, st_stall2, st_stall3:	;	// Hold instruction in the slot
 		default: begin
 			pip1[PC_MSB : INS_LSB] 		<= pip0[PC_MSB : INS_LSB];
-			//pip1[IMM_MSB : IMM_LSB] 	<= imm_r;
 			pip1[HAZ_REG_MSB : HAZ_REG_LSB] <= hazard_reg0;
 			pip1[HAZ_FLAG_BIT] 		<= modifies_flags0;
 		end
@@ -544,11 +558,6 @@ always @(posedge CLK)
 begin
 
 	pip2[HAZ_FLAG_BIT : INS_LSB] 	<= pip1[HAZ_FLAG_BIT : INS_LSB];
-	// We actually need to get flags in stage 3
-/*	pip2[FLAG_C]			<= C_in;
-	pip2[FLAG_Z]			<= Z_in;
-	pip2[FLAG_S]			<= S_in;
-	pip2[FLAG_V]			<= V_in; */
 	pip2[MEM_RQ_BIT]		<= 1'b0;
 	pip2[COND_PASS_BIT] 		<= 1'b0;
 
@@ -664,6 +673,17 @@ always @(posedge CLK)
 begin
 	if (state_r == st_interrupt)
 		int_imm_r <= pip4[IMM_MSB:IMM_LSB];
+	else begin
+		// If instruction in pip2 is a RSIX,
+		// restore int_imm_r
+		casex (pip2[INS_MSB:INS_LSB])
+			INSTRUCTION_CASEX_RSIX: begin /* restore interrupt context */
+				int_imm_r <= reg_B_input_stage2[15:4];
+			end	
+			default: ;
+		endcase
+
+	end
 end
 
 
@@ -690,11 +710,19 @@ begin
 		int_S_r <= pip4[FLAG_S];
 		int_Z_r <= pip4[FLAG_Z];
 		int_V_r <= pip4[FLAG_V];
-	/*	int_C_r <= C_in;
-		int_S_r <= S_in;
-		int_Z_r <= Z_in;
-		int_V_r <= V_in;*/
- 	end
+ 	end else begin
+		// If instruction in pip2 is a RSIX, 
+		// restore interrupt flags.
+		casex (pip2[INS_MSB:INS_LSB])
+			INSTRUCTION_CASEX_RSIX: begin /* restore interrupt context */
+				int_C_r <= reg_B_input_stage2[1];
+				int_S_r <= reg_B_input_stage2[2];
+				int_Z_r <= reg_B_input_stage2[0];
+				int_V_r <= reg_B_input_stage2[3];
+			end	
+			default: ;
+		endcase
+	end
 end
 
 /* load flags */

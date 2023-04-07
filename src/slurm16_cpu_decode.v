@@ -37,6 +37,9 @@ begin
 		INSTRUCTION_CASEX_ALUOP_SINGLE_REG: begin /* alu op reg */
 			regB_sel	= reg_src_from_ins(instruction);
 		end
+		INSTRUCTION_CASEX_RSIX: begin /* restore interrupt context */
+			regB_sel	= reg_src_from_ins(instruction);
+		end	
 		INSTRUCTION_CASEX_ALUOP_REG_REG, INSTRUCTION_CASEX_THREE_REG_COND_ALU:	begin	/* alu op, reg reg */
 			regA_sel	= reg_dest_from_ins(instruction);
 			regB_sel	= reg_src_from_ins(instruction);

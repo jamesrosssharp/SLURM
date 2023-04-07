@@ -109,6 +109,8 @@ wire data_memory_success;
 
 wire [31:0] cpu_debug_wire = {port_wr, port_address[14:0], port_out};
 
+wire [15:0] interrupt_context_out;
+
 slurm16_cpu_pipeline pip0 (
 	CLK,
 	RSTb,
@@ -179,7 +181,10 @@ slurm16_cpu_pipeline pip0 (
 
 	cpu_debug_pin,
 
-	cpu_debug_wire
+	cpu_debug_wire,
+
+	interrupt_context_out,
+	regB	
 );
 
 wire [14:0] instruction_memory_address;
@@ -413,7 +418,9 @@ slurm16_cpu_writeback wb0
 	Z,
 	C,
 	S,
-	V
+	V,
+
+	interrupt_context_out
 );
 
 cpu_port_interface #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS)) cpu_prt0 (

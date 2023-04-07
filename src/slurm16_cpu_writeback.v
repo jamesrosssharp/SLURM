@@ -31,8 +31,10 @@ module slurm16_cpu_writeback #(parameter REGISTER_BITS = 7, BITS = 16, ADDRESS_B
 	input Z,
 	input C,
 	input S,
-	input V
+	input V,
 
+	/* interrupt context */
+	input [15:0] interrupt_context
 );
 
 `include "cpu_decode_functions.v"
@@ -129,6 +131,10 @@ begin
 			INSTRUCTION_CASEX_ALU_EXREG_REG: begin /* alu op, exreg to reg / reg to exreg */
 					reg_wr_addr_r = reg_src_from_ins(instruction);
 					reg_out_r = aluOut;	
+			end
+			INSTRUCTION_CASEX_STIX: begin
+					reg_out_r = interrupt_context;
+					reg_wr_addr_r = reg_src_from_ins(instruction);
 			end
 			default: ;
 		endcase

@@ -40,7 +40,7 @@ Class 0 has 16 sub-classes, bits 11 - 8 of the opcode.
 
     |15  - 4 | 3 | 2 | 1 | 0 |
     |--------|---|---|---|---|
-    | IMM HI | Z | C | S | V |
+    | IMM HI | V | S | C | Z |
 
 	MNEMONIC: STIX (STore Interrupt conteXt)
 
