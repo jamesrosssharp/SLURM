@@ -678,7 +678,8 @@ begin
 		// restore int_imm_r
 		casex (pip2[INS_MSB:INS_LSB])
 			INSTRUCTION_CASEX_RSIX: begin /* restore interrupt context */
-				int_imm_r <= reg_B_input_stage2[15:4];
+				if (!pip2[NOP_BIT])
+					int_imm_r <= reg_B_input_stage2[15:4];
 			end	
 			default: ;
 		endcase
@@ -715,10 +716,13 @@ begin
 		// restore interrupt flags.
 		casex (pip2[INS_MSB:INS_LSB])
 			INSTRUCTION_CASEX_RSIX: begin /* restore interrupt context */
-				int_C_r <= reg_B_input_stage2[1];
-				int_S_r <= reg_B_input_stage2[2];
-				int_Z_r <= reg_B_input_stage2[0];
-				int_V_r <= reg_B_input_stage2[3];
+				if (!pip2[NOP_BIT])
+				begin
+					int_C_r <= reg_B_input_stage2[1];
+					int_S_r <= reg_B_input_stage2[2];
+					int_Z_r <= reg_B_input_stage2[0];
+					int_V_r <= reg_B_input_stage2[3];
+				end
 			end	
 			default: ;
 		endcase

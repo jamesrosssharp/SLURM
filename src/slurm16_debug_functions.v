@@ -58,6 +58,10 @@ begin
 				default:
 					disassemble = "?";
 			endcase
+		INSTRUCTION_CASEX_STIX:
+			disassemble = "stix";
+		INSTRUCTION_CASEX_RSIX:
+			disassemble = "rsix";
 		INSTRUCTION_CASEX_INTERRUPT_EN:
 			case (ins[0])
 				1'b0:
