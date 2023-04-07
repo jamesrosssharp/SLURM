@@ -67,9 +67,6 @@ begin
 		data_wr_mask_stage_2 <= 2'b00;
 		data_stage_2 <= 16'h0000;
 	end else begin	
-		// Pipeline always advances.
-		// When we are changing banks, xxx_stage_1 will be held at
-		// previous value of xxx_stage_2
 		flags_stage_2   <= flags_stage_1;
 		address_stage_2 <= address_stage_1;
 		data_wr_mask_stage_2 <= data_wr_mask_stage_1;

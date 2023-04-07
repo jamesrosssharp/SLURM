@@ -23,9 +23,41 @@ Class 0 has 16 sub-classes, bits 11 - 8 of the opcode.
         RT : 0 = RET (return) (restore PC from link register and branch)
              1 = IRET (interrupt return) (restore PC from interrupt link register and branch)
 
-2. Reserved 
+2. Load interrupt context to register 
 
-3. Reserved
+    |15 | 14 | 13 | 12 | 11 | 10 | 9 | 8 | 7 - 4 | 3 - 0  |
+    |---|----|----|----|----|----|---|---|-------|--------|
+    |0  | 0  | 0  | 0  | 0  | 0  | 1 | 0 |   x   |  REG   |
+
+	When an interrupt is serviced, the CPU saves the imm
+	register and the flags into a set of interrupt shadow
+	registers. When implementing an RTOS, it is necessary
+	to access these shadow registers.
+
+	REG: the register to load the interrupt context into
+
+	Format:
+
+    |15  - 4 | 3 | 2 | 1 | 0 |
+    |--------|---|---|---|---|
+    | IMM HI | Z | C | S | V |
+
+	MNEMONIC: STIX (STore Interrupt conteXt)
+
+3. Restore interrupt context from register
+
+    |15 | 14 | 13 | 12 | 11 | 10 | 9 | 8 | 7 - 4 | 3 - 0  |
+    |---|----|----|----|----|----|---|---|-------|--------|
+    |0  | 0  | 0  | 0  | 0  | 0  | 1 | 1 |   x   |  REG   |
+
+	This can be used to restore a saved context to the interrupt
+	shadow registers, which will be copied to the immediate register
+	and the flags on an IRET instruction. Useful for implementing
+	an RTOS or supporting nested interrupts.
+
+	REG: The register to load the saved context from
+
+	MNEMONIC: RSIX (ReStore Interrupt conteXt)
 
 4. Single register ALU operation
 
@@ -69,7 +101,7 @@ Class 0 has 16 sub-classes, bits 11 - 8 of the opcode.
     |---|----|----|----|----|----|---|---|-------|
     |0  | 0  | 0  | 0  | 0  | 1  | 1 | 1 |   x   |
 
-	Halts the pipeline and relinquishes control of memory bus. Will wake on interrupt.
+	Halts execution. Will wake on interrupt.
 
 Class 1:  Immediate load
 ------------------------
@@ -285,11 +317,12 @@ Encoded as two words, first word being an immediate value
         7 - xor : DEST <- SRC1 ^ SRC2
     	8 - mul : DEST <- SRC1 * SRC2 (LO)
         9 - mulu : DEST <- SRC1 * SRC2 (HI)
-        10 - 11 : reserved
-        12: cmp 
-        13: test
+ 	10 - rrn : rotate nibble right
+	11 - rln : rotate nibble left
+        12 - cmp 
+        13 - test
         14 - umulu : DEST <- (UNSIGNED) SRC1 * (UNSIGNED) SRC2 (HI) 
-        15 - reserved
+        15 - bswap
  
     COND as per branch
     Result is stored / flags changed if COND
