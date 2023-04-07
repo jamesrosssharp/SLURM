@@ -408,3 +408,33 @@ void Assembly::assembleExRegAluOp(int lineNum, OpCode opcode, bool xregIsDest, c
 	assembledBytes.push_back(op & 0xff);
 	assembledBytes.push_back(op >> 8);
 }
+
+void Assembly::assembleStixRsix(int lineNum, OpCode opcode, Register regDest, std::vector<uint8_t>& assembledBytes)
+{
+
+	uint16_t op = SLRM_NOP_INSTRUCTION;
+
+	switch (opcode)
+	{
+		case OpCode::STIX:
+			op = SLRM_STIX_INSTRUCTION; 
+			break;
+		case OpCode::RSIX:
+			op = SLRM_RSIX_INSTRUCTION;
+			break;
+		default:
+		{
+			std::stringstream ss;
+			ss << "Unsupported branch operation on line " << lineNum << std::endl;
+			throw std::runtime_error(ss.str());  
+		}
+
+	}
+
+	op |= (uint16_t) regDest;
+
+	assembledBytes.push_back(op & 0xff);
+	assembledBytes.push_back(op >> 8);
+
+}
+

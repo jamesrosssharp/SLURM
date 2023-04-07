@@ -207,6 +207,10 @@ void Statement::_assemble_one_register_opcode()
 		case OpCode::RSF:
 			Assembly::assembleOneRegAluOp(lineNum, opcode, regDest, assembledBytes);
 			break;
+		case OpCode::STIX:
+		case OpCode::RSIX:
+			Assembly::assembleStixRsix(lineNum, opcode, regDest, assembledBytes);
+			break;
 		default: {
 			std::stringstream ss;
 			ss << "Unsupported one register opcode on line " << lineNum << std::endl;	

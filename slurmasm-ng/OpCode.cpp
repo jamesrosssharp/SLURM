@@ -70,6 +70,8 @@ std::map<std::string, OpCode> opCodeMap = {
 	{"STB", OpCode::STB},
 	{"RRN", OpCode::RRN},
 	{"RLN", OpCode::RLN},
+	{"STIX", OpCode::STIX},
+	{"RSIX", OpCode::RSIX},
 };
 
 

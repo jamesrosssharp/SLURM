@@ -482,7 +482,7 @@ void AST::addRegisterToExtendedRegisterALUOp(int line_num, char* opcode, char* e
 
 void AST::addExtendedRegisterToRegisterALUOp(int line_num, char* opcode, char* reg, char* extended_reg)
 {
-	std::cout << "ex2reg: " << line_num << " " << opcode << " " << reg << "," << extended_reg << std::endl;
+//	std::cout << "ex2reg: " << line_num << " " << opcode << " " << reg << "," << extended_reg << std::endl;
 
 	m_currentStatement.regX.parse(line_num, extended_reg);
 

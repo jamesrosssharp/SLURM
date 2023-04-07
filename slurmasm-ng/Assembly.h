@@ -22,4 +22,5 @@ namespace Assembly
 	void assembleSleep(int lineNum, std::vector<uint8_t>& assembledBytes);
 	void assembleNop(int lineNum, std::vector<uint8_t>& assembledBytes);
 	void assembleExRegAluOp(int lineNum, OpCode opcode, bool xregIsDest, const ExReg& regX, Register reg, std::vector<uint8_t>& assembledBytes);
+	void assembleStixRsix(int lineNum, OpCode opcode, Register regDest, std::vector<uint8_t>& assembledBytes);
 }

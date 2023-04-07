@@ -76,6 +76,8 @@ sleep_func:
 	nop
 	cli
 	bl after_sleep_func
+	stix r3
+	rsix r3
 	ret
 	.endfunc
 
