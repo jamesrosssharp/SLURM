@@ -91,10 +91,7 @@ rtos_resume_task:
 	// have come from.
 
 	// Check if task is "from_int". If so, handle appropriately 
-	ld r2, [g_runningTask]
-	mov r1, g_tasks
-	mul r2, TASK_STRUCTURE_SIZE
-	add r1, r2	// R1 : rtos_task_context* 
+	ld r1, [g_runningTask]
 	ld  r2, [r1, TASK_STRUCTURE_FLAGS]
         test r2, TASK_FLAGS_FROM_INT 	
 	bnz resume_task_from_int
@@ -157,7 +154,86 @@ resume_task_from_int:
 
 
 // extern void 	rtos_lock_mutex();
+	.global   rtos_lock_mutex
+	.function rtos_lock_mutex
+
+rtos_lock_mutex:
+	ret
+
+	.endfunc
+
 // extern void	rtos_unlock_mutex();
-// extern void	rots_unlock_mutex_from_isr();
+
+
+// extern void	rtos_unlock_mutex_from_isr();
+
+	.global   rtos_unlock_mutex_from_isr
+	.function rtos_unlock_mutex_from_isr
+
+rtos_unlock_mutex_from_isr:
+	ret	
+
+	.endfunc
+
+// rtos_handle_interrupt
+
+	.global rtos_handle_interrupt
+	.function rtos_handle_interrupt
+
+rtos_handle_interrupt:
+	// We have been called in interrupt context (interrupts are now disabled)
+	// with previous value of r1 on [r13,-2]
+	//
+	// We need to preserve more registers to get a handle to the current task
+	//
+	// Preserve current task context
+
+	st [r13, -4], r2
+	ld r2, [g_runningTask]
+
+	st [r2, TASK_STRUCTURE_R3], r3
+	st [r2, TASK_STRUCTURE_R4], r4
+	st [r2, TASK_STRUCTURE_R5], r5
+	st [r2, TASK_STRUCTURE_R6], r6
+	st [r2, TASK_STRUCTURE_R7], r7
+	st [r2, TASK_STRUCTURE_R8], r8
+	st [r2, TASK_STRUCTURE_R9], r9
+	st [r2, TASK_STRUCTURE_R10], r10
+	st [r2, TASK_STRUCTURE_R11], r11
+	st [r2, TASK_STRUCTURE_R12], r12
+	st [r2, TASK_STRUCTURE_R13], r13
+	st [r2, TASK_STRUCTURE_R14], r14
+	st [r2, TASK_STRUCTURE_R15], r15
+
+	ld r3, [r13, -4]
+	st [r2, TASK_STRUCTURE_R2], r3
+	ld r3, [r13, -2]
+	st [r2, TASK_STRUCTURE_R1], r3
+	
+	// All registers preserved - store interrupt context
+
+	stix r3
+	st [r2, TASK_STRUCTURE_ICTX], r3
+
+	// Mark current task as "from_int"
+
+	ld r3, [r2, TASK_STRUCTURE_FLAGS]
+	or r3, TASK_FLAGS_FROM_INT
+	st [r2, TASK_STRUCTURE_FLAGS], r3
+
+	// Important - mark contents of r14 as task pc
+
+	st [r2, TASK_STRUCTURE_PC], r14
+
+	// Branch to handler - running task may change
+
+	.extern rtos_handle_interrupt_callback
+	mov r4, r1 // Interrupt index
+	bl rtos_handle_interrupt_callback
+	
+	// Resume next task - may be same task, or new task
+	ba rtos_resume_task
+
+	.endfunc
 
 	.end

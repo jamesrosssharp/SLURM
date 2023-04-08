@@ -40,6 +40,7 @@ SOFTWARE.
 #include "sprite.h"
 #include "background.h"
 #include "demo.h"
+#include "rtos.h"
 
 volatile short flash_complete 	= 0;
 volatile short vsync 		= 0;
@@ -67,6 +68,15 @@ unsigned char bg_x_sin = 0;
 unsigned char bg_y_sin = 0;
 char __pad0;
 
+mutex_t my_mutex;
+
+void my_vsync_handler()
+{
+//	my_printf("!");
+	rtos_unlock_mutex_from_isr(&my_mutex);
+}
+
+
 int main()
 {
 	int sprites = 0;
@@ -78,7 +88,8 @@ int main()
 	__out(0x5f02, 1);
 	__out(0x5d22, 0x0000);
 	__out(0x5d24, 0);
-	
+
+#if 0	
 	enable_interrupts();
 	init_music_player();
 	sprite_init_sprites();
@@ -112,4 +123,22 @@ int main()
 	}
 
 	return 0;
+
+#endif
+
+
+	// Add a vsync interrupt handler
+	rtos_set_interrupt_handler(SLURM_INTERRUPT_VSYNC_IDX, my_vsync_handler);
+
+	// Spin in a loop
+	
+	while (1)
+	{
+		rtos_lock_mutex(&my_mutex);
+		frame++;
+
+		if ((frame & 63) == 0)
+			my_printf("Main thread!\r\n");
+	}
+
 }

@@ -31,6 +31,8 @@ SOFTWARE.
 #include "rtos_config.h"
 #include "printf.h"
 
+#include <slurminterrupt.h>
+
 struct rtos_task_context {
 
 	// We only preserve r1 - r15... x16 - x127 must be used with discretion in
@@ -52,7 +54,7 @@ struct rtos_task_context {
 };
 
 struct rtos_task_context g_tasks[RTOS_NUM_TASKS];
-unsigned short g_runningTask = 0;
+struct rtos_task_context* g_runningTask = 0;
 
 unsigned short g_idle_task_stack[64];
 
@@ -60,9 +62,15 @@ unsigned short g_idle_task_stack[64];
 
 static void rtos_idle_task()
 {
+	int tick = 0;
 	
 	while (1)
 	{
+		tick++;
+
+		if ((tick & 255) == 0)
+			my_printf("Idle task!\r\n");
+
 		__sleep();
 	}
 }
@@ -78,11 +86,13 @@ extern short _sstack[];
 
 extern void exit();
 
+void (*g_irq_handlers[16])() = {0};
+
 void rtos_trap_task_end()
 {
 	int i;
 
-	g_tasks[g_runningTask].t_flags &= ~TASK_FLAGS_ENABLED;
+	g_runningTask->t_flags &= ~TASK_FLAGS_ENABLED;
 	
 	// Find another task
 	
@@ -90,7 +100,7 @@ void rtos_trap_task_end()
 	{
 		if (g_tasks[i].t_flags & TASK_FLAGS_ENABLED)
 		{
-			g_runningTask = i;
+			g_runningTask = &g_tasks[i];
 			rtos_resume_task();
 		}
 	}
@@ -126,6 +136,8 @@ void rtos_create_task(int task_id, void (*task_entry)(), void* sstack, void* est
 
 void rtos_init()
 {
+	// We assume we are in a critical section with interrupts disabled.
+
 	int i = 0;
 
 	my_printf("RTOS Init!\r\n");
@@ -145,11 +157,35 @@ void rtos_init()
 		rtos_create_task(i, 0, 0, 0, 0);
 	}
 
+	// Zero out all IRQ handlers
+
+	for (i = 0; i < NUM_SLURM_INTERRUPTS; i++)
+	{
+		g_irq_handlers[i] = 0;
+	}
+
+	// Enable all interrupts
+
+	__out(0x7000, SLURM_INTERRUPT_VSYNC | SLURM_INTERRUPT_FLASH_DMA | SLURM_INTERRUPT_AUDIO);
+
 	// Set main task as current task
-	g_runningTask = RTOS_NUM_TASKS - 2;
+	g_runningTask = &g_tasks[RTOS_NUM_TASKS - 2];
 
 	// Commence main task
 	rtos_resume_task();
+}
+
+
+void rtos_set_interrupt_handler(unsigned short irq, void (*handler)())
+{
+	// Simple assignment is atomic on slurm16 platform
+	g_irq_handlers[irq] = handler;
+}
+
+void rtos_handle_interrupt_callback(unsigned short irq)
+{
+	if (g_irq_handlers[irq])
+		g_irq_handlers[irq]();	
 }
 
 /* All other functions are implemented in assembler */
@@ -161,4 +197,5 @@ void rtos_printy(unsigned short reg)
 	my_printf("Reg: %x tasks: %x\r\n", reg, g_tasks);
 	while (1) ;
 } 
+
 

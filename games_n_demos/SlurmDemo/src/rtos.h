@@ -51,11 +51,14 @@ SOFTWARE.
 
 	extern void 	rtos_resume_task();
 
-	extern void 	rtos_lock_mutex();
-	extern void	rtos_unlock_mutex();
-	extern void	rots_unlock_mutex_from_isr();
+	extern void 	rtos_lock_mutex(mutex_t* mut);
+	extern void	rtos_unlock_mutex(mutex_t* mut);
+	extern void	rtos_unlock_mutex_from_isr(mutex_t* mut);
 
 	void 		rtos_init();
+	void 		rtos_set_interrupt_handler(unsigned short irq, void (*handler)());
+
+	void 		rtos_handle_interrupt_callback(unsigned short irq);
 
 #endif
 

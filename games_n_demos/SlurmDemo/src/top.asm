@@ -1,4 +1,6 @@
 
+	#include <slurminterrupt.h>
+
 	.section vectors
 my_vector_table:
 RESET_VEC:
@@ -142,18 +144,25 @@ g_vsync:
 	dw 0
 	
 	.section text
+	.extern rtos_handle_interrupt
 
 	.function vsync_handler
 vsync_handler:
 	st [r13, -2], r1
 
-	mov r1, 1
+	/*mov r1, 1
 	st [vsync], r1
 	mov r1, 2
 	out [r0, 0x7001], r1
 	
 	ld r1, [r13, -2]
-	iret
+	iret*/
+
+	mov r1, SLURM_INTERRUPT_VSYNC
+	out [0x7001], r1
+	
+	mov r1, SLURM_INTERRUPT_VSYNC_IDX
+	ba rtos_handle_interrupt
 
 	.endfunc
 
@@ -161,7 +170,7 @@ vsync_handler:
 	.function audio_handler
 audio_handler:
 	st [r13, -2], r1
-	st [r13, -4], r15
+/*	st [r13, -4], r15
 
 	mov 	r1, 1
 	st [audio], r1
@@ -174,6 +183,13 @@ audio_handler:
 	
 	ld r1, [r13, -2]
 	ld r15, [r13, -4]
+*/
+
+	mov r1, SLURM_INTERRUPT_AUDIO
+	out [0x7001], r1
+	
+	mov r1, SLURM_INTERRUPT_AUDIO_IDX
+	ba  rtos_handle_interrupt
 
 	iret
 
@@ -183,13 +199,20 @@ audio_handler:
 flash_handler:
 	st [r13, -2], r1
 
-	mov r1, 1
+/*	mov r1, 1
 	st [flash_complete], r1
 	mov r1, 8
 	out [r0, 0x7001], r1
 	
 	ld r1, [r13, -2]
 	iret
+*/
+	mov r1, SLURM_INTERRUPT_FLASH_DMA
+	out [0x7001], r1
+
+	mov r1, SLURM_INTERRUPT_FLASH_DMA_IDX
+	ba  rtos_handle_interrupt
+
 	.endfunc
 
 	.end
