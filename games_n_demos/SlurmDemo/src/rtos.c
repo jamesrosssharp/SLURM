@@ -50,13 +50,13 @@ struct rtos_task_context {
 	void* stack;
 
 	// Object the 
-	struct wait_object* wait_object;
+	struct rtos_wait_object* wait_object;
 };
 
 struct rtos_task_context g_tasks[RTOS_NUM_TASKS];
 struct rtos_task_context* g_runningTask = 0;
 
-unsigned short g_idle_task_stack[64];
+unsigned short g_idle_task_stack[256];
 
 /* Idle task */
 
@@ -186,6 +186,59 @@ void rtos_handle_interrupt_callback(unsigned short irq)
 {
 	if (g_irq_handlers[irq])
 		g_irq_handlers[irq]();	
+}
+
+void rtos_reschedule_wait_object(struct rtos_wait_object* wobj)
+{
+
+	int i;
+	struct rtos_task_context* task;
+
+	g_runningTask->wait_object 	= wobj;
+	g_runningTask->t_flags 		|= TASK_FLAGS_WAITING; 
+		
+	// Find a suitable task to run next
+
+	task = g_tasks;
+
+	for (i = 0; i < RTOS_NUM_TASKS; i++)
+	{
+		if ((task->t_flags & TASK_FLAGS_ENABLED) && !(task->t_flags & TASK_FLAGS_WAITING))
+		{
+			g_runningTask = task;
+			break;	
+		}
+
+		task++;
+	}	
+
+	// Yield
+	rtos_resume_task();
+}
+
+int	rtos_reschedule_wait_object_released_from_isr(struct rtos_wait_object* wobj)
+{
+
+	int i;
+	struct rtos_task_context* task;
+	int ret = 0;
+
+	// Awaken any sleeping tasks waiting on this object
+	
+	task = g_tasks;
+
+	for (i = 0; i < RTOS_NUM_TASKS; i++)
+	{
+		if ((task->t_flags & TASK_FLAGS_ENABLED) && (task->t_flags & TASK_FLAGS_WAITING) && (task->wait_object == wobj))
+		{
+			task->t_flags &= ~TASK_FLAGS_WAITING;
+			g_runningTask = task;
+			ret = 1;
+		}
+
+		task ++;
+	}
+	return ret;
 }
 
 /* All other functions are implemented in assembler */

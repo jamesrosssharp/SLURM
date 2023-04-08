@@ -47,7 +47,7 @@ SOFTWARE.
 
 	typedef struct rtos_wait_object mutex_t;
 
-	#define RTOS_MUTEX_INITIALIZER = {WOT_MUTEX, 0};
+	#define RTOS_MUTEX_INITIALIZER {WOT_MUTEX, 0};
 
 	extern void 	rtos_resume_task();
 
@@ -59,6 +59,9 @@ SOFTWARE.
 	void 		rtos_set_interrupt_handler(unsigned short irq, void (*handler)());
 
 	void 		rtos_handle_interrupt_callback(unsigned short irq);
+
+	void		rtos_reschedule_wait_object(struct rtos_wait_object* wobj);
+	int		rtos_reschedule_wait_object_released_from_isr(struct rtos_wait_object* wobj);
 
 #endif
 

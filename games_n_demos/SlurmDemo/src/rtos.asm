@@ -80,6 +80,17 @@ TASK_STRUCTURE_WOBJ  equ 38
 
 TASK_STRUCTURE_SIZE  equ 40
 
+/*
+ 	struct rtos_wait_object {
+		unsigned char type; 
+		unsigned char param; 
+	};
+*/
+
+MUTEX_TYPE equ 0
+MUTEX_VAR  equ 2
+
+
 	.extern main
 // extern void 	rtos_resume_task();
 	.global rtos_resume_task
@@ -158,7 +169,53 @@ resume_task_from_int:
 	.function rtos_lock_mutex
 
 rtos_lock_mutex:
-	ret
+
+	// Enter critical section
+	cli
+
+	// Preserve current context
+
+	st [r13, -2], r1
+	ld r1, [g_runningTask]
+
+	st [r1, TASK_STRUCTURE_R2], r2
+	st [r1, TASK_STRUCTURE_R3], r3
+	st [r1, TASK_STRUCTURE_R4], r4
+	st [r1, TASK_STRUCTURE_R5], r5
+	st [r1, TASK_STRUCTURE_R6], r6
+	st [r1, TASK_STRUCTURE_R7], r7
+	st [r1, TASK_STRUCTURE_R8], r8
+	st [r1, TASK_STRUCTURE_R9], r9
+	st [r1, TASK_STRUCTURE_R10], r10
+	st [r1, TASK_STRUCTURE_R11], r11
+	st [r1, TASK_STRUCTURE_R12], r12
+	st [r1, TASK_STRUCTURE_R13], r13
+	st [r1, TASK_STRUCTURE_R14], r14
+	st [r1, TASK_STRUCTURE_R15], r15
+
+	ld r2, [r13, -2]
+	st [r1, TASK_STRUCTURE_R1], r2
+
+	// Store task PC
+
+	st [r1, TASK_STRUCTURE_PC], r15
+	
+	// Test mutex
+	ld r2, [r4, MUTEX_VAR]
+	or r2, r2
+
+	bz lock_mutex_mutex_is_unlocked
+
+	// Mutex is locked. Put task to sleep
+
+	ba rtos_reschedule_wait_object
+
+
+lock_mutex_mutex_is_unlocked:
+	mov r2, 1
+	st [r4, MUTEX_VAR], r2
+	
+	ba rtos_resume_task
 
 	.endfunc
 
@@ -171,7 +228,24 @@ rtos_lock_mutex:
 	.function rtos_unlock_mutex_from_isr
 
 rtos_unlock_mutex_from_isr:
-	ret	
+	
+	sub r13, 4
+	st [r13, 2], r15
+
+	bl rtos_reschedule_wait_object_released_from_isr
+
+	or r2, r2
+	bnz lock
+
+	// Unlock mutex - it was not consumed
+	st [r4, MUTEX_VAR], r0
+
+lock:
+
+	ld r15, [r13, 2]
+	add r13, 4
+
+	ret
 
 	.endfunc
 

@@ -63,12 +63,12 @@ extern char sine_table[];
 
 int slurm_y = 0;
 int slurm_x = 0;
-unsigned char slurm_sin = 0;
-unsigned char bg_x_sin = 0;
-unsigned char bg_y_sin = 0;
-char __pad0;
+unsigned short slurm_sin = 0;
+unsigned short bg_x_sin = 0;
+unsigned short bg_y_sin = 0;
+//char __pad0;
 
-mutex_t my_mutex;
+mutex_t my_mutex = RTOS_MUTEX_INITIALIZER;
 
 void my_vsync_handler()
 {

@@ -1,8 +1,8 @@
 %{
 #define INTTMP 0x03C0
 #define INTVAR 0x1C00
-#define FLTTMP 0x000f0ff0
-#define FLTVAR 0xfff00000
+#define FLTTMP 0x00000000
+#define FLTVAR 0x00000000
 
 #define INTRET 0x0004
 #define FLTRET 0x00000003
@@ -438,23 +438,23 @@ stmt: GTF4(reg,reg)  ""  fp()
 stmt: NEF4(reg,reg)  ""  fp()
 ar:   ADDRGP2     "%a"
 
-reg:  CALLF4(ar)  "\tbl %0\n"  fp()
+reg:  CALLF4(ar)  "\tbl %0\n"  1
 reg:  CALLI2(ar)  "\tbl %0\n"  1
 reg:  CALLI4(ar)  "\tbl %0\n"  1
 reg:  CALLP2(ar)  "\tbl %0\n"  1
 reg:  CALLU2(ar)  "\tbl %0\n"  1
 reg:  CALLU4(ar)  "\tbl %0\n"  1
 stmt: CALLV(ar)  "\tbl %0\n"  1
-ar: reg    "r%0"
+ar: reg    "[r%0]"
 ar: CNSTP2  "%a"   range(a, 0, 0x0ffff)
-stmt: RETF4(reg)  "# ret\n"  fp()
+stmt: RETF4(reg)  "# ret\n"  1
 stmt: RETI2(reg)  "# ret\n"  1
 stmt: RETI4(reg)  "# ret\n"  1
 stmt: RETU2(reg)  "# ret\n"  1
 stmt: RETU4(reg)  "# ret\n"  1
 stmt: RETP2(reg)  "# ret\n"  1
 stmt: RETV(reg)   "# ret\n"  1
-stmt: ARGF4(reg)  "# arg\n"  fp()
+stmt: ARGF4(reg)  "# arg\n"  1
 stmt: ARGI2(reg)  "# arg\n"  1
 stmt: ARGI4(reg)  "# arg\n"  1
 stmt: ARGP2(reg)  "# arg\n"  1
@@ -524,14 +524,14 @@ static void target(Node p) {
                 }
                 break;
         case CALL+V:
-                rtarget(p, 0, ireg[25]);
+                rtarget(p, 0, ireg[15]);
                 break;
         case CALL+F:
-                rtarget(p, 0, ireg[25]);
+                rtarget(p, 0, ireg[15]);
                 setreg(p, freg2[0]);
                 break;
         case CALL+I: case CALL+P: case CALL+U:
-                rtarget(p, 0, ireg[25]);
+                rtarget(p, 0, ireg[15]);
                 setreg(p, ireg[2]);
                 break;
         case RET+F:
