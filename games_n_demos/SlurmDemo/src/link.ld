@@ -50,7 +50,7 @@ SECTIONS
 		_ezero = .;
 	} > ram1
 
-	/* stack */
+	/* stacks */
 
 	.stack (NOLOAD):
    	{
@@ -59,6 +59,14 @@ SECTIONS
       		. = . + STACK_SIZE;
       		. = ALIGN(2);
       		_estack = .;
+		_saudiostack = .;
+		. = . + STACK_SIZE;
+		. = ALIGN(2);
+		_eaudiostack = .;
+		_sstoragestack = .;
+		. = . + STACK_SIZE;
+		. = ALIGN(2);
+		_estoragestack = .;
    	} > ram1
 
 	.data_mixer : {

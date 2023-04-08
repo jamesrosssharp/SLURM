@@ -54,13 +54,9 @@ copy_loop:
 	.extern _estack
 	mov r13, _estack
 	
-	.extern main
-	bl main
-	bl exit
-die:
-	sleep
-	ba die
-
+	.extern rtos_init
+	bl rtos_init
+	ba exit
 	.endfunc
 
 	.function putc
@@ -102,7 +98,10 @@ trace_hex:
 	.global exit
 exit:
 	out [r0, 0x6006], r0 
-	ret
+die:
+	sleep
+	ba die
+
 	.endfunc
 
 	.function __out

@@ -34,6 +34,7 @@ class AST {
 		void push_div();
 		void push_unary_neg();	
 		void push_char_literal(char *string);
+		void push_bitwise_complement();
 
 		void eval_stack();
 
@@ -65,6 +66,7 @@ class AST {
 		void addExtendedRegisterToRegisterALUOp(int line_num, char* opcode, char* reg, char* extended_reg);
 
 		void addPseudoOpWithStringLiteral(int line_num, char* opcode, char* string); 
+
  
 		/* print out AST */
 		void print();

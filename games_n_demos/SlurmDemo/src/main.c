@@ -73,12 +73,12 @@ int main()
 	int i;
 	int frame = 0;
 
+	my_printf("Hello world Slurm Demo!\n");
+	
 	__out(0x5f02, 1);
 	__out(0x5d22, 0x0000);
 	__out(0x5d24, 0);
 	
-	my_printf("Hello world Slurm Demo!\n");
-
 	enable_interrupts();
 	init_music_player();
 	sprite_init_sprites();

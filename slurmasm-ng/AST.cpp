@@ -105,9 +105,34 @@ void AST::push_char_literal(char *string)
 {
 	ExpressionNode* item = new ExpressionNode();
 	item->type = ITEM_NUMBER;
-	item->val.value = (int)string[0];
+	
+	std::string str = string;
+
+	if (str == "\\n")
+		item->val.value = '\n';
+	else if (str == "\\r")
+		item->val.value = '\r';
+	else if (str == "\\0")
+		item->val.value = '\0';
+	else
+		item->val.value = (int)string[0];
+	
 	item->left = item->right = NULL;
 	push_stack(item);
+}
+
+void AST::push_bitwise_complement()
+{
+	ExpressionNode* item = new ExpressionNode();
+	item->type = ITEM_COMPL;
+
+	if (!pop_stack(&item->left))
+		throw std::runtime_error("Parse error!");
+
+	item->right = NULL;
+
+	push_stack(item);
+
 }
 
 void AST::push_symbol(char *symbol)

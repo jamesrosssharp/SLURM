@@ -53,6 +53,7 @@
 %left PLUS MINUS
 %left MULT DIV
 %left NEG
+%left NOT
 
 // define the "terminal symbol" token types 
 %token <ival> INT
@@ -139,7 +140,8 @@ expression:
 	expression MULT expression	{ g_ast.push_mult(); } 	    |
 	expression DIV expression	{ g_ast.push_div(); } 	    |
 	OPEN_PARENTHESIS expression CLOSE_PARENTHESIS 		    | 
-	MINUS expression %prec NEG 	{ g_ast.push_unary_neg(); }
+	MINUS expression %prec NEG 	{ g_ast.push_unary_neg(); } |
+	NOT expression 			{ g_ast.push_bitwise_complement(); }
 	;
 
 /* pseudo op codes */

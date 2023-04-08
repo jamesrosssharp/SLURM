@@ -36,6 +36,9 @@ void print_expression(struct ExpressionNode* item)
 		case ITEM_UNARY_NEG:
 			printf("-");
 			break;
+		case ITEM_COMPL:
+			printf("~");
+			break;
 		case ITEM_NUMBER:
 			printf("%d", item->val.value);
 			return;
@@ -127,6 +130,8 @@ static int recurse_evaluate_with_symbol_table(struct ExpressionNode* item, SymTa
 			return recurse_evaluate_with_symbol_table(item->left, tab, success) / recurse_evaluate_with_symbol_table(item->right, tab, success);
 		case ITEM_UNARY_NEG:
 			return - recurse_evaluate_with_symbol_table(item->left, tab, success);
+		case ITEM_COMPL:
+			return ~ recurse_evaluate_with_symbol_table(item->left, tab, success);
 	}
 	return 0;
 }
@@ -332,6 +337,9 @@ std::ostream& operator << (std::ostream& os, const ExpressionNode& e)
 	{
 		case ITEM_UNARY_NEG:
 			os << "-";
+			break;
+		case ITEM_COMPL:
+			os << "~";
 			break;
 		case ITEM_NUMBER:
 			os << e.val.value;
