@@ -61,8 +61,9 @@ SOFTWARE.
 	void 		rtos_handle_interrupt_callback(unsigned short irq);
 
 	void		rtos_reschedule_wait_object(struct rtos_wait_object* wobj);
-	int		rtos_reschedule_wait_object_released_from_isr(struct rtos_wait_object* wobj);
+	int		rtos_reschedule_wait_object_released(struct rtos_wait_object* wobj);
 
+	void 		rtos_add_task(int task_id, void (*task_entry)(), void* sstack, void* estack);
 #endif
 
 #endif

@@ -18,6 +18,13 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <slurminterrupt.h>
 #include <bundle.h>
 
+void empty()
+{
+
+}
+
+#if 0
+
 #include "flash_control.h"
 
 #define MIX_CHANNELS 8 
@@ -701,4 +708,4 @@ void chip_tune_play()
 	}
 
 }
-
+#endif

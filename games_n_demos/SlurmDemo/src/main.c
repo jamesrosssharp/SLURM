@@ -36,7 +36,7 @@ SOFTWARE.
 
 #include "printf.h"
 #include "music.h"
-#include "flash_control.h"
+#include "storage.h"
 #include "sprite.h"
 #include "background.h"
 #include "demo.h"
@@ -49,12 +49,6 @@ volatile short audio 		= 0;
 #define SPRITE_SHEET_ADDRESS 0x8000
 #define SPRITE_WIDTH 128
 #define SPRITE_HEIGHT 75
-
-void enable_interrupts()
-{
-	__out(0x7000, SLURM_INTERRUPT_VSYNC | SLURM_INTERRUPT_FLASH_DMA | SLURM_INTERRUPT_AUDIO);
-	global_interrupt_enable();
-}
 
 unsigned short sprite_palette[16];
 unsigned short bg_palette[16];
@@ -127,6 +121,8 @@ int main()
 #endif
 
 
+	storage_init(STORAGE_TASK_ID);
+
 	// Add a vsync interrupt handler
 	rtos_set_interrupt_handler(SLURM_INTERRUPT_VSYNC_IDX, my_vsync_handler);
 
@@ -136,6 +132,13 @@ int main()
 	{
 		rtos_lock_mutex(&my_mutex);
 		frame++;
+
+		storage_load_synch(
+			slurm_sprite_flash_offset_lo, slurm_sprite_flash_offset_hi,
+			0, 0,
+			0, 1, slurm_sprite_flash_size_lo);
+		my_printf("Sprites loaded!");
+	
 
 		if ((frame & 63) == 0)
 			my_printf("Main thread!\r\n");

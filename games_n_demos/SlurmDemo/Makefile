@@ -43,7 +43,7 @@ $(ASSETS_H): $(ASSETS_SRC) assets/gen-assets.py $(CHIPTUNE_SLMSNG)
 
 $(BUILD_DIR)/%.c1: $(SRC_DIR)/%.c $(ASSETS_H) $(HEADERS)
 	mkdir -p $(BUILD_DIR)
-	$(CPP) -o $@ -I../../include -I$(BUILD_DIR) $<
+	$(CPP) -o $@ -I../../include -I$(SRC_DIR) -I$(BUILD_DIR) $<
 
 $(BUILD_DIR)/%.asm1: $(SRC_DIR)/%.asm $(HEADERS)
 	mkdir -p $(BUILD_DIR)

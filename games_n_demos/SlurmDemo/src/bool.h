@@ -1,6 +1,6 @@
 /*
 
-flash_control.h: Routines for programming the flash controller
+bool.h: Defines for booleans
 
 License: MIT License
 
@@ -25,11 +25,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef FLASH_CONTROL_H
-#define FLASH_CONTROL_H
+#ifndef BOOL_H
+#define BOOL_H
 
-void _do_flash_dma(unsigned short base_lo, unsigned short base_hi, unsigned short offset_lo, unsigned short offset_hi, void* address, short count, short wait);
-void do_flash_dma(unsigned short base_lo, unsigned short base_hi, unsigned short offset_lo, unsigned short offset_hi, void* address, short count);
-void do_flash_dma_full_address(unsigned short base_lo, unsigned short base_hi, unsigned short offset_lo, unsigned short offset_hi, void* address, short count);
+typedef unsigned short bool;
+#define true 1
+#define false 0
 
 #endif

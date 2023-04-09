@@ -112,7 +112,7 @@ void rtos_trap_task_end()
 }
 
 
-void rtos_create_task(int task_id, void (*task_entry)(), void* sstack, void* estack, short flags)
+static void rtos_create_task(int task_id, void (*task_entry)(), void* sstack, void* estack, short flags)
 {
 	int i = 0;
 	struct rtos_task_context* task;
@@ -133,6 +133,10 @@ void rtos_create_task(int task_id, void (*task_entry)(), void* sstack, void* est
 
 }
 
+void rtos_add_task(int task_id, void (*task_entry)(), void* sstack, void* estack)
+{
+	rtos_create_task(task_id, task_entry, sstack, estack, TASK_FLAGS_ENABLED);  
+}
 
 void rtos_init()
 {
@@ -216,7 +220,7 @@ void rtos_reschedule_wait_object(struct rtos_wait_object* wobj)
 	rtos_resume_task();
 }
 
-int	rtos_reschedule_wait_object_released_from_isr(struct rtos_wait_object* wobj)
+int	rtos_reschedule_wait_object_released(struct rtos_wait_object* wobj)
 {
 
 	int i;
@@ -232,7 +236,10 @@ int	rtos_reschedule_wait_object_released_from_isr(struct rtos_wait_object* wobj)
 		if ((task->t_flags & TASK_FLAGS_ENABLED) && (task->t_flags & TASK_FLAGS_WAITING) && (task->wait_object == wobj))
 		{
 			task->t_flags &= ~TASK_FLAGS_WAITING;
-			g_runningTask = task;
+
+			// Check if this new task is a higher priority than the running task, otherwise don't reschedule.
+			if ((unsigned short)task < (unsigned short)g_runningTask)
+				g_runningTask = task;
 			ret = 1;
 		}
 

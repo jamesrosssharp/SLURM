@@ -1,6 +1,6 @@
 /*
 
-flash.asm: Flash helper routines
+storage.asm: Flash helper routines
 
 License: MIT License
 
