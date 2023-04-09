@@ -23,8 +23,8 @@ global_interrupt_enable:
 	ret
 	.endfunc
 
-	.function global_interrupt_enable
-	.global global_interrupt_enable
+	.function global_interrupt_disable
+	.global global_interrupt_disable
 global_interrupt_disable:
 	cli
 	ret

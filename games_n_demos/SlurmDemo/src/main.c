@@ -135,13 +135,12 @@ int main()
 		rtos_lock_mutex(&my_mutex);
 		frame++;
 
-	/*	storage_load_synch(
+/*		storage_load_synch(
 			slurm_sprite_flash_offset_lo, slurm_sprite_flash_offset_hi,
 			0, 0,
 			0, 1, slurm_sprite_flash_size_lo);
 		my_printf("Sprites loaded!");
-	*/
-
+*/	
 		if ((frame & 63) == 0)
 			my_printf("Main thread!\r\n");
 	}

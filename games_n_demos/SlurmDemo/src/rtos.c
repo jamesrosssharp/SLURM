@@ -135,7 +135,9 @@ static void rtos_create_task(int task_id, void (*task_entry)(), void* sstack, vo
 
 void rtos_add_task(int task_id, void (*task_entry)(), void* sstack, void* estack)
 {
+	global_interrupt_disable();
 	rtos_create_task(task_id, task_entry, sstack, estack, TASK_FLAGS_ENABLED);  
+	global_interrupt_enable();
 }
 
 void rtos_init()
