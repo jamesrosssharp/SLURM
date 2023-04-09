@@ -122,6 +122,8 @@ int main()
 
 
 	storage_init(STORAGE_TASK_ID);
+	init_music_player(AUDIO_TASK_ID);
+
 
 	// Add a vsync interrupt handler
 	rtos_set_interrupt_handler(SLURM_INTERRUPT_VSYNC_IDX, my_vsync_handler);
@@ -133,12 +135,12 @@ int main()
 		rtos_lock_mutex(&my_mutex);
 		frame++;
 
-		storage_load_synch(
+	/*	storage_load_synch(
 			slurm_sprite_flash_offset_lo, slurm_sprite_flash_offset_hi,
 			0, 0,
 			0, 1, slurm_sprite_flash_size_lo);
 		my_printf("Sprites loaded!");
-	
+	*/
 
 		if ((frame & 63) == 0)
 			my_printf("Main thread!\r\n");

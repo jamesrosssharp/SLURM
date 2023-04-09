@@ -18,18 +18,12 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <slurminterrupt.h>
 #include <bundle.h>
 
-void empty()
-{
-
-}
-
-#if 0
-
-#include "flash_control.h"
+#include "storage.h"
 
 #define MIX_CHANNELS 8 
 
 #include "slide_tables.h"
+#include "rtos.h"
 
 unsigned short note_table_hi[] = {
 	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
@@ -110,6 +104,9 @@ extern char music_heap;
 extern unsigned char pattern_A;
 extern unsigned char pattern_B;
 
+extern unsigned short _saudiostack[];
+extern unsigned short _eaudiostack[];
+
 struct channel_t {
 	char* loop_start;
 	char* loop_end;
@@ -161,7 +158,13 @@ int load_slurm_sng()
 
 	my_printf("Hello world! %d\r\n", 22);		
 
-	do_flash_dma(song_flash_offset_lo, song_flash_offset_hi, 0, 0, (void*)&sng_hdr, sizeof(sng_hdr) / sizeof(short));
+	//do_flash_dma(song_flash_offset_lo, song_flash_offset_hi, 0, 0, (void*)&sng_hdr, sizeof(sng_hdr) / sizeof(short));
+	storage_load_synch(song_flash_offset_lo, song_flash_offset_hi, 
+		  0, 0, 
+		  (unsigned short)&sng_hdr, 0, 
+		  sizeof(sng_hdr) / sizeof(short));
+
+
 
 	my_printf("Playlist offset lo: %x hi: %x\r\n", sng_hdr.pl_offset_lo, sng_hdr.pl_offset_hi);
 	my_printf("Playlist len: %d\r\n", sng_hdr.playlist_size);
@@ -169,7 +172,11 @@ int load_slurm_sng()
 	offset_lo = sng_hdr.pl_offset_lo;
 	offset_hi = sng_hdr.pl_offset_hi;
 
-	do_flash_dma(song_flash_offset_lo, song_flash_offset_hi, offset_lo, offset_hi, (void*)&pl_hdr, sizeof(pl_hdr) / sizeof(short));
+	//do_flash_dma(song_flash_offset_lo, song_flash_offset_hi, offset_lo, offset_hi, (void*)&pl_hdr, sizeof(pl_hdr) / sizeof(short));
+	storage_load_synch(song_flash_offset_lo, song_flash_offset_hi, 
+		  offset_lo, offset_hi, 
+		  (unsigned short)&pl_hdr, 0, 
+		  sizeof(pl_hdr) / sizeof(short));
 
 	my_printf("Playlist chunk len: %d\r\n", pl_hdr.chunklen);
 
@@ -177,7 +184,11 @@ int load_slurm_sng()
 
 	my_printf("Heap: %x\n", heap);
 
-	do_flash_dma(song_flash_offset_lo, song_flash_offset_hi, offset_lo, offset_hi, heap, pl_hdr.chunklen >> 1);
+	//do_flash_dma(song_flash_offset_lo, song_flash_offset_hi, offset_lo, offset_hi, heap, pl_hdr.chunklen >> 1);
+	storage_load_synch(song_flash_offset_lo, song_flash_offset_hi, 
+		  offset_lo, offset_hi, 
+		  (unsigned short)heap, 0, 
+		  pl_hdr.chunklen >> 1);
 
 	for (i = 0; i < sng_hdr.playlist_size; i++)
 		my_printf("Pl %d: %d\r\n", i, heap[i]);
@@ -195,10 +206,18 @@ int load_slurm_sng()
 	offset_lo = sng_hdr.sample_offset_lo;
 	offset_hi = sng_hdr.sample_offset_hi;
 
+	my_printf("Offset lo: %x hi: %x\r\n", offset_lo, offset_hi);
+
 	for (i = 0; i < sng_hdr.num_samples; i++)
 	{
 		struct sample* samp = (struct sample*)&g_samples[i];
-		do_flash_dma(song_flash_offset_lo, song_flash_offset_hi, offset_lo, offset_hi, (void*)samp, sizeof(struct slurmsng_sample) / sizeof(short));
+		//do_flash_dma(song_flash_offset_lo, song_flash_offset_hi, offset_lo, offset_hi, (void*)samp, sizeof(struct slurmsng_sample) / sizeof(short));
+
+		storage_load_synch(song_flash_offset_lo, song_flash_offset_hi, 
+		  offset_lo, offset_hi, 
+		  (unsigned short)samp, 0, 
+		  sizeof(struct slurmsng_sample) / sizeof(short));
+
 		my_printf("Sample: %d len: %d\r\n", i, samp->sample_len);
 
 		add_offset(&offset_lo, &offset_hi, sizeof(struct slurmsng_sample), 0);
@@ -211,7 +230,11 @@ int load_slurm_sng()
 
 		samp->offset = heap;
 
-		do_flash_dma(song_flash_offset_lo, song_flash_offset_hi, offset_lo, offset_hi, (void*)heap, samp->sample_len >> 1);
+		//do_flash_dma(song_flash_offset_lo, song_flash_offset_hi, offset_lo, offset_hi, (void*)heap, samp->sample_len >> 1);
+		storage_load_synch(song_flash_offset_lo, song_flash_offset_hi, 
+		  offset_lo, offset_hi, 
+		  (unsigned short)heap, 0, 
+		  samp->sample_len >> 1);
 
 		heap = (char*)my_add((short)heap, (short)samp->sample_len);
 
@@ -235,7 +258,12 @@ int load_slurm_sng()
 	for (i = 0; i < pattern; i++)
 		add_offset(&offset_lo, &offset_hi, SLURM_PATTERN_SIZE, 0);
 	
-	do_flash_dma(song_flash_offset_lo, song_flash_offset_hi, offset_lo, offset_hi, (void*)&pattern_A, (SLURM_PATTERN_SIZE >> 1) - 1);
+	//do_flash_dma(song_flash_offset_lo, song_flash_offset_hi, offset_lo, offset_hi, (void*)&pattern_A, (SLURM_PATTERN_SIZE >> 1) - 1);
+	storage_load_synch(song_flash_offset_lo, song_flash_offset_hi, 
+		  offset_lo, offset_hi, 
+		  (unsigned short)&pattern_A, 0, 
+		  (SLURM_PATTERN_SIZE >> 1));
+
 
 	// Preload next pattern
 
@@ -252,7 +280,11 @@ int load_slurm_sng()
 	for (i = 0; i < pattern; i++)
 		add_offset(&offset_lo, &offset_hi, SLURM_PATTERN_SIZE, 0);
 	
-	do_flash_dma(song_flash_offset_lo, song_flash_offset_hi, offset_lo, offset_hi, (void*)&pattern_B, (SLURM_PATTERN_SIZE >> 1) - 1);
+	//do_flash_dma(song_flash_offset_lo, song_flash_offset_hi, offset_lo, offset_hi, (void*)&pattern_B, (SLURM_PATTERN_SIZE >> 1) - 1);
+	storage_load_synch(song_flash_offset_lo, song_flash_offset_hi, 
+		  offset_lo, offset_hi, 
+		  (unsigned short)&pattern_B, 0, 
+		  (SLURM_PATTERN_SIZE >> 1));
 
 	for (i = 0; i < MIX_CHANNELS; i ++)
 	{
@@ -560,8 +592,26 @@ short speed_lookup[] = {
 250,249,248,247,246,245,244,243,242,241,240
 };
 
+static mutex_t audio_int_mutex 	  = RTOS_MUTEX_INITIALIZER; /* Interrupt mutex - wake up queue runner */
 
-void init_music_player()
+static void audio_interrupt()
+{
+	mix_audio_3_update();
+	rtos_unlock_mutex_from_isr(&audio_int_mutex);
+}
+
+static void audio_task()
+{
+
+	while (1)
+	{
+		rtos_lock_mutex(&audio_int_mutex);
+		chip_tune_play();
+	}
+
+}
+
+void init_music_player(int task_id)
 {
 	int i;
 
@@ -576,8 +626,17 @@ void init_music_player()
 	for (i = 0; i < MIX_CHANNELS; i++)
 		play_sample(i, 0, 0, 0, 0, 0, 0, 0);
 
-	init_audio();
 
+	// Install out interrupt handler
+	rtos_set_interrupt_handler(SLURM_INTERRUPT_AUDIO_IDX, audio_interrupt);
+
+	// Start audio core
+	init_audio();
+	
+	// Create audio thread
+
+	rtos_add_task(task_id, audio_task, _saudiostack, _eaudiostack);
+	
 }
 
 static int count;
@@ -691,9 +750,14 @@ void chip_tune_play()
 					for (i = 0; i < pattern; i++)
 						add_offset(&offset_lo, &offset_hi, SLURM_PATTERN_SIZE, 0);
 					
-					_do_flash_dma(song_flash_offset_lo, song_flash_offset_hi, offset_lo, offset_hi,(void*)((unsigned short)(cur_patt_buf ? &pattern_B : &pattern_A) >> 1), 
-							(SLURM_PATTERN_SIZE >> 1) - 1, 0);
-					
+					//_do_flash_dma(song_flash_offset_lo, song_flash_offset_hi, offset_lo, offset_hi,(void*)((unsigned short)(cur_patt_buf ? &pattern_B : &pattern_A) >> 1), 
+					//		(SLURM_PATTERN_SIZE >> 1) - 1, 0);
+				
+					storage_load_asynch(song_flash_offset_lo, song_flash_offset_hi, 
+						  offset_lo, offset_hi, 
+						  (unsigned short)(cur_patt_buf ? &pattern_B : &pattern_A), 0, 
+						  (SLURM_PATTERN_SIZE >> 1), 0, 0);
+	
 					cur_patt_buf = !cur_patt_buf;
 					row = 0;
 
@@ -708,4 +772,3 @@ void chip_tune_play()
 	}
 
 }
-#endif

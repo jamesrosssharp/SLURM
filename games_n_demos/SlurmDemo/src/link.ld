@@ -15,7 +15,9 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 
 BOOTLOADER_SIZE = 0x200;
-STACK_SIZE 	= 0x800;
+STACK_SIZE 	= 0x400;
+AUDIO_STACK_SIZE = 0x400;
+STORAGE_STACK_SIZE = 0x400;
 
 MEMORY {
 	bootloader (wx) : ORIGIN = 0x0000, LENGTH = BOOTLOADER_SIZE
@@ -60,11 +62,11 @@ SECTIONS
       		. = ALIGN(2);
       		_estack = .;
 		_saudiostack = .;
-		. = . + STACK_SIZE;
+		. = . + AUDIO_STACK_SIZE;
 		. = ALIGN(2);
 		_eaudiostack = .;
 		_sstoragestack = .;
-		. = . + STACK_SIZE;
+		. = . + STORAGE_STACK_SIZE;
 		. = ALIGN(2);
 		_estoragestack = .;
    	} > ram1

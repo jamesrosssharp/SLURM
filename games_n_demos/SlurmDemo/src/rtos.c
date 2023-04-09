@@ -239,8 +239,12 @@ int	rtos_reschedule_wait_object_released(struct rtos_wait_object* wobj)
 
 			// Check if this new task is a higher priority than the running task, otherwise don't reschedule.
 			if ((unsigned short)task < (unsigned short)g_runningTask)
+			{
 				g_runningTask = task;
+			}
+
 			ret = 1;
+			break;
 		}
 
 		task ++;

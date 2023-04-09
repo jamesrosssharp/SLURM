@@ -18,7 +18,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #ifndef MUSIC_H
 #define MUSIC_H
 
-void init_music_player();
+void init_music_player(int task_id);
 void chip_tune_play();
 
 #endif

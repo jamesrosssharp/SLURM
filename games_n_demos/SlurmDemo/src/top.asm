@@ -191,8 +191,6 @@ audio_handler:
 	mov r1, SLURM_INTERRUPT_AUDIO_IDX
 	ba  rtos_handle_interrupt
 
-	iret
-
 	.endfunc
 
 	.function flash_handler
