@@ -100,7 +100,7 @@ extern short calculate_flash_offset_hi(unsigned short base_lo, unsigned short ba
 extern short calculate_flash_offset_lo(unsigned short base_lo, unsigned short base_hi, unsigned short offset_lo, unsigned short offset_hi);
 extern void  add_offset(unsigned short* base_lo, unsigned short* base_hi, unsigned short offset_lo, unsigned short offset_hi);
 
-extern char music_heap;
+extern unsigned char music_heap[];
 extern unsigned char pattern_A;
 extern unsigned char pattern_B;
 
@@ -137,7 +137,7 @@ struct channel_t {
 
 extern struct channel_t channel_info[]; 
 
-#define MUSIC_HEAP_SIZE_BYTES 24*1024
+#define MUSIC_HEAP_SIZE_BYTES 16*1024
 
 short my_add(short a, short b)
 {
@@ -147,8 +147,8 @@ short my_add(short a, short b)
 int load_slurm_sng()
 {
 	char *data;
-	char *heap = &music_heap;
-	char *heap_end = &music_heap + MUSIC_HEAP_SIZE_BYTES;
+	unsigned char *heap = music_heap;
+	unsigned char *heap_end = music_heap + MUSIC_HEAP_SIZE_BYTES;
 	int i;
 	int heap_offset = 0;
 	unsigned short offset_lo = 0;
@@ -199,7 +199,7 @@ int load_slurm_sng()
 
 	// This hack is to work around lcc getting kids in wrong order
 	// such that the addition is corrupted
-	heap = (char*)my_add((short)pl_hdr.chunklen,(short)heap);
+	heap = (unsigned char*)my_add((unsigned short)pl_hdr.chunklen,(unsigned short)heap);
 
 	my_printf("Num samples: %d\r\n", sng_hdr.num_samples);
 
@@ -222,13 +222,13 @@ int load_slurm_sng()
 
 		add_offset(&offset_lo, &offset_hi, sizeof(struct slurmsng_sample), 0);
 	
-		if ((unsigned short)(heap + samp->sample_len) > (unsigned short)heap_end)
+		if ((heap + samp->sample_len) > heap_end)
 		{
 			my_printf("Samples too large! %x %x %x\r\n", heap, (heap + samp->sample_len), heap_end);
 			return -1;
 		}
 
-		samp->offset = heap;
+		samp->offset = (char*)heap;
 
 		//do_flash_dma(song_flash_offset_lo, song_flash_offset_hi, offset_lo, offset_hi, (void*)heap, samp->sample_len >> 1);
 		storage_load_synch(song_flash_offset_lo, song_flash_offset_hi, 
@@ -236,12 +236,12 @@ int load_slurm_sng()
 		  (unsigned short)heap, 0, 
 		  samp->sample_len >> 1);
 
-		heap = (char*)my_add((short)heap, (short)samp->sample_len);
+		heap = (unsigned char*)my_add((unsigned short)heap, (unsigned short)samp->sample_len);
 
 		add_offset(&offset_lo, &offset_hi, samp->sample_len, 0);
 	}
 
-	my_printf("Loaded %d bytes of samples. \r\n", heap - &music_heap);
+	my_printf("Loaded %d bytes of samples. \r\n", heap - music_heap);
 
 	// Load pattern A
 

@@ -15,14 +15,13 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 
 BOOTLOADER_SIZE = 0x200;
-STACK_SIZE 	= 0x1000;
-AUDIO_STACK_SIZE = 0x800;
-STORAGE_STACK_SIZE = 0x800;
+STACK_SIZE 	= 0x800;
+AUDIO_STACK_SIZE = 0x400;
+STORAGE_STACK_SIZE = 0x400;
 
 MEMORY {
 	bootloader (wx) : ORIGIN = 0x0000, LENGTH = BOOTLOADER_SIZE
-	ram1 (wx) : LENGTH = 0x8000 - BOOTLOADER_SIZE, ORIGIN = BOOTLOADER_SIZE 
-	ram2 (wx) : LENGTH = 0x8000, ORIGIN = 0x8000
+	ram1 (wx) : LENGTH = 0x10000 - BOOTLOADER_SIZE, ORIGIN = BOOTLOADER_SIZE 
 }
 
 SECTIONS
@@ -43,6 +42,11 @@ SECTIONS
 	.data : {
 		. = ALIGN(32);
 		*( .data )
+	} > ram1
+
+	.data_mixer : {
+		. = ALIGN(0x100);
+		*( .mixer3.data )
 	} > ram1
 
 	.bss (NOLOAD): {
@@ -70,9 +74,5 @@ SECTIONS
 		. = ALIGN(2);
 		_estoragestack = .;
    	} > ram1
-
-	.data_mixer : {
-		*( .mixer3.data )
-	} > ram2
 
 }

@@ -28,9 +28,8 @@ SOFTWARE.
 */
 
 #include "copper.h"
-
-extern short vsync;
-extern short audio;
+#include "rtos.h"
+#include <slurminterrupt.h>
 
 #define COPPER_BAR_HEIGHT 16
 
@@ -78,11 +77,20 @@ void do_copper_bars()
 	copper_list_load(the_copper_list, i);
 }
 
+mutex_t eff2_mutex = RTOS_MUTEX_INITIALIZER;
+
+static void my_vsync_handler()
+{
+	rtos_unlock_mutex_from_isr(&eff2_mutex);
+}
 
 void run_effect2(void)
 {
 	int i;
 	int frame = 0;
+
+	// Add a vsync interrupt handler
+	rtos_set_interrupt_handler(SLURM_INTERRUPT_VSYNC_IDX, my_vsync_handler);
 
 	copper_control(1);
 
@@ -91,31 +99,24 @@ void run_effect2(void)
 
 	while (frame < 1000)
 	{
+
+		rtos_lock_mutex(&eff2_mutex);
+
+		my_printf(".");
+		
 		frame++;
 
+		do_copper_bars();
+	
+		if (frame < 64)
+			pwm_set(0, 0, frame);
 
-		if (audio)
-		{
-			chip_tune_play();
-			audio = 0;
-		}
+		bar1_y += bar1_vy;
 
-		if (vsync)
-		{
-			do_copper_bars();
-		
-			if (frame < 64)
-				pwm_set(0, 0, frame);
-
-			bar1_y += bar1_vy;
-
-			if (bar1_vy > 0 && bar1_y > 230)
-				bar1_vy = -bar1_vy;
-			if (bar1_vy < 0 && bar1_y < 10)
-				bar1_vy = -bar1_vy;
-		}
-
-		__sleep();
+		if (bar1_vy > 0 && bar1_y > 230)
+			bar1_vy = -bar1_vy;
+		if (bar1_vy < 0 && bar1_y < 10)
+			bar1_vy = -bar1_vy;
 	}
 
 	// Outtro
@@ -124,25 +125,16 @@ void run_effect2(void)
 	{
 		frame++;
 
+		rtos_lock_mutex(&eff2_mutex);
 
-		if (audio)
-		{
-			chip_tune_play();
-			audio = 0;
-		}
+		do_copper_bars();
+	
+		if (bar1_y > 250)
+			pwm_set(0, 0, 300 - bar1_y);
 
-		if (vsync)
-		{
-			do_copper_bars();
-		
-			if (bar1_y > 250)
-				pwm_set(0, 0, 300 - bar1_y);
-
-			bar1_y += 2;
+		bar1_y += 2;
 
 
-		}
-		__sleep();
 	}
 
 	pwm_set(0, 0, 0);

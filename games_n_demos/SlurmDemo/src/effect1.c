@@ -27,13 +27,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+#include <slurminterrupt.h>
 #include "sprite.h"
 #include "background.h"
 #include "demo.h"
 #include "pwm.h"
+#include "rtos.h"
 
-extern short vsync;
-extern short audio;
 extern short bg_palette[];
 
 extern char sine_table[];
@@ -48,12 +48,20 @@ short pwm_red = 0;
 short pwm_blue = 0;
 short pwm_green = 0;
 
+static mutex_t my_mutex = RTOS_MUTEX_INITIALIZER;
+
+static void my_vsync_handler()
+{
+	rtos_unlock_mutex_from_isr(&my_mutex);
+}
 
 void run_effect1(void)
 {
 	int i;
 	int frame = 0;
 
+	// Add a vsync interrupt handler
+	rtos_set_interrupt_handler(SLURM_INTERRUPT_VSYNC_IDX, my_vsync_handler);
 
 	for (i = 0; i < 16; i ++)
 	{
@@ -69,8 +77,8 @@ void run_effect1(void)
 		    1,
 		    0, 
 		    0, 
-		    BG_TILE_MAP_ADDRESS, 
-		    BG_TILES_ADDRESS,
+		    BG_TILE_MAP_WORD_ADDRESS, 
+		    BG_TILES_WORD_ADDRESS,
 		    TILE_WIDTH_16X16,
 		    TILE_MAP_STRIDE_64);
 
@@ -78,25 +86,14 @@ void run_effect1(void)
 
 	while (frame < 256)
 	{
-		if (audio)
+		rtos_lock_mutex(&my_mutex);
+		
+		if (frame > 192)
 		{
-			chip_tune_play();
-			audio = 0;
+			__out(0x5d22, ((frame - 192) >> 2) * 0x1111U);
+			pwm_set(((frame - 192)), ((frame - 192)), ((frame - 192)));
 		}
-
-		if (vsync)
-		{
-			if (frame > 192)
-			{
-				__out(0x5d22, ((frame - 192) >> 2) * 0x1111U);
-				pwm_set(((frame - 192)), ((frame - 192)), ((frame - 192)));
-			}
-			vsync = 0;
-			frame++;
-		}
-	
-		__sleep();
-
+		frame++;
 	}
 
 	__out(0x5d22, 0xffff);
@@ -104,51 +101,43 @@ void run_effect1(void)
 
 	while (frame < 1000)
 	{
-		if (audio)
-		{
-			chip_tune_play();
-			audio = 0;
-		}
+		rtos_lock_mutex(&my_mutex);
 
-		if (vsync)
-		{
-			//if (frame < 1000)
-			frame++;
+		my_printf(".");
+	
+		//if (frame < 1000)
+		frame++;
 
-			if (frame > 300 + 60)
+		if (frame > 300 + 60)
+		{
+			if (frame > 450)
 			{
-				if (frame > 450)
+				if (frame < 450 + 64 + 1)
 				{
-					if (frame < 450 + 64 + 1)
+					for (i = 0; i < 16; i ++)
 					{
-						for (i = 0; i < 16; i ++)
-						{
-							bg_palette[i] = (bg_palette[i] & 0xfff) | ((frame < (450+64)) ? ((frame - 450) >> 2) << 12 : 0xf000);
-						}
-
-						load_palette(bg_palette, 16, 16);
+						bg_palette[i] = (bg_palette[i] & 0xfff) | ((frame < (450+64)) ? ((frame - 450) >> 2) << 12 : 0xf000);
 					}
 
-					bg_x_sin += 2;
-					bg_y_sin += 3;
+					load_palette(bg_palette, 16, 16);
 				}
-				sprite_set_x_y(0, slurm_x, slurm_y + (sine_table[slurm_sin] >> 3));
-				slurm_sin += 2;
-			}
-			else if (frame > 300)
-			{
-				slurm_y-=4;
-				sprite_set_x_y(0, slurm_x, slurm_y);
-			}
 
-			sprite_update_sprite(0);
-			
-			background_set_x_y(0, (sine_table[bg_x_sin]) + 256, (sine_table[bg_y_sin]) + 256);
-			background_update();
-			vsync = 0;
+				bg_x_sin += 2;
+				bg_y_sin += 3;
+			}
+			sprite_set_x_y(0, slurm_x, slurm_y + (sine_table[slurm_sin] >> 3));
+			slurm_sin += 2;
+		}
+		else if (frame > 300)
+		{
+			slurm_y-=4;
+			sprite_set_x_y(0, slurm_x, slurm_y);
 		}
 
-		__sleep();
+		sprite_update_sprite(0);
+		
+		background_set_x_y(0, (sine_table[bg_x_sin]) + 256, (sine_table[bg_y_sin]) + 256);
+		background_update();
 	}
 
 	// Outro
@@ -157,46 +146,37 @@ void run_effect1(void)
 
 	while (frame < 64 + 60)
 	{
-		if (audio)
-		{
-			chip_tune_play();
-			audio = 0;
-		}
 
-		if (vsync)
-		{
-			frame++;
+		rtos_lock_mutex(&my_mutex);
 
-			if (frame > 64)
-				{
-					slurm_y += 4;
-					sprite_set_x_y(0, slurm_x, slurm_y);
+		frame++;
 
-				}
-			else
+		if (frame > 64)
 			{
-				for (i = 0; i < 16; i ++)
-				{
-					bg_palette[i] = (bg_palette[i] & 0xfff) | ((frame < (64)) ? (15 - (frame >> 2)) << 12 : 0x0000);
-				}
+				slurm_y += 4;
+				sprite_set_x_y(0, slurm_x, slurm_y);
 
-				load_palette(bg_palette, 16, 16);
-			
-				sprite_set_x_y(0, slurm_x, slurm_y + (sine_table[slurm_sin] >> 3));
-				slurm_sin += 2;
-				bg_x_sin += 2;
-				bg_y_sin += 3;
+			}
+		else
+		{
+			for (i = 0; i < 16; i ++)
+			{
+				bg_palette[i] = (bg_palette[i] & 0xfff) | ((frame < (64)) ? (15 - (frame >> 2)) << 12 : 0x0000);
 			}
 
-			sprite_update_sprite(0);
-			
-			
-			background_set_x_y(0, (sine_table[bg_x_sin]) + 256, (sine_table[bg_y_sin]) + 256);
-			background_update();
-			vsync = 0;
+			load_palette(bg_palette, 16, 16);
+		
+			sprite_set_x_y(0, slurm_x, slurm_y + (sine_table[slurm_sin] >> 3));
+			slurm_sin += 2;
+			bg_x_sin += 2;
+			bg_y_sin += 3;
 		}
 
-		__sleep();
+		sprite_update_sprite(0);
+		
+		
+		background_set_x_y(0, (sine_table[bg_x_sin]) + 256, (sine_table[bg_y_sin]) + 256);
+		background_update();
 	}
 
 	// Fadeout
@@ -204,25 +184,17 @@ void run_effect1(void)
 	frame = 0;	
 	while (frame < 64)
 	{
-		if (audio)
-		{
-			chip_tune_play();
-			audio = 0;
-		}
-
-		if (vsync)
-		{
-			//if (frame > 192)
-			__out(0x5d22, (15 - (frame >> 2)) * 0x1111U);
-			pwm_set((63 - frame - 192), (63 - frame - 192), (63 - frame - 192));
-			vsync = 0;
-			frame++;
-		}
 	
-		__sleep();
+		rtos_lock_mutex(&my_mutex);
+
+		//if (frame > 192)
+		__out(0x5d22, (15 - (frame >> 2)) * 0x1111U);
+		pwm_set((63 - frame - 192), (63 - frame - 192), (63 - frame - 192));
+		frame++;
 
 	}
 
+	rtos_set_interrupt_handler(SLURM_INTERRUPT_VSYNC_IDX, 0);
 }
 
 

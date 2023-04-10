@@ -256,7 +256,7 @@ lock1:
 rtos_unlock_mutex_from_isr:
 	
 	sub r13, 8
-	st [r13, 2], r15
+	st [r13, 4], r15
 
 	bl rtos_reschedule_wait_object_released
 
@@ -268,7 +268,7 @@ rtos_unlock_mutex_from_isr:
 
 lock:
 
-	ld r15, [r13, 2]
+	ld r15, [r13, 4]
 	add r13, 8
 
 	ret
@@ -328,7 +328,7 @@ rtos_handle_interrupt:
 	// Branch to handler - running task may change
 
 	// We must leave space on the stack for parameters for callee
-	sub r13, 4 
+	sub r13, 16 
 	.extern rtos_handle_interrupt_callback
 	mov r4, r1 // Interrupt index
 	bl rtos_handle_interrupt_callback

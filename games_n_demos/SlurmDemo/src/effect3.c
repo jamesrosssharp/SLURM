@@ -64,7 +64,7 @@ void run_effect3(void)
 		    0, 
 		    0, 
 		    PLASMA_FRAMEBUFFER, 
-		    BG_TILES_ADDRESS + 16*256,
+		    BG_TILES_WORD_ADDRESS + 16*256,
 		    TILE_WIDTH_8X8,
 		    TILE_MAP_STRIDE_64);
 
