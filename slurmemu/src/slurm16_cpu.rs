@@ -27,6 +27,8 @@ pub struct Slurm16CPU {
 	pub int_flag : bool,
 
 	pub halt : bool,
+
+	pub debug: bool,
 }
 
 impl Slurm16CPU {
@@ -46,7 +48,8 @@ impl Slurm16CPU {
 			pc: 0,
 			registers: vec![0; 128],
 			int_flag: false,
-			halt : false
+			halt : false,
+			debug : false
 		}
 	}
 	
@@ -791,23 +794,46 @@ impl Slurm16CPU {
 		self.imm_hi = 0;
 	}
 
-	pub fn ret_op(&mut self, instruction : u16) {
+	pub fn ret_op(&mut self, instruction : u16, mem:  & mut Vec<u16>) {
 		if (instruction & 1) == 1 {
 			// IRET
-			//println!("IRET: flags {} {} {} pc {:#01x} instruction {:#01x} ilr {:#01x}", self.c, self.z, self.s, self.pc, instruction, self.get_register(14));
 			self.int_flag = true;
 			let addr = self.get_register(14);
+			let old_pc = self.pc;
 			self.pc = addr - 2; // This will get incremented
 			self.c = self.c_int;
 			self.v = self.v_int;
 			self.s = self.s_int;
 			self.z = self.z_int;
 			self.imm_hi = self.imm_int;
+
+			/*if self.get_register(14) == 0x1e0e
+			{
+				self.debug = true;
+	
+				println!("This is the start of your doom. r13 = {:#01x}", self.get_register(13));
+	
+				let mut addr2 = self.get_register(13); 
+				for i in 0..10
+				{
+					println!("{:#01x} = {:#01x}", addr2, mem[addr2 as usize >> 1]);
+					addr2 += 2;
+				}
+			}*/
+
+			//println!("IRET: flags {} {} {} pc {:#01x} instruction {:#01x} ilr {:#01x} r15 {:#01x} {:#01x}", self.c, self.z, self.s, old_pc, mem[addr as usize>>1], self.get_register(14), 
+			//	self.get_register(15),
+			//	self.imm_hi);
 		} else {
 			// RET
 			let addr = self.get_register(15);
 			self.pc = addr - 2; // This will get incremented
 			self.imm_hi = 0;
+			/*if self.debug {
+				println!("RET: {:#01x}", addr);
+				
+				std::process::exit(1); 
+			}*/
 		}
 	}
 
@@ -850,8 +876,8 @@ impl Slurm16CPU {
 
 		let write = (instruction & 0x1000) == 0x1000;
 
-		//if addr >= (0x7f00 as usize) {
-		//	  println!("Mem op: {:#01x} {:#01x} {} {:#01x} {:#01x}", addr, val, write, mem[addr], self.pc);
+		//if addr >= (0x5c90 as usize) {
+		//	  println!("Mem op: {:#01x} {:#01x} {} {:#01x} {:#01x}", addr, val, write, mem[addr>>1], self.pc);
 		//}
 
 		if !write {
@@ -1057,10 +1083,12 @@ impl Slurm16CPU {
 		let reg_reg 		= (instruction & 0xf) as usize;
 	
 
-		let x : u16 = self.imm_hi | (if self.v_int {0x0008} else {0}) | 
+		let x : u16 = (self.imm_int & 0xfff0) | (if self.v_int {0x0008} else {0}) | 
 					    (if self.s_int {0x0004} else {0}) |
 					    (if self.c_int {0x0002} else {0}) | 
 				 	    (if self.z_int {0x0001} else {0});
+
+		//println!("stix: {x}");
 	
 		self.registers[reg_reg] = x;
 
@@ -1074,7 +1102,9 @@ impl Slurm16CPU {
 	
 		let x = self.registers[reg_reg];
 
-		self.imm_hi = x & 0xfff0;
+		//println!("rsix: {x}");
+
+		self.imm_int = x & 0xfff0;
 		self.v_int = x & 0x0008 == 0x0008;
 		self.s_int = x & 0x0004 == 0x0004;
 		self.c_int = x & 0x0002 == 0x0002;
@@ -1094,7 +1124,7 @@ impl Slurm16CPU {
 
 			self.registers[14] = self.pc;
 
-			//println!("Int: flags: {} {} {}", self.c, self.z, self.s);
+			//println!("Int: flags: {} {} {} {} {} {} {:#01x}", self.c, self.z, self.s, self.v, self.imm_int, irq, self.pc);
 
 			self.c_int = self.c;
 			self.z_int = self.z;
@@ -1118,7 +1148,7 @@ impl Slurm16CPU {
 		#[bitmatch]
 		match instruction {
 			"0000_0000_0000_0000" => self.nop(),
-			"0000_0001_0000_000?" => self.ret_op(instruction),
+			"0000_0001_0000_000?" => self.ret_op(instruction, mem),
 			"0000_0010_????_????" => self.stix(instruction),
 			"0000_0011_????_????" => self.rsix(instruction),
 			"0000_0100_????_????" => self.alu_op_single_reg(instruction),

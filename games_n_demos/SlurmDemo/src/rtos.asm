@@ -103,35 +103,9 @@ rtos_resume_task:
 
 	// Check if task is "from_int". If so, handle appropriately 
 	ld r1, [g_runningTask]
-	ld  r2, [r1, TASK_STRUCTURE_FLAGS]
-        test r2, TASK_FLAGS_FROM_INT 	
-	bnz resume_task_from_int
-
-	// set R15 to PC of task
-	ld r14, [r1, TASK_STRUCTURE_PC]
-
-	// Restore context from task	
-	ld r15, [r1, TASK_STRUCTURE_R15]
-	ld r13, [r1, TASK_STRUCTURE_R13]
-	ld r12, [r1, TASK_STRUCTURE_R12]
-	ld r11, [r1, TASK_STRUCTURE_R11]
-	ld r10, [r1, TASK_STRUCTURE_R10]
-	ld r9,  [r1, TASK_STRUCTURE_R9]
-	ld r8,  [r1, TASK_STRUCTURE_R8]
-	ld r7,  [r1, TASK_STRUCTURE_R7]
-	ld r6,  [r1, TASK_STRUCTURE_R6]
-	ld r5,  [r1, TASK_STRUCTURE_R5]
-	ld r4,  [r1, TASK_STRUCTURE_R4]
-	ld r3,  [r1, TASK_STRUCTURE_R3]
-	ld r2,  [r1, TASK_STRUCTURE_R2]
-	ld r1,  [r1, TASK_STRUCTURE_R1]
-
-	// Enable interrupts
-	iret
-	
-resume_task_from_int:
 
 	// Unmark task as "from_int"
+	ld r2, [r1, TASK_STRUCTURE_FLAGS]
 	and r2, ~TASK_FLAGS_FROM_INT
 	st [r1, TASK_STRUCTURE_FLAGS], r2
 
@@ -208,6 +182,7 @@ rtos_lock_mutex:
 
 	// Mutex is locked. Put task to sleep
 
+	sub r13, 4
 	ba rtos_reschedule_wait_object
 
 
@@ -256,6 +231,8 @@ rtos_unlock_mutex:
 
 	st [r1, TASK_STRUCTURE_PC], r15
 	
+
+	sub r13, 4
 	bl rtos_reschedule_wait_object_released
 
 	or r2, r2
@@ -278,7 +255,7 @@ lock1:
 
 rtos_unlock_mutex_from_isr:
 	
-	sub r13, 4
+	sub r13, 8
 	st [r13, 2], r15
 
 	bl rtos_reschedule_wait_object_released
@@ -292,7 +269,7 @@ rtos_unlock_mutex_from_isr:
 lock:
 
 	ld r15, [r13, 2]
-	add r13, 4
+	add r13, 8
 
 	ret
 
@@ -350,6 +327,8 @@ rtos_handle_interrupt:
 
 	// Branch to handler - running task may change
 
+	// We must leave space on the stack for parameters for callee
+	sub r13, 4 
 	.extern rtos_handle_interrupt_callback
 	mov r4, r1 // Interrupt index
 	bl rtos_handle_interrupt_callback

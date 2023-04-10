@@ -50,21 +50,33 @@ impl InterruptController {
 
         //println!("process_irq: {} {} {} {}", hs, vs, self.interrupt_pending, self.interrupt_enabled);
 
+	let mut a = 0;
+
         if hs {
+	    a+=1;
             self.interrupt_pending |= 1 << (HSYNC_INTERRUPT - 1);
         }
         if vs {
+	    a+=1;
             self.interrupt_pending |= 1 << (VSYNC_INTERRUPT - 1);
         }
         if audio {
+	    a+=1;
             self.interrupt_pending |= 1 << (AUDIO_INTERRUPT - 1);
         }
         if flash {
+	    a+=1;
             self.interrupt_pending |= 1 << (FLASH_INTERRUPT - 1);
         }
         if gpio {
+	    a+=1;
             self.interrupt_pending |= 1 << (GPIO_INTERRUPT - 1);
         }
+
+	/*if a > 1
+	{
+		println!("Double int");
+	}*/
 
         let ints : Vec<u8> = vec![HSYNC_INTERRUPT, VSYNC_INTERRUPT, AUDIO_INTERRUPT, FLASH_INTERRUPT, GPIO_INTERRUPT];
 

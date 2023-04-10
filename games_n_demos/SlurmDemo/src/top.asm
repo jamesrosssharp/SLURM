@@ -16,7 +16,7 @@ SPI_FLASH:
 GPIO_VEC:
 	ba dummy_handler
 VECTORS:
-	.times 20 dw 0x0000
+	.times 20 ba dummy_handler
 
 	.section text
 	.function start
@@ -127,14 +127,21 @@ __sleep:
 	nop
 	nop	
 	nop
+	nop
 	ret	
 	.endfunc
 
 	.function dummy_handler
 dummy_handler:
+	st [r13, -2], r1
+	
 	mov r1, 0xffff
 	out [r0, 0x7001], r1
-	iret
+	
+death:
+	ba death
+
+
 	.endfunc
 
 	.section data
@@ -150,14 +157,6 @@ g_vsync:
 vsync_handler:
 	st [r13, -2], r1
 
-	/*mov r1, 1
-	st [vsync], r1
-	mov r1, 2
-	out [r0, 0x7001], r1
-	
-	ld r1, [r13, -2]
-	iret*/
-
 	mov r1, SLURM_INTERRUPT_VSYNC
 	out [0x7001], r1
 	
@@ -170,20 +169,6 @@ vsync_handler:
 	.function audio_handler
 audio_handler:
 	st [r13, -2], r1
-/*	st [r13, -4], r15
-
-	mov 	r1, 1
-	st [audio], r1
-	mov 	r1, 4
-	out [r0, 0x7001], r1
-
-	.extern mix_audio_3_update
-	// Update audio from scratch pad RAM
-	bl mix_audio_3_update
-	
-	ld r1, [r13, -2]
-	ld r15, [r13, -4]
-*/
 
 	mov r1, SLURM_INTERRUPT_AUDIO
 	out [0x7001], r1
@@ -197,14 +182,6 @@ audio_handler:
 flash_handler:
 	st [r13, -2], r1
 
-/*	mov r1, 1
-	st [flash_complete], r1
-	mov r1, 8
-	out [r0, 0x7001], r1
-	
-	ld r1, [r13, -2]
-	iret
-*/
 	mov r1, SLURM_INTERRUPT_FLASH_DMA
 	out [0x7001], r1
 

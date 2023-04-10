@@ -211,6 +211,7 @@ void rtos_reschedule_wait_object(struct rtos_wait_object* wobj)
 	{
 		if ((task->t_flags & TASK_FLAGS_ENABLED) && !(task->t_flags & TASK_FLAGS_WAITING))
 		{
+			//my_printf("Yield: %x -> %x\n", g_runningTask, i);
 			g_runningTask = task;
 			break;	
 		}
@@ -239,11 +240,15 @@ int	rtos_reschedule_wait_object_released(struct rtos_wait_object* wobj)
 		{
 			task->t_flags &= ~TASK_FLAGS_WAITING;
 
+
 			// Check if this new task is a higher priority than the running task, otherwise don't reschedule.
 			if ((unsigned short)task < (unsigned short)g_runningTask)
 			{
+				//my_printf("Yield: %x -> %x\r\n", g_runningTask, i);
 				g_runningTask = task;
 			}
+			//else
+			//	my_printf("Returning to same task - %x %x\r\n", g_runningTask, g_runningTask->pc);
 
 			ret = 1;
 			break;
