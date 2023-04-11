@@ -46,6 +46,7 @@ static int storage_q_tail = 0;
 
 static void storage_interrupt()
 {
+	my_printf("Storage interrupt!\r\n");
 	rtos_unlock_mutex_from_isr(&storage_int_mutex);
 }
 
@@ -60,9 +61,13 @@ static void storage_task()
 
 		q_items = (storage_q_head - storage_q_tail) & (STORAGE_Q_SIZE - 1); 
 
-		if (q_items < 1)
+		while (q_items < 1)
 		{
+			my_printf("No queue items, sleeping\r\n");
 			rtos_lock_mutex(&storage_q_wait_read_mutex);
+			my_printf("Woke up again\r\n");
+
+			q_items = (storage_q_head - storage_q_tail) & (STORAGE_Q_SIZE - 1); 
 		}
 
 		// We now have a queue item pointed to by tail.
@@ -79,6 +84,8 @@ static void storage_task()
 		__out(SPI_FLASH_CMD, 1);
 
 		rtos_lock_mutex(&storage_int_mutex);
+
+		my_printf("Storage complete!\r\n");
 
 		// Call callback
 
@@ -124,6 +131,7 @@ void storage_load_synch(unsigned short base_lo, unsigned short base_hi,
 		  unsigned short address_lo, unsigned short address_hi, 
 		  short count)
 {
+	my_printf("Storage load synch!\r\n");
 	storage_load_asynch(base_lo, base_hi, offset_lo, offset_hi, address_lo, address_hi, count, storage_dummy_callback, 0);
 	rtos_lock_mutex(&storage_wait_mutex);
 }
@@ -176,12 +184,14 @@ void storage_load_asynch(unsigned short base_lo, unsigned short base_hi,
 		// Advance head
 		storage_q_head = (storage_q_head + 1) & (STORAGE_Q_SIZE - 1);
 
+
+		if (queue_space == STORAGE_Q_SIZE - 1)
+			rtos_unlock_mutex(&storage_q_wait_read_mutex);
+
 	rtos_unlock_mutex(&storage_q_mutex);
 	
 	// Unlock storage read wait mutex
 
-	if (queue_space == STORAGE_Q_SIZE - 1)
-		rtos_unlock_mutex(&storage_q_wait_read_mutex);
 }
 
 

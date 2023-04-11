@@ -77,43 +77,6 @@ int main()
 	__out(0x5d22, 0x0000);
 	__out(0x5d24, 0);
 
-#if 0	
-	enable_interrupts();
-	init_music_player();
-	sprite_init_sprites();
-	background_init();
-	
-	// Load the sprite sheet
-
-	do_flash_dma_full_address(slurm_sprite_flash_offset_lo, slurm_sprite_flash_offset_hi, 0, 0, (void*)SPRITE_SHEET_ADDRESS, (slurm_sprite_flash_size_lo>>1) - 1);
-	do_flash_dma(slurm_sprite_pal_flash_offset_lo, slurm_sprite_pal_flash_offset_hi, 0, 0, sprite_palette, (sizeof(sprite_palette)>>1) - 1);
-
-	// Display the sprite
-
-	load_palette(sprite_palette, 0, 16);
-	slurm_y = 360 - (SPRITE_HEIGHT >> 1) + SPRITE_Y_FUDGE;
-	slurm_x = 160 - (SPRITE_WIDTH >> 1) + SPRITE_X_FUDGE;
-	sprites = sprite_display(0, SPRITE_SHEET_ADDRESS, SPRITE_STRIDE_256, SPRITE_WIDTH, SPRITE_HEIGHT, slurm_x, slurm_y);
-
-	// Load the background tiles, tilemap, and palette	
-
-	do_flash_dma_full_address(bg_tiles_flash_offset_lo, bg_tiles_flash_offset_hi, 0, 0, (void*)BG_TILES_ADDRESS, (bg_tiles_flash_size_lo>>1) - 1);
-	do_flash_dma_full_address(bg_tilemap_flash_offset_lo, bg_tilemap_flash_offset_hi, 0, 0, (void*)BG_TILE_MAP_ADDRESS, (bg_tilemap_flash_size_lo>>1) - 1);
-	do_flash_dma(bg_tilemap_pal_flash_offset_lo, bg_tilemap_pal_flash_offset_hi, 0, 0, bg_palette, (sizeof(bg_palette)>>1) - 1);
-
-	// Run effects
-
-	while (1)
-	{
-		run_effect1();	
-		run_effect2();
-		run_effect3();
-	}
-
-	return 0;
-
-#endif
-
 
 	storage_init(STORAGE_TASK_ID);
 	init_music_player(AUDIO_TASK_ID);
@@ -124,7 +87,6 @@ int main()
 
 	storage_load_synch(slurm_sprite_flash_offset_lo, slurm_sprite_flash_offset_hi, 0, 0, SPRITE_SHEET_ADDRESS_LO, SPRITE_SHEET_ADDRESS_HI, (slurm_sprite_flash_size_lo>>1));
 	storage_load_synch(slurm_sprite_pal_flash_offset_lo, slurm_sprite_pal_flash_offset_hi, 0, 0, (unsigned int)sprite_palette, 0, (sizeof(sprite_palette)>>1));
-	load_palette(sprite_palette, 0, 16);
 
 	slurm_y = 360 - (SPRITE_HEIGHT >> 1) + SPRITE_Y_FUDGE;
 	slurm_x = 160 - (SPRITE_WIDTH >> 1) + SPRITE_X_FUDGE;
@@ -134,12 +96,14 @@ int main()
 	storage_load_synch(bg_tilemap_flash_offset_lo, bg_tilemap_flash_offset_hi, 0, 0, BG_TILE_MAP_ADDRESS_LO, BG_TILE_MAP_ADDRESS_HI, (bg_tilemap_flash_size_lo>>1));
 	storage_load_synch(bg_tilemap_pal_flash_offset_lo, bg_tilemap_pal_flash_offset_hi, 0, 0, (unsigned short)bg_palette, 0, (sizeof(bg_palette)>>1));
 
+	load_palette(sprite_palette, 0, 16);
 	// Spin in a loop
 	
 	while (1)
 	{
 		run_effect1();	
 		run_effect2();
+		run_effect3();
 	}
 
 }

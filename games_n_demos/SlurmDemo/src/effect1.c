@@ -99,11 +99,13 @@ void run_effect1(void)
 	__out(0x5d22, 0xffff);
 
 
+	my_printf("Frame: %x\r\n", &frame);
+
 	while (frame < 1000)
 	{
 		rtos_lock_mutex(&my_mutex);
 
-		my_printf(".");
+		//my_printf(".");
 	
 		//if (frame < 1000)
 		frame++;

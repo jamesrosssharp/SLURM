@@ -34,7 +34,7 @@ SOFTWARE.
 #define COPPER_BAR_HEIGHT 16
 
 short bar1_y = 0;
-short bar1_vy = 2;
+short bar1_vy = 1;
 short bar1_dir = 0;
 
 unsigned short the_copper_list[128];
@@ -95,7 +95,7 @@ void run_effect2(void)
 	copper_control(1);
 
 	bar1_y = 0;
-	bar1_vy = 1;
+	bar1_vy = 2;
 
 	while (frame < 1000)
 	{
@@ -132,7 +132,7 @@ void run_effect2(void)
 		if (bar1_y > 250)
 			pwm_set(0, 0, 300 - bar1_y);
 
-		bar1_y += 2;
+		bar1_y += 4;
 
 
 	}

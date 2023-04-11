@@ -182,7 +182,7 @@ rtos_lock_mutex:
 
 	// Mutex is locked. Put task to sleep
 
-	sub r13, 4
+	sub r13, 2
 	ba rtos_reschedule_wait_object
 
 
@@ -232,7 +232,7 @@ rtos_unlock_mutex:
 	st [r1, TASK_STRUCTURE_PC], r15
 	
 
-	sub r13, 4
+	sub r13, 2
 	bl rtos_reschedule_wait_object_released
 
 	or r2, r2
@@ -328,7 +328,7 @@ rtos_handle_interrupt:
 	// Branch to handler - running task may change
 
 	// We must leave space on the stack for parameters for callee
-	sub r13, 16 
+	sub r13, 4 
 	.extern rtos_handle_interrupt_callback
 	mov r4, r1 // Interrupt index
 	bl rtos_handle_interrupt_callback

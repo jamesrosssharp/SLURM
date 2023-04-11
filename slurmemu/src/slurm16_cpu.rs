@@ -684,7 +684,7 @@ impl Slurm16CPU {
 	}
 
 	pub fn cond_leu_op(&mut self) -> bool {
-		self.c && self.z
+		self.c || self.z
 	}
 
 	pub fn cond_gtu_op(&mut self) -> bool {
@@ -851,7 +851,10 @@ impl Slurm16CPU {
 
 		let write = (instruction & 0x1000) == 0x1000;
 
-		//println!("Port op: {:#01x} {:#01x} {}", port, val, write );
+		//if write && port & 0xff00 == 0x5e00
+		//{
+		//	println!("Port op: {:#01x} {:#01x} {}", port, val, write );
+		//}	
 
 		let val : u16 = portcon.port_op(port, val, write);
 
@@ -876,9 +879,9 @@ impl Slurm16CPU {
 
 		let write = (instruction & 0x1000) == 0x1000;
 
-		//if addr >= (0x5c90 as usize) {
-		//	  println!("Mem op: {:#01x} {:#01x} {} {:#01x} {:#01x}", addr, val, write, mem[addr>>1], self.pc);
-		//}
+	//	if addr == (0xc6ce as usize) && write {
+	//		  println!("Mem op: {:#01x} {:#01x} {} {:#01x} {:#01x}", addr, val, write, mem[addr>>1], self.pc);
+	//	}
 
 		if !write {
 			self.registers[reg_src] = mem[addr>>1];

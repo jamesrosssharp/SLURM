@@ -29,6 +29,9 @@ SOFTWARE.
 
 #include "background.h"
 #include "demo.h"
+#include "rtos.h"
+
+#include <slurminterrupt.h>
 
 extern short vsync;
 extern short audio;
@@ -48,6 +51,14 @@ unsigned short plasma_palette[] = {
 	
 };
 
+mutex_t eff3_mutex = RTOS_MUTEX_INITIALIZER;
+
+static void my_vsync_handler()
+{
+	rtos_unlock_mutex_from_isr(&eff3_mutex);
+}
+
+
 void run_effect3(void)
 {
 	int frame = 0;
@@ -57,6 +68,7 @@ void run_effect3(void)
 	
 	load_palette(plasma_palette, 16, 16);
 
+	rtos_set_interrupt_handler(SLURM_INTERRUPT_VSYNC_IDX, my_vsync_handler);
 
 	background_set(0, 
 		    1, 
@@ -76,26 +88,15 @@ void run_effect3(void)
 	while (frame < 1000)
 	{
 
-		while (audio || vsync)
-		{
-			if (audio)
-			{
-				chip_tune_play();
-				audio = 0;
-			}
 
-			if (vsync)
-			{
-				unsigned char* fb = (unsigned char*)(PLASMA_FRAMEBUFFER * 2);
+		unsigned char* fb = (unsigned char*)(PLASMA_FRAMEBUFFER * 2);
+		
+		rtos_lock_mutex(&eff3_mutex);
 
-				asm_plasma(fb);
+		asm_plasma(fb);
 
-				vsync = 0;
-				frame++;
-			}
-		}
-
-		__sleep();
+		vsync = 0;
+		frame++;
 	}
 
 }
