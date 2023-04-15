@@ -40,12 +40,6 @@ module gfx #(parameter BITS = 16, parameter BANK_ADDRESS_BITS = 14, parameter AD
 	output bg1_rvalid,
 	input bg1_rready,
 
-	// Overlay
-
-	output [15:0] ov_memory_address,
-	input [15:0] ov_memory_data,
-	output ov_rvalid,
-	input  ov_rready,
 
 	// IRQs
 
@@ -143,38 +137,14 @@ end
 
 wire [7:0] spcon_color_index;
 
-/*wire [15:0] spcon_memory_address;
-wire [15:0] spcon_memory_data;
-wire spcon_rvalid;
-wire  spcon_rready;
-*/
 wire [15:0] spcon_collision_data;
-
-
-/*wire [15:0] ov_memory_address;
-wire [15:0] ov_memory_data;
-wire ov_rvalid;
-wire  ov_rready;
-*/
 
 
 wire [7:0] bg0_color_index;
 
-/*
-wire [15:0] bg0_memory_address;
-wire [15:0] bg0_memory_data;
-wire bg0_rvalid;
-wire bg0_rready;
-*/
 reg WR_bg0;
 
 wire [7:0] bg1_color_index = 8'd0;
-/*
-wire [15:0] bg1_memory_address = 16'd0;
-wire [15:0] bg1_memory_data;
-wire bg1_rvalid = 1'b0;
-wire bg1_rready;
-*/
 assign bg1_rvalid = 1'b0;
 
 reg WR_bg1 = 1'b0;
@@ -196,11 +166,6 @@ reg WR_fb_pal;
 
 wire [15:0] fb_color = 16'h0000;
 
-/*wire [15:0] fb_memory_address;
-wire [15:0] fb_memory_data;
-wire fb_rvalid;
-wire fb_rready;
-*/
 wire alpha_override_out;
 wire [3:0] alpha_out;
 
@@ -251,8 +216,6 @@ background_controller2 bgcon0
 	bg0_rvalid,
 	bg0_rready 
 );
-
-assign ov_rvalid = 1'b0;
 
 copper cpr0 (
 	CLK,

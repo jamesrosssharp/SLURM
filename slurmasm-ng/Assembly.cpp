@@ -438,3 +438,33 @@ void Assembly::assembleStixRsix(int lineNum, OpCode opcode, Register regDest, st
 
 }
 
+void Assembly::assembleExMemoryOp(int lineNum, OpCode opcode, Register regDest, Register regInd, std::vector<uint8_t>& assembledBytes)
+{
+
+	uint16_t op = 0;
+
+	switch(opcode)
+	{
+		case OpCode::LD_EX:
+			op = SLRM_LD_EX_INSTRUCTION;
+			break;
+		case OpCode::LDB_EX:
+			op = SLRM_LDB_EX_INSTRUCTION;
+			break;
+		case OpCode::LDBSX_EX:
+			op = SLRM_LDBSX_EX_INSTRUCTION;
+			break;
+		case OpCode::ST_EX:
+			op = SLRM_ST_EX_INSTRUCTION;
+			break;
+		case OpCode::STB_EX:
+			op = SLRM_STB_EX_INSTRUCTION;
+			break;
+	}
+
+	op |= ((uint16_t)regInd << 8) | ((uint16_t) regDest << 4);
+
+	assembledBytes.push_back(op & 0xff);
+	assembledBytes.push_back(op >> 8);
+
+}

@@ -66,7 +66,10 @@ begin
 				hazard_reg0_r = reg_dest_from_ins(instruction);
 			end	
 		end
-		INSTRUCTION_CASEX_BYTE_LOAD_SX:
+		INSTRUCTION_CASEX_BYTE_LOAD_SX,
+		INSTRUCTION_CASEX_LOAD_EX,
+		INSTRUCTION_CASEX_LDB_EX,
+		INSTRUCTION_CASEX_LDBSX_EX:
 			hazard_reg0_r = reg_dest_from_ins(instruction);
 		INSTRUCTION_CASEX_PEEK_POKE: begin /* io peek? */
 			if (is_io_poke_from_ins(instruction) == 1'b0) begin

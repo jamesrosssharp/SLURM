@@ -72,6 +72,11 @@ std::map<std::string, OpCode> opCodeMap = {
 	{"RLN", OpCode::RLN},
 	{"STIX", OpCode::STIX},
 	{"RSIX", OpCode::RSIX},
+	{"LD.EX", OpCode::LD_EX},
+	{"LDB.EX", OpCode::LDB_EX},
+	{"LDBSX.EX", OpCode::LDBSX_EX},
+	{"ST.EX", OpCode::ST_EX},
+	{"STB.EX", OpCode::STB_EX},
 };
 
 

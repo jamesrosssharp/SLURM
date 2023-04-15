@@ -536,6 +536,104 @@ static std::string handle_exreg_reg(uint16_t op, uint16_t imm_hi)
 
 }
 
+static std::string handle_ldex(uint16_t op, uint16_t imm_hi)
+{
+	std::stringstream dis;
+
+	dis << "ld.ex ";
+
+	uint16_t rdest = (op & 0x00f0) >> 4; 
+
+	dis << " r" << rdest;
+
+	uint16_t ridx = (op & 0x0f00) >> 8; 
+
+	dis << ", [r" << ridx;
+
+	dis << "]";
+
+	return dis.str();
+
+}
+
+static std::string handle_ldbex(uint16_t op, uint16_t imm_hi)
+{
+	std::stringstream dis;
+
+	dis << "ldb.ex ";
+
+	uint16_t rdest = (op & 0x00f0) >> 4; 
+
+	dis << " r" << rdest;
+
+	uint16_t ridx = (op & 0x0f00) >> 8; 
+
+	dis << ", [r" << ridx;
+
+	dis << "]";
+
+	return dis.str();
+
+}
+
+static std::string handle_ldbsxex(uint16_t op, uint16_t imm_hi)
+{
+	std::stringstream dis;
+
+	dis << "ldbsx.ex ";
+
+	uint16_t rdest = (op & 0x00f0) >> 4; 
+
+	dis << " r" << rdest;
+
+	uint16_t ridx = (op & 0x0f00) >> 8; 
+
+	dis << ", [r" << ridx;
+
+	dis << "]";
+
+	return dis.str();
+
+}
+
+static std::string handle_stex(uint16_t op, uint16_t imm_hi)
+{
+	std::stringstream dis;
+
+	dis << "st.ex ";
+
+	uint16_t ridx = (op & 0x0f00) >> 8; 
+
+	dis << "[r" << ridx;
+
+	uint16_t rdest = (op & 0x00f0) >> 4; 
+
+	dis << "], r" << rdest;
+
+	return dis.str();
+
+}
+
+static std::string handle_stbex(uint16_t op, uint16_t imm_hi)
+{
+	std::stringstream dis;
+
+	dis << "stb.ex ";
+
+	uint16_t ridx = (op & 0x0f00) >> 8; 
+
+	dis << "[r" << ridx;
+
+	uint16_t rdest = (op & 0x00f0) >> 4; 
+
+	dis << "], r" << rdest;
+
+	return dis.str();
+
+}
+
+
+
 std::vector<std::tuple<uint16_t, uint16_t, ins_handler_t>> ins_handlers = {
 	{SLRM_ALU_REG_IMM_INSTRUCTION, SLRM_ALU_REG_IMM_INSTRUCTION_MASK, handle_alu_reg_imm},
 	{SLRM_ALU_REG_REG_INSTRUCTION, SLRM_ALU_REG_REG_INSTRUCTION_MASK, handle_alu_reg_reg},
@@ -555,6 +653,11 @@ std::vector<std::tuple<uint16_t, uint16_t, ins_handler_t>> ins_handlers = {
 	{SLRM_NOP_INSTRUCTION,  SLRM_NOP_INSTRUCTION_MASK,  handle_nop},
 	{SLRM_REG_TO_EXREG_ALU_INSTRUCTION,  SLRM_REG_TO_EXREG_ALU_INSTRUCTION_MASK,  handle_reg_exreg},
 	{SLRM_EXREG_TO_REG_ALU_INSTRUCTION,  SLRM_EXREG_TO_REG_ALU_INSTRUCTION_MASK,  handle_exreg_reg},
+	{SLRM_LD_EX_INSTRUCTION, SLRM_LD_EX_INSTRUCTION_MASK, handle_ldex},
+	{SLRM_LDB_EX_INSTRUCTION, SLRM_LDB_EX_INSTRUCTION_MASK, handle_ldbex},
+	{SLRM_LDBSX_EX_INSTRUCTION, SLRM_LDBSX_EX_INSTRUCTION_MASK, handle_ldbsxex},
+	{SLRM_ST_EX_INSTRUCTION, SLRM_ST_EX_INSTRUCTION_MASK, handle_stex},
+	{SLRM_STB_EX_INSTRUCTION, SLRM_STB_EX_INSTRUCTION_MASK, handle_stbex}
 }; 
 
 std::string Disassembly::disassemble(uint8_t* bytes)

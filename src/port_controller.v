@@ -74,25 +74,12 @@ module port_controller
 	output 			bg1_rvalid, // memory address valid
 	input  			bg1_rready,  // memory data valid
 
-	// OV
-	output  [15:0] 	ov_memory_address,
-	input [15:0] 	ov_memory_data,
-	output 			ov_rvalid, // memory address valid
-	input  			ov_rready,  // memory data valid
-
 	// Spi flash (write)
 	output  [15:0] 	fl_memory_address,
 	output [15:0] 	fl_memory_data,
 	output 			fl_wvalid, // memory address valid
 	input  			fl_wready,  // memory data valid
 	
-	/*// Audio 
-	output  [15:0] 	au_memory_address,
-	input [15:0] 	au_memory_data,
-	output 			au_rvalid, // memory address valid
-	input  			au_rready,  // memory data valid
-*/
-
 	// Interrupt request quotients
 	output [3:0]	irq,
 	output			interrupt
@@ -323,10 +310,6 @@ gfx #(.BITS(BITS), .BANK_ADDRESS_BITS(14), .ADDRESS_BITS(12)) gfx0
 	.bg1_memory_data(bg1_memory_data),
 	.bg1_rvalid(bg1_rvalid),
 	.bg1_rready(bg1_rready),
-	.ov_memory_address(ov_memory_address),
-	.ov_memory_data(ov_memory_data),
-	.ov_rvalid(ov_rvalid),
-	.ov_rready(ov_rready),
 	.irq_hsync(irq_hsync),
 	.irq_vsync(irq_vsync)
 );

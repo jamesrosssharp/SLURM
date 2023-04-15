@@ -73,6 +73,11 @@ enum class OpCode : uint32_t
 	RLN,	/* rotate left nibble */
 	STIX,	/* store interrupt context */
 	RSIX,	/* restore interrupt context */
+	LD_EX,
+	LDB_EX,
+	LDBSX_EX,
+	ST_EX,
+	STB_EX
 };
 
 #include <string>

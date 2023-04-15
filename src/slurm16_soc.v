@@ -74,12 +74,6 @@ wire [15:0] fl_memory_data;
 wire fl_wvalid;
 wire fl_wready;
 
-/*wire [15:0] au_memory_address;
-wire [15:0] au_memory_data;
-wire au_rvalid;
-wire au_rready;
-*/
-
 // CPU Top level
 
 slurm16_cpu_top cpu0
@@ -155,10 +149,6 @@ pc0
 	.bg1_memory_data(bg1_memory_data),
 	.bg1_rvalid(bg1_rvalid),
 	.bg1_rready(bg1_rready),
-	.ov_memory_address(ov_memory_address),
-	.ov_memory_data(ov_memory_data),
-	.ov_rvalid(ov_rvalid),
-	.ov_rready(ov_rready),
 	.fl_memory_address(fl_memory_address),
 	.fl_memory_data(fl_memory_data),
 	.fl_wvalid(fl_wvalid),

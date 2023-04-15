@@ -264,6 +264,11 @@ void Statement::_assemble_two_register_indirect_opcode_and_expression_A(int expr
 		case OpCode::IN:
 			Assembly::assembleMemoryOp(lineNum, opcode, regDest, regInd, expressionValue, assembledBytes, forceImm);
 			break;
+		case OpCode::LD_EX:
+		case OpCode::LDB_EX:
+		case OpCode::LDBSX_EX:
+			Assembly::assembleExMemoryOp(lineNum, opcode, regDest, regInd, assembledBytes);
+			break;
 		default: {
 			std::stringstream ss;
 			ss << "Unsupported one register indirect opcode and expression on line " << lineNum << std::endl;	
@@ -281,6 +286,10 @@ void Statement::_assemble_two_register_indirect_opcode_and_expression_B(int expr
 		case OpCode::STB:
 		case OpCode::OUT:
 			Assembly::assembleMemoryOp(lineNum, opcode, regDest, regInd, expressionValue, assembledBytes, forceImm);
+			break;
+		case OpCode::ST_EX:
+		case OpCode::STB_EX:
+			Assembly::assembleExMemoryOp(lineNum, opcode, regDest, regInd, assembledBytes);
 			break;
 		default: {
 			std::stringstream ss;
