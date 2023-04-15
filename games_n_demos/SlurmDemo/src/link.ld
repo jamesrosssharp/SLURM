@@ -18,6 +18,7 @@ BOOTLOADER_SIZE = 0x200;
 STACK_SIZE 	= 0x400;
 AUDIO_STACK_SIZE = 0x200;
 STORAGE_STACK_SIZE = 0x200;
+IDLE_STACK_SIZE = 0x200;
 
 MEMORY {
 	bootloader (wx) : ORIGIN = 0x0000, LENGTH = BOOTLOADER_SIZE
@@ -73,6 +74,10 @@ SECTIONS
 		. = . + STORAGE_STACK_SIZE;
 		. = ALIGN(2);
 		_estoragestack = .;
+		_sidlestack = .;
+		. = . + IDLE_STACK_SIZE;
+		. = ALIGN(2);
+		_eidlestack = .;
    	} > ram1
 
 }

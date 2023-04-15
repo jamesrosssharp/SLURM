@@ -46,7 +46,7 @@ static int storage_q_tail = 0;
 
 static void storage_interrupt()
 {
-	my_printf("Storage interrupt!\r\n");
+	//my_printf("Storage interrupt!\r\n");
 	rtos_unlock_mutex_from_isr(&storage_int_mutex);
 }
 
@@ -63,9 +63,9 @@ static void storage_task()
 
 		while (q_items < 1)
 		{
-			my_printf("No queue items, sleeping\r\n");
+			//my_printf("No queue items, sleeping\r\n");
 			rtos_lock_mutex(&storage_q_wait_read_mutex);
-			my_printf("Woke up again\r\n");
+			//my_printf("Woke up again\r\n");
 
 			q_items = (storage_q_head - storage_q_tail) & (STORAGE_Q_SIZE - 1); 
 		}
@@ -85,7 +85,7 @@ static void storage_task()
 
 		rtos_lock_mutex(&storage_int_mutex);
 
-		my_printf("Storage complete!\r\n");
+		//my_printf("Storage complete!\r\n");
 
 		// Call callback
 

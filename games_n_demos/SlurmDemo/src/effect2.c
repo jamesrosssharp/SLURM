@@ -97,12 +97,14 @@ void run_effect2(void)
 	bar1_y = 0;
 	bar1_vy = 2;
 
+	my_printf("Frame ptr: %x\r\n", &frame);
+
 	while (frame < 1000)
 	{
 
 		rtos_lock_mutex(&eff2_mutex);
 
-		my_printf(".");
+		//my_printf(".");
 		
 		frame++;
 

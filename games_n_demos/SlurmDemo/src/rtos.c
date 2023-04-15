@@ -56,8 +56,6 @@ struct rtos_task_context {
 struct rtos_task_context g_tasks[RTOS_NUM_TASKS];
 struct rtos_task_context* g_runningTask = 0;
 
-unsigned short g_idle_task_stack[256];
-
 /* Idle task */
 
 static void rtos_idle_task()
@@ -83,6 +81,9 @@ extern void rtos_trap_task_end();
 extern void main();
 extern short _estack[];
 extern short _sstack[];
+extern short _eidlestack[];
+extern short _sidlestack[];
+
 
 extern void exit();
 
@@ -98,7 +99,7 @@ void rtos_trap_task_end()
 	
 	for (i = 0; i < RTOS_NUM_TASKS; i++)
 	{
-		if (g_tasks[i].t_flags & TASK_FLAGS_ENABLED)
+		if (g_tasks[i].t_flags & TASK_FLAGS_ENABLED && !g_tasks[i].t_flags & TASK_FLAGS_WAITING)
 		{
 			g_runningTask = &g_tasks[i];
 			rtos_resume_task();
@@ -150,7 +151,7 @@ void rtos_init()
 
 	// Set up idle task - task N - 1 (lowest priority)
 
-	rtos_create_task(RTOS_NUM_TASKS - 1, rtos_idle_task, g_idle_task_stack, g_idle_task_stack + sizeof(g_idle_task_stack), TASK_FLAGS_ENABLED);
+	rtos_create_task(RTOS_NUM_TASKS - 1, rtos_idle_task, _sidlestack, _eidlestack, TASK_FLAGS_ENABLED);
 
 	// Set up main task - task N - 2 (second lowest priority)
 
@@ -242,7 +243,7 @@ int	rtos_reschedule_wait_object_released(struct rtos_wait_object* wobj)
 
 
 			// Check if this new task is a higher priority than the running task, otherwise don't reschedule.
-			if ((unsigned short)task < (unsigned short)g_runningTask)
+			if (task < g_runningTask)
 			{
 				//my_printf("Yield: %x -> %x\r\n", g_runningTask, i);
 				g_runningTask = task;

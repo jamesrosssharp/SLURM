@@ -70,12 +70,14 @@ void sprite_update_sprites()
 		short y; 
 		short h; 
 		short a;
-		
-		/*if (sp->n_sprites_used == 0)
+	
+		//my_printf("Sprite: %x used: %x\r\n", i, sp->n_sprites_used);
+	
+		if (sp->n_sprites_used == 0)
 		{
 			sp ++;
 			continue;
-		}*/
+		}
 
 		x = MAKE_SPRITE_X(sp->x, !!sp->n_sprites_used, 0, sp->stride);
 		y = MAKE_SPRITE_Y(sp->y, sp->width);
@@ -135,6 +137,8 @@ short sprite_display(unsigned char sprite_index,
 	unsigned char n_sprites_processed = 0;
 
 	struct sprite* sp = &sprites[sprite_index];
+
+	my_printf("Sp-> %x\r\n", &sprites[15]);
 	while (width > 0)
 	{
 		unsigned char this_width = (width < 64) ? width : 64;

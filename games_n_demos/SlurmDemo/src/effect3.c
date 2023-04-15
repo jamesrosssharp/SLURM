@@ -33,9 +33,6 @@ SOFTWARE.
 
 #include <slurminterrupt.h>
 
-extern short vsync;
-extern short audio;
-
 // 64x64 : 4kbytes
 #define PLASMA_FRAMEBUFFER 0x7000
 
@@ -88,14 +85,14 @@ void run_effect3(void)
 	while (frame < 1000)
 	{
 
-
-		unsigned char* fb = (unsigned char*)(PLASMA_FRAMEBUFFER * 2);
+		unsigned char* fb;
 		
 		rtos_lock_mutex(&eff3_mutex);
 
+		fb = (unsigned char*)(PLASMA_FRAMEBUFFER * 2);
+
 		asm_plasma(fb);
 
-		vsync = 0;
 		frame++;
 	}
 

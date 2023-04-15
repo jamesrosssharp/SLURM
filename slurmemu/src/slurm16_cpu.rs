@@ -851,9 +851,9 @@ impl Slurm16CPU {
 
 		let write = (instruction & 0x1000) == 0x1000;
 
-		//if write && port & 0xff00 == 0x5e00
+		//if write && (port & 0xff00 >= 0x5000) && (port & 0xff00 < 0x5400)
 		//{
-		//	println!("Port op: {:#01x} {:#01x} {}", port, val, write );
+		//	println!("Port op: {:#01x} {:#01x} {} {:#01x}", port, val, write, self.pc );
 		//}	
 
 		let val : u16 = portcon.port_op(port, val, write);
@@ -879,9 +879,9 @@ impl Slurm16CPU {
 
 		let write = (instruction & 0x1000) == 0x1000;
 
-	//	if addr == (0xc6ce as usize) && write {
-	//		  println!("Mem op: {:#01x} {:#01x} {} {:#01x} {:#01x}", addr, val, write, mem[addr>>1], self.pc);
-	//	}
+		//if addr >= (0xb782 as usize) && addr <= (0xb7c2 as usize) && write {
+		//	  println!("Mem op: {:#01x} {:#01x} {} {:#01x} {:#01x}", addr, val, write, mem[addr>>1], self.pc);
+		//}
 
 		if !write {
 			self.registers[reg_src] = mem[addr>>1];
