@@ -21,7 +21,7 @@ module slurm16_peripheral_memory_arbiter
 	input [15:0] bg0_memory_address, /* background address */
 	input [15:0] fl_memory_address, /* flash address */
 	input [15:0] fl_memory_data, /* flash write data */
-	input [14:0] cpu_memory_address,
+	input [15:0] cpu_memory_address,
 	input [15:0] cpu_memory_data_in,
 	input cpu_wr,
 	input [1:0] cpu_wr_mask

@@ -43,7 +43,7 @@ module slurm16 #(
 
 wire [15:0] cpuMemoryIn;
 wire [15:0] cpuMemoryOut;
-wire [14:0] cpuMemoryAddr;
+wire [15:0] cpuMemoryAddr;
 wire cpuMemory_success;
 wire cpuMemory_wr;
 wire [1:0] cpuMemory_wr_mask;
@@ -69,10 +69,6 @@ wire [15:0] bg1_memory_address;
 wire [15:0] bg1_memory_data;
 wire bg1_rvalid;
 wire bg1_rready;
-wire [15:0] ov_memory_address;
-wire [15:0] ov_memory_data;
-wire ov_rvalid;
-wire ov_rready;
 wire [15:0] fl_memory_address;
 wire [15:0] fl_memory_data;
 wire fl_wvalid;

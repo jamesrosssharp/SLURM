@@ -30,7 +30,7 @@ module slurm16_memory_controller
 	output  		fl_wready,  // memory data valid
 	
 	/* CPU */
-	input  [14:0] 	cpu_memory_address,
+	input  [15:0] 	cpu_memory_address,
 	input  [15:0]   cpu_memory_data_in,
 	output [15:0] 	cpu_memory_data,
 	input			cpu_wr, // CPU is writing to memory
@@ -105,7 +105,7 @@ memory #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 2), .MEM_INIT_FILE("mem_init4
 wire [15:0] cpu_memory_data_w;
 wire [15:0] boot_data;
 
-reg [14:0] cpu_memory_address_r;
+reg [15:0] cpu_memory_address_r;
 
 always @(posedge CLK)
 begin
@@ -113,8 +113,8 @@ begin
 end
 
 // ROM Overlay
-assign cpu_memory_data = (cpu_memory_address_r[14:8] == 7'h00) ? boot_data : cpu_memory_data_w; 
-wire wr_boot = (cpu_memory_address[14:8] == 7'h00) ? cpu_wr : 1'b0; 
+assign cpu_memory_data = (cpu_memory_address_r[15:8] == 8'h00) ? boot_data : cpu_memory_data_w; 
+wire wr_boot = (cpu_memory_address[15:8] == 8'h00) ? cpu_wr : 1'b0; 
 
 boot_memory #(.BITS(BITS), .ADDRESS_BITS(8)) theBootMem
 (

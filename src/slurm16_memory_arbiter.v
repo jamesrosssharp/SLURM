@@ -30,7 +30,7 @@ module slurm16_memory_arbiter
 
   	*/
 
-	input  [14:0] 	cpu_memory_address,
+	input  [15:0] 	cpu_memory_address,
 	input  [15:0]   cpu_memory_data_in,
 	output reg [15:0] cpu_memory_data,
 	input		cpu_wr, // CPU is writing to memory
@@ -135,15 +135,19 @@ assign B4_WR = b4_periph_wr;
 
 /* mux signals going into cpu */
 
-reg cpu_memory_address14;
+reg [1:0] cpu_memory_address14;
 
 always @(posedge CLK)
 begin
-	cpu_memory_address14 <= cpu_memory_address[14];
+	cpu_memory_address14 <= cpu_memory_address[15:14];
 	
-	if (b1_mux_sel == MUXSEL_CPU && cpu_memory_address[14] == 1'b0)
+	if (b1_mux_sel == MUXSEL_CPU && cpu_memory_address[15:14] == 2'b00)
 		cpu_memory_success <= 1'b1;
-	else if (b2_mux_sel == MUXSEL_CPU && cpu_memory_address[14] == 1'b1)
+	else if (b2_mux_sel == MUXSEL_CPU && cpu_memory_address[15:14] == 2'b01)
+		cpu_memory_success <= 1'b1;
+	else if (b3_mux_sel == MUXSEL_CPU && cpu_memory_address[15:14] == 2'b10)
+		cpu_memory_success <= 1'b1;
+	else if (b4_mux_sel == MUXSEL_CPU && cpu_memory_address[15:14] == 2'b11)
 		cpu_memory_success <= 1'b1;
 	else
 		cpu_memory_success <= 1'b0;
@@ -152,11 +156,17 @@ end
 always @(*)
 begin
 	case (cpu_memory_address14)
-		1'b0: begin
+		2'b00: begin
 			cpu_memory_data = B1_DOUT;
 		end
-		1'b1: begin
+		2'b01: begin
 			cpu_memory_data = B2_DOUT; 
+		end
+		2'b10: begin
+			cpu_memory_data = B3_DOUT; 
+		end
+		2'b11: begin
+			cpu_memory_data = B4_DOUT; 
 		end
 	endcase
 end
@@ -263,7 +273,7 @@ slurm16_peripheral_memory_arbiter arb1
 	/* signals from CPU */
 	cpu_memory_address,
 	cpu_memory_data_in,
-	cpu_wr && (cpu_memory_address[14] == 1'b0),
+	cpu_wr && (cpu_memory_address[15:14] == 2'b00),
 	cpu_wr_mask
 );
 
@@ -287,7 +297,7 @@ slurm16_peripheral_memory_arbiter arb2
 	/* signals from CPU */
 	cpu_memory_address,
 	cpu_memory_data_in,
-	cpu_wr && (cpu_memory_address[14] == 1'b1),
+	cpu_wr && (cpu_memory_address[15:14] == 2'b01),
 	cpu_wr_mask
 );
 
@@ -311,7 +321,7 @@ slurm16_peripheral_memory_arbiter arb3
 	/* signals from CPU */
 	cpu_memory_address,
 	cpu_memory_data_in,
-	1'b0,
+	cpu_wr && (cpu_memory_address[15:14] == 2'b10),
 	cpu_wr_mask
 );
 
@@ -334,7 +344,7 @@ slurm16_peripheral_memory_arbiter arb4
 	/* signals from CPU */
 	cpu_memory_address,
 	cpu_memory_data_in,
-	1'b0,
+	cpu_wr && (cpu_memory_address[15:14] == 2'b11),
 	cpu_wr_mask
 );
 

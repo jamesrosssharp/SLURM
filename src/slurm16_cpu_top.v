@@ -9,7 +9,7 @@ module slurm16_cpu_top
 	input CLK,
 	input RSTb,
 
-	output [ADDRESS_BITS - 2:0] 	memory_address,
+	output [ADDRESS_BITS - 1:0] 	memory_address,
 	input  [BITS - 1:0] 		memory_in,
 	output [BITS - 1:0]		memory_out,
 	output				memory_wr,	/* memory write */
@@ -216,7 +216,7 @@ slurm16_cpu_instruction_cache cache0 (
 	instruction_memory_data
 );
 
-wire [14:0] load_store_address;
+wire [15:0] load_store_address;
 wire [15:0] store_memory_data;
 wire [1:0] store_memory_wr_mask;
 

@@ -189,5 +189,18 @@ flash_handler:
 	ba  rtos_handle_interrupt
 
 	.endfunc
+	
+	.global clear_bg
+	.function clear_bg
+clear_bg:
+	dw 0x7404
+	add r4, 2
+	nop
+	nop
+	sub r5, 1
+	bnz clear_bg
+	ret 
 
+	.endfunc
+	
 	.end

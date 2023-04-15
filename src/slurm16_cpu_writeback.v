@@ -86,7 +86,20 @@ begin
 					endcase
 				end	
 			end
-			INSTRUCTION_CASEX_BYTE_LOAD_SX: begin /* byte wise load with sign extend */
+			INSTRUCTION_CASEX_LDB_EX: begin /* upper bank byte wise load */
+				// write back value 
+				reg_wr_addr_r = reg_ex_dest_from_ins(instruction);
+				
+				case (memory_wr_mask_delayed)
+					2'b10:
+						reg_out_r = {8'h00, memory_in[15:8]};
+					2'b01:
+						reg_out_r = {8'h00, memory_in[7:0]};
+					default:;
+				endcase
+			end
+			INSTRUCTION_CASEX_BYTE_LOAD_SX,
+			INSTRUCTION_CASEX_LDBSX_EX: begin /* byte wise load with sign extend */
 					reg_wr_addr_r = reg_dest_from_ins(instruction);
 					
 					case (memory_wr_mask_delayed)
@@ -103,6 +116,10 @@ begin
 					reg_wr_addr_r = reg_dest_from_ins(instruction);
 					reg_out_r = memory_in;
 				end	
+			end
+			INSTRUCTION_CASEX_LOAD_EX: begin /* upper bank load */
+					reg_wr_addr_r = reg_ex_dest_from_ins(instruction);
+					reg_out_r = memory_in;
 			end
 			INSTRUCTION_CASEX_PEEK_POKE: begin /* io peek? */
 				if (is_io_poke_from_ins(instruction) == 1'b0) begin

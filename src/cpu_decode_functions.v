@@ -181,5 +181,19 @@ input [15:0] ins;
 		reg_extended_from_ins = {ins[10:4]};
 endfunction
 
+function [7:0] reg_ex_idx_from_ins;
+input [15:0] ins;
+begin
+	reg_ex_idx_from_ins = {3'd0, ins[11:8]};
+end
+endfunction
+
+function [7:0] reg_ex_dest_from_ins;
+input [15:0] ins;
+begin
+	reg_ex_dest_from_ins = {3'd0, ins[7:4]};
+end
+endfunction
+
 /* lint_on */
 

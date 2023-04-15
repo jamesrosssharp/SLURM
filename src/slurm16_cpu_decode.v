@@ -70,6 +70,14 @@ begin
 			regB_sel = reg_extended_from_ins(instruction);
 			regA_sel = reg_src_from_ins(instruction);
 		end
+		INSTRUCTION_CASEX_LOAD_EX,
+		INSTRUCTION_CASEX_LDB_EX,
+		INSTRUCTION_CASEX_LDBSX_EX,
+		INSTRUCTION_CASEX_ST_EX,
+		INSTRUCTION_CASEX_STB_EX: begin
+			regB_sel 		= reg_ex_idx_from_ins(instruction);	
+			regA_sel 		= reg_ex_dest_from_ins(instruction);	
+		end
 		default: ;
 	endcase
 end

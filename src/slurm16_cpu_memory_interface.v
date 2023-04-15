@@ -3,16 +3,16 @@
  *
  */
 
-module slurm16_cpu_memory_interface #(parameter BITS = 16, ADDRESS_BITS = 15)  (
+module slurm16_cpu_memory_interface #(parameter BITS = 16, ADDRESS_BITS = 16)  (
 	input CLK,
 	input RSTb,
 
 	/* instruction interface */
-	input  [ADDRESS_BITS - 1: 0] 	instruction_memory_address,	/* requested address */
+	input  [ADDRESS_BITS - 2: 0] 	instruction_memory_address,	/* requested address */
 	input 			     	instruction_memory_read_req,	/* requesting a read */
 
 	output [BITS - 1: 0]	     	instruction_memory_data,	/* data output */
-	output [ADDRESS_BITS - 1: 0]	instruction_memory_address_out, /* requested address pass back */
+	output [ADDRESS_BITS - 2: 0]	instruction_memory_address_out, /* requested address pass back */
 	output 			     	instruction_memory_success,	/* 1 = read successful, 0 = read failed */
 
 	/* data interface */
@@ -112,7 +112,7 @@ begin
 
 	end else if (instruction_memory_read_req) begin
 
-		address_stage_1_next 	= instruction_memory_address;
+		address_stage_1_next 	= {1'b0, instruction_memory_address};
 
 		flags_stage_1_next[0] 	= 1'b1;
 		flags_stage_1_next[1] 	= 1'b1;

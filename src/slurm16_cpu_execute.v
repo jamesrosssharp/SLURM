@@ -29,7 +29,7 @@ module slurm16_cpu_execute #(parameter REGISTER_BITS = 4, BITS = 16, ADDRESS_BIT
 	/* memory op */
 	output load_memory,
 	output store_memory,
-	output [ADDRESS_BITS - 2:0] load_store_address,
+	output [ADDRESS_BITS - 1:0] load_store_address,
 	output [BITS - 1:0] memory_out,
 	output [1:0] memory_wr_mask,
 
@@ -216,14 +216,14 @@ assign store_memory = store_memory_r;
 assign load_store_address = load_store_address_r;
 assign memory_out = memory_out_r;
 
-wire [15:0] load_store_addr_w = regB + {imm_reg, instruction[3:0]};
+wire [ADDRESS_BITS - 1 : 0] load_store_addr_w = regB + {imm_reg, instruction[3:0]};
 wire low_bit_of_address = regB[0] ^ instruction[0];
 
 
 always @(*)
 begin
-	load_store_address_r = load_store_addr_w[15:1];
-	memory_out_r 		 = {BITS{1'b0}};
+	load_store_address_r = {1'b0, load_store_addr_w[15:1]};
+	memory_out_r 		 = regA;
 	load_memory_r 		 = 1'b0;
 	store_memory_r 		 = 1'b0;
 	memory_wr_mask_r	 = 2'b11;
@@ -253,6 +253,40 @@ begin
 					memory_out_r = regA;
 				end else
 					load_memory_r = 1'b1;
+			end
+			INSTRUCTION_CASEX_LOAD_EX: begin
+				load_store_address_r = {1'b1, regB[15:1]};
+				load_memory_r = 1'b1;	
+			end
+			INSTRUCTION_CASEX_LDB_EX,
+			INSTRUCTION_CASEX_LDBSX_EX: begin
+				load_store_address_r = {1'b1, regB[15:1]};
+				load_memory_r = 1'b1;
+				if (regB[0] == 1'b1) begin
+					memory_wr_mask_r = 2'b10;
+				end
+				else begin
+					memory_wr_mask_r = 2'b01;
+				end
+			end
+			INSTRUCTION_CASEX_ST_EX: begin
+				load_store_address_r = {1'b1, regB[15:1]};
+				memory_out_r = regA;
+				store_memory_r = 1'b1;
+			end
+			INSTRUCTION_CASEX_STB_EX: begin
+				load_store_address_r = {1'b1, regB[15:1]};
+					
+				if (regB[0] == 1'b1) begin
+					memory_out_r = {regA[7:0], 8'h00};
+					memory_wr_mask_r = 2'b10;
+				end
+				else begin
+					memory_out_r = regA;
+					memory_wr_mask_r = 2'b01;
+				end
+
+				store_memory_r = 1'b1;
 			end
 			default: ;
 		endcase
