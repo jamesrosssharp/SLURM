@@ -51,6 +51,7 @@ struct rtos_task_context {
 
 	// Stack allocated for task.
 	void* stack;
+	void* estack;
 
 	// Object the 
 	struct wait_object* wait_object;
@@ -76,9 +77,10 @@ TASK_STRUCTURE_PC  equ 30
 TASK_STRUCTURE_FLAGS equ 32
 TASK_STRUCTURE_ICTX  equ 34
 TASK_STRUCTURE_STCK  equ 36
-TASK_STRUCTURE_WOBJ  equ 38
+TASK_STRUCTURE_ESTCK  equ 38
+TASK_STRUCTURE_WOBJ  equ 40
 
-TASK_STRUCTURE_SIZE  equ 40
+TASK_STRUCTURE_SIZE  equ 42
 
 /*
  	struct rtos_wait_object {

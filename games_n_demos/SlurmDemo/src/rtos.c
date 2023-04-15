@@ -33,6 +33,8 @@ SOFTWARE.
 
 #include <slurminterrupt.h>
 
+// WARNING: If you change this structure, you must change the assembly version
+// of the structure
 struct rtos_task_context {
 
 	// We only preserve r1 - r15... x16 - x127 must be used with discretion in
@@ -48,6 +50,7 @@ struct rtos_task_context {
 
 	// Stack allocated for task.
 	void* stack;
+	void* estack;
 
 	// Object the 
 	struct rtos_wait_object* wait_object;
@@ -58,16 +61,34 @@ struct rtos_task_context* g_runningTask = 0;
 
 /* Idle task */
 
+#define STACK_CANARY 0xdead
+
 static void rtos_idle_task()
 {
 	int tick = 0;
-	
+	int i;
+
 	while (1)
 	{
 		tick++;
 
-		if ((tick & 255) == 0)
-			my_printf("Idle task!\r\n");
+		if ((tick & 1023) == 0)
+		{
+			my_printf("TASKS\r\n");
+			my_printf("======================\r\n");
+			
+			for (i = 0; i < RTOS_NUM_TASKS; i++)
+			{			
+				unsigned short* sp = g_tasks[i].stack;
+				int hw = 0;
+
+				while (*sp++ == STACK_CANARY)
+					hw++;
+
+				my_printf("%d\tsp = %x\tstack = %x\t", i, g_tasks[i].reg[13 - 1], g_tasks[i].stack);
+				my_printf("%x\r\n", hw);
+			}
+		}
 
 		__sleep();
 	}
@@ -79,10 +100,10 @@ extern void rtos_trap_task_end();
 /* RTOS Init - called before main */
 
 extern void main();
-extern short _estack[];
-extern short _sstack[];
-extern short _eidlestack[];
-extern short _sidlestack[];
+extern unsigned short _estack[];
+extern unsigned short _sstack[];
+extern unsigned short _eidlestack[];
+extern unsigned short _sidlestack[];
 
 
 extern void exit();
@@ -113,10 +134,11 @@ void rtos_trap_task_end()
 }
 
 
-static void rtos_create_task(int task_id, void (*task_entry)(), void* sstack, void* estack, short flags)
+static void rtos_create_task(int task_id, void (*task_entry)(), unsigned short* sstack, unsigned short* estack, short flags)
 {
 	int i = 0;
 	struct rtos_task_context* task;
+	unsigned short* sp;
 
 	task = &g_tasks[task_id];
 
@@ -128,7 +150,15 @@ static void rtos_create_task(int task_id, void (*task_entry)(), void* sstack, vo
 
 	/* TODO: need to allocate off the heap */
 	task->stack = sstack;
+	task->estack = estack;
 	task->reg[13 - 1] = (unsigned short)estack;
+
+	/* Initialize stack to our canary value */
+	for (sp = sstack; sp < estack; sp++)
+	{
+		*sp = STACK_CANARY;
+	}
+
 	task->int_ctx = 0;
 	task->t_flags = flags;
 
@@ -243,11 +273,11 @@ int	rtos_reschedule_wait_object_released(struct rtos_wait_object* wobj)
 
 
 			// Check if this new task is a higher priority than the running task, otherwise don't reschedule.
-			if (task < g_runningTask)
-			{
+			//if (task < g_runningTask)
+			//{
 				//my_printf("Yield: %x -> %x\r\n", g_runningTask, i);
 				g_runningTask = task;
-			}
+			//}
 			//else
 			//	my_printf("Returning to same task - %x %x\r\n", g_runningTask, g_runningTask->pc);
 

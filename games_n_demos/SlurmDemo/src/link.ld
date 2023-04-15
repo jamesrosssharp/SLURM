@@ -78,6 +78,9 @@ SECTIONS
 		. = . + IDLE_STACK_SIZE;
 		. = ALIGN(2);
 		_eidlestack = .;
+		_sstartstack = .;
+		. = . + 128;
+		_estartstack = .;
    	} > ram1
 
 }
