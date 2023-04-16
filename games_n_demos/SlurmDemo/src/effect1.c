@@ -102,9 +102,6 @@ void run_effect1(void)
 	{
 		rtos_lock_mutex(&my_mutex);
 
-		//my_printf(".");
-	
-		//if (frame < 1000)
 		frame++;
 
 		if (frame > 300 + 60)

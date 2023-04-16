@@ -29,6 +29,8 @@ pub struct Slurm16CPU {
 	pub halt : bool,
 
 	pub debug: bool,
+
+	pub debug_reg: u16,
 }
 
 impl Slurm16CPU {
@@ -49,7 +51,8 @@ impl Slurm16CPU {
 			registers: vec![0; 128],
 			int_flag: false,
 			halt : false,
-			debug : false
+			debug : false,
+			debug_reg : 0
 		}
 	}
 	
@@ -1221,6 +1224,24 @@ impl Slurm16CPU {
 
 	#[bitmatch]
 	pub fn execute_one_instruction(&mut self, mem: &mut Vec<u16>, portcon: &mut PortController, irq : u8) {
+
+		/*if self.pc >= 0x5e8 && self.pc <= 0x9e8
+		{
+			self.debug = true;
+			println!("PC={:#01x} SP={:#01x} R12={:#01x}", self.pc, self.registers[13], self.registers[12]);
+		}
+		
+		if self.pc == 0x9e8
+		{
+			self.debug = false;
+		}*/
+
+		/*if self.debug && self.registers[12] != self.debug_reg
+		{
+			println!("PC={:#01x} SP={:#01x} R12={:#01x}", self.pc, self.registers[13], self.registers[12]);
+			self.debug_reg = self.registers[12];
+		}*/
+
 
 		// Interrupt?
 		if (irq != 0) && self.int_flag {

@@ -142,7 +142,6 @@ rtos_resume_task:
 	ld r1,  [r1, TASK_STRUCTURE_R1]
 
 	// Return from interrupt
-	
 	iret
 
 	.endfunc
@@ -196,6 +195,9 @@ rtos_lock_mutex:
 
 	st [r1, TASK_STRUCTURE_PC], r15
 	
+	// Clear context
+	st [r1, TASK_STRUCTURE_ICTX], r0
+
 	// Test mutex
 	ldb r2, [r4, MUTEX_VAR]
 	or r2, r2
@@ -252,6 +254,9 @@ rtos_unlock_mutex:
 	// Store task PC
 
 	st [r1, TASK_STRUCTURE_PC], r15
+
+	// Clear context
+	st [r1, TASK_STRUCTURE_ICTX], r0
 
 	// Count ticks since task started
 

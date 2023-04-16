@@ -663,9 +663,9 @@ void chip_tune_play()
 
 		if ((buf_this_tick > 0) && (buf_this_tick <= 256))
 		{
-			global_interrupt_disable();	
+		//	global_interrupt_disable();	
 			mix_audio_3(buf_offset, buf_this_tick);
-			global_interrupt_enable();
+		//	global_interrupt_enable();
 		}
 		else
 			my_printf("!%d", buf_this_tick);

@@ -745,13 +745,14 @@ begin
 		flags_load = 1'b1;
 	end
  	// If mem except, reload flags from preserved flags in pip5
-	else if (state_r == st_mem_except1) begin
+/*	else if (state_r == st_mem_except1) begin
 		C_out = pip5[FLAG_C];
 		Z_out = pip5[FLAG_Z];
 		V_out = pip5[FLAG_V];
 		S_out = pip5[FLAG_S];
  		flags_load = 1'b1;
 	end
+*/
 end
 
 /* latch halt requests */
