@@ -72,7 +72,8 @@ impl Slurm16SoC
         let gpio_int = self.port_controller.gpio.step();
         let flash_int = self.port_controller.flash.step(&mut self.mem);
         let (emit_audio, audio_int) = self.port_controller.audio.step(audio_out);
-        let irq = self.port_controller.interrupt_controller.process_irq(hs_int, vs_int, audio_int, flash_int, gpio_int);
+	let timer_int = self.port_controller.timer.step();
+        let irq = self.port_controller.interrupt_controller.process_irq(hs_int, vs_int, audio_int, flash_int, gpio_int, timer_int);
 
         self.cpu.execute_one_instruction(&mut self.mem, &mut self.port_controller, irq);
         (vs_int, emit_audio)

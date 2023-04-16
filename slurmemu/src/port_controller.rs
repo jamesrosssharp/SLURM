@@ -5,6 +5,7 @@ use super::gpio::GpioCore;
 use super::flash::FlashDMA;
 use super::audio::AudioCore;
 use super::scratch::Scratch;
+use super::timer::Timer;
 
 use std::io::{self, Write};
 
@@ -17,6 +18,7 @@ pub struct PortController {
 	pub flash: FlashDMA,
 	pub audio: AudioCore,
 	pub scratch: Scratch,
+	pub timer: Timer,
 }
 
 ///		The PortController simply implements the port address map
@@ -33,6 +35,7 @@ impl PortController {
 			flash: FlashDMA::new(),
 			audio: AudioCore::new(),
 			scratch: Scratch::new(),
+			timer: Timer::new()
 		}
 	}
 
@@ -80,6 +83,8 @@ impl PortController {
 			7 => return self.interrupt_controller.port_op(port, val, write),
 			// 8 - scratch pad RAM
 			8 => return self.scratch.port_op(port, val, write),
+			// 9 - timer
+			9 => return self.timer.port_op(port, val, write),
 			// Else, do nothing
 			_ => ()
 		}

@@ -14,3 +14,4 @@ pub mod gpio;
 pub mod flash;
 pub mod audio;
 pub mod scratch;
+pub mod timer;

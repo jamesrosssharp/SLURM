@@ -10,6 +10,7 @@ const VSYNC_INTERRUPT : u8 = 2;
 const AUDIO_INTERRUPT : u8 = 3;
 const FLASH_INTERRUPT : u8 = 4;
 const GPIO_INTERRUPT  : u8 = 5;
+const TIMER_INTERRUPT  : u8 = 6;
 
 pub struct InterruptController {
 
@@ -46,39 +47,35 @@ impl InterruptController {
         return 0;
     }
 
-    pub fn process_irq(&mut self, hs : bool, vs : bool, audio : bool, flash : bool, gpio : bool) -> u8 /* IRQ -> zero means no IRQ raised */ {
+    pub fn process_irq(&mut self, hs : bool, vs : bool, audio : bool, flash : bool, gpio : bool, timer: bool) -> u8 /* IRQ -> zero means no IRQ raised */ {
 
         //println!("process_irq: {} {} {} {}", hs, vs, self.interrupt_pending, self.interrupt_enabled);
 
-	let mut a = 0;
-
         if hs {
-	    a+=1;
             self.interrupt_pending |= 1 << (HSYNC_INTERRUPT - 1);
         }
         if vs {
-	    a+=1;
             self.interrupt_pending |= 1 << (VSYNC_INTERRUPT - 1);
         }
         if audio {
-	    a+=1;
             self.interrupt_pending |= 1 << (AUDIO_INTERRUPT - 1);
         }
         if flash {
-	    a+=1;
             self.interrupt_pending |= 1 << (FLASH_INTERRUPT - 1);
         }
         if gpio {
-	    a+=1;
             self.interrupt_pending |= 1 << (GPIO_INTERRUPT - 1);
         }
+	if timer {
+	    self.interrupt_pending |= 1 << (TIMER_INTERRUPT - 1);
+	}
 
 	/*if a > 1
 	{
 		println!("Double int");
 	}*/
 
-        let ints : Vec<u8> = vec![HSYNC_INTERRUPT, VSYNC_INTERRUPT, AUDIO_INTERRUPT, FLASH_INTERRUPT, GPIO_INTERRUPT];
+        let ints : Vec<u8> = vec![HSYNC_INTERRUPT, VSYNC_INTERRUPT, AUDIO_INTERRUPT, FLASH_INTERRUPT, GPIO_INTERRUPT, TIMER_INTERRUPT];
 
         for int in ints {
             if (self.interrupt_pending & self.interrupt_enabled) & (1 << (int - 1)) != 0 {
