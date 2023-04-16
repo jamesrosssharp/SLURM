@@ -65,6 +65,8 @@ struct rtos_task_context {
 struct rtos_task_context g_tasks[RTOS_NUM_TASKS];
 struct rtos_task_context* g_runningTask = 0;
 
+unsigned short g_major_tick = 0;
+
 /* Idle task */
 
 #define STACK_CANARY 0xdead
@@ -78,9 +80,9 @@ static void rtos_idle_task()
 	{
 		tick++;
 
-		if ((tick & 1023) == 0)
+		if ((tick & 255) == 0)
 		{
-			my_printf("TASKS tick = %x\r\n", __in(0x9000));
+			my_printf("TASKS tick = %x%x\r\n", g_major_tick, __in(0x9000));
 			my_printf("======================\r\n");
 			
 			for (i = 0; i < RTOS_NUM_TASKS; i++)
@@ -244,10 +246,10 @@ void rtos_set_interrupt_handler(unsigned short irq, void (*handler)())
 
 void rtos_handle_interrupt_callback(unsigned short irq)
 {
-//	if (irq == SLURM_INTERRUPT_TIMER_IDX)
-//	{
-//		my_printf("Timer int!\r\n");
-//	} 
+	if (irq == SLURM_INTERRUPT_TIMER_IDX)
+	{
+		g_major_tick++;
+	} 
 
 	if (g_irq_handlers[irq])
 		g_irq_handlers[irq]();	

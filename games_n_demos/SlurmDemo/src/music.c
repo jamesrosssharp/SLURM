@@ -596,7 +596,6 @@ static mutex_t audio_int_mutex 	  = RTOS_MUTEX_INITIALIZER; /* Interrupt mutex -
 
 static void audio_interrupt()
 {
-	//my_printf(".");
 	mix_audio_3_update();
 	rtos_unlock_mutex_from_isr(&audio_int_mutex);
 }
@@ -662,8 +661,12 @@ void chip_tune_play()
 
 		short buf_this_tick = (buf_remaining < (256 - buf_offset)) ? buf_remaining : (256 - buf_offset);
 
-		if ((buf_this_tick > 0) && (buf_this_tick <= 256))		
+		if ((buf_this_tick > 0) && (buf_this_tick <= 256))
+		{
+			global_interrupt_disable();	
 			mix_audio_3(buf_offset, buf_this_tick);
+			global_interrupt_enable();
+		}
 		else
 			my_printf("!%d", buf_this_tick);
 

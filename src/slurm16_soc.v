@@ -153,10 +153,6 @@ pc0
 	.fl_memory_data(fl_memory_data),
 	.fl_wvalid(fl_wvalid),
 	.fl_wready(fl_wready),
-	/*.au_memory_address(au_memory_address),
-	.au_memory_data(au_memory_data),
-	.au_rvalid(au_rvalid),
-	.au_rready(au_rready),*/
 	.interrupt(cpuInterrupt),
 	.irq(cpuIRQ)
 );

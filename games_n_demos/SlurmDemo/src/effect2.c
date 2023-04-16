@@ -97,8 +97,6 @@ void run_effect2(void)
 	bar1_y = 0;
 	bar1_vy = 2;
 
-	my_printf("Frame ptr: %x\r\n", &frame);
-
 	while (frame < 1000)
 	{
 
