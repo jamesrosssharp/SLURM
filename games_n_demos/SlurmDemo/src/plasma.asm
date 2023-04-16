@@ -284,7 +284,7 @@ asm_plasma:
 	st [r13, 22], r1
 	st [r13, 24], r15 
 
-	mov r6, 32	
+	mov r6, 64	
 	
 	ld r7, [r0, frame]
 	mov r12, r7
@@ -293,7 +293,7 @@ asm_plasma:
 	mov r2, r7
 
 plasma_outer_loop:
-	mov r5, 42
+	mov r5, 64
 	mov r11, r7
 	mov r1, r7
 plasma_inner_loop:
@@ -318,7 +318,7 @@ plasma_inner_loop:
 	add r4, 1
 	sub r5, 1
 	bnz plasma_inner_loop
-	add r4, 22
+	add r4, 0
 	add r12, 9
 	add r2, 13
 	sub r6, 1

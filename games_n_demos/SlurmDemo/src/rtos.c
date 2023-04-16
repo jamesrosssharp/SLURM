@@ -93,8 +93,19 @@ static void rtos_idle_task()
 
 				my_printf("%d\tsp=%x\tstack=%x\t", i, g_tasks[i].reg[13 - 1], g_tasks[i].stack);
 				my_printf("hw=%x\tpc=%x\tflg=%x\t", hw, g_tasks[i].pc, g_tasks[i].t_flags);
-				my_printf("ticks=%x %x\r\n", 0, 0);
+				my_printf("ticks=%x %x\r\n", g_tasks[i].ticks_total_hi, g_tasks[i].ticks_total_lo);
 			}
+
+			global_interrupt_disable();
+
+			for (i = 0; i < RTOS_NUM_TASKS; i++)
+			{	
+				g_tasks[i].ticks_total_lo = 0;
+				g_tasks[i].ticks_total_hi = 0;
+			}
+	
+			global_interrupt_enable();
+
 		}
 
 		__sleep();
@@ -289,10 +300,10 @@ int	rtos_reschedule_wait_object_released(struct rtos_wait_object* wobj)
 			task->t_flags &= ~TASK_FLAGS_WAITING;
 
 			// Check if this new task is a higher priority than the running task, otherwise don't reschedule.
-			//if (task < g_runningTask)
-			//{
+			if (task < g_runningTask)
+			{
 				g_runningTask = task;
-			//}
+			}
 
 			ret = 1;
 			break;

@@ -121,6 +121,11 @@ rtos_resume_task:
 	// Restore task context
 	ld r14, [r1, TASK_STRUCTURE_PC]
 
+	// Get current start ticks
+
+	in r2, [r0, 0x9000]
+	st [r1, TASK_STRUCTURE_TICKS_START], r2
+
 	ld r15, [r1, TASK_STRUCTURE_R15]
 	ld r13, [r1, TASK_STRUCTURE_R13]
 	ld r12, [r1, TASK_STRUCTURE_R12]
@@ -174,6 +179,18 @@ rtos_lock_mutex:
 
 	ld r2, [r13, -2]
 	st [r1, TASK_STRUCTURE_R1], r2
+
+	// Count ticks since task started
+
+	in r3, [r0, 0x9000]
+	ld r2, [r1, TASK_STRUCTURE_TICKS_START]
+	sub r3, r2
+	ld r2, [r1, TASK_STRUCTURE_TICKS_TOTAL_LO]
+	add r2, r3
+	st [r1, TASK_STRUCTURE_TICKS_TOTAL_LO], r2
+	ld r3, [r1, TASK_STRUCTURE_TICKS_TOTAL_HI]
+	adc r3, r0
+	st [r1, TASK_STRUCTURE_TICKS_TOTAL_HI], r3
 
 	// Store task PC
 
@@ -235,7 +252,18 @@ rtos_unlock_mutex:
 	// Store task PC
 
 	st [r1, TASK_STRUCTURE_PC], r15
-	
+
+	// Count ticks since task started
+
+	in r3, [r0, 0x9000]
+	ld r2, [r1, TASK_STRUCTURE_TICKS_START]
+	sub r3, r2
+	ld r2, [r1, TASK_STRUCTURE_TICKS_TOTAL_LO]
+	add r2, r3
+	st [r1, TASK_STRUCTURE_TICKS_TOTAL_LO], r2
+	ld r3, [r1, TASK_STRUCTURE_TICKS_TOTAL_HI]
+	adc r3, r0
+	st [r1, TASK_STRUCTURE_TICKS_TOTAL_HI], r3
 
 	sub r13, 2
 	bl rtos_reschedule_wait_object_released
@@ -319,6 +347,18 @@ rtos_handle_interrupt:
 
 	stix r3
 	st [r2, TASK_STRUCTURE_ICTX], r3
+
+	// Count ticks since task started
+
+	in r3, [r0, 0x9000]
+	ld r4, [r2, TASK_STRUCTURE_TICKS_START]
+	sub r3, r4
+	ld r4, [r2, TASK_STRUCTURE_TICKS_TOTAL_LO]
+	add r4, r3
+	st [r2, TASK_STRUCTURE_TICKS_TOTAL_LO], r4
+	ld r3, [r2, TASK_STRUCTURE_TICKS_TOTAL_HI]
+	adc r3, r0
+	st [r2, TASK_STRUCTURE_TICKS_TOTAL_HI], r3
 
 	// Mark current task as "from_int"
 
