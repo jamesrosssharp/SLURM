@@ -1114,6 +1114,108 @@ impl Slurm16CPU {
 		self.z_int = x & 0x0001 == 0x0001;
 	}
 
+	pub fn ex_ld_op(&mut self, instruction : u16, mem:  & mut Vec<u16>) {
+
+		let reg_p = ((instruction & 0x0f00) >> 8) as usize;
+		let reg_addr : u16 = self.get_register(reg_p);
+
+		let addr : usize = (reg_addr as u32 | 0x10000)  as usize;
+
+		let reg_src = ((instruction & 0xf0) >> 4) as usize;
+
+		self.registers[reg_src] = mem[addr>>1];
+
+		self.imm_hi = 0;
+	}
+
+	pub fn ex_ldb_op(&mut self, instruction : u16, mem:  & mut Vec<u16>) {
+
+		let reg_p = ((instruction & 0xf00) >> 8) as usize;
+		let reg_addr : u16 = self.get_register(reg_p);
+
+		let addr : usize = (0x10000 | reg_addr as u32) as usize;
+		
+		let reg_src = ((instruction & 0xf0) >> 4) as usize;
+
+		if addr & 1 == 0
+		{
+			self.registers[reg_src] = mem[addr>>1] & 0xff;
+		}
+		else
+		{
+			self.registers[reg_src] = (mem[addr>>1] >> 8) & 0xff;
+		}
+
+		self.imm_hi = 0;
+	}
+
+	pub fn ex_ldbsx_op(&mut self, instruction : u16, mem:  & mut Vec<u16>) {
+
+		let reg_p = ((instruction & 0xf00) >> 8) as usize;
+		let reg_addr : u16 = self.get_register(reg_p);
+
+		let addr : usize = (0x10000 | reg_addr as u32) as usize;
+
+		let reg_src = ((instruction & 0xf0) >> 4) as usize;
+
+		if addr & 1 == 0
+		{
+			let mut val : u16 = mem[addr>>1] & 0xff; 
+			if (val & 0x80) == 0x80 {
+				val |= 0xff00;
+			}
+			self.registers[reg_src] = val;
+		}
+		else
+		{
+			let mut val : u16 = (mem[addr>>1] >> 8) & 0xff; 
+			if (val & 0x80) == 0x80 {
+				val |= 0xff00;
+			}
+			self.registers[reg_src] = val;
+		}
+
+		self.imm_hi = 0;
+	}
+
+	pub fn ex_st_op(&mut self, instruction : u16, mem:  & mut Vec<u16>) {
+
+		let reg_p = ((instruction & 0x0f00) >> 8) as usize;
+		let reg_addr : u16 = self.get_register(reg_p);
+
+		let addr : usize = (0x10000 | reg_addr as u32) as usize;
+
+		let reg_src = ((instruction & 0xf0) >> 4) as usize;
+		let val : u16 = self.get_register(reg_src);
+
+		mem[addr>>1] = val;
+
+		self.imm_hi = 0;
+	}
+
+	pub fn ex_stb_op(&mut self, instruction : u16, mem:  & mut Vec<u16>) {
+
+		let reg_p = ((instruction & 0xf00) >> 8) as usize;
+		let reg_addr : u16 = self.get_register(reg_p);
+
+		let addr : usize = (0x10000 | reg_addr as u32) as usize;
+
+		let reg_src = ((instruction & 0xf0) >> 4) as usize;
+		let val : u16 = self.get_register(reg_src);
+
+		let v = mem[addr >> 1];
+
+		if addr & 1 == 0
+		{
+			mem[addr>>1] = (v & 0xff00) | (val & 0xff);
+		}
+		else
+		{
+			mem[addr >> 1] = (v & 0x00ff) | ((val & 0xff) << 8)
+		}
+
+		self.imm_hi = 0;
+	}
 
 
 
@@ -1164,6 +1266,11 @@ impl Slurm16CPU {
 			"0100_????_????_????" => self.branch_op(instruction),
 			"0101_????_????_????" => self.condmov_op(instruction),
 			"0110_????_????_????" => self.alu_op_extreg(instruction),
+			"0111_????_????_?000" => self.ex_ld_op(instruction, mem),
+			"0111_????_????_?001" => self.ex_ldb_op(instruction, mem),
+			"0111_????_????_?01?" => self.ex_ldbsx_op(instruction, mem),
+			"0111_????_????_?10?" => self.ex_st_op(instruction, mem),
+			"0111_????_????_?11?" => self.ex_stb_op(instruction, mem),
 			"1000_????_????_????" => self.byte_mem_op_sx(instruction, mem),
 			"1001_????_????_????" => self.three_reg_alu_op(instruction, mem),
 			"101?_????_????_????" => self.byte_mem_op(instruction, mem),

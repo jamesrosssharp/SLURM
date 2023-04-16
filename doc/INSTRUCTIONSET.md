@@ -270,7 +270,7 @@ Class 7: upper bank memory operations
 		3'b000 :  LD
 		3'b001 :  LDB
 		3'b01x :  LDBSX
-		3'b100 :  ST
+		3'b10x :  ST
 		3'b11x :  STB
 
 
