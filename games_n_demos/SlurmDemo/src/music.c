@@ -596,6 +596,7 @@ static mutex_t audio_int_mutex 	  = RTOS_MUTEX_INITIALIZER; /* Interrupt mutex -
 
 static void audio_interrupt()
 {
+	//my_printf(".");
 	mix_audio_3_update();
 	rtos_unlock_mutex_from_isr(&audio_int_mutex);
 }

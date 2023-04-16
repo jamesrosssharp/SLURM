@@ -102,9 +102,8 @@ int main()
 	while (1)
 	{
 		run_effect1();	
-//		run_effect2();
-//		run_effect3();
-		clear_bg(SPRITE_SHEET_ADDRESS_LO, 1024);
+		run_effect2();
+		run_effect3();
 	}
 
 }

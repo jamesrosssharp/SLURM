@@ -5,6 +5,7 @@
 #define SLURM_INTERRUPT_VSYNC_IDX		1
 #define SLURM_INTERRUPT_AUDIO_IDX		2
 #define SLURM_INTERRUPT_FLASH_DMA_IDX		3
+#define SLURM_INTERRUPT_TIMER_IDX		5
 
 // We should define one in terms of the other but lcc is
 // not smart enough to evaluate at compile time (?)
@@ -13,6 +14,8 @@
 #define SLURM_INTERRUPT_VSYNC		2
 #define SLURM_INTERRUPT_AUDIO		4
 #define SLURM_INTERRUPT_FLASH_DMA	8
+#define SLURM_INTERRUPT_TIMER		32
+
 
 #define NUM_SLURM_INTERRUPTS		16
 

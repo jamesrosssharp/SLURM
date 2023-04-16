@@ -15,6 +15,8 @@ SPI_FLASH:
 	ba flash_handler
 GPIO_VEC:
 	ba dummy_handler
+TIMER_VEC:
+	ba timer_handler
 VECTORS:
 	.times 20 ba dummy_handler
 
@@ -189,6 +191,19 @@ flash_handler:
 	ba  rtos_handle_interrupt
 
 	.endfunc
+
+	.function timer_handler
+timer_handler:
+	st [r13, -2], r1
+
+	mov r1, SLURM_INTERRUPT_TIMER
+	out [0x7001], r1
+
+	mov r1, SLURM_INTERRUPT_TIMER_IDX
+	ba  rtos_handle_interrupt
+
+	.endfunc
+	
 	
 	.global clear_bg
 	.function clear_bg

@@ -99,13 +99,14 @@ Could also be used for preemptive sheduling.
 |  Address        | Function                      | Read/Write? |
 |-----------------|-------------------------------|-------------|
 |  0x9000         | control		          | Write only  |
-|  0x9001         | count  		          | Read only   |
+|  0x9001         | match reg  		          | Write only  |
+|  0x9000-0x9fff  | count - all regs read as count| Read only   |
 
 Control reg:
 
-| 15 - 5 |  4 - 2 |    1    |    0   |
----------|--------|---------|--------|
-|   x    |Prescale|  Up /Dn |   En   |
+| 15 - 1    |    0   |
+------------|--------|
+|   x       |   En   |
 
 TODO: Match interrupt?
 

@@ -18,19 +18,20 @@ module interrupt_controller
 	input irq_vsync,
 	input irq_audio,
 	input irq_spi_flash,
+	input irq_timer,
 	input irq_gpio,
 
 	output interrupt,	// On interrupt, this signal is asserted to CPU
 	output [3:0] irq	// This vector contains (priority encoded) IRQ to assert
 );
 
-localparam N_INTERRUPTS = 5;
+localparam N_INTERRUPTS = 6;
 
 reg [N_INTERRUPTS - 1:0] irq_pending, irq_pending_next;
 reg [N_INTERRUPTS - 1:0] irq_clear_pending, irq_clear_pending_next;
 reg [N_INTERRUPTS - 1:0] irq_enabled, irq_enabled_next;
 
-wire [N_INTERRUPTS - 1:0] irq_in = {irq_gpio, irq_spi_flash, irq_audio, irq_vsync, irq_hsync};
+wire [N_INTERRUPTS - 1:0] irq_in = {irq_timer, irq_gpio, irq_spi_flash, irq_audio, irq_vsync, irq_hsync};
 
 reg [3:0] irq_out, irq_out_next;
 reg interrupt_out, interrupt_out_next;
@@ -104,16 +105,18 @@ begin
 	interrupt_out_next  = 1'b1;
 
 	casex (irq_pending & irq_enabled)
-		5'bxxxx1:
+		6'bxxxxx1:
 			irq_out_next = 4'd1;
-		5'bxxx10:
+		6'bxxxx10:
 			irq_out_next = 4'd2;
-		5'bxx100:
+		6'bxxx100:
 			irq_out_next = 4'd3;
-		5'bx1000:
+		6'bxx1000:
 			irq_out_next = 4'd4;
-		5'b10000:
+		6'bx10000:
 			irq_out_next = 4'd5;
+		6'b100000:
+			irq_out_next = 4'd6;
 		default: 
 			interrupt_out_next = 1'b0;
 	endcase

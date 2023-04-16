@@ -52,8 +52,14 @@ struct rtos_task_context {
 	void* stack;
 	void* estack;
 
-	// Object the 
+	// Object we are waiting on - if waiting 
 	struct rtos_wait_object* wait_object;
+
+	// Ticks for performance measurements
+	unsigned short ticks_start;
+	unsigned short ticks_total_lo;
+	unsigned short ticks_total_hi;
+	
 };
 
 struct rtos_task_context g_tasks[RTOS_NUM_TASKS];
@@ -74,7 +80,7 @@ static void rtos_idle_task()
 
 		if ((tick & 1023) == 0)
 		{
-			my_printf("TASKS\r\n");
+			my_printf("TASKS tick = %x\r\n", __in(0x9000));
 			my_printf("======================\r\n");
 			
 			for (i = 0; i < RTOS_NUM_TASKS; i++)
@@ -85,8 +91,9 @@ static void rtos_idle_task()
 				while (*sp++ == STACK_CANARY)
 					hw++;
 
-				my_printf("%d\tsp = %x\tstack = %x\t", i, g_tasks[i].reg[13 - 1], g_tasks[i].stack);
-				my_printf("%x\r\n", hw);
+				my_printf("%d\tsp=%x\tstack=%x\t", i, g_tasks[i].reg[13 - 1], g_tasks[i].stack);
+				my_printf("hw=%x\tpc=%x\tflg=%x\t", hw, g_tasks[i].pc, g_tasks[i].t_flags);
+				my_printf("ticks=%x %x\r\n", 0, 0);
 			}
 		}
 
@@ -200,10 +207,15 @@ void rtos_init()
 	{
 		g_irq_handlers[i] = 0;
 	}
+	
+	// Enable timer
+
+	__out(0x9000, 1);
+	__out(0x9001, 0);
 
 	// Enable all interrupts
 
-	__out(0x7000, SLURM_INTERRUPT_VSYNC | SLURM_INTERRUPT_FLASH_DMA | SLURM_INTERRUPT_AUDIO);
+	__out(0x7000, SLURM_INTERRUPT_VSYNC | SLURM_INTERRUPT_FLASH_DMA | SLURM_INTERRUPT_AUDIO | SLURM_INTERRUPT_TIMER);
 
 	// Set main task as current task
 	g_runningTask = &g_tasks[RTOS_NUM_TASKS - 2];
@@ -221,6 +233,11 @@ void rtos_set_interrupt_handler(unsigned short irq, void (*handler)())
 
 void rtos_handle_interrupt_callback(unsigned short irq)
 {
+//	if (irq == SLURM_INTERRUPT_TIMER_IDX)
+//	{
+//		my_printf("Timer int!\r\n");
+//	} 
+
 	if (g_irq_handlers[irq])
 		g_irq_handlers[irq]();	
 }
@@ -271,15 +288,11 @@ int	rtos_reschedule_wait_object_released(struct rtos_wait_object* wobj)
 		{
 			task->t_flags &= ~TASK_FLAGS_WAITING;
 
-
 			// Check if this new task is a higher priority than the running task, otherwise don't reschedule.
 			//if (task < g_runningTask)
 			//{
-				//my_printf("Yield: %x -> %x\r\n", g_runningTask, i);
 				g_runningTask = task;
 			//}
-			//else
-			//	my_printf("Returning to same task - %x %x\r\n", g_runningTask, g_runningTask->pc);
 
 			ret = 1;
 			break;

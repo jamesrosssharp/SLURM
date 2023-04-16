@@ -11,6 +11,7 @@
  * 0x6000 - 0x6fff: Trace port 
  * 0x7000 - 0x7fff: Interrupt controller
  * 0x8000 - 0x83ff: scratch pad RAM
+ * 0x9000 - 0x9fff: timer
  */
 
 module port_controller
@@ -90,6 +91,7 @@ wire irq_hsync;
 wire irq_vsync;
 wire irq_audio;
 wire irq_spi_flash;
+wire irq_timer;
 
 //assign gpio_out[0] = cpu_debug_pin;
 
@@ -102,6 +104,7 @@ reg WR_SPI;
 reg WR_TRACE;
 reg WR_INTERRUPT;
 reg WR_SCRATCH;
+reg WR_TIMER;
 
 wire RD_TRACE = 1'b0;
 
@@ -115,6 +118,7 @@ wire [BITS - 1 : 0] DATA_OUT_SPI;
 wire [BITS - 1 : 0] DATA_OUT_TRACE;
 wire [BITS - 1 : 0] DATA_OUT_INTERRUPT;
 wire [BITS - 1 : 0] DATA_OUT_SCRATCH;
+wire [BITS - 1 : 0] DATA_OUT_TIMER;
 
 reg [BITS - 1 : 0] dout_next;
 reg [BITS - 1 : 0] dout;
@@ -156,6 +160,7 @@ begin
 	WR_TRACE = 1'b0;
 	WR_INTERRUPT = 1'b0;
 	WR_SCRATCH = 1'b0;
+	WR_TIMER = 1'b0;
 
 	dout_next = dout;
 
@@ -193,6 +198,10 @@ begin
 		16'h8xxx: begin
 			WR_SCRATCH = memWR;
 		end
+		16'h9xxx: begin
+			dout_next = DATA_OUT_TIMER;
+			WR_TIMER = memWR;
+		end
 		default: ;
 	endcase
 end
@@ -203,7 +212,7 @@ begin
 	DATA_OUT_REG = {BITS{1'b0}};
 
 	casex (addr_reg)
-		16'h0xxx, 16'h1xxx, 16'h2xxx, 16'h3xxx, 16'h4xxx, 16'h6xxx, 16'h7xxx: begin
+		16'h0xxx, 16'h1xxx, 16'h2xxx, 16'h3xxx, 16'h4xxx, 16'h6xxx, 16'h7xxx, 16'h9xxx: begin
 			DATA_OUT_REG = dout;
 		end
 		16'h5xxx: begin /* gfx reads are already delayed by one cycle */ 
@@ -374,6 +383,7 @@ interrupt_controller #(.BITS(BITS)) irq0
 	irq_vsync,
 	irq_audio,
 	irq_spi_flash,
+	irq_timer,
 	gpio_int,
 	interrupt,	
 	irq
@@ -399,5 +409,27 @@ bram #(.BITS(16), .ADDRESS_BITS(9)) scr0
 `else
 assign DATA_OUT_SCRATCH = 16'd0;
 `endif
+
+
+
+`ifndef WITHOUT_TIMER
+timer tim0
+(
+	CLK,
+	RSTb,
+	ADDRESS[3:0],
+	DATA_IN,
+	DATA_OUT_TIMER,
+	WR_TIMER,
+	irq_timer
+);
+
+
+
+`else
+assign DATA_OUT_TIMER = 16'd0;
+`endif
+
+
 
 endmodule
