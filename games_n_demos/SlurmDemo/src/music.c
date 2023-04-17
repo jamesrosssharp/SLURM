@@ -656,7 +656,7 @@ void chip_tune_play()
 
 	buf_mixed = 0;
 
-	global_interrupt_disable();	
+	//global_interrupt_disable();	
 	while (buf_mixed < 256)
 	{
 
@@ -757,12 +757,12 @@ void chip_tune_play()
 					//		(SLURM_PATTERN_SIZE >> 1) - 1, 0);
 			
 						
-					global_interrupt_enable();
+					//global_interrupt_enable();
 					storage_load_asynch(song_flash_offset_lo, song_flash_offset_hi, 
 						  offset_lo, offset_hi, 
 						  (unsigned short)(cur_patt_buf ? &pattern_B : &pattern_A), 0, 
 						  (SLURM_PATTERN_SIZE >> 1), 0, 0);
-					global_interrupt_disable();				
+					//global_interrupt_disable();				
 
 					cur_patt_buf = !cur_patt_buf;
 					row = 0;
@@ -777,5 +777,5 @@ void chip_tune_play()
 		}
 	}
 
-	global_interrupt_enable();
+	//global_interrupt_enable();
 }

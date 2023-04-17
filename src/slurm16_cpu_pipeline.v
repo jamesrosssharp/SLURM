@@ -711,6 +711,12 @@ begin
 		int_S_r <= pip4[FLAG_S];
 		int_Z_r <= pip4[FLAG_Z];
 		int_V_r <= pip4[FLAG_V];
+
+		/*int_C_r <= C_in;
+		int_Z_r <= Z_in;
+		int_S_r <= S_in;
+		int_V_r <= V_in;*/
+
  	end else begin
 		// If instruction in pip2 is a RSIX, 
 		// restore interrupt flags.

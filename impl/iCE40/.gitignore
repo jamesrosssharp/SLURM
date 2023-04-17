@@ -1,6 +1,5 @@
 *.json
 *.asc
-*.bin
 Asm
 OldAsm
 main.asm
