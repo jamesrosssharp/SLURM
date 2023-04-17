@@ -16,7 +16,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 BOOTLOADER_SIZE = 0x200;
 STACK_SIZE 	= 0x400;
-AUDIO_STACK_SIZE = 0x200;
+AUDIO_STACK_SIZE = 0x400;
 STORAGE_STACK_SIZE = 0x200;
 IDLE_STACK_SIZE = 0x200;
 
@@ -39,6 +39,10 @@ SECTIONS
 		*( .mixer3.text )
 	} > ram1
 
+	.asm_plasma : {
+		. = ALIGN(0x100);
+		*( .asm_plasma)
+	}
 
 	.data : {
 		. = ALIGN(32);

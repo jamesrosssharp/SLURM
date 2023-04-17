@@ -656,6 +656,7 @@ void chip_tune_play()
 
 	buf_mixed = 0;
 
+	global_interrupt_disable();	
 	while (buf_mixed < 256)
 	{
 
@@ -663,9 +664,7 @@ void chip_tune_play()
 
 		if ((buf_this_tick > 0) && (buf_this_tick <= 256))
 		{
-		//	global_interrupt_disable();	
 			mix_audio_3(buf_offset, buf_this_tick);
-		//	global_interrupt_enable();
 		}
 		else
 			my_printf("!%d", buf_this_tick);
@@ -756,12 +755,15 @@ void chip_tune_play()
 					
 					//_do_flash_dma(song_flash_offset_lo, song_flash_offset_hi, offset_lo, offset_hi,(void*)((unsigned short)(cur_patt_buf ? &pattern_B : &pattern_A) >> 1), 
 					//		(SLURM_PATTERN_SIZE >> 1) - 1, 0);
-				
+			
+						
+					global_interrupt_enable();
 					storage_load_asynch(song_flash_offset_lo, song_flash_offset_hi, 
 						  offset_lo, offset_hi, 
 						  (unsigned short)(cur_patt_buf ? &pattern_B : &pattern_A), 0, 
 						  (SLURM_PATTERN_SIZE >> 1), 0, 0);
-	
+					global_interrupt_disable();				
+
 					cur_patt_buf = !cur_patt_buf;
 					row = 0;
 
@@ -775,4 +777,5 @@ void chip_tune_play()
 		}
 	}
 
+	global_interrupt_enable();
 }

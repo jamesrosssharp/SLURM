@@ -261,9 +261,10 @@ plasma_sin:
 	db 0x1e
 	db 0x1f
 
-	.section text
-	.function asm_plasma
+//	.function asm_plasma
 	.global asm_plasma
+
+	.section asm_plasma
 
 asm_plasma:
 
@@ -347,6 +348,6 @@ plasma_inner_loop:
 	// Restore old stack pointer
 	ret
 
-	.endfunc
+	//.endfunc
 
 	.end

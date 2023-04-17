@@ -117,7 +117,7 @@ rtos_resume_task:
 	// Restore interrupt context
 	ld r2, [r1, TASK_STRUCTURE_ICTX]
 	rsix r2
-	
+		
 	// Restore task context
 	ld r14, [r1, TASK_STRUCTURE_PC]
 
