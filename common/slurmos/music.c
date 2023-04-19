@@ -137,7 +137,7 @@ struct channel_t {
 
 extern struct channel_t channel_info[]; 
 
-#define MUSIC_HEAP_SIZE_BYTES 16*1024
+#define MUSIC_HEAP_SIZE_BYTES 13*1024
 
 short my_add(short a, short b)
 {

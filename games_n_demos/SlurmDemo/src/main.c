@@ -101,9 +101,9 @@ int main()
 	
 	while (1)
 	{
-		run_effect1();	
-		run_effect2();
-		run_effect3();
+//		run_effect1();	
+//		run_effect2();
+//		run_effect3();
 	}
 
 }

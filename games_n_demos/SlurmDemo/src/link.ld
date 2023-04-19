@@ -29,7 +29,6 @@ SECTIONS
 {
 
 	.text : {
-		/* keep will be a noop, since slurmlink won't gc sections */
 		KEEP(*(.vectors .vectors.*))
 		*( .text .text.* )
 	} > ram1
@@ -38,11 +37,6 @@ SECTIONS
 		. = ALIGN(0x100);
 		*( .mixer3.text )
 	} > ram1
-
-	.asm_plasma : {
-		. = ALIGN(0x100);
-		*( .asm_plasma)
-	}
 
 	.data : {
 		. = ALIGN(32);

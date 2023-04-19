@@ -7,6 +7,8 @@ OBJCOPY=../../slurm-objcopy/slurm-objcopy
 
 SRC_DIR=src
 
+include ../../common/slurmos/slurmos.mk
+
 BUILD_DIR=build
 
 TARGET=$(BUILD_DIR)/slurm_demo.bin
@@ -43,7 +45,7 @@ $(ASSETS_H): $(ASSETS_SRC) assets/gen-assets.py $(CHIPTUNE_SLMSNG)
 
 $(BUILD_DIR)/%.c1: $(SRC_DIR)/%.c $(ASSETS_H) $(HEADERS)
 	mkdir -p $(BUILD_DIR)
-	$(CPP) -o $@ -I../../include -I$(SRC_DIR) -I$(BUILD_DIR) $<
+	$(CPP) -o $@ -I../../include -I$(SRC_DIR) -I$(BUILD_DIR) -I$(SLURMOS_DIR) $<
 
 $(BUILD_DIR)/%.asm1: $(SRC_DIR)/%.asm $(HEADERS)
 	mkdir -p $(BUILD_DIR)
@@ -59,7 +61,7 @@ $(BUILD_DIR)/%.asmo : $(BUILD_DIR)/%.asm1
 	$(AS) -o $@ $<
 
 $(TARGET_ELF): $(C_OBJ) $(ASM_OBJ) $(LINKER_SCRIPT)
-	$(LD) -s $(LINKER_SCRIPT) -o $@ $(ASM_OBJ) $(C_OBJ)
+	$(LD) -s $(LINKER_SCRIPT) -o $@ $(ASM_OBJ) $(C_OBJ) $(SLURMOS_OBJ)
 
 $(TARGET): $(TARGET_ELF) $(BUNDLE)
 	$(OBJCOPY) $< $(BUILD_DIR)/app.bin
