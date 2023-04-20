@@ -31,6 +31,10 @@ SOFTWARE.
 #include "rtos.h"
 #include <slurminterrupt.h>
 
+#include <applet.h>
+
+struct applet_vectors *vtors = (struct applet_vectors*)(APPLET_BASE);
+
 #define COPPER_BAR_HEIGHT 16
 
 short bar1_y = 0;
@@ -74,25 +78,25 @@ void do_copper_bars()
 	the_copper_list[i++] = COPPER_BG(0x000);
 	the_copper_list[i++] = COPPER_VWAIT(0xfff);
 
-	copper_list_load(the_copper_list, i);
+	vtors->copper_list_load(the_copper_list, i);
 }
 
 mutex_t eff2_mutex = RTOS_MUTEX_INITIALIZER;
 
 static void my_vsync_handler()
 {
-	rtos_unlock_mutex_from_isr(&eff2_mutex);
+	vtors->rtos_unlock_mutex_from_isr(&eff2_mutex);
 }
 
-void run_effect2(void)
+void main(void)
 {
 	int i;
 	int frame = 0;
 
 	// Add a vsync interrupt handler
-	rtos_set_interrupt_handler(SLURM_INTERRUPT_VSYNC_IDX, my_vsync_handler);
+	vtors->rtos_set_interrupt_handler(SLURM_INTERRUPT_VSYNC_IDX, my_vsync_handler);
 
-	copper_control(1);
+	vtors->copper_control(1);
 
 	bar1_y = 0;
 	bar1_vy = 2;
@@ -100,7 +104,7 @@ void run_effect2(void)
 	while (frame < 1000)
 	{
 
-		rtos_lock_mutex(&eff2_mutex);
+		vtors->rtos_lock_mutex(&eff2_mutex);
 
 		//my_printf(".");
 		
@@ -109,7 +113,7 @@ void run_effect2(void)
 		do_copper_bars();
 	
 		if (frame < 64)
-			pwm_set(0, 0, frame);
+			vtors->pwm_set(0, 0, frame);
 
 		bar1_y += bar1_vy;
 
@@ -125,22 +129,23 @@ void run_effect2(void)
 	{
 		frame++;
 
-		rtos_lock_mutex(&eff2_mutex);
+		vtors->rtos_lock_mutex(&eff2_mutex);
 
 		do_copper_bars();
 	
 		if (bar1_y > 250)
-			pwm_set(0, 0, 300 - bar1_y);
+			vtors->pwm_set(0, 0, 300 - bar1_y);
 
 		bar1_y += 4;
 
 
 	}
 
-	pwm_set(0, 0, 0);
+	vtors->pwm_set(0, 0, 0);
 
-	copper_control(0);
+	vtors->copper_control(0);
 
+	vtors->rtos_set_interrupt_handler(SLURM_INTERRUPT_VSYNC_IDX, 0);
 }
 
 

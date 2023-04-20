@@ -131,7 +131,7 @@ void storage_load_synch(unsigned short base_lo, unsigned short base_hi,
 		  unsigned short address_lo, unsigned short address_hi, 
 		  short count)
 {
-	my_printf("Storage load synch!\r\n");
+	//my_printf("Storage load synch!\r\n");
 	storage_load_asynch(base_lo, base_hi, offset_lo, offset_hi, address_lo, address_hi, count, storage_dummy_callback, 0);
 	rtos_lock_mutex(&storage_wait_mutex);
 }

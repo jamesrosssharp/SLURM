@@ -261,10 +261,10 @@ plasma_sin:
 	db 0x1e
 	db 0x1f
 
-//	.function asm_plasma
+	.section text
+	.function asm_plasma
 	.global asm_plasma
 
-	.section asm_plasma
 
 asm_plasma:
 
@@ -285,8 +285,11 @@ asm_plasma:
 	st [r13, 22], r1
 	st [r13, 24], r15 
 
-	mov r6, 64	
-	
+	mov r6, 36	
+
+	// Our framebuffer	
+	mov r4, 0x0000
+
 	ld r7, [r0, frame]
 	mov r12, r7
 
@@ -315,7 +318,7 @@ plasma_inner_loop:
 	add r8, r10
 	add r11, 15
 	add r1, 7
-	stb [r4], r8
+	stb.ex [r4], r8
 	add r4, 1
 	sub r5, 1
 	bnz plasma_inner_loop
@@ -348,6 +351,6 @@ plasma_inner_loop:
 	// Restore old stack pointer
 	ret
 
-	//.endfunc
+	.endfunc
 
 	.end

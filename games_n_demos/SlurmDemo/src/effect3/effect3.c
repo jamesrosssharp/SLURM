@@ -33,12 +33,12 @@ SOFTWARE.
 
 #include <slurminterrupt.h>
 
-// 64x64 : 4kbytes
-#define PLASMA_FRAMEBUFFER 0x7000
+// 64x64 : 4kbytes - keep this in sync with the asm
+#define PLASMA_FRAMEBUFFER_WORD 0x8000
 
 extern short bg_palette[];
 
-extern void asm_plasma(unsigned char* fb);
+extern void asm_plasma();
 
 unsigned short plasma_palette[] = {
 	0xf001,	0xf004, 0xf008, 0xf00a,
@@ -50,52 +50,56 @@ unsigned short plasma_palette[] = {
 
 mutex_t eff3_mutex = RTOS_MUTEX_INITIALIZER;
 
+#include <applet.h>
+
+struct applet_vectors *vtors = (struct applet_vectors*)(APPLET_BASE);
+
 static void my_vsync_handler()
 {
-	rtos_unlock_mutex_from_isr(&eff3_mutex);
+	vtors->rtos_unlock_mutex_from_isr(&eff3_mutex);
 }
 
-
-void run_effect3(void)
+void main(void)
 {
 	int frame = 0;
 	int i;
 
-	//__out(0x5f02, 0);
+//	vtors->__out(0x5f02, 0);
 	
-	load_palette(plasma_palette, 16, 16);
+	vtors->load_palette(plasma_palette, 16, 16);
 
-	rtos_set_interrupt_handler(SLURM_INTERRUPT_VSYNC_IDX, my_vsync_handler);
+	vtors->rtos_set_interrupt_handler(SLURM_INTERRUPT_VSYNC_IDX, my_vsync_handler);
 
-	background_set(0, 
+	vtors->background_set(0, 
 		    1, 
 		    1,
 		    0, 
 		    0, 
-		    PLASMA_FRAMEBUFFER, 
+		    PLASMA_FRAMEBUFFER_WORD, 
 		    BG_TILES_WORD_ADDRESS + 16*256,
 		    TILE_WIDTH_8X8,
 		    TILE_MAP_STRIDE_64);
 
 	
-	background_set_x_y(0, 0, 0);
+	vtors->background_set_x_y(0, 0, 0);
 
-	background_update();
+	vtors->background_update();
 
 	while (frame < 1000)
 	{
 
 		unsigned char* fb;
 		
-		rtos_lock_mutex(&eff3_mutex);
+		vtors->rtos_lock_mutex(&eff3_mutex);
 
-		fb = (unsigned char*)(PLASMA_FRAMEBUFFER * 2);
-
-		asm_plasma(fb);
+		asm_plasma();
 
 		frame++;
 	}
 
+	vtors->rtos_set_interrupt_handler(SLURM_INTERRUPT_VSYNC_IDX, 0);
+
+//	vtors->__out(0x5f02, 1);
 }
 
 

@@ -44,6 +44,7 @@ struct applet_vectors *vtors = (struct applet_vectors*)(APPLET_BASE);
 void load_palette(unsigned short* palette, int offset, int count); 
 unsigned short __in(unsigned short port);		
 void __out(unsigned short port, unsigned short val);	
+void copper_list_load(unsigned short* copper_list, unsigned short len); 
 
 void applet_load(unsigned short applet_flash_lo, unsigned short applet_flash_hi, unsigned short size)
 {
@@ -76,6 +77,7 @@ void applet_load(unsigned short applet_flash_lo, unsigned short applet_flash_hi,
 	vtors->copper_set_y_flip = &copper_set_y_flip;
 	vtors->copper_set_x_pan = &copper_set_x_pan;
 	vtors->copper_set_bg_color = &copper_set_bg_color;
+	vtors->copper_list_load = &copper_list_load;
 	/* pwm */
 	vtors->pwm_set = &pwm_set;
 	/* palette */

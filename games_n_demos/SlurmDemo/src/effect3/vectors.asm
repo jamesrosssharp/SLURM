@@ -1,8 +1,7 @@
 /*
-
 	SlurmDemo : A demo to show off SlURM16
 
-main.c: Main function
+vectors.asm : vector table
 
 License: MIT License
 
@@ -27,60 +26,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-
-#include <slurmsng.h>
-#include <slurminterrupt.h>
-#include <slurmflash.h>
-
-#include <bundle.h>
-
-#include <printf.h>
-#include <music.h>
-#include <storage.h>
-#include <sprite.h>
-#include <background.h>
-#include "demo.h"
-#include <rtos.h>
-
+#define __ASM__
 #include <applet.h>
-#include <applet_bundle.h>
 
-int main()
-{
-	int sprites = 0;
-	int i;
-	int frame = 0;
+	.section vectors
+	.extern main
+start_vec:
+	dw main
+other_vecs:
+	.times (N_APPLET_VECTORS - 1) dw 0
 
-	my_printf("Hello world Slurm Demo!\n");
-	
-	__out(0x5f02, 1);
-	__out(0x5d22, 0x0000);
-	__out(0x5d24, 0);
-
-
-	storage_init(STORAGE_TASK_ID);
-	init_music_player(AUDIO_TASK_ID);
-	sprite_init_sprites();
-	background_init();
-
-	// Spin in a loop
-	
-	while (1)
-	{
-
-		applet_load(effect1_applet_flash_offset_lo, effect1_applet_flash_offset_hi, 
-			    effect1_applet_flash_size_lo >> 1);
-		applet_run();  
-
-
-		applet_load(effect2_applet_flash_offset_lo, effect2_applet_flash_offset_hi, 
-			    effect2_applet_flash_size_lo >> 1);
-		applet_run();  
-
-		applet_load(effect3_applet_flash_offset_lo, effect3_applet_flash_offset_hi, 
-			    effect3_applet_flash_size_lo >> 1);
-		applet_run();  
-				
-	}
-
-}
+	.end

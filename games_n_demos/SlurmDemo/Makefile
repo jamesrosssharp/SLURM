@@ -38,15 +38,16 @@ APP_BUNDLE = $(BUILD_DIR)/applet_bundle.bin
 
 include ../../common/slurmos/slurmos.mk
 
-APPLETS=$(SRC_DIR)/effect1 
-
+APPLETS=$(SRC_DIR)/effect1 \
+	$(SRC_DIR)/effect2 \
+	$(SRC_DIR)/effect3
 
 all: $(TARGET)
 
 .PHONY: applets
 
 applets: 
-	$(foreach APPLET, $(APPLETS), make -C $(APPLET))
+	for APP in $(APPLETS); do make -C $$APP; done
 
 $(CHIPTUNE_SLMSNG): $(CHIPTUNE) Makefile
 	mkdir -p $(BUILD_DIR)
@@ -82,11 +83,12 @@ $(TARGET): $(TARGET_ELF) $(BUNDLE) $(APP_BUNDLE)
 	$(OBJCOPY) $< $(BUILD_DIR)/app.bin
 	dd if=/dev/zero of=$@ bs=1M count=3
 	dd if=$(BUILD_DIR)/app.bin of=$@ 
-	dd if=$(BUNDLE) of=$@ bs=65024 seek=1	
-	dd if=$(APP_BUNDLE) of=$@ bs=1113600 seek=1	
+	cat $(BUNDLE) $(APP_BUNDLE) > $(BUILD_DIR)/all_bundle.bin
+	dd if=$(BUILD_DIR)/all_bundle.bin of=$@ bs=65024 seek=1	
 
 clean:
 	rm -r build
+	for APP in $(APPLETS); do make -C $$APP clean; done
 
 dump:	$(TARGET_ELF)
 	$(OBJDUMP) $(TARGET_ELF)
