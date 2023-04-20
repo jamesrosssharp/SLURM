@@ -1,12 +1,13 @@
 
-APPLET_SIZE = 0x4000
+APPLET_SIZE = 0x4000;
 
 MEMORY 
 {
 	applet_mem (wx) : ORIGIN = 0xc000, LENGTH = APPLET_SIZE   
 }
 
-SECTIONS {
+SECTIONS 
+{
 
 	.text : {
 		KEEP(*(.vectors .vectors.*))
@@ -24,4 +25,5 @@ SECTIONS {
 		*( .bss .bss.* )
 		_ezero = .;
 	} > applet_mem 
+
 }

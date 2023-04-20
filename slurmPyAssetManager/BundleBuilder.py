@@ -35,7 +35,8 @@ builder_dict = {
 	'chiptune' : fbuilder.build,
 	'image'    : ibuilder.build, 
 	'tilemap'  : tbuilder.build,
-	'image_palette' : ibuilder.build_palette
+	'image_palette' : ibuilder.build_palette,
+	'applet' : fbuilder.build
 }
 
 def build(options = None, build_directory = None, bundle_file = None, bundle_header = None):

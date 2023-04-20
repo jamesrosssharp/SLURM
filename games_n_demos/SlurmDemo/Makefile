@@ -7,7 +7,6 @@ OBJCOPY=../../slurm-objcopy/slurm-objcopy
 
 SRC_DIR=src
 
-include ../../common/slurmos/slurmos.mk
 
 BUILD_DIR=build
 
@@ -34,16 +33,32 @@ CHIPTUNE_SLMSNG = $(BUILD_DIR)/demo.slurmsng
 ASSETS_H   = $(BUILD_DIR)/bundle.h
 BUNDLE     = $(BUILD_DIR)/bundle.bin
 
+APPLETS_H  = $(BUILD_DIR)/applet_bundle.h
+APP_BUNDLE = $(BUILD_DIR)/applet_bundle.bin
+
+include ../../common/slurmos/slurmos.mk
+
+APPLETS=$(SRC_DIR)/effect1 
+
+
 all: $(TARGET)
+
+.PHONY: applets
+
+applets: 
+	$(foreach APPLET, $(APPLETS), make -C $(APPLET))
 
 $(CHIPTUNE_SLMSNG): $(CHIPTUNE) Makefile
 	mkdir -p $(BUILD_DIR)
 	python3 ../../scripts/it2slurmsng.py $(CHIPTUNE) $(CHIPTUNE_SLMSNG)
 
-$(ASSETS_H): $(ASSETS_SRC) assets/gen-assets.py $(CHIPTUNE_SLMSNG)
+$(ASSETS_H): assets/gen-assets.py $(CHIPTUNE_SLMSNG)
 	cd assets; python3 gen-assets.py
 
-$(BUILD_DIR)/%.c1: $(SRC_DIR)/%.c $(ASSETS_H) $(HEADERS)
+$(APPLETS_H): applets assets/gen-applets.py
+	cd assets; python3 gen-applets.py
+
+$(BUILD_DIR)/%.c1: $(SRC_DIR)/%.c $(ASSETS_H) $(APPLETS_H) $(HEADERS)
 	mkdir -p $(BUILD_DIR)
 	$(CPP) -o $@ -I../../include -I$(SRC_DIR) -I$(BUILD_DIR) -I$(SLURMOS_DIR) $<
 
@@ -60,14 +75,15 @@ $(BUILD_DIR)/%.o : $(BUILD_DIR)/%.asm
 $(BUILD_DIR)/%.asmo : $(BUILD_DIR)/%.asm1
 	$(AS) -o $@ $<
 
-$(TARGET_ELF): $(C_OBJ) $(ASM_OBJ) $(LINKER_SCRIPT)
+$(TARGET_ELF): $(C_OBJ) $(ASM_OBJ) $(SLURMOS_OBJ) $(LINKER_SCRIPT)
 	$(LD) -s $(LINKER_SCRIPT) -o $@ $(ASM_OBJ) $(C_OBJ) $(SLURMOS_OBJ)
 
-$(TARGET): $(TARGET_ELF) $(BUNDLE)
+$(TARGET): $(TARGET_ELF) $(BUNDLE) $(APP_BUNDLE)
 	$(OBJCOPY) $< $(BUILD_DIR)/app.bin
 	dd if=/dev/zero of=$@ bs=1M count=3
 	dd if=$(BUILD_DIR)/app.bin of=$@ 
 	dd if=$(BUNDLE) of=$@ bs=65024 seek=1	
+	dd if=$(APP_BUNDLE) of=$@ bs=1113600 seek=1	
 
 clean:
 	rm -r build
