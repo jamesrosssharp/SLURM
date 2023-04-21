@@ -271,7 +271,6 @@ asm_plasma:
 	sub r13, 64
 
 	// Preserve registers
-	st [r13, 0], r2
 	st [r13, 2], r3
 	st [r13, 4], r4
 	st [r13, 6], r5
@@ -332,7 +331,10 @@ plasma_inner_loop:
 
 	st [r0, frame], r7
 
-	ld r2, [r13, 0]
+	mov r2, 0 + 30*64 + 32
+	ldb.ex r2, [r2]
+
+
 	ld r3, [r13, 2]
 	ld r4, [r13, 4]
 	ld r5, [r13, 6]

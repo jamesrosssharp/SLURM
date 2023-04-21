@@ -138,7 +138,7 @@ short sprite_display(unsigned char sprite_index,
 
 	struct sprite* sp = &sprites[sprite_index];
 
-	my_printf("Sp-> %x\r\n", &sprites[15]);
+	//my_printf("Sp-> %x\r\n", &sprites[15]);
 	while (width > 0)
 	{
 		unsigned char this_width = (width < 64) ? width : 64;

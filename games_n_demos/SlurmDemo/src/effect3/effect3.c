@@ -38,7 +38,7 @@ SOFTWARE.
 
 extern short bg_palette[];
 
-extern void asm_plasma();
+extern unsigned short asm_plasma();
 
 unsigned short plasma_palette[] = {
 	0xf001,	0xf004, 0xf008, 0xf00a,
@@ -89,10 +89,15 @@ void main(void)
 	{
 
 		unsigned char* fb;
-		
+		unsigned short idx;	
+		unsigned short col;	
+
 		vtors->rtos_lock_mutex(&eff3_mutex);
 
-		asm_plasma();
+		idx = asm_plasma();
+		col = plasma_palette[idx >> 4];
+
+		vtors->pwm_set((col & 0xf00) >> 6, (col & 0xf0) >> 2, (col & 0xf) << 2);
 
 		frame++;
 	}
