@@ -18,6 +18,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <slurminterrupt.h>
 #include <bundle.h>
 
+#include <malloc.h>
+
 #include "storage.h"
 
 #define MIX_CHANNELS 8 
@@ -137,8 +139,6 @@ struct channel_t {
 
 extern struct channel_t channel_info[]; 
 
-#define MUSIC_HEAP_SIZE_BYTES 13*1024
-
 short my_add(short a, short b)
 {
 	return a + b;
@@ -147,24 +147,21 @@ short my_add(short a, short b)
 int load_slurm_sng()
 {
 	char *data;
-	unsigned char *heap = music_heap;
-	unsigned char *heap_end = music_heap + MUSIC_HEAP_SIZE_BYTES;
 	int i;
 	int heap_offset = 0;
 	unsigned short offset_lo = 0;
 	unsigned short offset_hi = 0;
 	unsigned short pattern = 0;
 	char* row_offset = (char*)&pattern_B;	
+	unsigned short samples_loaded = 0;
 
-	my_printf("Hello world! %d\r\n", 22);		
+	my_printf("Loading slurm song...\r\n");		
 
 	//do_flash_dma(song_flash_offset_lo, song_flash_offset_hi, 0, 0, (void*)&sng_hdr, sizeof(sng_hdr) / sizeof(short));
 	storage_load_synch(song_flash_offset_lo, song_flash_offset_hi, 
 		  0, 0, 
 		  (unsigned short)&sng_hdr, 0, 
 		  sizeof(sng_hdr) / sizeof(short));
-
-
 
 	my_printf("Playlist offset lo: %x hi: %x\r\n", sng_hdr.pl_offset_lo, sng_hdr.pl_offset_hi);
 	my_printf("Playlist len: %d\r\n", sng_hdr.playlist_size);
@@ -182,24 +179,21 @@ int load_slurm_sng()
 
 	add_offset(&offset_lo, &offset_hi, 4, 0);
 
-	my_printf("Heap: %x\n", heap);
+	pl.pl_len = sng_hdr.playlist_size;
+	pl.pl = (char*) my_malloc(pl_hdr.chunklen); 
+
+	if (pl.pl == NULL)
+		goto malloc_fail;
 
 	//do_flash_dma(song_flash_offset_lo, song_flash_offset_hi, offset_lo, offset_hi, heap, pl_hdr.chunklen >> 1);
 	storage_load_synch(song_flash_offset_lo, song_flash_offset_hi, 
 		  offset_lo, offset_hi, 
-		  (unsigned short)heap, 0, 
+		  (unsigned short)pl.pl, 0, 
 		  pl_hdr.chunklen >> 1);
 
 	for (i = 0; i < sng_hdr.playlist_size; i++)
-		my_printf("Pl %d: %d\r\n", i, heap[i]);
+		my_printf("Pl %d: %d\r\n", i, pl.pl[i]);
 
-
-	pl.pl_len = sng_hdr.playlist_size;
-	pl.pl = (char*) heap; 
-
-	// This hack is to work around lcc getting kids in wrong order
-	// such that the addition is corrupted
-	heap = (unsigned char*)my_add((unsigned short)pl_hdr.chunklen,(unsigned short)heap);
 
 	my_printf("Num samples: %d\r\n", sng_hdr.num_samples);
 
@@ -222,26 +216,29 @@ int load_slurm_sng()
 
 		add_offset(&offset_lo, &offset_hi, sizeof(struct slurmsng_sample), 0);
 	
-		if ((heap + samp->sample_len) > heap_end)
+		/*	if ((heap + samp->sample_len) > heap_end)
 		{
 			my_printf("Samples too large! %x %x %x\r\n", heap, (heap + samp->sample_len), heap_end);
 			return -1;
-		}
+		} */
 
-		samp->offset = (char*)heap;
+		samp->offset = (char*)my_malloc(samp->sample_len);
+
+		if (samp->offset == NULL)
+			goto malloc_fail;
 
 		//do_flash_dma(song_flash_offset_lo, song_flash_offset_hi, offset_lo, offset_hi, (void*)heap, samp->sample_len >> 1);
 		storage_load_synch(song_flash_offset_lo, song_flash_offset_hi, 
 		  offset_lo, offset_hi, 
-		  (unsigned short)heap, 0, 
+		  (unsigned short)samp->offset, 0, 
 		  samp->sample_len >> 1);
 
-		heap = (unsigned char*)my_add((unsigned short)heap, (unsigned short)samp->sample_len);
+		samples_loaded += samp->sample_len;
 
 		add_offset(&offset_lo, &offset_hi, samp->sample_len, 0);
 	}
 
-	my_printf("Loaded %d bytes of samples. \r\n", heap - music_heap);
+	my_printf("Loaded %d bytes of samples. \r\n", samples_loaded);
 
 	// Load pattern A
 
@@ -307,6 +304,12 @@ int load_slurm_sng()
 	my_printf("Pattern loaded\r\n");
 
 	return 0;
+
+malloc_fail:
+
+	my_printf("Heap allocation failure!\r\n");
+
+	while(1);
 
 }
 

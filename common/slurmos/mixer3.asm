@@ -27,14 +27,6 @@ pattern_A:
 pattern_B:
 	.times 64*8*4 db 0
 
-//	dw 0
-//	dw 0
-// Buffer for samples - 16k
-	.global music_heap
-music_heap:
-	.times 13*1024 db 0
-
-
 // Sound mixing routines + stack (located in this bank so we have easy fast to sample data)
 // Must fit in 4kB
 /*

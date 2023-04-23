@@ -32,6 +32,7 @@ SOFTWARE.
 #include "printf.h"
 
 #include <slurminterrupt.h>
+#include <malloc.h>
 
 // WARNING: If you change this structure, you must change the assembly version
 // of the structure
@@ -220,6 +221,10 @@ void rtos_init()
 	{
 		g_irq_handlers[i] = 0;
 	}
+
+	// Init heap
+
+	my_init_heap();	
 	
 	// Enable timer
 

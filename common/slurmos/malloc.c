@@ -56,8 +56,8 @@ struct heap
 
 #ifndef TEST
 
-	extern unsigned short _heap_start[];
-	extern unsigned short _heap_end[];
+	extern unsigned char _heap_start[];
+	extern unsigned char _heap_end[];
 
 #else
 
@@ -70,15 +70,16 @@ struct heap
 
 void  my_init_heap()
 {
+	struct heap_block* f;
 	struct heap* h = (struct heap*)_heap_start;
 		
 	h->total_bytes = _heap_end - _heap_start;
 	h->n_blocks_allocated = 0;
 	h->n_bytes_allocated = 0;
-	
-	struct heap_block* f = (struct heap_block*)(h + 1);
 
-	my_printf("Init: first block: %p\r\n", f);
+	my_printf("Heap total bytes: %x %x %x\r\n", h->total_bytes, _heap_end, _heap_start);
+	
+	f = (struct heap_block*)(h + 1);
 
 	h->root = f;
 
@@ -97,12 +98,19 @@ void* my_malloc(unsigned short bytes)
 
 	struct heap_block* f = h->root;
 	struct heap_block** prev_ptr = &h->root;
+
+	bytes += 1;
+	bytes &= 0xfffe;
+
+	my_printf("malloc: %d bytes\r\n", bytes);
 	
 	while (1)
 	{
 		if (f->size > (bytes + 2*sizeof(struct heap_block)))
 		{
 			struct heap_block* f_new = (struct heap_block*)((uintptr_t)f + sizeof(struct heap_block) + bytes);
+			
+			my_printf("-> found block %x\r\n", f);
 		
 			block_ptr = (void*)((uintptr_t)f + sizeof(struct heap_block));
 
@@ -141,7 +149,7 @@ void  my_free(void* ptr)
 
 	struct heap_block* f = h->root;
 	struct heap_block* prev = NULL;
-
+	struct heap_block* b = (struct heap_block*)((uintptr_t)ptr - sizeof(struct heap_block));
 
 	while ((void*)f < ptr)
 	{
@@ -149,21 +157,16 @@ void  my_free(void* ptr)
 		f = f->next;
 	}
 
-	my_printf("Freeing: %p (%p) (%p)\r\n", ptr, f, prev);
-	
 	// If the block we are freeing is contiguous with prev AND f, coalesce all three blocks
 
 	if (prev != NULL)
 	{
 
 		void *end_of_low_block = (void*)((uintptr_t)prev + (uintptr_t)prev->size);
-		struct heap_block* b = (struct heap_block*)((uintptr_t)ptr - sizeof(struct heap_block));
 		void *end_of_free_block = (void*)((uintptr_t)b + (uintptr_t)b->size);
 
 		if (b == end_of_low_block && end_of_free_block == f)
 		{
-			my_printf("Coalescing up and down %p %p %p\r\n", prev, b, f);
-
 			prev->size += b->size + f->size;
 			prev->next = f->next;
 			h->n_blocks_allocated --;
@@ -171,41 +174,23 @@ void  my_free(void* ptr)
 	
 			return;
 		}
-
-
-	}
-
-
-	// If previous free block is adjacent to the block we are freeing,
-	// coalesce the blocks. 	
-
-	if (prev != NULL)
-	{
-
-		void *end_of_block = (void*)((uintptr_t)prev + (uintptr_t)prev->size + sizeof(struct heap_block));
-
-		if (end_of_block == ptr)
+		else if (b == end_of_low_block)
 		{
-			struct heap_block* ff = (struct heap_block*)((uintptr_t)ptr - sizeof(struct heap_block)); 
-			my_printf("Coalescing down\r\n");
-			prev->size += ff->size; 
+			prev->size += b->size; 
 			h->n_blocks_allocated--;
-			h->n_bytes_allocated -= ff->size;
+			h->n_bytes_allocated -= b->size;
 			return;	
 		}
 
 	}
 
+
 	// If current free block is adjacent to block we are freeing, coalesce the blocks.
 	{
-		struct heap_block* b = (struct heap_block*)((uintptr_t)ptr - sizeof(struct heap_block));
-		
 		void *end_of_block = (void*)((uintptr_t)b + (uintptr_t)b->size);
 
 		if (end_of_block == (void*)f)
 		{
-			my_printf("Coalescing up %p %d\r\n", b, b->size);
-
 			if (prev == NULL)
 				h->root = b;
 			else	
@@ -223,24 +208,19 @@ void  my_free(void* ptr)
 
 	// Else, reinsert the block into the linked list
 
-	{
-		struct heap_block* b = (struct heap_block*)((uintptr_t)ptr - sizeof(struct heap_block));
+	if (prev == NULL)
+		h->root = b;
+	else	
+		prev->next = b;
+	b->next = f;
 
-		if (prev == NULL)
-			h->root = b;
-		else	
-			prev->next = b;
-		b->next = f;
-
-		h->n_blocks_allocated--;
-		h->n_bytes_allocated -= b->size;
+	h->n_blocks_allocated--;
+	h->n_bytes_allocated -= b->size;
 
 		
-	}
-
-
 }
 
+#ifdef TEST
 void print_heap()
 {
 
@@ -260,3 +240,4 @@ void print_heap()
 	}
 
 }
+#endif
