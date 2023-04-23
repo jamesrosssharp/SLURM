@@ -22,7 +22,7 @@ IDLE_STACK_SIZE = 0x200;
 
 MEMORY {
 	bootloader (wx) : ORIGIN = 0x0000, LENGTH = BOOTLOADER_SIZE
-	ram1 (wx) : LENGTH = 0x10000 - BOOTLOADER_SIZE, ORIGIN = BOOTLOADER_SIZE 
+	ram1 (wx) : LENGTH = 0xc000 - BOOTLOADER_SIZE, ORIGIN = BOOTLOADER_SIZE 
 }
 
 SECTIONS
@@ -80,5 +80,12 @@ SECTIONS
 		. = . + 128;
 		_estartstack = .;
    	} > ram1
+
+	/* heap */
+
+	. = ALIGN(2);
+	_heap_start = .;	
+	. = ALIGN(0xc000);
+	_heap_end = .;
 
 }

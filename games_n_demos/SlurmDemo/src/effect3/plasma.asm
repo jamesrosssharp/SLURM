@@ -331,9 +331,8 @@ plasma_inner_loop:
 
 	st [r0, frame], r7
 
-	mov r2, 0 + 30*64 + 32
+	mov r2, 15*64 + 25
 	ldb.ex r2, [r2]
-
 
 	ld r3, [r13, 2]
 	ld r4, [r13, 4]
