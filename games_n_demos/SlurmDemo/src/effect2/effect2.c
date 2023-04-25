@@ -50,7 +50,7 @@ struct copper_bar bar2 = {0, 0, 1};
 
 short cpr_idx = 0;
 
-unsigned short the_copper_list[128];
+unsigned short the_copper_list[512];
 
 unsigned short bar1_colors[COPPER_BAR_HEIGHT] = {
 	0x0000,	// 0
@@ -248,7 +248,30 @@ void do_vertical_copper_bars()
 	//vtors->copper_list_load(the_copper_list, cpr_idx);
 }
 
+void do_sound_copper_bars()
+{
+	int i, j;
 
+	cpr_idx = 0;
+
+	the_copper_list[cpr_idx++] = COPPER_VWAIT(80);
+	the_copper_list[cpr_idx++] = COPPER_BG(0x000);
+
+	for (i = 0; i < 80; i++)
+	{
+		the_copper_list[cpr_idx++] = COPPER_HWAIT((((short)vtors->__in(0x8000 + i*3) >> 8) + 110) & 0xfff);
+		the_copper_list[cpr_idx++] = COPPER_BG(0xfff);
+		the_copper_list[cpr_idx++] = COPPER_BG(0x000);
+		the_copper_list[cpr_idx++] = COPPER_HWAIT((((short)vtors->__in(0x8100 + i*3) >> 8) + 250) & 0xfff);
+		the_copper_list[cpr_idx++] = COPPER_BG(0xfff);
+		the_copper_list[cpr_idx++] = COPPER_BG_WAIT(0x000);
+
+	}
+	
+	the_copper_list[cpr_idx++] = COPPER_BG(0x000);
+	the_copper_list[cpr_idx++] = COPPER_VWAIT(0xfff);
+
+}
 
 mutex_t eff2_mutex = RTOS_MUTEX_INITIALIZER;
 
@@ -366,6 +389,19 @@ void main(void)
 			bar2.vx = -bar2.vx;
 		if (bar2.vx < 0 && bar2.x < 30)
 			bar2.vx = -bar2.vx;
+	}
+
+	// Sound copper bars
+
+	frame = 0;
+
+	while (frame < 1000)
+	{
+		frame++;
+		vtors->rtos_lock_mutex(&eff2_mutex);
+
+		do_sound_copper_bars();	
+
 	}
 
 	vtors->pwm_set(0, 0, 0);
