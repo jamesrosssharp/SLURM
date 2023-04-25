@@ -254,18 +254,15 @@ void do_sound_copper_bars()
 
 	cpr_idx = 0;
 
-	the_copper_list[cpr_idx++] = COPPER_VWAIT(80);
+	the_copper_list[cpr_idx++] = COPPER_VWAIT(20);
 	the_copper_list[cpr_idx++] = COPPER_BG(0x000);
 
-	for (i = 0; i < 80; i++)
+	for (i = 0; i < 128; i++)
 	{
-		the_copper_list[cpr_idx++] = COPPER_HWAIT((((short)vtors->__in(0x8000 + i*3) >> 8) + 110) & 0xfff);
-		the_copper_list[cpr_idx++] = COPPER_BG(0xfff);
-		the_copper_list[cpr_idx++] = COPPER_BG(0x000);
-		the_copper_list[cpr_idx++] = COPPER_HWAIT((((short)vtors->__in(0x8100 + i*3) >> 8) + 250) & 0xfff);
+		the_copper_list[cpr_idx++] = COPPER_HWAIT((((short)(vtors->__in(0x8000 + i*2) + vtors->__in(0x8100 + i*2))  >> 8) + 180) & 0xfff);
 		the_copper_list[cpr_idx++] = COPPER_BG(0xfff);
 		the_copper_list[cpr_idx++] = COPPER_BG_WAIT(0x000);
-
+		the_copper_list[cpr_idx++] = COPPER_BG_WAIT(0x000);
 	}
 	
 	the_copper_list[cpr_idx++] = COPPER_BG(0x000);
