@@ -48,7 +48,7 @@ struct copper_bar {
 struct copper_bar bar1 = {0, 0, 0};
 struct copper_bar bar2 = {0, 0, 1};
 
-
+short cpr_idx = 0;
 
 unsigned short the_copper_list[128];
 
@@ -97,7 +97,6 @@ void do_copper_bars()
 	// Wait until bar1_y 
 	int i;
 	int j;
-	int cpr_idx = 0;
 	
 	struct copper_bar *b1;
 	struct copper_bar *b2;
@@ -109,6 +108,8 @@ void do_copper_bars()
 	int h2 = COPPER_BAR_HEIGHT;
 	int st2 = 0;
 
+	cpr_idx = 0;
+	
 	if (bar1.y > bar2.y)
 	{
 		// Blue bar lower down than red bar
@@ -169,37 +170,82 @@ void do_copper_bars()
 	the_copper_list[cpr_idx++] = COPPER_BG(0x000);
 	the_copper_list[cpr_idx++] = COPPER_VWAIT(0xfff);
 
-	vtors->copper_list_load(the_copper_list, cpr_idx);
 }
 
 void do_vertical_copper_bars()
 {
 	int i;
 	int j;
-	int cpr_idx = 0;
 	
 	unsigned short *b1_cols;
 	unsigned short *b2_cols;
 	struct copper_bar *b1;
+	struct copper_bar *b2;
 	
-	b1 = &bar1;
-	b1_cols = bar1_colors;
+	int w1 = COPPER_BAR_HEIGHT;
+	int w2 = COPPER_BAR_HEIGHT;
+	int st2 = 0;
+	int ov = 0;
 
-	the_copper_list[cpr_idx++] = 0x0000; //COPPER_VWAIT(40);
+	cpr_idx = 0;
+	
+	if (bar1.x > bar2.x)
+	{
+		// Blue bar lower down than red bar
+		b1 = &bar2;
+		b2 = &bar1;
+		b1_cols = bar2_colors;
+		b2_cols = bar1_colors;
+	}
+	else
+	{
+		// red bar lower than blue bar
+		b1 = &bar1;
+		b2 = &bar2;
+		b1_cols = bar1_colors;
+		b2_cols = bar2_colors;
+	}
+
+	// Check for overlap
+
+	if (b1->x + COPPER_BAR_HEIGHT > b2->x)
+	{
+		if (b1->id == 0)
+		{
+			w1 = (b2->x - b1->x);
+		}
+		else
+		{
+			st2 = COPPER_BAR_HEIGHT - (b2->x - b1->x);
+		}
+		ov = 1;
+	}
+
+	the_copper_list[cpr_idx++] = 0x0000; 
 	the_copper_list[cpr_idx++] = COPPER_HWAIT(b1->x);
 
-	for (i = 0; i < COPPER_BAR_HEIGHT; i++)
+	for (i = 0; i < w1; i++)
 	{
-		the_copper_list[cpr_idx] = COPPER_BG(b1_cols[i]);
-		cpr_idx++;
-	
+		the_copper_list[cpr_idx++] = COPPER_BG(b1_cols[i]);
+		the_copper_list[cpr_idx++] = COPPER_BG(b1_cols[i]);
+	}	
+
+	if (!ov)
+	{
+		the_copper_list[cpr_idx++] = COPPER_HWAIT(b2->x);
+	}
+
+	for (i = st2; i < w2; i++)
+	{
+		the_copper_list[cpr_idx++] = COPPER_BG(b2_cols[i]);
+		the_copper_list[cpr_idx++] = COPPER_BG(b2_cols[i]);
 	}	
 
 	the_copper_list[cpr_idx++] = COPPER_BG(0x000);
 	the_copper_list[cpr_idx++] = COPPER_HWAIT(399);
 	the_copper_list[cpr_idx++] = COPPER_JUMP(0x001);
 
-	vtors->copper_list_load(the_copper_list, cpr_idx);
+	//vtors->copper_list_load(the_copper_list, cpr_idx);
 }
 
 
@@ -208,6 +254,7 @@ mutex_t eff2_mutex = RTOS_MUTEX_INITIALIZER;
 
 static void my_vsync_handler()
 {
+	vtors->copper_list_load(the_copper_list, cpr_idx);
 	vtors->rtos_unlock_mutex_from_isr(&eff2_mutex);
 }
 
@@ -235,8 +282,6 @@ void main(void)
 	{
 
 		unsigned short btns;
-
-
 	
 		vtors->rtos_lock_mutex(&eff2_mutex);
 		
@@ -298,12 +343,8 @@ void main(void)
 
 		vtors->rtos_lock_mutex(&eff2_mutex);
 
-		//while (vtors->__in(0x5f01) < 256);
-		
 		do_vertical_copper_bars();
 		
-		//while (vtors->__in(0x5f01) != 0);
-
 		frame++;
 		
 		btns = vtors->__in(0x1001);
@@ -316,12 +357,12 @@ void main(void)
 		bar1.x += bar1.vx;
 		bar2.x += bar2.vx;
 
-		if (bar1.vx > 0 && bar1.x > 310)
+		if (bar1.vx > 0 && bar1.x > 330)
 			bar1.vx = -bar1.vx;
 		if (bar1.vx < 0 && bar1.x < 30)
 			bar1.vx = -bar1.vx;
 
-		if (bar2.vx > 0 && bar2.x > 310)
+		if (bar2.vx > 0 && bar2.x > 330)
 			bar2.vx = -bar2.vx;
 		if (bar2.vx < 0 && bar2.x < 30)
 			bar2.vx = -bar2.vx;

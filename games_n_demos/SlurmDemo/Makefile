@@ -44,10 +44,9 @@ APPLETS=$(SRC_DIR)/effect1 \
 
 all: $(TARGET)
 
-.PHONY: applets
-
-applets: 
-	for APP in $(APPLETS); do make -C $$APP; done
+.PHONY: $(APPLETS)
+$(APPLETS): 
+	make -C $@
 
 $(CHIPTUNE_SLMSNG): $(CHIPTUNE) Makefile
 	mkdir -p $(BUILD_DIR)
@@ -56,7 +55,7 @@ $(CHIPTUNE_SLMSNG): $(CHIPTUNE) Makefile
 $(ASSETS_H): assets/gen-assets.py $(CHIPTUNE_SLMSNG)
 	cd assets; python3 gen-assets.py
 
-$(APPLETS_H): applets assets/gen-applets.py
+$(APPLETS_H): $(APPLETS) assets/gen-applets.py
 	cd assets; python3 gen-applets.py
 
 $(BUILD_DIR)/%.c1: $(SRC_DIR)/%.c $(ASSETS_H) $(APPLETS_H) $(HEADERS)

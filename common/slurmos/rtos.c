@@ -251,22 +251,10 @@ void rtos_set_interrupt_handler(unsigned short irq, void (*handler)())
 
 void rtos_handle_interrupt_callback(unsigned short irq)
 {
-/*	unsigned short pending = __in(0x7002);
-
-	pending &= (SLURM_INTERRUPT_VSYNC | SLURM_INTERRUPT_FLASH_DMA | SLURM_INTERRUPT_AUDIO | SLURM_INTERRUPT_TIMER);
-
-	if (pending & (pending - 1)) // if not a power of two
-	{
-		my_printf("+p: %x\r\n", pending);
-	}
-*/
 	if (irq == SLURM_INTERRUPT_TIMER_IDX)
 	{
 		g_major_tick++;
 	} 
-
-	
-
 
 	if (g_irq_handlers[irq])
 		g_irq_handlers[irq]();	
@@ -319,10 +307,10 @@ int	rtos_reschedule_wait_object_released(struct rtos_wait_object* wobj)
 			task->t_flags &= ~TASK_FLAGS_WAITING;
 
 			// Check if this new task is a higher priority than the running task, otherwise don't reschedule.
-			//if (task < g_runningTask)
-			//{
+			if (task < g_runningTask)
+			{
 				g_runningTask = task;
-			//}
+			}
 
 			ret = 1;
 			break;
