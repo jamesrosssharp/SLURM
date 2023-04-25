@@ -40,6 +40,8 @@ struct applet_vectors *vtors = (struct applet_vectors*)(APPLET_BASE);
 struct copper_bar {
 	short y;
 	short vy;
+	short x;
+	short vx;
 	short id;
 };
 
@@ -167,20 +169,40 @@ void do_copper_bars()
 	the_copper_list[cpr_idx++] = COPPER_BG(0x000);
 	the_copper_list[cpr_idx++] = COPPER_VWAIT(0xfff);
 
-//	if (vtors->__in(0x1001))
-/*	if (ov)
-	{
-		vtors->printf("b1->y: %d b2->y: %d\r\n", b1->y, b2->y);
+	vtors->copper_list_load(the_copper_list, cpr_idx);
+}
 
-		for (i = 0; i < cpr_idx; i++)
-		{
-			vtors->printf("CPR: %d %x\r\n", i, the_copper_list[i]);
-		}
-	}
-*/
+void do_vertical_copper_bars()
+{
+	int i;
+	int j;
+	int cpr_idx = 0;
+	
+	unsigned short *b1_cols;
+	unsigned short *b2_cols;
+	struct copper_bar *b1;
+	
+	b1 = &bar1;
+	b1_cols = bar1_colors;
+
+	the_copper_list[cpr_idx++] = 0x0000; //COPPER_VWAIT(40);
+	the_copper_list[cpr_idx++] = COPPER_HWAIT(b1->x);
+
+	for (i = 0; i < COPPER_BAR_HEIGHT; i++)
+	{
+		the_copper_list[cpr_idx] = COPPER_BG(b1_cols[i]);
+		cpr_idx++;
+	
+	}	
+
+	the_copper_list[cpr_idx++] = COPPER_BG(0x000);
+	the_copper_list[cpr_idx++] = COPPER_HWAIT(399);
+	the_copper_list[cpr_idx++] = COPPER_JUMP(0x001);
 
 	vtors->copper_list_load(the_copper_list, cpr_idx);
 }
+
+
 
 mutex_t eff2_mutex = RTOS_MUTEX_INITIALIZER;
 
@@ -200,9 +222,13 @@ void main(void)
 	vtors->copper_control(1);
 
 	bar1.y = 10;
+	bar1.x = 10;
 	bar1.vy = 3;
+	bar1.vx = 3;
 
-	bar2.y = 240;
+	bar2.y = 230;
+	bar2.x = 310;
+	bar2.vx = -2;
 	bar2.vy = -2;
 
 	while (frame < 1000)
@@ -231,12 +257,12 @@ void main(void)
 		bar1.y += bar1.vy;
 		bar2.y += bar2.vy;
 
-		if (bar1.vy > 0 && bar1.y > 240)
+		if (bar1.vy > 0 && bar1.y > 230)
 			bar1.vy = -bar1.vy;
 		if (bar1.vy < 0 && bar1.y < 10)
 			bar1.vy = -bar1.vy;
 
-		if (bar2.vy > 0 && bar2.y > 240)
+		if (bar2.vy > 0 && bar2.y > 230)
 			bar2.vy = -bar2.vy;
 		if (bar2.vy < 0 && bar2.y < 10)
 			bar2.vy = -bar2.vy;
@@ -260,6 +286,45 @@ void main(void)
 		bar2.y -= 4;
 
 
+	}
+
+	// Vertical copper bars
+
+	frame = 0;
+
+	while (frame < 1000)
+	{
+		unsigned short btns;
+
+		vtors->rtos_lock_mutex(&eff2_mutex);
+
+		//while (vtors->__in(0x5f01) < 256);
+		
+		do_vertical_copper_bars();
+		
+		//while (vtors->__in(0x5f01) != 0);
+
+		frame++;
+		
+		btns = vtors->__in(0x1001);
+
+		if (btns & 1)
+			bar1.x++;
+		if (btns & 2)
+			bar1.x--;
+
+		bar1.x += bar1.vx;
+		bar2.x += bar2.vx;
+
+		if (bar1.vx > 0 && bar1.x > 310)
+			bar1.vx = -bar1.vx;
+		if (bar1.vx < 0 && bar1.x < 30)
+			bar1.vx = -bar1.vx;
+
+		if (bar2.vx > 0 && bar2.x > 310)
+			bar2.vx = -bar2.vx;
+		if (bar2.vx < 0 && bar2.x < 30)
+			bar2.vx = -bar2.vx;
 	}
 
 	vtors->pwm_set(0, 0, 0);

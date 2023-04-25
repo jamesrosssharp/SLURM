@@ -319,10 +319,10 @@ int	rtos_reschedule_wait_object_released(struct rtos_wait_object* wobj)
 			task->t_flags &= ~TASK_FLAGS_WAITING;
 
 			// Check if this new task is a higher priority than the running task, otherwise don't reschedule.
-			if (task < g_runningTask)
-			{
+			//if (task < g_runningTask)
+			//{
 				g_runningTask = task;
-			}
+			//}
 
 			ret = 1;
 			break;
