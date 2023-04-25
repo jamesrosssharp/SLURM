@@ -64,8 +64,7 @@ void main(void)
 	int frame = 0;
 	int i;
 
-//	vtors->__out(0x5f02, 0);
-	
+	vtors->copper_set_bg_color(0x0000);
 	vtors->load_palette(plasma_palette, 16, 16);
 
 	vtors->rtos_set_interrupt_handler(SLURM_INTERRUPT_VSYNC_IDX, my_vsync_handler);
@@ -104,7 +103,6 @@ void main(void)
 
 	vtors->rtos_set_interrupt_handler(SLURM_INTERRUPT_VSYNC_IDX, 0);
 
-//	vtors->__out(0x5f02, 1);
 }
 
 

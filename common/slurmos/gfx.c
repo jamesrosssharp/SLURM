@@ -2,7 +2,7 @@
 
 	SlurmDemo : A demo to show off SlURM16
 
-main.c: Main function
+gfx.h: GFX controller routines
 
 License: MIT License
 
@@ -27,60 +27,23 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-
-#include <slurmsng.h>
-#include <slurminterrupt.h>
-#include <slurmflash.h>
-
-#include <bundle.h>
-
-#include <printf.h>
-#include <music.h>
-#include <storage.h>
-#include <sprite.h>
-#include <background.h>
-#include "demo.h"
-#include <rtos.h>
 #include <gfx.h>
 
-#include <applet.h>
-#include <applet_bundle.h>
+#define GFX_FRAME_COUNT_REG 0x5f00
+#define GFX_Y_COUNT_REG     0x5f01
+#define GFX_VIDEO_MODE_REG  0x5f02 
 
-int main()
+unsigned short gfx_get_frame()
 {
-	int sprites = 0;
-	int i;
-	int frame = 0;
+	return __in(GFX_FRAME_COUNT_REG);
+}
 
-	my_printf("Hello world Slurm Demo!\n");
-	
-	gfx_set_mode(VIDEO_MODE_320X240);
-	copper_set_bg_color(0x0000);
-	copper_set_alpha(0);
+unsigned short gfx_get_y_count()
+{
+	return __in(GFX_Y_COUNT_REG);
+}
 
-	storage_init(STORAGE_TASK_ID);
-	init_music_player(AUDIO_TASK_ID);
-	sprite_init_sprites();
-	background_init();
-
-	// Spin in a loop
-	
-	while (1)
-	{
-
-		applet_load(effect1_applet_flash_offset_lo, effect1_applet_flash_offset_hi, 
-			    effect1_applet_flash_size_lo >> 1);
-		applet_run();  
-
-
-		applet_load(effect2_applet_flash_offset_lo, effect2_applet_flash_offset_hi, 
-			    effect2_applet_flash_size_lo >> 1);
-		applet_run();  
-
-		applet_load(effect3_applet_flash_offset_lo, effect3_applet_flash_offset_hi, 
-			    effect3_applet_flash_size_lo >> 1);
-		applet_run();  
-				
-	}
-
+void gfx_set_mode(unsigned short mode)
+{
+	__out(GFX_VIDEO_MODE_REG, mode);
 }

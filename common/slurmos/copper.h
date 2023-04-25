@@ -34,6 +34,7 @@ void copper_control(short enable);
 void copper_set_y_flip(short enable, short flip_y);
 void copper_set_x_pan(short xpan);
 void copper_set_bg_color(unsigned short color);
+void copper_set_alpha(unsigned short alpha);
 
 #define COPPER_JUMP(x)  (0x1000 | x)    // Jump to copper instruction address
 #define COPPER_VWAIT(x) (0x2000 | x)    // Wait until V = x

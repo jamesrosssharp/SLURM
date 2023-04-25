@@ -199,27 +199,22 @@ void main(void)
 
 	vtors->copper_control(1);
 
-	bar1.y = -10;
+	bar1.y = 10;
 	bar1.vy = 3;
 
-	bar2.y = 260;
-	bar2.vy = -3;
+	bar2.y = 240;
+	bar2.vy = -2;
 
 	while (frame < 1000)
-	//while (1)
 	{
 
 		unsigned short btns;
 
 
-		//my_printf(".");
-		
-		//for (i = 0; i < 256; i++)
-		//	for (j = 0; j < 64; j++);
-
-		do_copper_bars();
 	
 		vtors->rtos_lock_mutex(&eff2_mutex);
+		
+		do_copper_bars();
 		
 		frame++;
 		
@@ -236,14 +231,14 @@ void main(void)
 		bar1.y += bar1.vy;
 		bar2.y += bar2.vy;
 
-		if (bar1.vy > 0 && bar1.y > 260)
+		if (bar1.vy > 0 && bar1.y > 240)
 			bar1.vy = -bar1.vy;
-		if (bar1.vy < 0 && bar1.y < -10)
+		if (bar1.vy < 0 && bar1.y < 10)
 			bar1.vy = -bar1.vy;
 
-		if (bar2.vy > 0 && bar2.y > 260)
+		if (bar2.vy > 0 && bar2.y > 240)
 			bar2.vy = -bar2.vy;
-		if (bar2.vy < 0 && bar2.y < -10)
+		if (bar2.vy < 0 && bar2.y < 10)
 			bar2.vy = -bar2.vy;
 
 	}

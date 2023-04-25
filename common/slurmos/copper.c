@@ -57,4 +57,8 @@ void copper_set_bg_color(unsigned short color)
 	__out(COPPER_BGCOLOR, color);
 }
 
+void copper_set_alpha(unsigned short alpha)
+{
+	__out(COPPER_ALPHA, alpha);
+}
 
