@@ -32,7 +32,7 @@ all: $(TARGET)
 
 $(BUILD_DIR)/%.c1: $(SRC_DIR)/%.c $(ASSETS_H) $(HEADERS)
 	mkdir -p $(BUILD_DIR)
-	$(CPP) -o $@ -I../../../../include -I$(SRC_DIR) -I$(BUILD_DIR) -I../../build -I$(SLURMOS_DIR) $<
+	$(CPP) -o $@ -I../../../../include -I$(SRC_DIR) -I../ -I$(BUILD_DIR) -I../../build -I$(SLURMOS_DIR) $<
 
 $(BUILD_DIR)/%.asm1: $(SRC_DIR)/%.asm $(HEADERS)
 	mkdir -p $(BUILD_DIR)

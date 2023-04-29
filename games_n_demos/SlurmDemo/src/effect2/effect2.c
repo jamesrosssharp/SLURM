@@ -32,6 +32,7 @@ SOFTWARE.
 #include <slurminterrupt.h>
 
 #include <applet.h>
+#include <bundle.h>
 
 struct applet_vectors *vtors = (struct applet_vectors*)(APPLET_BASE);
 
@@ -45,8 +46,8 @@ struct copper_bar {
 	short id;
 };
 
-struct copper_bar bar1 = {0, 0, 0};
-struct copper_bar bar2 = {0, 0, 1};
+struct copper_bar bar1 = {0, 0, 0, 0, 0};
+struct copper_bar bar2 = {0, 0, 0, 0, 1};
 
 short cpr_idx = 0;
 
@@ -91,6 +92,8 @@ unsigned short bar2_colors[COPPER_BAR_HEIGHT] = {
 	0x0400, // 15
 
 };
+
+int frame = 0;
 
 void do_copper_bars()
 {
@@ -261,8 +264,8 @@ void do_sound_copper_bars()
 	{
 		the_copper_list[cpr_idx++] = COPPER_HWAIT((((short)(vtors->__in(0x8000 + i*2) + vtors->__in(0x8100 + i*2))  >> 8) + 180) & 0xfff);
 		the_copper_list[cpr_idx++] = COPPER_BG(0xfff);
-		the_copper_list[cpr_idx++] = COPPER_BG_WAIT(0x000);
-		the_copper_list[cpr_idx++] = COPPER_BG_WAIT(0x000);
+		the_copper_list[cpr_idx++] = COPPER_BG_WAIT(bar1_colors[(i + frame) & 0xf]);
+		the_copper_list[cpr_idx++] = COPPER_BG_WAIT(bar1_colors[(i + frame) & 0xf]);
 	}
 	
 	the_copper_list[cpr_idx++] = COPPER_BG(0x000);
@@ -278,15 +281,92 @@ static void my_vsync_handler()
 	vtors->rtos_unlock_mutex_from_isr(&eff2_mutex);
 }
 
+#define TILES_ADDRESS_LO 0x8000
+#define TILES_ADDRESS_HI 0x0001
+#define TILES_WORD_ADDRESS 0xc000
+
+#define BLOCKS_ADDRESS_LO 0x0000
+#define BLOCKS_ADDRESS_HI 0x0001
+#define BLOCKS_WORD_ADDRESS 0x8000
+
+#define BLOCKS_FRAMEBUFFER_LO 0x4000
+#define BLOCKS_FRAMEBUFFER_HI 0x0001
+#define BLOCKS_FRAMEBUFFER_WORD_ADDRESS   0xa000
+
+unsigned short bg_palette[16];
+
+void blit_rect_clip(unsigned short fb_upper_lo, unsigned short x, unsigned short y, unsigned short from_upper_lo, unsigned short x_from, unsigned short y_from);
+
+
+
+void blit_text(unsigned short fb_upper_lo, unsigned short text_upper_lo, char* text, int x, int y)
+{
+	char c;
+
+	while (c = *text++)
+	{
+		int idx;
+		int xx;
+		int yy;
+	
+		if (c >= 'a' && c <= 'z')
+		{
+			idx = c - 'a' + 10;
+		} 
+		else if (c >= 'A' && c <= 'Z')
+		{
+			idx = c - 'A' + 10;
+		}
+		else if (c >= '0' && c <= '9')
+		{
+			idx = c - '0';
+		}
+
+		xx = (idx * 8) & 0xff;
+		yy = (((idx * 8) & 0x100) >> 8) * 8;
+
+		blit_rect_clip(fb_upper_lo, x, y, text_upper_lo, xx, yy);
+
+		x += 8;
+
+		if (x >= 64)
+			break;
+
+	}
+}
+
+void clear_fb(unsigned short fb_upper_lo);
+
 void main(void)
 {
 	int i, j;
-	int frame = 0;
+
+	vtors->storage_load_synch(bg_tiles_flash_offset_lo, bg_tiles_flash_offset_hi, 0, 0, TILES_ADDRESS_LO, TILES_ADDRESS_HI, (bg_tiles_flash_size_lo>>1));
+	vtors->storage_load_synch(blocks_pal_flash_offset_lo, blocks_pal_flash_offset_hi, 0, 0, (unsigned short)bg_palette, 0, (sizeof(bg_palette)>>1));
+
+	vtors->load_palette(bg_palette, 0, 16);
+
+	vtors->storage_load_synch(blocks_flash_offset_lo, blocks_flash_offset_hi, 0, 0, BLOCKS_ADDRESS_LO, BLOCKS_ADDRESS_HI, (blocks_flash_size_lo>>1));
+
+	vtors->background_set(0, 
+		    1, 
+		    0,
+		    0, 
+		    0, 
+		    BLOCKS_FRAMEBUFFER_WORD_ADDRESS, 
+		    BLOCKS_WORD_ADDRESS,
+		    TILE_WIDTH_8X8,
+		    TILE_MAP_STRIDE_64);
+
+	vtors->background_update();
+
+
+	clear_fb(BLOCKS_FRAMEBUFFER_LO);
+	
+	blit_text(BLOCKS_FRAMEBUFFER_LO, TILES_ADDRESS_LO + 16384, "Hello world!", 0, 10);
 
 	// Add a vsync interrupt handler
 	vtors->rtos_set_interrupt_handler(SLURM_INTERRUPT_VSYNC_IDX, my_vsync_handler);
-
-	vtors->copper_control(1);
 
 	bar1.y = 10;
 	bar1.x = 10;
@@ -297,6 +377,10 @@ void main(void)
 	bar2.x = 310;
 	bar2.vx = -2;
 	bar2.vy = -2;
+
+	do_copper_bars();
+
+	vtors->copper_control(1);
 
 	while (frame < 1000)
 	{

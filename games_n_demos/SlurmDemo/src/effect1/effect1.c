@@ -30,7 +30,7 @@ SOFTWARE.
 #include <slurminterrupt.h>
 #include "sprite.h"
 #include "background.h"
-#include "demo.h"
+#include <demo.h>
 #include "pwm.h"
 #include "rtos.h"
 #include <bundle.h>

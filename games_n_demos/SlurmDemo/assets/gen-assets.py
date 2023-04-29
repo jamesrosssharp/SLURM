@@ -19,9 +19,11 @@ options = {
 	'bundle_files' : [("../build/demo.slurmsng", "chiptune", "demo_song", 0x100),
 			  ("images_out/SlurmBG256X256.png", "image", "bg_tiles", 0x100),
 		          ("images_out/SlurmSprite256x75.png", "image", "slurm_sprite", 0x100),
+		          ("images_out/Blocks.png", "image", "blocks", 0x100),
 			  ("tiled/SlurmTiledBG.tmx", "tilemap", "bg_tilemap", 0x10000),
 			  ("images_out/SlurmBG256X256.png", "image_palette", "bg_tilemap_pal", 2),
 		          ("images_out/SlurmSprite256x75.png", "image_palette", "slurm_sprite_pal", 2),
+		          ("images_out/Blocks.png", "image_palette", "blocks_pal", 2),
 			],
 	'bundle_load_address' : 1024*1024 + bundle_start,
 }

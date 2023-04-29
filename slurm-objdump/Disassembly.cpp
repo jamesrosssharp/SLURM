@@ -392,21 +392,38 @@ static std::string handle_memb(uint16_t op, uint16_t imm_hi)
 	std::stringstream dis;
 
 	if (op & 0x1000)
+	{
 		dis << "stb";
+
+		uint16_t ridx = (op & 0x0f00) >> 8; 
+
+		dis << " [r" << ridx;
+
+		uint16_t off = (imm_hi << 4) | (op & 0xf);
+		
+		dis << " , 0x" << std::hex << off << "]";
+
+		uint16_t rdest = (op & 0x00f0) >> 4; 
+
+		dis << ", r" << rdest;
+	}
 	else
+	{
 		dis << "ldb";
 
-	uint16_t rdest = (op & 0x00f0) >> 4; 
 
-	dis << " r" << rdest;
+		uint16_t rdest = (op & 0x00f0) >> 4; 
 
-	uint16_t ridx = (op & 0x0f00) >> 8; 
+		dis << " r" << rdest;
 
-	dis << ", [r" << ridx;
+		uint16_t ridx = (op & 0x0f00) >> 8; 
 
-	uint16_t off = (imm_hi << 4) | (op & 0xf);
-	
-	dis << " , 0x" << std::hex << off << "]";
+		dis << ", [r" << ridx;
+
+		uint16_t off = (imm_hi << 4) | (op & 0xf);
+		
+		dis << " , 0x" << std::hex << off << "]";
+	}
 
 	return dis.str();
 }
@@ -416,21 +433,39 @@ static std::string handle_mem(uint16_t op, uint16_t imm_hi)
 	std::stringstream dis;
 
 	if (op & 0x1000)
+	{
 		dis << "st";
+	
+		uint16_t ridx = (op & 0x0f00) >> 8; 
+
+		dis << " [r" << ridx;
+
+		uint16_t off = (imm_hi << 4) | (op & 0xf);
+		
+		dis << " , 0x" << std::hex << off << "]";
+
+		uint16_t rdest = (op & 0x00f0) >> 4; 
+
+		dis << ", r" << rdest;
+
+	}
 	else
+	{
 		dis << "ld";
 
-	uint16_t rdest = (op & 0x00f0) >> 4; 
+		uint16_t rdest = (op & 0x00f0) >> 4; 
 
-	dis << " r" << rdest;
+		dis << " r" << rdest;
 
-	uint16_t ridx = (op & 0x0f00) >> 8; 
+		uint16_t ridx = (op & 0x0f00) >> 8; 
 
-	dis << ", [r" << ridx;
+		dis << ", [r" << ridx;
 
-	uint16_t off = (imm_hi << 4) | (op & 0xf);
-	
-	dis << " , 0x" << std::hex << off << "]";
+		uint16_t off = (imm_hi << 4) | (op & 0xf);
+		
+		dis << " , 0x" << std::hex << off << "]";
+
+	}
 
 	return dis.str();
 }
