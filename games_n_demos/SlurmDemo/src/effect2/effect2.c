@@ -93,6 +93,26 @@ unsigned short bar2_colors[COPPER_BAR_HEIGHT] = {
 
 };
 
+char sine_table[256] = {
+          0,  2,  3,  5,  6,  8,  9, 11, 12, 14, 16, 17, 19, 20, 22, 23,
+         24, 26, 27, 29, 30, 32, 33, 34, 36, 37, 38, 39, 41, 42, 43, 44,
+         45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 56, 57, 58, 59,
+         59, 60, 60, 61, 61, 62, 62, 62, 63, 63, 63, 64, 64, 64, 64, 64,
+         64, 64, 64, 64, 64, 64, 63, 63, 63, 62, 62, 62, 61, 61, 60, 60,
+         59, 59, 58, 57, 56, 56, 55, 54, 53, 52, 51, 50, 49, 48, 47, 46,
+         45, 44, 43, 42, 41, 39, 38, 37, 36, 34, 33, 32, 30, 29, 27, 26,
+         24, 23, 22, 20, 19, 17, 16, 14, 12, 11,  9,  8,  6,  5,  3,  2,
+          0, -2, -3, -5, -6, -8, -9,-11,-12,-14,-16,-17,-19,-20,-22,-23,
+        -24,-26,-27,-29,-30,-32,-33,-34,-36,-37,-38,-39,-41,-42,-43,-44,
+        -45,-46,-47,-48,-49,-50,-51,-52,-53,-54,-55,-56,-56,-57,-58,-59,
+        -59,-60,-60,-61,-61,-62,-62,-62,-63,-63,-63,-64,-64,-64,-64,-64,
+        -64,-64,-64,-64,-64,-64,-63,-63,-63,-62,-62,-62,-61,-61,-60,-60,
+        -59,-59,-58,-57,-56,-56,-55,-54,-53,-52,-51,-50,-49,-48,-47,-46,
+        -45,-44,-43,-42,-41,-39,-38,-37,-36,-34,-33,-32,-30,-29,-27,-26,
+        -24,-23,-22,-20,-19,-17,-16,-14,-12,-11, -9, -8, -6, -5, -3, -2,
+};
+
+
 int frame = 0;
 
 void do_copper_bars()
@@ -275,12 +295,6 @@ void do_sound_copper_bars()
 
 mutex_t eff2_mutex = RTOS_MUTEX_INITIALIZER;
 
-static void my_vsync_handler()
-{
-	vtors->copper_list_load(the_copper_list, cpr_idx);
-	vtors->rtos_unlock_mutex_from_isr(&eff2_mutex);
-}
-
 #define TILES_ADDRESS_LO 0x8000
 #define TILES_ADDRESS_HI 0x0001
 #define TILES_WORD_ADDRESS 0xc000
@@ -293,21 +307,69 @@ static void my_vsync_handler()
 #define BLOCKS_FRAMEBUFFER_HI 0x0001
 #define BLOCKS_FRAMEBUFFER_WORD_ADDRESS   0xa000
 
+
+
+char scrollText[] = "How about some old school copper bars using SLURM16s gfx coprocessor also known as copper       ";
+int scroll_x_major = 64;
+int scroll_x_minor = 0;
+char *scrollText_ptr  = scrollText;
+
+void update_scrolling_text()
+{	
+	
+
+	scroll_x_minor --;
+	
+	if (scroll_x_minor < 0)
+	{
+		scroll_x_minor = 7;
+
+		scroll_x_major--;
+			
+		if (scroll_x_major < 0)
+		{
+			scroll_x_major = 7;
+			scrollText_ptr++;
+		}
+
+
+	}
+	
+}
+
+int sinus = 0;
+
+static void my_vsync_handler()
+{
+	vtors->copper_list_load(the_copper_list, cpr_idx);
+
+	clear_fb(BLOCKS_FRAMEBUFFER_LO);
+	blit_text(BLOCKS_FRAMEBUFFER_LO, TILES_ADDRESS_LO + 16384, scrollText_ptr, scroll_x_major - 8, 15, 8);
+
+	vtors->background_set_x_y(0, 7 - scroll_x_minor, (sine_table[(sinus++ << 1) & 0xff] >> 1) + 32);
+	vtors->background_update();
+
+	vtors->rtos_unlock_mutex_from_isr(&eff2_mutex);
+}
+
 unsigned short bg_palette[16];
 
 void blit_rect_clip(unsigned short fb_upper_lo, unsigned short x, unsigned short y, unsigned short from_upper_lo, unsigned short x_from, unsigned short y_from);
 
 
 
-void blit_text(unsigned short fb_upper_lo, unsigned short text_upper_lo, char* text, int x, int y)
+void blit_text(unsigned short fb_upper_lo, unsigned short text_upper_lo, const char* text, int x, int y, int n)
 {
 	char c;
 
-	while (c = *text++)
+	while (n--)
 	{
+
 		int idx;
 		int xx;
 		int yy;
+
+		c = *text++;
 	
 		if (c >= 'a' && c <= 'z')
 		{
@@ -322,10 +384,12 @@ void blit_text(unsigned short fb_upper_lo, unsigned short text_upper_lo, char* t
 			idx = c - '0';
 		}
 
+
 		xx = (idx * 8) & 0xff;
 		yy = (((idx * 8) & 0x100) >> 8) * 8;
 
-		blit_rect_clip(fb_upper_lo, x, y, text_upper_lo, xx, yy);
+		if (c != ' ')
+			blit_rect_clip(fb_upper_lo, x, y, text_upper_lo, xx, yy);
 
 		x += 8;
 
@@ -337,6 +401,7 @@ void blit_text(unsigned short fb_upper_lo, unsigned short text_upper_lo, char* t
 
 void clear_fb(unsigned short fb_upper_lo);
 
+
 void main(void)
 {
 	int i, j;
@@ -347,6 +412,8 @@ void main(void)
 	vtors->load_palette(bg_palette, 0, 16);
 
 	vtors->storage_load_synch(blocks_flash_offset_lo, blocks_flash_offset_hi, 0, 0, BLOCKS_ADDRESS_LO, BLOCKS_ADDRESS_HI, (blocks_flash_size_lo>>1));
+	
+	clear_fb(BLOCKS_FRAMEBUFFER_LO);
 
 	vtors->background_set(0, 
 		    1, 
@@ -360,10 +427,7 @@ void main(void)
 
 	vtors->background_update();
 
-
-	clear_fb(BLOCKS_FRAMEBUFFER_LO);
-	
-	blit_text(BLOCKS_FRAMEBUFFER_LO, TILES_ADDRESS_LO + 16384, "Hello world!", 0, 10);
+	//blit_text(BLOCKS_FRAMEBUFFER_LO, TILES_ADDRESS_LO + 16384, "Hello world!", 0, 10);
 
 	// Add a vsync interrupt handler
 	vtors->rtos_set_interrupt_handler(SLURM_INTERRUPT_VSYNC_IDX, my_vsync_handler);
@@ -382,7 +446,7 @@ void main(void)
 
 	vtors->copper_control(1);
 
-	while (frame < 1000)
+	while (frame < 2000)
 	{
 
 		unsigned short btns;
@@ -416,6 +480,8 @@ void main(void)
 		if (bar2.vy < 0 && bar2.y < 10)
 			bar2.vy = -bar2.vy;
 
+		update_scrolling_text();
+
 	}
 
 	// Outtro
@@ -434,6 +500,7 @@ void main(void)
 		bar1.y += 4;
 		bar2.y -= 4;
 
+		update_scrolling_text();
 
 	}
 
@@ -441,7 +508,7 @@ void main(void)
 
 	frame = 0;
 
-	while (frame < 1000)
+	while (frame < 2000)
 	{
 		unsigned short btns;
 
@@ -470,24 +537,41 @@ void main(void)
 			bar2.vx = -bar2.vx;
 		if (bar2.vx < 0 && bar2.x < 30)
 			bar2.vx = -bar2.vx;
+
+		update_scrolling_text();
 	}
 
 	// Sound copper bars
 
 	frame = 0;
 
-	while (frame < 1000)
+	while (frame < 2200)
 	{
 		frame++;
 		vtors->rtos_lock_mutex(&eff2_mutex);
 
 		do_sound_copper_bars();	
 
+		update_scrolling_text();
+
 	}
 
 	vtors->pwm_set(0, 0, 0);
 
 	vtors->copper_control(0);
+
+
+	vtors->background_set(0, 
+		    0, 
+		    0,
+		    0, 
+		    0, 
+		    BLOCKS_FRAMEBUFFER_WORD_ADDRESS, 
+		    BLOCKS_WORD_ADDRESS,
+		    TILE_WIDTH_8X8,
+		    TILE_MAP_STRIDE_64);
+
+	vtors->background_update();
 
 	vtors->rtos_set_interrupt_handler(SLURM_INTERRUPT_VSYNC_IDX, 0);
 }
