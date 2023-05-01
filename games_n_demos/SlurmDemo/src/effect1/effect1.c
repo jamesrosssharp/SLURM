@@ -83,6 +83,7 @@ struct applet_vectors *vtors = (struct applet_vectors*)(APPLET_BASE);
 static void my_vsync_handler()
 {
 	vtors->rtos_unlock_mutex_from_isr(&my_mutex);
+	vtors->background_update();
 }
 
 void main(void)
@@ -179,7 +180,7 @@ void main(void)
 		vtors->sprite_update_sprite(0);
 		
 		vtors->background_set_x_y(0, (sine_table[bg_x_sin]) + 256, (sine_table[bg_y_sin]) + 256);
-		vtors->background_update();
+	//	vtors->background_update();
 	}
 
 	// Outro
@@ -218,7 +219,7 @@ void main(void)
 		
 		
 		vtors->background_set_x_y(0, (sine_table[bg_x_sin]) + 256, (sine_table[bg_y_sin]) + 256);
-		vtors->background_update();
+	//	vtors->background_update();
 	}
 
 	// Fadeout

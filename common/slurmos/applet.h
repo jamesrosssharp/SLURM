@@ -35,7 +35,7 @@ SOFTWARE.
 #define APPLET_H
 
 #define APPLET_BASE 0xc000 /* Must match linker script for applet */
-#define N_APPLET_VECTORS 24 /* should match below */
+#define N_APPLET_VECTORS 25 /* should match below */
 #define APPLET_SIZE 0x4000
 
 #ifndef __ASM__ 
@@ -108,20 +108,21 @@ struct applet_vectors {
 	void (*copper_set_y_flip)(short enable, short flip_y); // 16
 	void (*copper_set_x_pan)(short xpan); // 17
 	void (*copper_set_bg_color)(unsigned short color); // 18
-	void (*copper_list_load)(unsigned short* copper_list, unsigned short len); //19
+	void (*copper_set_alpha)(unsigned short alpha); // 19
+	void (*copper_list_load)(unsigned short* copper_list, unsigned short len); //20
 
 	/* pwm */
 
-	void (*pwm_set)(unsigned char r, unsigned char g, unsigned char b); // 20
+	void (*pwm_set)(unsigned char r, unsigned char g, unsigned char b); // 21
 
 	/* palette */
 
-	void (*load_palette)(unsigned short* palette, int offset, int count); // 21
+	void (*load_palette)(unsigned short* palette, int offset, int count); // 22
 
 	/* port io */
 
-	unsigned short (*__in)(unsigned short port);		// 22
-	void (*__out)(unsigned short port, unsigned short val);	// 23
+	unsigned short (*__in)(unsigned short port);		// 23
+	void (*__out)(unsigned short port, unsigned short val);	// 24
 
 	/* music / audio */
 };

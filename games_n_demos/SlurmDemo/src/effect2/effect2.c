@@ -309,7 +309,7 @@ mutex_t eff2_mutex = RTOS_MUTEX_INITIALIZER;
 
 
 
-char scrollText[] = "How about some old school copper bars using SLURM16s gfx coprocessor also known as copper       ";
+char scrollText[] = "How about some old skool raster bars using SLURM16s gfx coprocessor also known as the copper       ";
 int scroll_x_major = 64;
 int scroll_x_minor = 0;
 char *scrollText_ptr  = scrollText;
@@ -344,7 +344,7 @@ static void my_vsync_handler()
 	vtors->copper_list_load(the_copper_list, cpr_idx);
 
 	clear_fb(BLOCKS_FRAMEBUFFER_LO);
-	blit_text(BLOCKS_FRAMEBUFFER_LO, TILES_ADDRESS_LO + 16384, scrollText_ptr, scroll_x_major - 8, 15, 8);
+	blit_text(BLOCKS_FRAMEBUFFER_LO, TILES_ADDRESS_LO + 16384, scrollText_ptr, scroll_x_major - 8, 16, 8);
 
 	vtors->background_set_x_y(0, 7 - scroll_x_minor, (sine_table[(sinus++ << 1) & 0xff] >> 1) + 32);
 	vtors->background_update();
@@ -383,13 +383,18 @@ void blit_text(unsigned short fb_upper_lo, unsigned short text_upper_lo, const c
 		{
 			idx = c - '0';
 		}
-
+		else if (c == ' ')
+		{
+			x += 8;
+			if (x > 64)
+				break;
+			continue;
+		}
 
 		xx = (idx * 8) & 0xff;
 		yy = (((idx * 8) & 0x100) >> 8) * 8;
 
-		if (c != ' ')
-			blit_rect_clip(fb_upper_lo, x, y, text_upper_lo, xx, yy);
+		blit_rect_clip(fb_upper_lo, x, y, text_upper_lo, xx, yy);
 
 		x += 8;
 
@@ -443,7 +448,8 @@ void main(void)
 	bar2.vy = -2;
 
 	do_copper_bars();
-
+	vtors->copper_list_load(the_copper_list, cpr_idx);
+	vtors->copper_set_alpha(0x8008);
 	vtors->copper_control(1);
 
 	while (frame < 2000)
@@ -560,6 +566,7 @@ void main(void)
 
 	vtors->copper_control(0);
 
+	vtors->copper_set_alpha(0x0000);
 
 	vtors->background_set(0, 
 		    0, 

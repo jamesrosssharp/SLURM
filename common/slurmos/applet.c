@@ -77,6 +77,7 @@ void applet_load(unsigned short applet_flash_lo, unsigned short applet_flash_hi,
 	vtors->copper_set_y_flip = &copper_set_y_flip;
 	vtors->copper_set_x_pan = &copper_set_x_pan;
 	vtors->copper_set_bg_color = &copper_set_bg_color;
+	vtors->copper_set_alpha = &copper_set_alpha;
 	vtors->copper_list_load = &copper_list_load;
 	/* pwm */
 	vtors->pwm_set = &pwm_set;
