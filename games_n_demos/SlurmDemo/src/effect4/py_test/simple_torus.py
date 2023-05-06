@@ -245,6 +245,160 @@ class Matrix4:
 										   self.x2, self.y2, self.z2, self.w2,
 										   self.x3, self.y3, self.z3, self.w3,
 										   self.x4, self.y4, self.z4, self.w4);
+
+
+class Triangle:
+
+	def __init__(self, idx1, idx2, idx3):
+
+		self.idx1 = idx1
+		self.idx2 = idx2
+		self.idx3 = idx3
+
+	def get_z(self, vertex_arr):
+		z1 = vertex_arr[self.idx1].pos.z
+		z2 = vertex_arr[self.idx2].pos.z
+		z3 = vertex_arr[self.idx3].pos.z
+
+		return (z1 + z2 + z3) / 3
+
+
+	def rasterize(self, light_source, vertex_arr):
+
+	
+		# Compute lighting
+
+		v1 = vertex_arr[self.idx1].pos
+		v2 = vertex_arr[self.idx2].pos
+		v3 = vertex_arr[self.idx3].pos
+
+		normal = Point3D.cross((v2 - v1), (v3 - v1)) 
+		normal /= normal.norm()
+
+
+		# Backface cull
+
+		n2 = Point3D(0,0,-1.0,1.0)
+		if n2*normal < 0.0:
+			return
+
+
+		col = int(255.0 * math.fabs((light_source * normal)))
+
+
+		# Sort indices by screen y
+
+		if (vertex_arr[self.idx1].screen.y > vertex_arr[self.idx2].screen.y):
+			t = self.idx1
+			self.idx1 = self.idx2
+			self.idx2 = t
+
+		if (vertex_arr[self.idx2].screen.y > vertex_arr[self.idx3].screen.y):
+			t = self.idx2
+			self.idx2 = self.idx3
+			self.idx3 = t
+
+		if (vertex_arr[self.idx1].screen.y > vertex_arr[self.idx2].screen.y):
+			t = self.idx1
+			self.idx1 = self.idx2
+			self.idx2 = t
+
+		#print("{} {} {}".format(vertex_arr[self.idx1].screen.y, vertex_arr[self.idx2].screen.y, vertex_arr[self.idx3].screen.y))
+
+		p1 = vertex_arr[self.idx1].screen
+		p2 = vertex_arr[self.idx2].screen
+		p3 = vertex_arr[self.idx3].screen
+
+
+
+		# Triangle has zero height
+		if (p3.y == p1.y):
+			return
+
+		if (math.ceil(p2.y) != math.ceil(p1.y)) and (math.ceil(p2.y) != math.ceil(p3.y)):	
+			
+			dxDy12 = (p2.x - p1.x) / (p2.y - p1.y)
+			dxDy13 = (p3.x - p1.x) / (p3.y - p1.y)
+			dxDy23 = (p3.x - p2.x) / (p3.y - p2.y)
+		
+		elif (math.ceil(p2.y) != math.ceil(p3.y)):
+			dxDy12 = 0
+			dxDy13 = (p3.x - p1.x) / (p3.y - p1.y)
+			dxDy23 = (p3.x - p2.x) / (p3.y - p2.y)
+		else:
+			dxDy12 = (p2.x - p1.x) / (p2.y - p1.y)
+			dxDy13 = (p3.x - p1.x) / (p3.y - p1.y)
+			dxDy23 = 0
+	
+	
+
+		midOnLeft = False
+				
+		if dxDy13*(p2.y - p1.y) + p1.x > p2.x:
+			midOnLeft = True
+
+		# sub pixel accurate rendering
+
+		y = p1.y
+		yPrestep = math.ceil(y) - y
+
+		if midOnLeft:
+			x1 = p1.x + yPrestep*dxDy12
+			x2 = p1.x + yPrestep*dxDy13
+		else:
+			x1 = p1.x + yPrestep*dxDy13
+			x2 = p1.x + yPrestep*dxDy12
+
+		y += yPrestep			
+
+		while y < math.ceil(p2.y):
+
+			xx1 = int(math.ceil(x1))
+			xx2 = int(math.ceil(x2))
+				
+			if (xx1 < xx2):
+				for xxx in range(xx1, xx2):
+					putPixel(xxx, int(y), col, col, col)	
+
+			if midOnLeft:
+				x1 += dxDy12
+				x2 += dxDy13
+			else:
+				x1 += dxDy13
+				x2 += dxDy12
+
+			y += 1
+
+		y = p2.y
+		yPrestep = math.ceil(y) - y
+
+		if midOnLeft:
+			x1 = p2.x + yPrestep*dxDy23
+		else:
+			x2 = p2.x + yPrestep*dxDy23
+
+		y += yPrestep			
+
+		while y < math.ceil(p3.y):
+
+			xx1 = math.ceil(x1)
+			xx2 = math.ceil(x2)
+			
+			if (xx1 < xx2):
+				for xxx in range(xx1, xx2):
+					putPixel(xxx, int(y), col, col, col)	
+
+			if midOnLeft:
+				x1 += dxDy23
+				x2 += dxDy13
+			else:
+				x1 += dxDy13
+				x2 += dxDy23
+
+			y += 1
+
+
+
 #====================================== Main stuff ======================
 
 x_rot_plus = False
@@ -261,7 +415,7 @@ y_trans_minus = False
 z_trans_plus = False
 z_trans_minus = False
 
-xr = 0.0
+xr = 1.0
 yr = 0.0
 zr = 0.0
 
@@ -290,13 +444,13 @@ while running:
 		xr -= ANGULAR_SPEED
 
 	if runDemo:
-		xr = 1.0*math.sin(frame / 10.0)
-		yr = 2.0*math.sin(frame / 10.0)
-		#zt = 2.5 + 1.0 * math.cos(frame / 10.0)
+		zr = 3.14*math.sin(frame / 100.0)
+		yr = 2.0*math.sin(frame / 100.0)
+		zt = 8.0 + 1.0 * math.cos(frame / 100.0)
 
-	N_TORUS_POINTS_PER_RIB = 6
+	N_TORUS_POINTS_PER_RIB = 10
 	TORUS_RIB_RADIUS = 10.0
-	N_TORUS_RIBS = 6
+	N_TORUS_RIBS = 10
 
 	rib1_points = []
 
@@ -311,8 +465,6 @@ while running:
 		for v in rib1_points:
 			p = (Matrix4.makeRot(0, math.pi*2.0 / N_TORUS_RIBS * i, 0) * Matrix4.makeTranslate(-2.0, 0.0, 0.0) ) * v.pos
 			torus_points.append(Vertex(p.x, p.y, p.z)) 
-	
-
 
 	rotMat =  Matrix4.makeRot(xr, yr, zr)
 	modelWorldView = Matrix4.makePerspective(3.0, 10.0, 0.1, 100.0) * Matrix4.makeTranslate(xt, yt, zt) * rotMat
@@ -320,8 +472,50 @@ while running:
 	for v in torus_points:
 		v.transform(modelWorldView)
 		v.project()
-		putPixel(int(v.screen.x), int(v.screen.y), 255, 1, 1)
+	#	putPixel(int(v.screen.x), int(v.screen.y), 255, 1, 1)
 
+	triangles = []
+
+	light_source = Point3D(-0.7, 1.2, 1.0, 1.0)
+	light_source /= light_source.norm()
+
+	for i in range(0, N_TORUS_POINTS_PER_RIB):
+		for j in range(0, N_TORUS_RIBS):
+	
+			t = Triangle(j*N_TORUS_POINTS_PER_RIB + i, j*N_TORUS_POINTS_PER_RIB + (i+1)%N_TORUS_POINTS_PER_RIB, ((j+1)%N_TORUS_RIBS)*N_TORUS_POINTS_PER_RIB + i)
+			triangles.append(t)
+			#t.rasterize(light_source, torus_points)
+	
+			t = Triangle(j*N_TORUS_POINTS_PER_RIB + (i + 1)%N_TORUS_POINTS_PER_RIB, ((j+1)%N_TORUS_RIBS)*N_TORUS_POINTS_PER_RIB + (i + 1)%N_TORUS_POINTS_PER_RIB, ((j+1)%N_TORUS_RIBS)*N_TORUS_POINTS_PER_RIB + i)
+			triangles.append(t)
+			#t.rasterize(light_source, torus_points)
+
+
+	# Sort triangles by depth
+
+	def sort_func(t1):
+		z1 = t1.get_z(torus_points)
+		return z1
+
+	triangles2 = sorted(triangles, key = sort_func)
+
+	for t in triangles2:
+		t.rasterize(light_source, torus_points)
+
+	#my_points = [Vertex(-1, -1, 0), Vertex(-1, 1, 0), Vertex(1, 1, 0)]
+
+	#my_points[0].screen.x = 100
+	#my_points[0].screen.y = 100
+	#my_points[1].screen.x = 170
+	#my_points[1].screen.y = 150
+	#my_points[2].screen.x = 110
+	#my_points[2].screen.y = 190
+
+	#for v in my_points:
+	#	v.transform(modelWorldView)
+	#	v.project()
+
+	#t.rasterize(torus_points)
 
 	for event in pygame.event.get():
 			if event.type == pygame.QUIT:
