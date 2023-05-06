@@ -23,6 +23,12 @@ def putPixel(x, y, r, g, b):
 		x1 = x * pixelWidth;
 		y1 = y * pixelHeight;
 
+		if (x1 > 2*width or x1 < 0):
+			return
+
+		if (y1 > 2*height or y1 < 0):
+			return
+
 		for i in range (x1, x1 + pixelWidth):
 			for j in range (y1, y1 + pixelHeight):
 				screen.set_at((i, j), (r, g, b))
@@ -283,7 +289,13 @@ class Triangle:
 			return
 
 
-		col = int(255.0 * math.fabs((light_source * normal)))
+		col = light_source * normal 
+
+		
+		if col < 0.0:
+			col = 0.0
+		else:
+			col = int(255.0 * col)
 
 
 		# Sort indices by screen y
@@ -315,13 +327,13 @@ class Triangle:
 		if (p3.y == p1.y):
 			return
 
-		if (math.ceil(p2.y) != math.ceil(p1.y)) and (math.ceil(p2.y) != math.ceil(p3.y)):	
+		if (p2.y != p1.y) and (p2.y != p3.y):	
 			
 			dxDy12 = (p2.x - p1.x) / (p2.y - p1.y)
 			dxDy13 = (p3.x - p1.x) / (p3.y - p1.y)
 			dxDy23 = (p3.x - p2.x) / (p3.y - p2.y)
 		
-		elif (math.ceil(p2.y) != math.ceil(p3.y)):
+		elif (p2.y != p3.y):
 			dxDy12 = 0
 			dxDy13 = (p3.x - p1.x) / (p3.y - p1.y)
 			dxDy23 = (p3.x - p2.x) / (p3.y - p2.y)
@@ -358,7 +370,7 @@ class Triangle:
 				
 			if (xx1 < xx2):
 				for xxx in range(xx1, xx2):
-					putPixel(xxx, int(y), col, col, col)	
+					putPixel(xxx, int(y), col, 0.8*col, 0.8*col)	
 
 			if midOnLeft:
 				x1 += dxDy12
@@ -386,7 +398,7 @@ class Triangle:
 			
 			if (xx1 < xx2):
 				for xxx in range(xx1, xx2):
-					putPixel(xxx, int(y), col, col, col)	
+					putPixel(xxx, int(y), col, 0.8*col, 0.8*col)	
 
 			if midOnLeft:
 				x1 += dxDy23
@@ -444,13 +456,13 @@ while running:
 		xr -= ANGULAR_SPEED
 
 	if runDemo:
-		zr = 3.14*math.sin(frame / 100.0)
-		yr = 2.0*math.sin(frame / 100.0)
-		zt = 8.0 + 1.0 * math.cos(frame / 100.0)
+		zr = 3.14*math.sin(frame / 10.0)
+		yr = 2.0*math.sin(frame / 10.0)
+		zt = 10.0 + 1.0 * math.cos(frame / 10.0)
 
-	N_TORUS_POINTS_PER_RIB = 10
+	N_TORUS_POINTS_PER_RIB = 8
 	TORUS_RIB_RADIUS = 10.0
-	N_TORUS_RIBS = 10
+	N_TORUS_RIBS = 8
 
 	rib1_points = []
 
@@ -463,20 +475,32 @@ while running:
 
 	for i in range(0, N_TORUS_RIBS):
 		for v in rib1_points:
-			p = (Matrix4.makeRot(0, math.pi*2.0 / N_TORUS_RIBS * i, 0) * Matrix4.makeTranslate(-2.0, 0.0, 0.0) ) * v.pos
+			p = (Matrix4.makeRot(0, math.pi*2.0 / N_TORUS_RIBS * i, 0) * Matrix4.makeTranslate(-3.0, 0.0, 0.0) ) * v.pos
 			torus_points.append(Vertex(p.x, p.y, p.z)) 
 
 	rotMat =  Matrix4.makeRot(xr, yr, zr)
-	modelWorldView = Matrix4.makePerspective(3.0, 10.0, 0.1, 100.0) * Matrix4.makeTranslate(xt, yt, zt) * rotMat
+	modelWorldView = Matrix4.makePerspective(3.0, 10.0, 0.1, 100.0) * Matrix4.makeTranslate(xt, yt, zt) * rotMat * Matrix4.makeTranslate(-1.0, 0, 0)
+
+	modelWorldView2 = Matrix4.makePerspective(3.0, 10.0, 0.1, 100.0) * Matrix4.makeTranslate(xt, yt, zt) * rotMat * Matrix4.makeTranslate(1.5, 0, 0) * Matrix4.makeRot(math.pi/2.0, 0, 0)
+	
+	torus_points2 = []
 
 	for v in torus_points:
+		v2 = Vertex(v.pos.x, v.pos.y, v.pos.z)
 		v.transform(modelWorldView)
 		v.project()
+		v2.transform(modelWorldView2)
+		v2.project()
+		torus_points2.append(v2)
+
+
+	torus_points3 = torus_points2 + torus_points
+
 	#	putPixel(int(v.screen.x), int(v.screen.y), 255, 1, 1)
 
 	triangles = []
 
-	light_source = Point3D(-0.7, 1.2, 1.0, 1.0)
+	light_source = Point3D(-0.7, 1.2, -1.0, 1.0)
 	light_source /= light_source.norm()
 
 	for i in range(0, N_TORUS_POINTS_PER_RIB):
@@ -484,23 +508,30 @@ while running:
 	
 			t = Triangle(j*N_TORUS_POINTS_PER_RIB + i, j*N_TORUS_POINTS_PER_RIB + (i+1)%N_TORUS_POINTS_PER_RIB, ((j+1)%N_TORUS_RIBS)*N_TORUS_POINTS_PER_RIB + i)
 			triangles.append(t)
-			#t.rasterize(light_source, torus_points)
 	
 			t = Triangle(j*N_TORUS_POINTS_PER_RIB + (i + 1)%N_TORUS_POINTS_PER_RIB, ((j+1)%N_TORUS_RIBS)*N_TORUS_POINTS_PER_RIB + (i + 1)%N_TORUS_POINTS_PER_RIB, ((j+1)%N_TORUS_RIBS)*N_TORUS_POINTS_PER_RIB + i)
 			triangles.append(t)
-			#t.rasterize(light_source, torus_points)
+
+			t = Triangle(j*N_TORUS_POINTS_PER_RIB + i + N_TORUS_RIBS*N_TORUS_POINTS_PER_RIB, j*N_TORUS_POINTS_PER_RIB + (i+1)%N_TORUS_POINTS_PER_RIB + N_TORUS_RIBS*N_TORUS_POINTS_PER_RIB, ((j+1)%N_TORUS_RIBS)*N_TORUS_POINTS_PER_RIB + i + N_TORUS_RIBS*N_TORUS_POINTS_PER_RIB)
+			triangles.append(t)
+	
+			t = Triangle(j*N_TORUS_POINTS_PER_RIB + (i + 1)%N_TORUS_POINTS_PER_RIB + N_TORUS_RIBS*N_TORUS_POINTS_PER_RIB, ((j+1)%N_TORUS_RIBS)*N_TORUS_POINTS_PER_RIB + (i + 1)%N_TORUS_POINTS_PER_RIB + N_TORUS_RIBS*N_TORUS_POINTS_PER_RIB, ((j+1)%N_TORUS_RIBS)*N_TORUS_POINTS_PER_RIB + i + N_TORUS_RIBS*N_TORUS_POINTS_PER_RIB)
+			triangles.append(t)
+
 
 
 	# Sort triangles by depth
 
 	def sort_func(t1):
-		z1 = t1.get_z(torus_points)
+		z1 = t1.get_z(torus_points3)
 		return z1
 
-	triangles2 = sorted(triangles, key = sort_func)
+	triangles3 = sorted(triangles, key = sort_func)
 
-	for t in triangles2:
-		t.rasterize(light_source, torus_points)
+	for t in triangles3:
+		t.rasterize(light_source, torus_points3)
+
+
 
 	#my_points = [Vertex(-1, -1, 0), Vertex(-1, 1, 0), Vertex(1, 1, 0)]
 
