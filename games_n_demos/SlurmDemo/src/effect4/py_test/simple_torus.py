@@ -268,7 +268,17 @@ class Triangle:
 
 		return (z1 + z2 + z3) / 3
 
+	def calc_normal(self, vertex_arr):
 
+		v1 = vertex_arr[self.idx1].pos
+		v2 = vertex_arr[self.idx2].pos
+		v3 = vertex_arr[self.idx3].pos
+
+		normal = Point3D.cross((v2 - v1), (v3 - v1)) 
+		normal /= normal.norm()
+
+		return normal
+		
 	def rasterize(self, light_source, vertex_arr):
 
 	
@@ -409,6 +419,73 @@ class Triangle:
 
 			y += 1
 
+#===================================== Write out C src code =============
+
+def dump_points(points):
+
+
+	print("#define N_TORUS_POINTS %d" % len(points))
+	print("")
+	print("struct Point3D torus_points[N_TORUS_POINTS] = {")
+
+	for p in points:
+		print("\t{%x, %x, %x}," % (int(p.pos.x * 256) & 0xffff, int(p.pos.y * 256) & 0xffff, int(p.pos.z * 256) & 0xffff))
+
+
+	print("};\n\n")
+
+
+def dump_triangles(tris, points):
+
+	# Construct unique set of facet normals
+
+	normals = []
+
+	for i, t in enumerate(tris):
+
+		n = t.calc_normal(points)
+
+		nn = (int(n.x * 256) & 0xffff, int(n.y * 256) & 0xffff, int(n.z * 256) & 0xffff)
+
+		normals.append(nn)
+
+	uniqn = list(set(normals))
+
+	normaldict = {}
+
+	for i, n in enumerate(uniqn):
+		k = (n[0] << 32) | (n[1] << 16) | (n[2] << 16)
+		normaldict[k] = i
+
+
+	# Print facet normals
+
+	print("#define N_TORUS_NORMALS %d" % (len(uniqn)))
+	print("")
+	print("struct Point3D torus_normals[N_TORUS_NORMALS] = {")
+	for i, n in enumerate(uniqn):
+
+		print("\t{%x, %x, %x}," % (n[0], n[1], n[2]))
+
+	print("};")
+
+	print("#define N_TORUS_TRIS %d" % len(tris))
+	print("")
+	print("struct Triangle torus_tris[N_TORUS_TRIS] = {")
+
+	for i, t in enumerate(tris):
+		
+		n = t.calc_normal(points)
+
+		nn = (int(n.x * 256) & 0xffff, int(n.y * 256) & 0xffff, int(n.z * 256) & 0xffff)
+
+		k = (nn[0] << 32) | (nn[1] << 16) | (nn[2] << 16)
+	
+		print("\t{%d, %d, %d, %d}," % (t.idx1, t.idx2, t.idx3, normaldict[k]) )
+
+	print("};\n\n")
+
+
 
 
 #====================================== Main stuff ======================
@@ -493,7 +570,6 @@ while running:
 		v2.project()
 		torus_points2.append(v2)
 
-
 	torus_points3 = torus_points2 + torus_points
 
 	#	putPixel(int(v.screen.x), int(v.screen.y), 255, 1, 1)
@@ -503,8 +579,8 @@ while running:
 	light_source = Point3D(-0.7, 1.2, -1.0, 1.0)
 	light_source /= light_source.norm()
 
-	for i in range(0, N_TORUS_POINTS_PER_RIB):
-		for j in range(0, N_TORUS_RIBS):
+	for j in range(0, N_TORUS_RIBS):
+		for i in range(0, N_TORUS_POINTS_PER_RIB):
 	
 			t = Triangle(j*N_TORUS_POINTS_PER_RIB + i, j*N_TORUS_POINTS_PER_RIB + (i+1)%N_TORUS_POINTS_PER_RIB, ((j+1)%N_TORUS_RIBS)*N_TORUS_POINTS_PER_RIB + i)
 			triangles.append(t)
@@ -518,7 +594,9 @@ while running:
 			t = Triangle(j*N_TORUS_POINTS_PER_RIB + (i + 1)%N_TORUS_POINTS_PER_RIB + N_TORUS_RIBS*N_TORUS_POINTS_PER_RIB, ((j+1)%N_TORUS_RIBS)*N_TORUS_POINTS_PER_RIB + (i + 1)%N_TORUS_POINTS_PER_RIB + N_TORUS_RIBS*N_TORUS_POINTS_PER_RIB, ((j+1)%N_TORUS_RIBS)*N_TORUS_POINTS_PER_RIB + i + N_TORUS_RIBS*N_TORUS_POINTS_PER_RIB)
 			triangles.append(t)
 
-
+	if frame == 0:
+		dump_points(torus_points3)
+		dump_triangles(triangles, torus_points3)
 
 	# Sort triangles by depth
 
@@ -531,6 +609,7 @@ while running:
 	for t in triangles3:
 		t.rasterize(light_source, torus_points3)
 
+	# If 0th frame, dump all the data as C src for use in slurm demo
 
 
 	#my_points = [Vertex(-1, -1, 0), Vertex(-1, 1, 0), Vertex(1, 1, 0)]
