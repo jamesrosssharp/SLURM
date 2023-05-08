@@ -519,6 +519,14 @@ runDemo = True
 
 frame = 0	
 
+mat = Matrix4.makeRot(2*3.14 / 256.0*32, 2*3.14 / 256.0 * 10, 2*3.14 / 256.0 * 90)
+
+print(mat)
+
+
+sys.exit()
+
+
 while running:
 
 	if y_rot_plus:

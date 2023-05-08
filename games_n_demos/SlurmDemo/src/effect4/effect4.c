@@ -33,6 +33,7 @@ SOFTWARE.
 #include <bool.h>
 #include <slurminterrupt.h>
 
+#include <Matrix4.h>
 
 unsigned short torus_palette[] = {
 	0x0000,	0xf000, 0xf211, 0xf411,
@@ -83,8 +84,27 @@ static void my_vsync_handler()
 	vtors->rtos_unlock_mutex_from_isr(&eff4_mutex);
 }
 
+void print_matrix(struct Matrix4* mat)
+{
+	vtors->printf("%x %x %x ", mat->x1, mat->y1, mat->z1);
+	vtors->printf("%x\r\n", mat->w1);
+	
+	vtors->printf("%x %x %x ", mat->x2, mat->y2, mat->z2);
+	vtors->printf("%x\r\n", mat->w2);
+	
+	vtors->printf("%x %x %x ", mat->x3, mat->y3, mat->z3);
+	vtors->printf("%x\r\n", mat->w3);
+	
+	vtors->printf("%x %x %x ", mat->x4, mat->y4, mat->z4);
+	vtors->printf("%x\r\n", mat->w4);
+	
+}
+
+
 void main(void)
 {
+	struct Matrix4 rot;
+
 
 	vtors->copper_set_bg_color(0x000f);
 	vtors->load_palette(torus_palette, 0, 16);
@@ -98,6 +118,10 @@ void main(void)
 
 	//clear_fb(framebuffers_upper_lo[0], 0x1111);
 	//clear_fb(framebuffers_upper_lo[1], 0xffff);
+
+	matrix4_createRot(&rot, 32, 10, 90);
+
+	print_matrix(&rot);
 
 
 	while (frame < 1000)

@@ -30,6 +30,8 @@ SOFTWARE.
 #include <Matrix4.h>
 
 extern short sin_table_8_8[256];
+extern short dot4_8_8(short* a, short* b, short ainc, short binc);
+
 
 short sin(char ang)
 {
@@ -62,6 +64,111 @@ void matrix4_createRotX(struct Matrix4* mat, char xang)
 	mat->y4 = 0;
 	mat->z4 = 0;
 	mat->w4 = 0x0100;
+
+}
+
+void matrix4_createRotY(struct Matrix4* mat, char yang)
+{
+	mat->x1 = cos(yang);
+	mat->y1 = 0; 
+	mat->z1 = sin(yang);
+	mat->w1 = 0;
+	
+	mat->x2 = 0;
+	mat->y2 = 0x0100;
+	mat->z2 = 0;
+	mat->w2 = 0;
+
+	mat->x3 = -sin(yang);
+	mat->y3 = 0;
+	mat->z3 = cos(yang);
+	mat->w3 = 0;
+
+	mat->x4 = 0;
+	mat->y4 = 0;
+	mat->z4 = 0;
+	mat->w4 = 0x0100;
+
+}
+
+void matrix4_createRotZ(struct Matrix4* mat, char zang)
+{
+	mat->x1 = cos(zang);
+	mat->y1 = -sin(zang); 
+	mat->z1 = 0;
+	mat->w1 = 0;
+	
+	mat->x2 = sin(zang);
+	mat->y2 = cos(zang);
+	mat->z2 = 0;
+	mat->w2 = 0;
+
+	mat->x3 = 0;
+	mat->y3 = 0;
+	mat->z3 = 0x0100;
+	mat->w3 = 0;
+
+	mat->x4 = 0;
+	mat->y4 = 0;
+	mat->z4 = 0;
+	mat->w4 = 0x0100;
+
+}
+
+void matrix4_multiply(struct Matrix4* matA, struct Matrix4* matB)
+{
+	short x1 = dot4_8_8(&matA->x1, &matB->x1, 2, 8);
+	short y1 = dot4_8_8(&matA->x1, &matB->y1, 2, 8);
+	short z1 = dot4_8_8(&matA->x1, &matB->z1, 2, 8);
+	short w1 = dot4_8_8(&matA->x1, &matB->w1, 2, 8);
+ 
+	short x2 = dot4_8_8(&matA->x2, &matB->x1, 2, 8);
+	short y2 = dot4_8_8(&matA->x2, &matB->y1, 2, 8);
+	short z2 = dot4_8_8(&matA->x2, &matB->z1, 2, 8);
+	short w2 = dot4_8_8(&matA->x2, &matB->w1, 2, 8);
+ 
+	short x3 = dot4_8_8(&matA->x3, &matB->x1, 2, 8);
+	short y3 = dot4_8_8(&matA->x3, &matB->y1, 2, 8);
+	short z3 = dot4_8_8(&matA->x3, &matB->z1, 2, 8);
+	short w3 = dot4_8_8(&matA->x3, &matB->w1, 2, 8);
+ 
+	short x4 = dot4_8_8(&matA->x4, &matB->x1, 2, 8);
+	short y4 = dot4_8_8(&matA->x4, &matB->y1, 2, 8);
+	short z4 = dot4_8_8(&matA->x4, &matB->z1, 2, 8);
+	short w4 = dot4_8_8(&matA->x4, &matB->w1, 2, 8);
+ 
+	matA->x1 = x1;
+	matA->y1 = y1;
+	matA->z1 = z1;
+	matA->w1 = w1;
+
+	matA->x2 = x2;
+	matA->y2 = y2;
+	matA->z2 = z2;
+	matA->w2 = w2;
+
+	matA->x3 = x3;
+	matA->y3 = y3;
+	matA->z3 = z3;
+	matA->w3 = w3;
+
+	matA->x4 = x4;
+	matA->y4 = y4;
+	matA->z4 = z4;
+	matA->w4 = w4;
+}
+
+void matrix4_createRot(struct Matrix4* mat, char xang, char yang, char zang)
+{
+	struct Matrix4 y;
+	struct Matrix4 z;
+
+	matrix4_createRotX(mat, xang);
+	matrix4_createRotY(&y, yang);
+	matrix4_createRotZ(&z, zang);
+
+	matrix4_multiply(mat, &y);
+	matrix4_multiply(mat, &z);
 
 }
 
