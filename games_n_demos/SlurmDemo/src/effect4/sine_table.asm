@@ -287,3 +287,4 @@ sin_table_8_8:
 	dw 0xfff3
 	dw 0xfff9
 
+	.end

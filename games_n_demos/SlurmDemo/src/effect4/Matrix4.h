@@ -40,7 +40,16 @@ struct Matrix4 {
 	short x2, y2, z2, w2;
 	short x3, y3, z3, w3;
 	short x4, y4, z4, w4;
-}
+};
+
+/* fill in Matrix4 with a x-axis rotation matrix from given angle */
+void matrix4_createRotX(struct Matrix4* mat, char xang);
+
+/* fill in Matrix4 with a y-axis rotation matrix from given angle */
+void matrix4_createRotY(struct Matrix4* mat, char yang);
+
+/* fill in Matrix4 with a z-axis rotation matrix from given angle */
+void matrix4_createRotZ(struct Matrix4* mat, char zang);
 
 /* fill in Matrix4 with a rotation matrix from given angles */
 void matrix4_createRot(struct Matrix4* mat, char xang, char yang, char zang);
@@ -51,7 +60,7 @@ void matrix4_createTrans(struct Matrix4* mat, short xt, short yt, short zt);
 /* fill in a Matrix4 with perspective projection matrix from given parameters in 8:8 fixed point */
 void matrix4_createPerspective(struct Matrix4* mat, short atan_fovx, short atan_fovy, short znear, short zfar);
 
-/* multiply Matrix4 A by Matrix4 B storing result in A */
+/* premultiply Matrix4 B by Matrix4 A storing result in A */
 void matrix4_multiply(struct Matrix4* matA, struct Matrix4* matB);
 
 
