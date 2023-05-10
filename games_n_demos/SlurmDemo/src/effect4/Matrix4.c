@@ -172,3 +172,53 @@ void matrix4_createRot(struct Matrix4* mat, char xang, char yang, char zang)
 
 }
 
+
+void matrix4_createTrans(struct Matrix4* mat, short xt, short yt, short zt)
+{
+
+	mat->x1 = 0x0100;
+	mat->y1 = 0; 
+	mat->z1 = 0;
+	mat->w1 = xt;
+	
+	mat->x2 = 0;
+	mat->y2 = 0x0100;
+	mat->z2 = 0;
+	mat->w2 = yt;
+
+	mat->x3 = 0;
+	mat->y3 = 0;
+	mat->z3 = 0x0100;
+	mat->w3 = zt;
+
+	mat->x4 = 0;
+	mat->y4 = 0;
+	mat->z4 = 0;
+	mat->w4 = 0x0100;
+
+}
+
+void matrix4_createPerspective(struct Matrix4* mat, short atan_fovx, short atan_fovy, short znear, short zfar)
+{
+
+	mat->x1 = atan_fovx;
+	mat->y1 = 0; 
+	mat->z1 = 0;
+	mat->w1 = 0;
+	
+	mat->x2 = 0;
+	mat->y2 = atan_fovy;
+	mat->z2 = 0;
+	mat->w2 = 0;
+
+	mat->x3 = 0;
+	mat->y3 = 0;
+	mat->z3 = 0; //-(zfar + znear)/(zfar - znear);
+	mat->w3 = 0; //-2.0*znear*zfar/(zfar - znear);
+
+	mat->x4 = 0;
+	mat->y4 = 0;
+	mat->z4 = 0xff00;
+	mat->w4 = 0;
+}
+
