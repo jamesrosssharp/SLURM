@@ -42,6 +42,27 @@ unsigned short torus_palette[] = {
 	0xff66, 0xff88, 0xffaa, 0xffff	
 };
 
+/* =============== Torus object data ================ */
+
+
+struct Point3D {
+
+	short x;
+	short y;
+	short z;
+};
+
+struct Triangle {
+	unsigned char v1;
+	unsigned char v2;
+	unsigned char v3;	
+	unsigned char n;
+}; 
+
+#include "torus_obj.h"
+
+/* ================================================== */
+
 mutex_t eff4_mutex = RTOS_MUTEX_INITIALIZER;
 
 #include <applet.h>
@@ -104,6 +125,8 @@ void print_matrix(struct Matrix4* mat)
 void main(void)
 {
 	struct Matrix4 rot;
+	struct Matrix4 trans;
+	struct Matrix4 proj;
 
 
 	vtors->copper_set_bg_color(0x000f);
@@ -119,9 +142,23 @@ void main(void)
 	//clear_fb(framebuffers_upper_lo[0], 0x1111);
 	//clear_fb(framebuffers_upper_lo[1], 0xffff);
 
-	matrix4_createRot(&rot, 32, 10, 90);
+	matrix4_createRot(&rot, 0, 0, 0);
 
 	print_matrix(&rot);
+
+	matrix4_createTrans(&trans, 0, 0, 0xa00);
+
+	print_matrix(&trans);
+
+	matrix4_createPerspective(&proj, 0xcc, 0x100, 0, 0);
+
+	print_matrix(&proj);
+
+	matrix4_multiply(&trans, &rot);
+	matrix4_multiply(&proj, &trans);
+
+	print_matrix(&proj);
+	
 
 
 	while (frame < 1000)

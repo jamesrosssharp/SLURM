@@ -136,4 +136,58 @@ dot4_8_8:
 
 	.endfunc
 
+
+.global mult_div_24_8
+	.function mult_div_24_8
+dot4_8_8:
+	// r4 = [x,y], r5 = mult, r6 = w
+
+	/*
+	 *	Compute:
+	 *
+	 *	x [8:8] * mult [16] -> [24:8] / w [8 : 8] -> sx [8 : 8]
+	 *
+	 *
+	 */
+
+
+	sub r13, 32
+
+	st [r13, 0], r4 
+	st [r13, 2], r5 
+	st [r13, 4], r6 
+	st [r13, 6], r7 
+	st [r13, 8], r8
+	st [r13, 10], r9
+	st [r13, 12], r10
+	st [r13, 14], r11
+	st [r13, 16], r12
+	st [r13, 18], r15
+
+	mov r7, r4
+	mul r4, r5	// r4: x*mult lower 16 bits
+	mulu r7, r5	// r7: x*mult upper 16 bits
+
+	// r7:r4 = x*mult[24:8]
+
+	/* compute binary division of r7:r4 by r6 - non-restoring binary division */
+
+
+
+
+	ld r4, [r13, 0]
+	ld r5, [r13, 2]
+	ld r6, [r13, 4]
+	ld r7, [r13, 6]
+	ld r8, [r13, 8]
+	ld r9, [r13, 10]
+	ld r10, [r13, 12]
+	ld r11, [r13, 14]
+	ld r12, [r13, 16]
+	ld r15, [r13, 18]
+
+	add r13, 32
+
+	ret
+
 	.end

@@ -3,6 +3,7 @@
 import pygame
 import random
 import math
+import sys
 
 # Window dimensions
 width = 320
@@ -208,9 +209,13 @@ class Matrix4:
 
 	@staticmethod
 	def makePerspective(fovx, fovy, znear, zfar):
-		return Matrix4(math.atan(fovx/2.0),0.0,0.0,0.0,
-					   0.0,math.atan(fovy/2.0),0.0,0.0,
-					   0.0,0.0,-(zfar + znear)/(zfar - znear),-2.0*znear*zfar/(zfar - znear),
+		return Matrix4(		   #math.atan(fovx/2.0),0.0,0.0,0.0,
+					   #0.0,math.atan(fovy/2.0),0.0,0.0,
+					   #0.0,0.0,-(zfar + znear)/(zfar - znear),-2.0*znear*zfar/(zfar - znear),
+					   
+					   0.8,0.0,0.0,0.0,
+					   0.0,1.0,0.0,0.0,
+					   0.0,0.0,-1.0,-2.0,
 					   0.0,0.0,-1.0,0.0)
 
 
@@ -430,7 +435,7 @@ def dump_points(points):
 	print("struct Point3D torus_points[N_TORUS_POINTS] = {")
 
 	for p in points:
-		print("\t{%x, %x, %x}," % (int(p.pos.x * 256) & 0xffff, int(p.pos.y * 256) & 0xffff, int(p.pos.z * 256) & 0xffff))
+		print("\t{0x%x, 0x%x, 0x%x}," % (int(p.pos.x * 256) & 0xffff, int(p.pos.y * 256) & 0xffff, int(p.pos.z * 256) & 0xffff))
 
 
 	print("};\n\n")
@@ -466,7 +471,7 @@ def dump_triangles(tris, points):
 	print("struct Point3D torus_normals[N_TORUS_NORMALS] = {")
 	for i, n in enumerate(uniqn):
 
-		print("\t{%x, %x, %x}," % (n[0], n[1], n[2]))
+		print("\t{0x%x, 0x%x, 0x%x}," % (n[0], n[1], n[2]))
 
 	print("};")
 
@@ -519,12 +524,7 @@ runDemo = True
 
 frame = 0	
 
-mat = Matrix4.makeRot(2*3.14 / 256.0*32, 2*3.14 / 256.0 * 10, 2*3.14 / 256.0 * 90)
-
-print(mat)
-
-
-sys.exit()
+#mat = Matrix4.makeRot(2*3.14 / 256.0*32, 2*3.14 / 256.0 * 10, 2*3.14 / 256.0 * 90)
 
 
 while running:

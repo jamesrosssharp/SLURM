@@ -213,8 +213,8 @@ void matrix4_createPerspective(struct Matrix4* mat, short atan_fovx, short atan_
 
 	mat->x3 = 0;
 	mat->y3 = 0;
-	mat->z3 = 0; //-(zfar + znear)/(zfar - znear);
-	mat->w3 = 0; //-2.0*znear*zfar/(zfar - znear);
+	mat->z3 = 0xff00; //-(zfar + znear)/(zfar - znear);
+	mat->w3 = 0xfe00; //-2.0*znear*zfar/(zfar - znear);
 
 	mat->x4 = 0;
 	mat->y4 = 0;
