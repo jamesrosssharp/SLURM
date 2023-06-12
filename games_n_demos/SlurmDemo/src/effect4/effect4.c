@@ -34,6 +34,7 @@ SOFTWARE.
 #include <slurminterrupt.h>
 
 #include <Matrix4.h>
+#include <Vertex.h>
 
 unsigned short torus_palette[] = {
 	0x0000,	0xf000, 0xf211, 0xf411,
@@ -128,8 +129,9 @@ void main(void)
 	struct Matrix4 trans;
 	struct Matrix4 proj;
 	short test;
+	short z_t = 0xff00;
 
-	vtors->copper_set_bg_color(0x000f);
+	vtors->copper_set_bg_color(0x0000);
 	vtors->load_palette(torus_palette, 0, 16);
 
 	vtors->rtos_set_interrupt_handler(SLURM_INTERRUPT_VSYNC_IDX, my_vsync_handler);
@@ -139,41 +141,50 @@ void main(void)
 	vtors->sprite_display(0, framebuffers_word_addr[cur_front_buffer], SPRITE_STRIDE_256, FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT, 54, 32);
 	vtors->sprite_update_sprite(0);
 
-	//clear_fb(framebuffers_upper_lo[0], 0x1111);
-	//clear_fb(framebuffers_upper_lo[1], 0xffff);
-
-	matrix4_createRot(&rot, 0, 0, 0);
-
-	print_matrix(&rot);
-
-	matrix4_createTrans(&trans, 0, 0, 0xa00);
-
-	print_matrix(&trans);
-
-	matrix4_createPerspective(&proj, 0xcc, 0x100, 0, 0);
-
-	print_matrix(&proj);
-
-	matrix4_multiply(&trans, &rot);
-	matrix4_multiply(&proj, &trans);
-
-	print_matrix(&proj);
-	
-	// Test multiply divide
-
-	test = mult_div_8_8(0x2cc, 0x128, 0x24c);
-
-	vtors->printf("Mult-div: %x\r\n", test);
-
-
 	while (frame < 1000)
 	{
+		int i;
 		vtors->rtos_lock_mutex(&eff4_mutex);
 		frame++;
 		
 		flip_buffer = 1;
 
-		clear_fb(framebuffers_upper_lo[!cur_front_buffer], 0x1111 * (frame & 0xf));
+		clear_fb(framebuffers_upper_lo[!cur_front_buffer], 0x0);
+
+		matrix4_createRot(&rot, (frame >> 1) & 0xff, (frame >> 2) & 0xff, frame & 0xff);
+
+		z_t = 0xa00 + (sin_table_8_8[frame & 0xff] << 1);
+
+		matrix4_createTrans(&trans, 0, 0, z_t);
+
+		matrix4_createPerspective(&proj, 0xcc, 0x100, 0, 0);
+
+		matrix4_multiply(&proj, &trans);
+		matrix4_multiply(&proj, &rot);
+
+		for (i = 0; i < N_TORUS_POINTS; i++)
+		{
+			struct Vertex v;
+			short sx;
+			short sy;
+
+			v.x = torus_points[i].x; 	
+			v.y = torus_points[i].y; 	
+			v.z = torus_points[i].z; 
+			v.w = 0x100;	
+
+			vertex_multiply_matrix(&v, &proj);
+
+			vertex_project(&v);
+
+			sx = (v.sx + 8) >> 4;
+			sy = (v.sy + 8) >> 4;
+
+			if (sx > 0 && sx < 256 && sy > 0 && sy < 128)
+				put_pixel(framebuffers_upper_lo[!cur_front_buffer], sx, sy);
+
+		} 
+
 	}
 
 	vtors->rtos_set_interrupt_handler(SLURM_INTERRUPT_VSYNC_IDX, 0);

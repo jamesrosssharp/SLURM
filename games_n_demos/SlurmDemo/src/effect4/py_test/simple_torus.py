@@ -568,18 +568,35 @@ while running:
 	modelWorldView = Matrix4.makePerspective(3.0, 10.0, 0.1, 100.0) * Matrix4.makeTranslate(xt, yt, zt) * rotMat * Matrix4.makeTranslate(-1.0, 0, 0)
 
 	modelWorldView2 = Matrix4.makePerspective(3.0, 10.0, 0.1, 100.0) * Matrix4.makeTranslate(xt, yt, zt) * rotMat * Matrix4.makeTranslate(1.5, 0, 0) * Matrix4.makeRot(math.pi/2.0, 0, 0)
+
+	modelWorldView3 = rotMat * Matrix4.makeTranslate(-1.0, 0, 0)
+
+	modelWorldView4 = rotMat * Matrix4.makeTranslate(1.5, 0, 0) * Matrix4.makeRot(math.pi/2.0, 0, 0)
+	
 	
 	torus_points2 = []
+	torus_points3a = []
+	torus_points4 = []
 
 	for v in torus_points:
 		v2 = Vertex(v.pos.x, v.pos.y, v.pos.z)
+		v3 = Vertex(v.pos.x, v.pos.y, v.pos.z)
+		v4 = Vertex(v.pos.x, v.pos.y, v.pos.z)
 		v.transform(modelWorldView)
 		v.project()
 		v2.transform(modelWorldView2)
 		v2.project()
 		torus_points2.append(v2)
 
+		v3.transform(modelWorldView3)
+		v4.transform(modelWorldView4)
+		torus_points3a.append(v3)
+		torus_points4.append(v4)
+
+
 	torus_points3 = torus_points2 + torus_points
+
+	torus_points5 = torus_points3a + torus_points4
 
 	#	putPixel(int(v.screen.x), int(v.screen.y), 255, 1, 1)
 
@@ -604,8 +621,8 @@ while running:
 			triangles.append(t)
 
 	if frame == 0:
-		dump_points(torus_points3)
-		dump_triangles(triangles, torus_points3)
+		dump_points(torus_points5)
+		dump_triangles(triangles, torus_points5)
 
 	# Sort triangles by depth
 

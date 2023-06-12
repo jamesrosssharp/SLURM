@@ -29,18 +29,17 @@ SOFTWARE.
 
 #include <Matrix4.h>
 
-extern short sin_table_8_8[256];
-extern short dot4_8_8(short* a, short* b, short ainc, short binc);
 
-
-short sin(char ang)
+short sin(unsigned short ang)
 {
-	return sin_table_8_8[ang];
+	return sin_table_8_8[ang & 0xff];
 }
 
-short cos(char ang)
+short cos(unsigned short ang)
 {
-	return sin_table_8_8[(ang + 64) & 0xff]; 
+	unsigned short idx = (ang + 64) & 0xff;
+
+	return sin_table_8_8[idx]; 
 }
 
 void matrix4_createRotX(struct Matrix4* mat, char xang)

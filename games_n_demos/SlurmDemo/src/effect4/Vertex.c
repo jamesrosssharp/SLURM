@@ -29,6 +29,8 @@ SOFTWARE.
 
 #include "Vertex.h"
 
+#include <bool.h>
+
 extern short dot4_8_8(short* a, short* b, short ainc, short binc);
 extern short mult_div_8_8(short a, short m, short d);
 
@@ -47,6 +49,37 @@ void vertex_multiply_matrix(struct Vertex* v, struct Matrix4* mat)
 
 }
 
+short _mult_div_8_8(short a, short m, short d)
+{
+
+	bool neg = false;
+	short v;
+
+	if (a < 0)
+	{
+		neg = !neg;
+		a = -a;
+	}
+	if (m < 0)
+	{
+		neg = !neg;
+		m = -m;
+	}
+	if (d < 0)
+	{
+		neg = !neg;
+		d = -d;
+	}
+
+	v = mult_div_8_8(a, m, d);
+
+	if (neg)
+		v = -v;
+
+	return v;
+
+}
+
 void vertex_project(struct Vertex* v)
 {
 
@@ -59,9 +92,8 @@ void vertex_project(struct Vertex* v)
 	#define H_DIV_2 0x400
 
 	// Screen coordinates are in 12:4 fixed point format 
-	v->sx = mult_div_8_8(v->x, W_DIV_2, v->w) + W_DIV_2;
-	v->sy = mult_div_8_8(v->y, H_DIV_2, v->w) + H_DIV_2;
-
+	v->sx = _mult_div_8_8(v->x, W_DIV_2, v->w) + W_DIV_2;
+	v->sy = _mult_div_8_8(v->y, H_DIV_2, v->w) + H_DIV_2;
 
 }
 

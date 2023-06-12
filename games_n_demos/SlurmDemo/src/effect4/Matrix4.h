@@ -63,5 +63,9 @@ void matrix4_createPerspective(struct Matrix4* mat, short atan_fovx, short atan_
 /* premultiply Matrix4 B by Matrix4 A storing result in A */
 void matrix4_multiply(struct Matrix4* matA, struct Matrix4* matB);
 
+extern short sin_table_8_8[256];
+extern short dot4_8_8(short* a, short* b, short ainc, short binc);
+
+
 
 #endif

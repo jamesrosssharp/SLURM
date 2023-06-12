@@ -107,4 +107,27 @@ flip_buffer_spr:
 	
 	.endfunc
 
+	.function put_pixel
+	.global put_pixel
+put_pixel:
+	// r4 = fb, r5 = x, r6 = y
+
+	mul r6, 256
+	add r6, r5
+
+	mov r5, 0xf0
+	mov r2, 0x0f
+	test r6, 1
+	mov.z r5, r2
+
+	asr r6
+
+	add r4, r6
+
+	stb.ex [r4], r5
+
+	ret
+
+	.endfunc
+
 	.end
