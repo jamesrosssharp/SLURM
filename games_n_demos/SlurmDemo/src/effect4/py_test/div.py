@@ -5,8 +5,8 @@
 #	
 #
 
-N = int(1.6 * 65536) & 0xffffffff
-Da = int(1.0 * 256) & 0xffff
+N = int(2.8 * 65536) & 0xffffff
+Da = int(2.3 * 256) & 0xffff
 
 # Long division
 

@@ -127,7 +127,7 @@ void main(void)
 	struct Matrix4 rot;
 	struct Matrix4 trans;
 	struct Matrix4 proj;
-
+	short test;
 
 	vtors->copper_set_bg_color(0x000f);
 	vtors->load_palette(torus_palette, 0, 16);
@@ -159,6 +159,11 @@ void main(void)
 
 	print_matrix(&proj);
 	
+	// Test multiply divide
+
+	test = mult_div_8_8(0x2cc, 0x128, 0x24c);
+
+	vtors->printf("Mult-div: %x\r\n", test);
 
 
 	while (frame < 1000)

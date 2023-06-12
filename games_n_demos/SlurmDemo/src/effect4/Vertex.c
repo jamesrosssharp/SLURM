@@ -29,13 +29,16 @@ SOFTWARE.
 
 #include "Vertex.h"
 
+extern short dot4_8_8(short* a, short* b, short ainc, short binc);
+extern short mult_div_8_8(short a, short m, short d);
+
 void vertex_multiply_matrix(struct Vertex* v, struct Matrix4* mat)
 {
 
-	short x1 = dot4_8_8(&matA->x1, &v->x, 2, 2);
-	short y1 = dot4_8_8(&matA->x2, &v->x, 2, 2);
-	short z1 = dot4_8_8(&matA->x3, &v->x, 2, 2);
-	short w1 = dot4_8_8(&matA->x4, &v->x, 2, 2);
+	short x1 = dot4_8_8(&mat->x1, &v->x, 2, 2);
+	short y1 = dot4_8_8(&mat->x2, &v->x, 2, 2);
+	short z1 = dot4_8_8(&mat->x3, &v->x, 2, 2);
+	short w1 = dot4_8_8(&mat->x4, &v->x, 2, 2);
 
 	v->x = x1;
 	v->y = y1;
@@ -52,11 +55,13 @@ void vertex_project(struct Vertex* v)
         self.screen.y = (self.pos.y / self.pos.w) * height / 2 + height / 2
 	*/
 
-	#define W_DIV_2 0x80
-	#define H_DIV_2 0x40
+	#define W_DIV_2 0x800 // 12:4 fixed point format
+	#define H_DIV_2 0x400
 
-	v->sx = mult_div_24_8(v->x, W_DIV_2, v->w) + W_DIV_2;
-	v->sy = mult_div_24_8(v->y, H_DIV_2, v->w) + H_DIV_2;
+	// Screen coordinates are in 12:4 fixed point format 
+	v->sx = mult_div_8_8(v->x, W_DIV_2, v->w) + W_DIV_2;
+	v->sy = mult_div_8_8(v->y, H_DIV_2, v->w) + H_DIV_2;
+
 
 }
 

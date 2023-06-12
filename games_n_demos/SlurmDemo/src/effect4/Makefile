@@ -28,6 +28,8 @@ LINKER_SCRIPT=$(SRC_DIR)/link.ld
 
 TARGET_ELF=$(patsubst %.bin, %.elf, $(TARGET))
 
+.PRECIOUS: $(C_ASM_SRC) $(CPP_SRC) $(CPP_ASM)
+
 all: $(TARGET)
 
 $(BUILD_DIR)/%.c1: $(SRC_DIR)/%.c $(ASSETS_H) $(HEADERS)
