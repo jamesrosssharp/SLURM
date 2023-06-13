@@ -124,6 +124,8 @@ put_pixel:
 
 	add r4, r6
 
+	ldb.ex r2, [r4]
+	or r5, r2
 	stb.ex [r4], r5
 
 	ret

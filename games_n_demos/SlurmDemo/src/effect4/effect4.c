@@ -2,7 +2,7 @@
 
 	SlurmDemo : A demo to show off SlURM16
 
-effect4.c : interlinked 3D tori (?)
+effect4.c : interlinked 3D tori
 
 License: MIT License
 
@@ -36,8 +36,10 @@ SOFTWARE.
 #include <Matrix4.h>
 #include <Vertex.h>
 
+#include <copper.h>
+
 unsigned short torus_palette[] = {
-	0x0000,	0xf000, 0xf211, 0xf411,
+	0x0000,	0xf00f, 0xf211, 0xf411,
 	0xf711, 0xf811, 0xf922, 0xfa22,
 	0xfb33, 0xfc33, 0xfd44, 0xfe44,
 	0xff66, 0xff88, 0xffaa, 0xffff	
@@ -61,6 +63,17 @@ struct Triangle {
 }; 
 
 #include "torus_obj.h"
+
+/* ================================================== */
+
+/* =============== Copper list ====================== */
+
+unsigned short the_copper_list[] = {
+	COPPER_BG(0x000f),
+	COPPER_VWAIT(150),
+	COPPER_BG(0x0f00),
+	COPPER_VWAIT(0xfff)
+};
 
 /* ================================================== */
 
@@ -92,7 +105,7 @@ unsigned short cur_front_buffer = 0;
 void clear_fb(unsigned short fb, unsigned short col_word);
 void flip_buffer_spr(unsigned short fb);
 
-bool flip_buffer = 0;
+volatile bool flip_buffer = 0;
 
 static void my_vsync_handler()
 {
@@ -101,9 +114,9 @@ static void my_vsync_handler()
 		cur_front_buffer = !cur_front_buffer;
 		flip_buffer_spr(framebuffers_word_addr[cur_front_buffer]);
 		flip_buffer = 0;
+		vtors->rtos_unlock_mutex_from_isr(&eff4_mutex);
 	}
 
-	vtors->rtos_unlock_mutex_from_isr(&eff4_mutex);
 }
 
 void print_matrix(struct Matrix4* mat)
@@ -134,6 +147,10 @@ void main(void)
 	vtors->copper_set_bg_color(0x0000);
 	vtors->load_palette(torus_palette, 0, 16);
 
+	vtors->copper_list_load(the_copper_list, sizeof(the_copper_list) / sizeof(the_copper_list[0]));
+	vtors->copper_control(1);
+	vtors->copper_set_y_flip(1, 150); 
+
 	vtors->rtos_set_interrupt_handler(SLURM_INTERRUPT_VSYNC_IDX, my_vsync_handler);
 
 	// Create the sprite array
@@ -147,13 +164,11 @@ void main(void)
 		vtors->rtos_lock_mutex(&eff4_mutex);
 		frame++;
 		
-		flip_buffer = 1;
+		clear_fb(framebuffers_upper_lo[!cur_front_buffer], 0x0000);
 
-		clear_fb(framebuffers_upper_lo[!cur_front_buffer], 0x0);
+		matrix4_createRot(&rot, (frame << 1) & 0xff, (frame << 2) & 0xff, frame & 0xff);
 
-		matrix4_createRot(&rot, (frame >> 1) & 0xff, (frame >> 2) & 0xff, frame & 0xff);
-
-		z_t = 0xa00 + (sin_table_8_8[frame & 0xff] << 1);
+		z_t = 0xa00 + (sin_table_8_8[(frame << 1) & 0xff] << 1);
 
 		matrix4_createTrans(&trans, 0, 0, z_t);
 
@@ -184,9 +199,14 @@ void main(void)
 				put_pixel(framebuffers_upper_lo[!cur_front_buffer], sx, sy);
 
 		} 
+		
+		flip_buffer = 1;
 
 	}
 
 	vtors->rtos_set_interrupt_handler(SLURM_INTERRUPT_VSYNC_IDX, 0);
+
+	vtors->copper_control(0);
+
 }
 
