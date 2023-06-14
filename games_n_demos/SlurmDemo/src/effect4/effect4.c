@@ -55,23 +55,49 @@ struct Point3D {
 	short z;
 };
 
-struct Triangle {
-	unsigned char v1;
-	unsigned char v2;
-	unsigned char v3;	
-	unsigned char n;
-}; 
+#include "Triangle.h"
 
 #include "torus_obj.h"
 
 /* ================================================== */
 
+/* =============== Vertex + normal arrays =========== */
+
+struct Vertex vertices[N_TORUS_POINTS];
+struct Vertex normals[N_TORUS_POINTS];
+
 /* =============== Copper list ====================== */
 
 unsigned short the_copper_list[] = {
-	COPPER_BG(0x000f),
+	COPPER_ALPHA(0xf),
+	COPPER_BG(0x0aaf),
+	COPPER_VWAIT(50),
+	COPPER_BG(0x099f),
+	COPPER_VWAIT(80),
+	COPPER_BG(0x088f),
+	COPPER_VWAIT(100),
+	COPPER_BG(0x077f),
+	COPPER_VWAIT(110),
+	COPPER_BG(0x066f),
+	COPPER_VWAIT(120),
+	COPPER_BG(0x055f),
+	COPPER_VWAIT(130),
+	COPPER_BG(0x044f),
+	COPPER_VWAIT(140),
+	COPPER_BG(0x033f),
 	COPPER_VWAIT(150),
-	COPPER_BG(0x0f00),
+	COPPER_ALPHA(0x4),
+	COPPER_BG(0x0fff),
+	COPPER_VWAIT(152),
+	COPPER_BG(0x0aaa),
+	COPPER_VWAIT(160),
+	COPPER_BG(0x0888),
+	COPPER_VWAIT(180),
+	COPPER_BG(0x0666),
+	COPPER_VWAIT(210),
+	COPPER_BG(0x0555),
+	COPPER_VWAIT(240),
+	COPPER_BG(0x0333),
 	COPPER_VWAIT(0xfff)
 };
 
@@ -150,6 +176,7 @@ void main(void)
 	vtors->copper_list_load(the_copper_list, sizeof(the_copper_list) / sizeof(the_copper_list[0]));
 	vtors->copper_control(1);
 	vtors->copper_set_y_flip(1, 150); 
+	vtors->copper_set_alpha(0x8000);
 
 	vtors->rtos_set_interrupt_handler(SLURM_INTERRUPT_VSYNC_IDX, my_vsync_handler);
 
@@ -179,27 +206,37 @@ void main(void)
 
 		for (i = 0; i < N_TORUS_POINTS; i++)
 		{
-			struct Vertex v;
+			struct Vertex *v;
 			short sx;
 			short sy;
 
-			v.x = torus_points[i].x; 	
-			v.y = torus_points[i].y; 	
-			v.z = torus_points[i].z; 
-			v.w = 0x100;	
+			v = &vertices[i];
 
-			vertex_multiply_matrix(&v, &proj);
+			v->x = torus_points[i].x; 	
+			v->y = torus_points[i].y; 	
+			v->z = torus_points[i].z; 
+			v->w = 0x100;	
 
-			vertex_project(&v);
+			vertex_multiply_matrix(v, &proj);
 
-			sx = (v.sx + 8) >> 4;
-			sy = (v.sy + 8) >> 4;
+			vertex_project(v);
+
+			/*sx = (v->sx + 8) >> 4;
+			sy = (v->sy + 8) >> 4;
 
 			if (sx > 0 && sx < 256 && sy > 0 && sy < 128)
 				put_pixel(framebuffers_upper_lo[!cur_front_buffer], sx, sy);
-
+			*/
 		} 
-		
+
+		for (i = 0; i < N_TORUS_TRIS; i+= 4)
+		{
+			struct Triangle* t = &torus_tris[i]; 
+
+			triangle_rasterize(framebuffers_upper_lo[!cur_front_buffer], &vertices[t->v1], &vertices[t->v2], &vertices[t->v3], 0xf);			
+
+		}  
+
 		flip_buffer = 1;
 
 	}

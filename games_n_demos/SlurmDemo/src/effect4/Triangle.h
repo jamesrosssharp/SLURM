@@ -2,7 +2,7 @@
 
 	SlurmDemo : A demo to show off SlURM16
 
-Vertex.h : vertex routines
+Triangle.h : triangle rasterization
 
 License: MIT License
 
@@ -27,27 +27,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef VERTEX_H
-#define VERTEX_H
+#ifndef TRIANGLE_H
+#define TRIANGLE_H
 
-#include "Matrix4.h"
+#include "Vertex.h"
 
-struct Vertex {
+struct Triangle {
+	unsigned char v1;
+	unsigned char v2;
+	unsigned char v3;	
+	unsigned char n;
+}; 
 
-	/* world coordinates */
-	short x;
-	short y;
-	short z;
-	short w;
-
-	/* screen coordinates */
-	short sx;
-	short sy;
-
-};
-
-short _mult_div_8_8(short a, short m, short d);
-void vertex_multiply_matrix(struct Vertex* v, struct Matrix4* mat);
-void vertex_project(struct Vertex* v);
+void triangle_rasterize(unsigned short framebuffer, struct Vertex* v1, struct Vertex* v2, struct Vertex* v3, unsigned short color);			
 
 #endif
