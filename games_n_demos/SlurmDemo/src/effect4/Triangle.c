@@ -30,7 +30,7 @@ SOFTWARE.
 #include "Triangle.h"
 #include <bool.h>
 
-void triangle_rasterize(unsigned short framebuffer, struct Vertex* v1, struct Vertex* v2, struct Vertex* v3, unsigned short color)
+void triangle_rasterize(unsigned short framebuffer, struct Vertex* v0, struct Vertex* v1, struct Vertex* v2, unsigned short color)
 {
 
 	// Sort vertices
@@ -44,7 +44,15 @@ void triangle_rasterize(unsigned short framebuffer, struct Vertex* v1, struct Ve
 	short x1 	= 0;
 	short x2 	= 0;
 
-	if (v1->sy > v2->sy)
+	struct Vertex* top;
+	struct Vertex* middle;
+	struct Vertex* bottom;
+
+	short middleCompare = 0;
+	short bottomCompare = 0;
+
+
+	/*if (v1->sy > v2->sy)
 	{
 		t = v1;
 		v1 = v2;
@@ -63,90 +71,184 @@ void triangle_rasterize(unsigned short framebuffer, struct Vertex* v1, struct Ve
 		t = v1;
 		v1 = v2;
 		v2 = t;
+	} */
+
+	if (v0->sy < v1->sy)
+	{
+		if (v2->sy < v0->sy)
+		{
+			top = v2; 
+			middle = v0;
+			bottom = v1;	
+			middleCompare = 0;
+			bottomCompare = 1; 
+		}  
+		else
+		{
+			top = v0;
+
+			if (v1->sy < v2->sy)
+			{
+				middle = v1;
+				bottom = v2;
+				middleCompare = 1;
+				bottomCompare = 2; 		
+			}
+			else
+			{
+				middle = v2;
+				bottom = v1;
+				middleCompare = 2;
+				bottomCompare = 1; 		
+			}  
+
+		}
+
+	}
+	else
+	{
+		if (v2->sy < v1->sy)
+		{
+			top = v2; 
+			middle = v1;
+			bottom = v0;	
+			middleCompare = 1;
+			bottomCompare = 0; 
+		} 
+		else
+		{
+			top = v1;
+			
+			if (v0->sy < v2->sy)
+			{
+				middle = v0;
+				bottom = v2;
+				middleCompare = 3;
+				bottomCompare = 2; 		
+			}
+			else
+			{
+				middle = v2;
+				bottom = v0;
+				middleCompare = 2;
+				bottomCompare = 3; 		
+			}  
+		}
 	} 
+
+	/*if	(BottomCompare < MiddleCompare):
+		MiddleIsLeft = False
+		pLeft = TopToBottom
+		pRight = TopToMiddle
+	else:
+		MiddleIsLeft = True
+		pLeft = TopToMiddle
+		pRight = TopToBottom
+*/
+
+	if (bottomCompare < middleCompare)
+	{
+		midOnLeft = false;
+	}
+	else
+	{
+		midOnLeft = true;
+	}
+
 
 	// Compute gradients
 
-	if (v3->sy == v2->sy) return; // zero-height
+	if (bottom->sy == middle->sy) return; // zero-height
 
-	if ((v2->sy != v1->sy) && (v2->sy != v3->sy))
+	if ((middle->sy != top->sy) && (middle->sy != bottom->sy))
 	{
-		dxDy12 = _mult_div_8_8(v2->sx - v1->sx, 0x10, v2->sy - v1->sy);
-		dxDy13 = _mult_div_8_8(v3->sx - v1->sx, 0x10, v3->sy - v1->sy);
-		dxDy23 = _mult_div_8_8(v3->sx - v2->sx, 0x10, v3->sy - v2->sy);
+		dxDy12 = _mult_div_8_8(middle->sx - top->sx, 0x10, middle->sy - top->sy);
+		dxDy13 = _mult_div_8_8(bottom->sx - top->sx, 0x10, bottom->sy - top->sy);
+		dxDy23 = _mult_div_8_8(bottom->sx - middle->sx, 0x10, bottom->sy - middle->sy);
 	}
-	else if (v2->sy != v3->sy)
+	else if (middle->sy != bottom->sy)
 	{
 		dxDy12 = 0;
-		dxDy13 = _mult_div_8_8(v3->sx - v1->sx, 0x10, v3->sy - v1->sy);
-		dxDy23 = _mult_div_8_8(v3->sx - v2->sx, 0x10, v3->sy - v2->sy);
+		dxDy13 = _mult_div_8_8(bottom->sx - top->sx, 0x10, bottom->sy - top->sy);
+		dxDy23 = _mult_div_8_8(bottom->sx - middle->sx, 0x10, bottom->sy - middle->sy);
 	}
 	else
 	{
 		dxDy12 = 0;
-		dxDy13 = _mult_div_8_8(v3->sx - v1->sx, 0x10, v3->sy - v1->sy);
-		dxDy23 = _mult_div_8_8(v3->sx - v2->sx, 0x10, v3->sy - v2->sy);
+		dxDy13 = _mult_div_8_8(bottom->sx - top->sx, 0x10, bottom->sy - top->sy);
+		dxDy23 = _mult_div_8_8(bottom->sx - middle->sx, 0x10, bottom->sy - middle->sy);
 	}
 
-	//if (_mult_div_8_8(v2->sy - v1->sy, dxDy13, 0x1) + v1->sx > v2->sx)	
+	//if (_mult_div_8_8(middle->sy - top->sy, dxDy13, 0x1) + top->sx > middle->sx)	
 	//	midOnLeft = true;
 
-	y = v1->sy;
-	yPrestep = ((y + 0xf) & 0xfff0) - y;
-
-	x1 = (v1->sx<<4) + _mult_div_8_8(yPrestep, dxDy12, 0x1);
-	x2 = (v1->sx<<4) + _mult_div_8_8(yPrestep, dxDy13, 0x1);
-
-	y += yPrestep;
-
-	while (y < (v2->sy))
-	{
-		short sx, sy;
-
-		sx = (x1 + 128) >> 8;
-		sy = y >> 4;
-
-		put_pixel(framebuffer, sx, sy);
-
-		sx = (x2 + 128) >> 8;
-		put_pixel(framebuffer, sx, sy);
-
-		x1 += dxDy12;
-		x2 += dxDy13;
-		y++;
-	}
-
-	if (x1 < x2)
-		midOnLeft = true;
-	else
-	{
-		short tt;
-		tt = x1;
-		x1 = x2;
-		x2 = tt;
-	}
-
-	y = v2->sy;
+	y = top->sy;
 	yPrestep = ((y + 0xf) & 0xfff0) - y;
 
 	if (midOnLeft)
-		x1 = (v2->sx<<4) + _mult_div_8_8(yPrestep, dxDy23, 0x1);
+	{
+		x1 = (top->sx) + _mult_div_8_8(yPrestep, dxDy12, 0x10);
+		x2 = (top->sx) + _mult_div_8_8(yPrestep, dxDy13, 0x10);
+	}
 	else
-		x2 = (v2->sx<<4) + _mult_div_8_8(yPrestep, dxDy23, 0x1);
+	{
+		x1 = (top->sx) + _mult_div_8_8(yPrestep, dxDy13, 0x10);
+		x2 = (top->sx) + _mult_div_8_8(yPrestep, dxDy12, 0x10);
+	}
+
 
 	y += yPrestep;
 
-	while (y < (v3->sy))
+	while (y < ((middle->sy + 0xf) & 0xfff0))
 	{
-		short sx, sy;
+		short sx, sx2, sy;
+		int j;
 
-		sx = (x1 + 128) >> 8;
+		sx = (x1 + 128) >> 4;
 		sy = y >> 4;
+		sx2 = (x2 + 128) >> 4;
 
-		put_pixel(framebuffer, sx, sy);
+		if (sx < sx2)
+		for (j = sx; j <= sx2; j++)
+			put_pixel(framebuffer, j, sy, color);
 
-		sx = (x2 + 128) >> 8;
-		put_pixel(framebuffer, sx, sy);
+
+		if (midOnLeft)
+		{
+			x1 += dxDy12;
+			x2 += dxDy13;
+		}
+		else
+		{
+			x1 += dxDy13;
+			x2 += dxDy12;	
+		}
+
+		y+=16;
+	}
+
+	y = middle->sy;
+	yPrestep = ((y + 0xf) & 0xfff0) - y;
+
+	if (midOnLeft)
+		x1 = (middle->sx) + _mult_div_8_8(yPrestep, dxDy23, 0x10);
+	else
+		x2 = (middle->sx) + _mult_div_8_8(yPrestep, dxDy23, 0x10);
+
+	y += yPrestep;
+
+	while (y < ((bottom->sy + 0xf) & 0xfff0))
+	{
+		short sx, sx2, sy;
+		int j;
+
+		sx = (x1 + 128) >> 4;
+		sy = y >> 4;
+		sx2 = (x2 + 128) >> 4;
+
+		if (sx < sx2)
+		for (j = sx; j <= sx2; j++)
+			put_pixel(framebuffer, j, sy, color);
 
 		if (midOnLeft)
 		{
@@ -158,7 +260,7 @@ void triangle_rasterize(unsigned short framebuffer, struct Vertex* v1, struct Ve
 			x1 += dxDy13;
 			x2 += dxDy23;
 		}
-		y++;
+		y+=16;
 	}
 
 }

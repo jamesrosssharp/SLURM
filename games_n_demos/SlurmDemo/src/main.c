@@ -68,7 +68,7 @@ int main()
 	while (1)
 	{
 	
-	/*	applet_load(effect1_applet_flash_offset_lo, effect1_applet_flash_offset_hi, 
+/*		applet_load(effect1_applet_flash_offset_lo, effect1_applet_flash_offset_hi, 
 			    effect1_applet_flash_size_lo >> 1);
 		applet_run();  
 
@@ -79,8 +79,7 @@ int main()
 		applet_load(effect3_applet_flash_offset_lo, effect3_applet_flash_offset_hi, 
 			    effect3_applet_flash_size_lo >> 1);
 		applet_run();  
-	*/
-	
+*/	
 		applet_load(effect4_applet_flash_offset_lo, effect4_applet_flash_offset_hi, 
 			    effect4_applet_flash_size_lo >> 1);
 		applet_run();  

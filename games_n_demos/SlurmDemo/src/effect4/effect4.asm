@@ -110,13 +110,13 @@ flip_buffer_spr:
 	.function put_pixel
 	.global put_pixel
 put_pixel:
-	// r4 = fb, r5 = x, r6 = y
+	// r4 = fb, r5 = x, r6 = y, r7 = col
 
 	mul r6, 256
 	add r6, r5
 
-	mov r5, 0xf0
-	mov r2, 0x0f
+	rln r5, r7
+	mov r2, r7
 	test r6, 1
 	mov.z r5, r2
 
@@ -131,5 +131,22 @@ put_pixel:
 	ret
 
 	.endfunc
+
+	.function enter_critical
+	.global enter_critical
+enter_critical:
+	cli
+	ret
+
+	.function leave_critical
+	.global leave_critical
+leave_critical:
+	sti
+	ret
+
+
+
+	.endfunc
+
 
 	.end

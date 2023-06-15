@@ -39,7 +39,7 @@ SOFTWARE.
 #include <copper.h>
 
 unsigned short torus_palette[] = {
-	0x0000,	0xf00f, 0xf211, 0xf411,
+	0x0000,	0xf100, 0xf211, 0xf411,
 	0xf711, 0xf811, 0xf922, 0xfa22,
 	0xfb33, 0xfc33, 0xfd44, 0xfe44,
 	0xff66, 0xff88, 0xffaa, 0xffff	
@@ -64,7 +64,7 @@ struct Point3D {
 /* =============== Vertex + normal arrays =========== */
 
 struct Vertex vertices[N_TORUS_POINTS];
-struct Vertex normals[N_TORUS_POINTS];
+struct Vertex normals[N_TORUS_NORMALS];
 
 /* =============== Copper list ====================== */
 
@@ -170,6 +170,16 @@ void main(void)
 	short test;
 	short z_t = 0xff00;
 
+	vtors->background_set(0, 
+		    0, 
+		    0,
+		    0, 
+		    0, 
+		    0, 
+		    0,
+		    0,
+		    0);
+
 	vtors->copper_set_bg_color(0x0000);
 	vtors->load_palette(torus_palette, 0, 16);
 
@@ -185,7 +195,7 @@ void main(void)
 	vtors->sprite_display(0, framebuffers_word_addr[cur_front_buffer], SPRITE_STRIDE_256, FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT, 54, 32);
 	vtors->sprite_update_sprite(0);
 
-	while (frame < 1000)
+	while (frame < 100)
 	{
 		int i;
 		vtors->rtos_lock_mutex(&eff4_mutex);
@@ -195,7 +205,7 @@ void main(void)
 
 		matrix4_createRot(&rot, (frame << 1) & 0xff, (frame << 2) & 0xff, frame & 0xff);
 
-		z_t = 0xa00 + (sin_table_8_8[(frame << 1) & 0xff] << 1);
+		z_t = 0xc00 + (sin_table_8_8[(frame << 2) & 0xff] << 2);
 
 		matrix4_createTrans(&trans, 0, 0, z_t);
 
@@ -212,6 +222,7 @@ void main(void)
 
 			v = &vertices[i];
 
+			enter_critical();	
 			v->x = torus_points[i].x; 	
 			v->y = torus_points[i].y; 	
 			v->z = torus_points[i].z; 
@@ -220,6 +231,7 @@ void main(void)
 			vertex_multiply_matrix(v, &proj);
 
 			vertex_project(v);
+			leave_critical();	
 
 			/*sx = (v->sx + 8) >> 4;
 			sy = (v->sy + 8) >> 4;
@@ -227,14 +239,39 @@ void main(void)
 			if (sx > 0 && sx < 256 && sy > 0 && sy < 128)
 				put_pixel(framebuffers_upper_lo[!cur_front_buffer], sx, sy);
 			*/
+		}
+
+		for (i = 0; i < N_TORUS_NORMALS; i++)
+		{
+			struct Vertex* n;
+
+			n = &normals[i];
+
+			n->x = torus_normals[i].x;
+			n->y = torus_normals[i].y;
+			n->z = torus_normals[i].z;
+ 
+			vertex_multiply_matrix(n, &rot);
+
 		} 
 
-		for (i = 0; i < N_TORUS_TRIS; i+= 4)
+		for (i = 0; i < N_TORUS_TRIS; i++)
 		{
 			struct Triangle* t = &torus_tris[i]; 
+			short col = 0;
 
-			triangle_rasterize(framebuffers_upper_lo[!cur_front_buffer], &vertices[t->v1], &vertices[t->v2], &vertices[t->v3], 0xf);			
+			if (normals[t->n].z > 0)
+				continue;
 
+			col = ((-normals[t->n].z) >> 4);
+			
+			if (col < 1) col = 1;
+			if (col > 0xf) col = 0xf;
+
+
+			enter_critical();	
+			triangle_rasterize(framebuffers_upper_lo[!cur_front_buffer], &vertices[t->v1], &vertices[t->v2], &vertices[t->v3], col);			
+			leave_critical();
 		}  
 
 		flip_buffer = 1;
@@ -244,6 +281,9 @@ void main(void)
 	vtors->rtos_set_interrupt_handler(SLURM_INTERRUPT_VSYNC_IDX, 0);
 
 	vtors->copper_control(0);
+	vtors->copper_set_y_flip(0, 0xfff); 
+	vtors->copper_set_alpha(0x8000);
+
 
 }
 
