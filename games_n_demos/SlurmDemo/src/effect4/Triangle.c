@@ -158,7 +158,7 @@ void triangle_rasterize(unsigned short framebuffer, struct Vertex* v0, struct Ve
 
 	// Compute gradients
 
-	if (bottom->sy == middle->sy) return; // zero-height
+	if (bottom->sy == top->sy) return; // zero-height
 
 	if ((middle->sy != top->sy) && (middle->sy != bottom->sy))
 	{
@@ -199,19 +199,20 @@ void triangle_rasterize(unsigned short framebuffer, struct Vertex* v0, struct Ve
 
 	y += yPrestep;
 
+	framebuffer += 8*y;
+
 	while (y < ((middle->sy + 0xf) & 0xfff0))
 	{
 		short sx, sx2, sy;
 		int j;
 
-		sx = (x1 + 128) >> 4;
+		sx = (x1 + 15) >> 4;
 		sy = y >> 4;
-		sx2 = (x2 + 128) >> 4;
+		sx2 = (x2 + 15) >> 4;
 
 		if (sx < sx2)
-		for (j = sx; j <= sx2; j++)
-			put_pixel(framebuffer, j, sy, color);
-
+			draw_scanline(framebuffer, sx, sx2 - sx, color);
+		framebuffer += 128;
 
 		if (midOnLeft)
 		{
@@ -242,13 +243,13 @@ void triangle_rasterize(unsigned short framebuffer, struct Vertex* v0, struct Ve
 		short sx, sx2, sy;
 		int j;
 
-		sx = (x1 + 128) >> 4;
+		sx = (x1 + 15) >> 4;
 		sy = y >> 4;
-		sx2 = (x2 + 128) >> 4;
+		sx2 = (x2 + 15) >> 4;
 
 		if (sx < sx2)
-		for (j = sx; j <= sx2; j++)
-			put_pixel(framebuffer, j, sy, color);
+			draw_scanline(framebuffer, sx, sx2 - sx, color);
+		framebuffer += 128;
 
 		if (midOnLeft)
 		{

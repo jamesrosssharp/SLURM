@@ -214,6 +214,8 @@ void main(void)
 		matrix4_multiply(&proj, &trans);
 		matrix4_multiply(&proj, &rot);
 
+		enter_critical();
+
 		for (i = 0; i < N_TORUS_POINTS; i++)
 		{
 			struct Vertex *v;
@@ -222,7 +224,6 @@ void main(void)
 
 			v = &vertices[i];
 
-			enter_critical();	
 			v->x = torus_points[i].x; 	
 			v->y = torus_points[i].y; 	
 			v->z = torus_points[i].z; 
@@ -231,14 +232,7 @@ void main(void)
 			vertex_multiply_matrix(v, &proj);
 
 			vertex_project(v);
-			leave_critical();	
 
-			/*sx = (v->sx + 8) >> 4;
-			sy = (v->sy + 8) >> 4;
-
-			if (sx > 0 && sx < 256 && sy > 0 && sy < 128)
-				put_pixel(framebuffers_upper_lo[!cur_front_buffer], sx, sy);
-			*/
 		}
 
 		for (i = 0; i < N_TORUS_NORMALS; i++)
@@ -246,13 +240,12 @@ void main(void)
 			struct Vertex* n;
 
 			n = &normals[i];
-
+			
 			n->x = torus_normals[i].x;
 			n->y = torus_normals[i].y;
 			n->z = torus_normals[i].z;
  
 			vertex_multiply_matrix(n, &rot);
-
 		} 
 
 		for (i = 0; i < N_TORUS_TRIS; i++)
@@ -267,12 +260,34 @@ void main(void)
 			
 			if (col < 1) col = 1;
 			if (col > 0xf) col = 0xf;
+		
+		//	enter_critical();
 
-
-			enter_critical();	
 			triangle_rasterize(framebuffers_upper_lo[!cur_front_buffer], &vertices[t->v1], &vertices[t->v2], &vertices[t->v3], col);			
-			leave_critical();
+		
+		//	leave_critical();
 		}  
+
+		leave_critical();
+
+	/*	{
+
+			struct Vertex v1; //= {0, 0, 0, 10, 10};
+			struct Vertex v2; //= {0, 0, 0, 10, 50};
+			struct Vertex v3; //= {0, 0, 0, 50, 50};
+
+			v1.sx = 20 * 16;
+			v1.sy = 20 * 16;
+
+			v3.sx = 100 * 16;
+			v3.sy = 100 * 16;
+
+			v2.sx = 20 * 16;
+			v2.sy = 100 * 16;
+
+			triangle_rasterize(framebuffers_upper_lo[!cur_front_buffer], &v1, &v2, &v3, 0xf);			
+		}
+*/
 
 		flip_buffer = 1;
 
