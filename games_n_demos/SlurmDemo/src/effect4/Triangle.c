@@ -174,9 +174,9 @@ void triangle_rasterize(unsigned short framebuffer, struct Vertex* v0, struct Ve
 	}
 	else
 	{
-		dxDy12 = 0;
+		dxDy12 = _mult_div_8_8(middle->sx - top->sx, 0x10, middle->sy - top->sy);
 		dxDy13 = _mult_div_8_8(bottom->sx - top->sx, 0x10, bottom->sy - top->sy);
-		dxDy23 = _mult_div_8_8(bottom->sx - middle->sx, 0x10, bottom->sy - middle->sy);
+		dxDy23 = 0;
 	}
 
 	//if (_mult_div_8_8(middle->sy - top->sy, dxDy13, 0x1) + top->sx > middle->sx)	
