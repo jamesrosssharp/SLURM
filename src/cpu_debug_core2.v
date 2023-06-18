@@ -34,7 +34,7 @@ begin
 		read_address <= write_address + 1;
 	end
 
-	if (triggered == 1'b0)
+	if (triggered == 1'b0 && wr_enable == 1'b1)
 		write_address <= write_address + 1;
 
 	if (rd_data == 1'b1)

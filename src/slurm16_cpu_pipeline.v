@@ -174,8 +174,10 @@ wire halt = halt_request_lat_r || halt_request;
 
 /* debug */
 
-assign debug_data = {pip4[PC_MSB : PC_LSB], pip4[NOP_BIT]};
+//assign debug_data = {pip4[PC_MSB : PC_LSB], pip4[NOP_BIT]};
 //assign debug_data = {12'h0, state_r};
+//assign debug_data = {pip4[IMM_MSB: IMM_LSB], 4'd0};
+assign debug_data = {12'h0, pip4[FLAG_C], pip4[FLAG_Z], pip4[FLAG_V], pip4[FLAG_S]};
 assign debug_trigger = ({pip4[PC_MSB : PC_LSB], 1'b0} == 15'h0278);
 
 /*
