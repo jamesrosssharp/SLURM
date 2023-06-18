@@ -24,7 +24,11 @@ module slurm16_cpu_top
 
 	input  				interrupt,	/* interrupt line from interrupt controller */	
 	input  [3:0]			irq,		/* irq from interrupt controller */
-	output				cpu_debug_pin
+	output				cpu_debug_pin,
+
+	output				debug_trigger,
+	output [15:0]			debug_data,
+	output 				debug_wr_enable
 );
 
 //assign cpu_debug_pin = 1'b0;
@@ -111,6 +115,11 @@ wire [31:0] cpu_debug_wire = {port_wr, port_address[14:0], port_out};
 
 wire [15:0] interrupt_context_out;
 
+wire [15:0] debug_data_pip;
+
+assign debug_data = debug_data_pip;
+//assign debug_wr_enable = (memory_address == 16'h4062);
+
 slurm16_cpu_pipeline pip0 (
 	CLK,
 	RSTb,
@@ -184,7 +193,10 @@ slurm16_cpu_pipeline pip0 (
 	cpu_debug_wire,
 
 	interrupt_context_out,
-	regB	
+	regB,
+
+	debug_trigger,
+	debug_data_pip	
 );
 
 wire [14:0] instruction_memory_address;
@@ -310,6 +322,8 @@ wire [BITS - 1:0] ex_port_out;
 wire ex_port_rd;
 wire ex_port_wr;
 
+//assign debug_data = load_store_address;
+
 slurm16_cpu_execute exec0
 (
 	CLK,
@@ -393,6 +407,11 @@ wire [15:0] reg_out;
 
 assign regIn_sel = reg_wr_sel;
 assign regIn_data = reg_out;
+
+//assign debug_data = {15'd0,nop_stage_4}; //reg_out; //{9'h0, reg_wr_sel};
+//assign debug_data = memory_in;
+//assign debug_data = reg_out;
+assign debug_wr_enable = (reg_wr_sel == 7'd13);
 
 slurm16_cpu_writeback wb0
 (

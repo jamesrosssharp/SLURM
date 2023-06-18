@@ -133,18 +133,20 @@ __sleep:
 	ret	
 	.endfunc
 
-	.function dummy_handler
+	//.function dummy_handler
+	.section dummy
 dummy_handler:
 	st [r13, -2], r1
 	
 	mov r1, 0xffff
 	out [r0, 0x7001], r1
-	
-death:
-	ba death
+
+	.global my_death	
+my_death:
+	ba my_death
 
 
-	.endfunc
+	//.endfunc
 
 	.section data
 g_audio:

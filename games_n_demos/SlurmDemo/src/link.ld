@@ -30,8 +30,10 @@ SECTIONS
 
 	.text : {
 		KEEP(*(.vectors .vectors.*))
+		KEEP(*(.dummy))
 		*( .text .text.* )
 	} > ram1
+
 
 	.text_mixer : {
 		. = ALIGN(0x100);

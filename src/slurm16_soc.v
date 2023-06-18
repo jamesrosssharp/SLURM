@@ -76,6 +76,10 @@ wire fl_wready;
 
 // CPU Top level
 
+wire debug_trigger;
+wire [15:0] debug_data;
+wire debug_wr_enable;
+
 slurm16_cpu_top cpu0
 (
 	CLK,
@@ -97,7 +101,11 @@ slurm16_cpu_top cpu0
 	cpuInterrupt,
 	cpuIRQ,
 
-	cpu_debug_pin	
+	cpu_debug_pin,
+
+	debug_trigger,
+	debug_data,
+	debug_wr_enable	
 );
 
 
@@ -154,7 +162,10 @@ pc0
 	.fl_wvalid(fl_wvalid),
 	.fl_wready(fl_wready),
 	.interrupt(cpuInterrupt),
-	.irq(cpuIRQ)
+	.irq(cpuIRQ),
+	.debug_trigger(debug_trigger),
+	.debug_data(debug_data),
+	.debug_wr_enable(debug_wr_enable)
 );
 
 // Memory controller (wrapper to arbiter + ROM overlay)

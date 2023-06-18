@@ -99,7 +99,11 @@ module slurm16_cpu_pipeline #(parameter REGISTER_BITS = 7, BITS = 16, ADDRESS_BI
 
 	/* reg B input from decode stage - for RSIX operation */
 
-	input [15:0] reg_B_input_stage2
+	input [15:0] reg_B_input_stage2,
+
+	output debug_trigger,
+
+	output [15:0] debug_data
 
 );
 
@@ -168,6 +172,11 @@ assign imm_reg = imm_r;
 reg halt_request_lat_r;
 wire halt = halt_request_lat_r || halt_request;
 
+/* debug */
+
+assign debug_data = {pip4[PC_MSB : PC_LSB], pip4[NOP_BIT]};
+//assign debug_data = {12'h0, state_r};
+assign debug_trigger = ({pip4[PC_MSB : PC_LSB], 1'b0} == 15'h0278);
 
 /*
  *	

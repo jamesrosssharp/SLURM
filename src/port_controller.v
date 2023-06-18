@@ -83,8 +83,12 @@ module port_controller
 	
 	// Interrupt request quotients
 	output [3:0]	irq,
-	output			interrupt
+	output			interrupt,
 
+	// Debug
+	input debug_trigger,
+	input [15:0] debug_data,
+	input debug_wr_enable
 );
 
 wire irq_hsync;
@@ -107,6 +111,8 @@ reg WR_SCRATCH;
 reg WR_TIMER;
 
 wire RD_TRACE = 1'b0;
+reg RD_DEBUG;
+
 
 wire [BITS - 1 : 0] DATA_OUT_ROM;
 wire [BITS - 1 : 0] DATA_OUT_UART;
@@ -210,6 +216,7 @@ always @(*)
 begin
 
 	DATA_OUT_REG = {BITS{1'b0}};
+	RD_DEBUG = 1'b0;
 
 	casex (addr_reg)
 		16'h0xxx, 16'h1xxx, 16'h2xxx, 16'h3xxx, 16'h4xxx, 16'h6xxx, 16'h7xxx, 16'h9xxx: begin
@@ -221,6 +228,10 @@ begin
 		16'h8xxx: begin
 			DATA_OUT_REG = DATA_OUT_SCRATCH;
 		end
+		16'haxxx: begin
+			DATA_OUT_REG = DATA_OUT_TRACE;
+			RD_DEBUG = 1'b1; /*memRD*/; 
+		end
 		default: ;
 	endcase
 
@@ -228,7 +239,7 @@ end
 
 // Debug trace port for simulations
 
-trace tr0 (
+/*trace tr0 (
 	CLK,
 	RSTb,
 	ADDRESS[3:0],
@@ -236,6 +247,19 @@ trace tr0 (
 	DATA_OUT_TRACE,
 	WR_TRACE,
 	RD_TRACE
+);*/
+
+wire [15:0] count_lo;
+wire [15:0] count_hi;
+
+
+cpu_debug_core2 deb0 (
+	CLK,
+	debug_trigger,
+	debug_data,
+	DATA_OUT_TRACE,
+	RD_DEBUG,
+	debug_wr_enable
 );
 
 `ifndef WITHOUT_UART
@@ -421,7 +445,9 @@ timer tim0
 	DATA_IN,
 	DATA_OUT_TIMER,
 	WR_TIMER,
-	irq_timer
+	irq_timer,
+	count_lo,
+	count_hi
 );
 
 

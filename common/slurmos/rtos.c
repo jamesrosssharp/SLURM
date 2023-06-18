@@ -72,6 +72,28 @@ unsigned short g_major_tick = 0;
 
 #define STACK_CANARY 0xdead
 
+static void task_print()
+{
+	int i;
+
+	my_printf("TASKS tick = %x%x\r\n", g_major_tick, __in(0x9000));
+	my_printf("======================\r\n");
+	
+	for (i = 0; i < RTOS_NUM_TASKS; i++)
+	{			
+		unsigned short* sp = g_tasks[i].stack;
+		int hw = 0;
+
+		while (*sp++ == STACK_CANARY)
+			hw++;
+
+		my_printf("%d\tsp=%x\tstack=%x\t", i, g_tasks[i].reg[13 - 1], g_tasks[i].stack);
+		my_printf("hw=%x\tpc=%x\tflg=%x\t", hw, g_tasks[i].pc, g_tasks[i].t_flags);
+		my_printf("ticks=%x %x\r\n", g_tasks[i].ticks_total_hi, g_tasks[i].ticks_total_lo);
+	}
+
+}
+
 static void rtos_idle_task()
 {
 	int tick = 0;
@@ -83,21 +105,7 @@ static void rtos_idle_task()
 
 		if ((tick & 255) == 0)
 		{
-			my_printf("TASKS tick = %x%x\r\n", g_major_tick, __in(0x9000));
-			my_printf("======================\r\n");
-			
-			for (i = 0; i < RTOS_NUM_TASKS; i++)
-			{			
-				unsigned short* sp = g_tasks[i].stack;
-				int hw = 0;
-
-				while (*sp++ == STACK_CANARY)
-					hw++;
-
-				my_printf("%d\tsp=%x\tstack=%x\t", i, g_tasks[i].reg[13 - 1], g_tasks[i].stack);
-				my_printf("hw=%x\tpc=%x\tflg=%x\t", hw, g_tasks[i].pc, g_tasks[i].t_flags);
-				my_printf("ticks=%x %x\r\n", g_tasks[i].ticks_total_hi, g_tasks[i].ticks_total_lo);
-			}
+			task_print();		
 
 			global_interrupt_disable();
 
@@ -106,9 +114,8 @@ static void rtos_idle_task()
 				g_tasks[i].ticks_total_lo = 0;
 				g_tasks[i].ticks_total_hi = 0;
 			}
-	
-			global_interrupt_enable();
 
+			global_interrupt_enable();
 		}
 
 		__sleep();
@@ -249,11 +256,36 @@ void rtos_set_interrupt_handler(unsigned short irq, void (*handler)())
 	g_irq_handlers[irq] = handler;
 }
 
+static volatile short irqs = 0;
+
 void rtos_handle_interrupt_callback(unsigned short irq)
 {
+	int i;
+
+	int val = 1;
+	for (i = 0; i < irq; i++)
+		val <<= 1;
+	irqs |= val;
+
 	if (irq == SLURM_INTERRUPT_TIMER_IDX)
 	{
 		g_major_tick++;
+
+		//if (g_major_tick & 0x3 == 0)
+		//{
+			//task_print();	
+		my_printf("Tick: %x %x %x\r\n", g_major_tick, g_tasks[2].pc, irqs);
+		irqs = 0;
+		//my_printf("task 2 pc=%x\tflg=%x\t", g_tasks[2].pc, g_tasks[2].t_flags);
+		//}
+		
+		if (g_tasks[2].pc == 0x0278)
+		{
+			for (i = 0; i < 256; i++)
+				my_printf("PC?: %x\r\n", __in(0xa000));
+			//my_death();	
+			//while(1);
+		}
 	} 
 
 	if (g_irq_handlers[irq])

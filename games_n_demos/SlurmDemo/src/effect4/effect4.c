@@ -132,6 +132,7 @@ void clear_fb(unsigned short fb, unsigned short col_word);
 void flip_buffer_spr(unsigned short fb);
 
 volatile bool flip_buffer = 0;
+volatile short vsync_count = 0;
 
 static void my_vsync_handler()
 {
@@ -142,7 +143,7 @@ static void my_vsync_handler()
 		flip_buffer = 0;
 		vtors->rtos_unlock_mutex_from_isr(&eff4_mutex);
 	}
-
+	vsync_count++;
 }
 
 void print_matrix(struct Matrix4* mat)
@@ -214,8 +215,7 @@ void main(void)
 		matrix4_multiply(&proj, &trans);
 		matrix4_multiply(&proj, &rot);
 
-		enter_critical();
-
+		//enter_critical();
 		for (i = 0; i < N_TORUS_POINTS; i++)
 		{
 			struct Vertex *v;
@@ -261,37 +261,55 @@ void main(void)
 			if (col < 1) col = 1;
 			if (col > 0xf) col = 0xf;
 		
-		//	enter_critical();
+			//enter_critical();
 
 			triangle_rasterize(framebuffers_upper_lo[!cur_front_buffer], &vertices[t->v1], &vertices[t->v2], &vertices[t->v3], col);			
 		
-		//	leave_critical();
+			//leave_critical();
 		}  
 
-		leave_critical();
+		//{
 
-	/*	{
+		//	struct Vertex v1; //= {0, 0, 0, 10, 10};
+		//	struct Vertex v2; //= {0, 0, 0, 10, 50};
+		//	struct Vertex v3; //= {0, 0, 0, 50, 50};
 
-			struct Vertex v1; //= {0, 0, 0, 10, 10};
-			struct Vertex v2; //= {0, 0, 0, 10, 50};
-			struct Vertex v3; //= {0, 0, 0, 50, 50};
+		//	v1.sx = 20 * 16;
+		//	v1.sy = 20 * 16;
 
-			v1.sx = 20 * 16;
-			v1.sy = 20 * 16;
+		//	v3.sx = 100 * 16;
+		//	v3.sy = 100 * 16;
 
-			v3.sx = 100 * 16;
-			v3.sy = 100 * 16;
+		//	v2.sx = 20 * 16;
+		//	v2.sy = 100 * 16;
 
-			v2.sx = 20 * 16;
-			v2.sy = 100 * 16;
+		//	triangle_rasterize(framebuffers_upper_lo[!cur_front_buffer], &v1, &v2, &v3, 0xf);			
+		//}
+		//leave_critical();
 
-			triangle_rasterize(framebuffers_upper_lo[!cur_front_buffer], &v1, &v2, &v3, 0xf);			
-		}
-*/
+		vtors->printf("FPS x100: %d\r\n", _mult_div_8_8(frame, 6000, vsync_count));
 
 		flip_buffer = 1;
 
 	}
+	
+
+/*	while (1)
+	{
+		unsigned short i;
+		short val = 0;
+		for (i = 0; i < 1000; i++)
+		{
+			unsigned short j;
+			unsigned short k;
+			for (j = 0; j < 100; j++)
+				for (k = 0; k < 100; k++)
+					;
+			val ++;
+		}
+		vtors->printf("Val: %x\r\n", val);
+	}*/
+
 
 	vtors->rtos_set_interrupt_handler(SLURM_INTERRUPT_VSYNC_IDX, 0);
 

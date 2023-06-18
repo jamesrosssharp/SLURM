@@ -45,6 +45,7 @@ $(SRCDIR)/slurm16_cpu_instruction_cache.v	\
 $(SRCDIR)/port_controller.v		\
 $(SRCDIR)/cpu_debug_core.v		\
 $(SRCDIR)/timer.v		\
+$(SRCDIR)/cpu_debug_core2.v	\
 slurm16_ice40.v 
 
 
@@ -106,7 +107,7 @@ $(PROJ).json: $(SOURCE) rom_image.mem
 
 
 %.asc: $(PIN_DEF) %.json
-	nextpnr-ice40 --randomize-seed --freq 25.125 --up5k --json $(PROJ).json --pcf $(PROJ).pcf --asc $@
+	nextpnr-ice40 --timing-allow-fail --randomize-seed --freq 25.125 --up5k --json $(PROJ).json --pcf $(PROJ).pcf --asc $@
 
 %.bin: %.asc
 	$(ICEPACK) $< $@
