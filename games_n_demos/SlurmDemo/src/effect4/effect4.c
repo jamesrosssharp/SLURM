@@ -193,6 +193,9 @@ void main(void)
 
 	// Create the sprite array
 
+	clear_fb(framebuffers_upper_lo[0], 0x0000);
+	clear_fb(framebuffers_upper_lo[1], 0x0000);
+	
 	vtors->sprite_display(0, framebuffers_word_addr[cur_front_buffer], SPRITE_STRIDE_256, FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT, 54, 32);
 	vtors->sprite_update_sprite(0);
 
@@ -261,11 +264,11 @@ void main(void)
 			if (col < 1) col = 1;
 			if (col > 0xf) col = 0xf;
 		
-			//enter_critical();
+			enter_critical();
 
 			triangle_rasterize(framebuffers_upper_lo[!cur_front_buffer], &vertices[t->v1], &vertices[t->v2], &vertices[t->v3], col);			
 		
-			//leave_critical();
+			leave_critical();
 		}  
 
 		//{
@@ -287,7 +290,8 @@ void main(void)
 		//}
 		//leave_critical();
 
-		vtors->printf("FPS x100: %d\r\n", _mult_div_8_8(frame, 6000, vsync_count));
+		if ((frame & 0xf) == 0)
+			vtors->printf("FPS x100: %d\r\n", _mult_div_8_8(frame, 6000, vsync_count));
 
 		flip_buffer = 1;
 
@@ -315,8 +319,8 @@ void main(void)
 
 	vtors->copper_control(0);
 	vtors->copper_set_y_flip(0, 0xfff); 
-	vtors->copper_set_alpha(0x8000);
-
-
+	vtors->copper_set_alpha(0x0000);
+	vtors->sprite_init_sprites();
+	vtors->copper_set_bg_color(0x0000);
 }
 

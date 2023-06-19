@@ -55,7 +55,7 @@ void sprite_init_sprites()
 
 	for (i = 0; i < 256; i++)
 		sprites[i].n_sprites_used = 0;
-
+	sprite_update_sprites();
 }
 
 void sprite_update_sprites()
@@ -75,6 +75,8 @@ void sprite_update_sprites()
 	
 		if (sp->n_sprites_used == 0)
 		{
+			x = MAKE_SPRITE_X(0, 0, 0, 0);
+			load_sprite_x(i, x);
 			sp ++;
 			continue;
 		}

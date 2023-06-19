@@ -35,7 +35,7 @@ SOFTWARE.
 #define APPLET_H
 
 #define APPLET_BASE 0xc000 /* Must match linker script for applet */
-#define N_APPLET_VECTORS 25 /* should match below */
+#define N_APPLET_VECTORS 26 /* should match below */
 #define APPLET_SIZE 0x4000
 
 #ifndef __ASM__ 
@@ -73,19 +73,21 @@ struct applet_vectors {
 
 	/* sprites */
 
+	void (*sprite_init_sprites)(); // 8
+
 	short (*sprite_display)(unsigned char sprite_index, 
 		     unsigned short sprite_pointer,
 		     enum SpriteStride stride, 
 		     unsigned short width, 
 		     unsigned short height, 
 		     short x, 
-		     short y);	// 8
+		     short y);	// 9
 
-	void (*sprite_set_x_y)(unsigned char sprite_index, short x, short y); // 9
+	void (*sprite_set_x_y)(unsigned char sprite_index, short x, short y); // 10
 
-	void (*sprite_update_sprites)(); // 10
+	void (*sprite_update_sprites)(); // 11
 
-	void (*sprite_update_sprite)(unsigned char sprite_index); // 11
+	void (*sprite_update_sprite)(unsigned char sprite_index); // 12
 
 	/* background */
 
@@ -97,32 +99,32 @@ struct applet_vectors {
 		    unsigned short tilemap_address, 
 		    unsigned short tileset_address,
 		    enum TileWidth tile_width,
-		    enum TileMapStride tile_stride); // 12
+		    enum TileMapStride tile_stride); // 13
 
-	void (*background_set_x_y)(int bg_idx, short x, short y); // 13
-	void (*background_update)(); // 14
+	void (*background_set_x_y)(int bg_idx, short x, short y); // 14
+	void (*background_update)(); // 15
 
 	/* copper */
 
-	void (*copper_control)(short enable); // 15
-	void (*copper_set_y_flip)(short enable, short flip_y); // 16
-	void (*copper_set_x_pan)(short xpan); // 17
-	void (*copper_set_bg_color)(unsigned short color); // 18
-	void (*copper_set_alpha)(unsigned short alpha); // 19
-	void (*copper_list_load)(unsigned short* copper_list, unsigned short len); //20
+	void (*copper_control)(short enable); // 16
+	void (*copper_set_y_flip)(short enable, short flip_y); // 17
+	void (*copper_set_x_pan)(short xpan); // 18
+	void (*copper_set_bg_color)(unsigned short color); // 19
+	void (*copper_set_alpha)(unsigned short alpha); // 20
+	void (*copper_list_load)(unsigned short* copper_list, unsigned short len); //21
 
 	/* pwm */
 
-	void (*pwm_set)(unsigned char r, unsigned char g, unsigned char b); // 21
+	void (*pwm_set)(unsigned char r, unsigned char g, unsigned char b); // 22
 
 	/* palette */
 
-	void (*load_palette)(unsigned short* palette, int offset, int count); // 22
+	void (*load_palette)(unsigned short* palette, int offset, int count); // 23
 
 	/* port io */
 
-	unsigned short (*__in)(unsigned short port);		// 23
-	void (*__out)(unsigned short port, unsigned short val);	// 24
+	unsigned short (*__in)(unsigned short port);		// 24
+	void (*__out)(unsigned short port, unsigned short val);	// 25
 
 	/* music / audio */
 };

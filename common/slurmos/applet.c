@@ -64,6 +64,7 @@ void applet_load(unsigned short applet_flash_lo, unsigned short applet_flash_hi,
 	vtors->storage_load_synch = &storage_load_synch;
 	vtors->storage_load_asynch = &storage_load_asynch;
 	/* sprites */
+	vtors->sprite_init_sprites = &sprite_init_sprites;
 	vtors->sprite_display = &sprite_display;
 	vtors->sprite_set_x_y = &sprite_set_x_y;
 	vtors->sprite_update_sprites = &sprite_update_sprites;

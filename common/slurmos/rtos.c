@@ -274,18 +274,18 @@ void rtos_handle_interrupt_callback(unsigned short irq)
 		//if (g_major_tick & 0x3 == 0)
 		//{
 			//task_print();	
-		my_printf("Tick: %x %x %x\r\n", g_major_tick, g_tasks[2].pc, irqs);
-		irqs = 0;
+		//my_printf("Tick: %x %x %x\r\n", g_major_tick, g_tasks[2].pc, irqs);
+		//irqs = 0;
 		//my_printf("task 2 pc=%x\tflg=%x\t", g_tasks[2].pc, g_tasks[2].t_flags);
 		//}
 		
-		if (g_tasks[2].pc == 0x0278)
+		/*if (g_tasks[2].pc == 0x0278)
 		{
 			for (i = 0; i < 256; i++)
 				my_printf("PC?: %x\r\n", __in(0xa000));
 			//my_death();	
 			//while(1);
-		}
+		}*/
 	} 
 
 	if (g_irq_handlers[irq])
