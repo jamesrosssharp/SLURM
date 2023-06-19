@@ -255,8 +255,8 @@ wire [15:0] count_hi;
 
 cpu_debug_core2 deb0 (
 	CLK,
-	(count_lo == 16'h30a3 && count_hi == 16'h0af5) /*debug_trigger*/,
-	/*debug_data*/ count_hi,
+	(count_lo == 16'h3000 && count_hi == 16'h0af4) /*debug_trigger*/,
+	debug_data,
 	DATA_OUT_TRACE,
 	RD_DEBUG,
 	debug_wr_enable

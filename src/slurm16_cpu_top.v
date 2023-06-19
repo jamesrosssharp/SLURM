@@ -117,12 +117,13 @@ wire [15:0] interrupt_context_out;
 
 wire [15:0] debug_data_pip;
 
-//assign debug_data = debug_data_pip;
+assign debug_data = debug_data_pip;
 //assign debug_wr_enable = (memory_address == 16'h4062);
-//assign debug_wr_enable = 1'b1; //(pc_stage_4 == 16'h2c0e);
+assign debug_wr_enable = 1'b1; //(pc_stage_4 == 16'h2c0e);
+//assign debug_data = {12'd0, V, S, C, Z}; //interrupt_context_out;
 
-assign debug_data = pc_stage_4;
-assign debug_wr_enable = (memory_wr && memory_address == 16'h3838);
+//assign debug_data = pc_stage_4;
+//assign debug_wr_enable = (memory_wr && memory_address == 16'h3838);
 
 slurm16_cpu_pipeline pip0 (
 	CLK,

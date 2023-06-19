@@ -103,7 +103,7 @@ begin
 
 	aluA_r_next = aluA_r;
 	aluB_r_next = aluB_r;
-	alu_op_r_next = alu_op_r; 
+	alu_op_r_next = /*alu_op_r*/ 5'd0; 
 	cond_pass_r = 1'b0;
 	
 	if (!is_nop) begin	
