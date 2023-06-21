@@ -239,7 +239,7 @@ end
 
 // Debug trace port for simulations
 
-/*trace tr0 (
+trace tr0 (
 	CLK,
 	RSTb,
 	ADDRESS[3:0],
@@ -247,20 +247,20 @@ end
 	DATA_OUT_TRACE,
 	WR_TRACE,
 	RD_TRACE
-);*/
+);
 
-wire [15:0] count_lo;
+/*wire [15:0] count_lo;
 wire [15:0] count_hi;
 
 
 cpu_debug_core2 deb0 (
 	CLK,
-	(count_lo == 16'h3000 && count_hi == 16'h0af4) /*debug_trigger*/,
+	debug_trigger,
 	debug_data,
 	DATA_OUT_TRACE,
 	RD_DEBUG,
 	debug_wr_enable
-);
+);*/
 
 `ifndef WITHOUT_UART
 uart 

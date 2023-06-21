@@ -19,6 +19,7 @@ $(SRCDIR)/gfx.v				\
 $(SRCDIR)/gpio.v			\
 $(SRCDIR)/slurm16_memory_arbiter.v		\
 $(SRCDIR)/slurm16_peripheral_memory_arbiter.v		\
+$(SRCDIR)/slurm16_peripheral_lo_memory_arbiter.v		\
 $(SRCDIR)/slurm16_memory_controller.v		\
 memory.v				\
 mult.v					\

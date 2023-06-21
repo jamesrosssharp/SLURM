@@ -12,10 +12,10 @@ module slurm16_cpu_pipeline #(parameter REGISTER_BITS = 7, BITS = 16, ADDRESS_BI
 
 	/* Instruction input */
 	output 	instruction_request,	/* asserted if the pipeline is fetching instructions */
-	input 		instruction_valid,	/* asserted if the instruction requested was fetched from memory. deasserted on e.g. cache miss */
+	input 	instruction_valid,	/* asserted if the instruction requested was fetched from memory. deasserted on e.g. cache miss */
 	output [ADDRESS_BITS - 2 : 0] 	instruction_address, /* the address to fetch the next instruction from */
-	input  [BITS - 1 : 0] 			instruction_in,
-	input  [ADDRESS_BITS - 2 : 0]		instruction_address_in,
+	input  [BITS - 1 : 0] 		instruction_in,
+	input  [ADDRESS_BITS - 2 : 0]	instruction_address_in,
 
 	/* Pipeline stage output */
 	output [BITS - 1 : 0]	pipeline_stage_0,

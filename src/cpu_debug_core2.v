@@ -10,8 +10,8 @@ module cpu_debug_core2
 
 reg triggered = 1'b0;
 
-reg [15:0] read_address;
-reg [15:0] write_address;
+reg [7:0] read_address;
+reg [7:0] write_address;
 
 bram 
 #(.BITS(16), .ADDRESS_BITS(8)) ram0

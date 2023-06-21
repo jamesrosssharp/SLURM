@@ -46,7 +46,12 @@ wire [15:0] cpuMemoryOut;
 wire [15:0] cpuMemoryAddr;
 wire cpuMemory_success;
 wire cpuMemory_wr;
+wire cpuMemory_rd;
 wire [1:0] cpuMemory_wr_mask;
+
+wire [14:0] cpuIMemoryAddr;
+wire [15:0] cpuIMemoryData;
+wire cpuIMemory_success;
 
 wire [15:0] cpuPort_in;
 wire [15:0] cpuPort_out;
@@ -89,8 +94,13 @@ slurm16_cpu_top cpu0
 	cpuMemoryIn,
 	cpuMemoryOut,
 	cpuMemory_wr,		/* memory write */
+	cpuMemory_rd,
 	cpuMemory_wr_mask,	/* memory write mask */
 	cpuMemory_success,
+
+	cpuIMemoryAddr,
+	cpuIMemoryData,
+	cpuIMemory_success,
 
 	cpuPort_address,
 	cpuPort_in,
@@ -196,9 +206,13 @@ mem0
 	cpuMemoryOut,
 	cpuMemoryIn,
 	cpuMemory_wr, // CPU is writing to memory
+	cpuMemory_rd, // CPU is reading from memory
 	cpuMemory_wr_mask,
-	cpuMemory_success
-);
+	cpuMemory_success,
 
+	cpuIMemoryAddr,
+	cpuIMemoryData,
+	cpuIMemory_success
+);
 
 endmodule

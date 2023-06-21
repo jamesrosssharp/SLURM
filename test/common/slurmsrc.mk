@@ -11,6 +11,7 @@ $(SRCDIR)/gfx.v				\
 $(SRCDIR)/gpio.v			\
 $(SRCDIR)/slurm16_memory_arbiter.v		\
 $(SRCDIR)/slurm16_peripheral_memory_arbiter.v		\
+$(SRCDIR)/slurm16_peripheral_lo_memory_arbiter.v		\
 $(SRCDIR)/slurm16_memory_controller.v		\
 $(SRCDIR)/memory.v			\
 $(SRCDIR)/mult.v			\
@@ -34,4 +35,6 @@ $(SRCDIR)/slurm16_cpu_registers.v	\
 $(SRCDIR)/slurm16_cpu_writeback.v	\
 $(SRCDIR)/slurm16_cpu_instruction_cache.v	\
 $(SRCDIR)/interrupt_controller.v	\
-$(SRCDIR)/slurm16_soc.v
+$(SRCDIR)/slurm16_soc.v			\
+$(SRCDIR)/timer.v			\
+$(SRCDIR)/cpu_debug_core2.v

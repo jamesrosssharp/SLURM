@@ -34,16 +34,22 @@ start:
 	mov r1, 2
 	out [r0, SPI_FLASH_CMD], r1
 
+	nop
+	nop
+	nop
+	nop
+
 	// Wait
-/*	mov r4, 40
+	mov r4, 40
 outer:
-	mov r3, 0xffff
+//	mov r3, 0xffff
+	mov r3, 1
 wait_loop:
 	sub r3, 1
 	bnz wait_loop
 	sub r4, 1
 	bnz outer
-*/
+
 do_it:
 	mov r1, 8
 	out	[r0, SPI_FLASH_ADDR_LO], r0
@@ -65,6 +71,9 @@ do_it:
 	// Clear any pending interrupts (e.g. from flash wake up)
 	mov r9, 0xffff
 	out [r0, 0x7001], r9
+
+	nop
+	nop
 	
 	/* enable interrupts */
 	sti

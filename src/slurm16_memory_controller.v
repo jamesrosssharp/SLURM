@@ -34,8 +34,15 @@ module slurm16_memory_controller
 	input  [15:0]   cpu_memory_data_in,
 	output [15:0] 	cpu_memory_data,
 	input			cpu_wr, // CPU is writing to memory
+	input			cpu_rd, // CPU is reading from memory
 	input  [1:0]	cpu_wr_mask, // Write mask from CPU (for byte wise writes)
-	output cpu_memory_success
+	output cpu_memory_success,
+
+	/* CPU Instruction */
+	input [14:0] cpu_imemory_address,
+	output [15:0] cpu_imemory_data,
+	output cpu_imemory_success
+
 );
 
 wire [13:0]	B1_ADDR;
@@ -102,24 +109,24 @@ memory #(.BITS(BITS), .ADDRESS_BITS(ADDRESS_BITS - 2), .MEM_INIT_FILE("mem_init4
 	B4_WR
 );
 
-wire [15:0] cpu_memory_data_w;
+wire [15:0] cpu_imemory_data_w;
 wire [15:0] boot_data;
 
-reg [15:0] cpu_memory_address_r;
+reg [14:0] cpu_imemory_address_r;
 
 always @(posedge CLK)
 begin
-	cpu_memory_address_r <= cpu_memory_address;
+	cpu_imemory_address_r <= cpu_imemory_address;
 end
 
 // ROM Overlay
-assign cpu_memory_data = (cpu_memory_address_r[15:8] == 8'h00) ? boot_data : cpu_memory_data_w; 
+assign cpu_imemory_data = (cpu_imemory_address_r[14:8] == 7'h00) ? boot_data : cpu_imemory_data_w; 
 wire wr_boot = (cpu_memory_address[15:8] == 8'h00) ? cpu_wr : 1'b0; 
 
 boot_memory #(.BITS(BITS), .ADDRESS_BITS(8)) theBootMem
 (
 	CLK,
- 	cpu_memory_address[7:0],
+ 	wr_boot ? cpu_memory_address[7:0] : cpu_imemory_address[7:0],
 	cpu_memory_data_in,
 	boot_data,
 	wr_boot
@@ -152,10 +159,15 @@ slurm16_memory_arbiter ma0
 	
 	cpu_memory_address,
 	cpu_memory_data_in,
-	cpu_memory_data_w,
+	cpu_memory_data,
 	cpu_wr, // CPU is writing to memory
+	cpu_rd, // CPU is reading from memory
 	cpu_memory_success,
 	cpu_wr_mask, // Write mask from CPU (for byte wise writes)
+
+	cpu_imemory_address,
+	cpu_imemory_data_w,
+	cpu_imemory_success,
 
 	B1_ADDR,
 	B1_DOUT,

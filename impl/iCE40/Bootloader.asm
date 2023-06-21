@@ -30,7 +30,7 @@ VECTORS:
 	.times 20 dw 0x0000
 
 start:	
-	mov r1, '$'
+	mov r1, '!'
 	out [r0, 0], r1
 
 	// Wake up spi flash
@@ -68,6 +68,10 @@ do_it:
 	// Clear any pending interrupts (e.g. from flash wake up)
 	mov r9, 0xffff
 	out [r0, 0x7001], r9
+
+	nop
+	nop
+	nop
 	
 	/* enable interrupts */
 	sti

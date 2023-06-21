@@ -13,8 +13,13 @@ module slurm16_cpu_top
 	input  [BITS - 1:0] 		memory_in,
 	output [BITS - 1:0]		memory_out,
 	output				memory_wr,	/* memory write */
+	output 				memory_rd,	/* memory read */
 	output [1:0]			memory_wr_mask, /* write mask - for byte wise access to memory */
 	input				memory_success,
+
+	output [ADDRESS_BITS - 2:0]	i_memory_address,  /* instruction memory address */	
+	input  [BITS - 1:0]		i_data,		   /* instruction memory data */
+	input				i_memory_success,  /* instruction memory success */
 
 	output [ADDRESS_BITS - 1:0] 	port_address,
 	input  [BITS - 1:0]		port_in,
@@ -204,35 +209,6 @@ slurm16_cpu_pipeline pip0 (
 	debug_data_pip	
 );
 
-wire [14:0] instruction_memory_address;
-wire instruction_memory_rd_req;
-wire instruction_memory_success;
-wire [14:0] instruction_memory_requested_address;
-wire [15:0] instruction_memory_data;
-
-wire [14:0] cache_request_address = instruction_address;
-wire [31:0] cache_line;
-assign instruction_address_in = cache_line[31:17];
-wire cache_miss;
-assign instruction_valid = !cache_miss;
-assign instruction_in = cache_line[15:0];
-
-slurm16_cpu_instruction_cache cache0 (
-	CLK,
-	RSTb,
-
-	cache_request_address, 
-	cache_line,
-	cache_miss, 
-
-	instruction_memory_address,
-	instruction_memory_rd_req,	
-	
-	instruction_memory_success,	
-	instruction_memory_requested_address,	
-	instruction_memory_data
-);
-
 wire [15:0] load_store_address;
 wire [15:0] store_memory_data;
 wire [1:0] store_memory_wr_mask;
@@ -242,16 +218,21 @@ wire [1:0] data_memory_wr_mask_out;
 
 wire bank_switch;
 
+/*	instruction_request,	
+	instruction_valid,	
+	instruction_address, 
+	instruction_in,
+	instruction_address_in,
+*/
+
 slurm16_cpu_memory_interface mem0 (
 	CLK,
 	RSTb,
 
-	instruction_memory_address,
-	instruction_memory_rd_req,
-
-	instruction_memory_data,
-	instruction_memory_requested_address, 
-	instruction_memory_success,	
+	instruction_address,
+	instruction_in,
+	instruction_address_in, 
+	instruction_valid,	
 
 	load_store_address,
 	store_memory_data,
@@ -268,7 +249,12 @@ slurm16_cpu_memory_interface mem0 (
 	memory_in,
 	memory_wr_mask,
 	memory_wr,
-	memory_success
+	memory_rd,
+	memory_success,
+
+	i_memory_address,	
+	i_data,
+	i_memory_success
 );
 
 wire [REGISTER_BITS - 1:0] regA_sel;

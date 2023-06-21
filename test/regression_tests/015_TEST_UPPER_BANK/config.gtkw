@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Fri Apr  7 06:12:14 2023
+[*] Wed Jun 21 10:11:08 2023
 [*]
-[dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/014_TEST_STIX_RSIX/dump.vcd"
-[dumpfile_mtime] "Fri Apr  7 05:42:11 2023"
-[dumpfile_size] 30225525
-[savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/014_TEST_STIX_RSIX/config.gtkw"
-[timestart] 75249300
+[dumpfile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/015_TEST_UPPER_BANK/dump.vcd"
+[dumpfile_mtime] "Wed Jun 21 09:54:20 2023"
+[dumpfile_size] 29490409
+[savefile] "/home/jrsharp/home_mnt/code/FPGA/SLURM/test/regression_tests/015_TEST_UPPER_BANK/config.gtkw"
+[timestart] 6249300
 [size] 1920 992
 [pos] 0 0
-*-17.194408 75700000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-17.194408 6900000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] alu_tb.
 [treeopen] alu_tb.cpu0.
 [treeopen] alu_tb.cpu0.cpu0.
@@ -25,6 +25,11 @@ alu_tb.cpu0.cpu0.RSTb
 -
 -
 @22
+alu_tb.cpu0.cpu0.mem0.data_memory_address[15:0]
+alu_tb.cpu0.cpu0.mem0.memory_address[15:0]
+@29
+alu_tb.cpu0.cpu0.mem0.memory_success
+@22
 alu_tb.cpu0.cpu0.memory_in[15:0]
 alu_tb.cpu0.cpu0.memory_out[15:0]
 @28
@@ -32,11 +37,6 @@ alu_tb.cpu0.cpu0.memory_wr
 @200
 -
 -
-@22
-alu_tb.cpu0.cpu0.cache0.data_out[31:0]
-@28
-alu_tb.cpu0.cpu0.cache0.cache_miss
-@200
 -
 @22
 alu_tb.cpu0.cpu0.alu0.aluOp[4:0]
@@ -81,12 +81,6 @@ alu_tb.cpu0.cpu0.pip0.imm_r[11:0]
 alu_tb.cpu0.cpu0.pip0.ascii_state[63:0]
 @200
 -
-@22
-alu_tb.cpu0.cpu0.cache0.cache_request_address[14:0]
-alu_tb.cpu0.cpu0.cache0.data_out[31:0]
-@28
-alu_tb.cpu0.cpu0.cache0.cache_miss
-@200
 -
 @22
 alu_tb.cpu0.cpu0.wb0.reg_wr_addr_r[6:0]
@@ -147,7 +141,6 @@ alu_tb.cpu0.cpu0.pip0.int_imm_r[11:0]
 alu_tb.cpu0.cpu0.pip0.int_Z_r
 alu_tb.cpu0.cpu0.pip0.int_V_r
 alu_tb.cpu0.cpu0.pip0.int_S_r
-@29
 alu_tb.cpu0.cpu0.pip0.int_C_r
 @200
 -

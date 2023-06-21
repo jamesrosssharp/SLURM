@@ -34,8 +34,13 @@ module slurm16_memory_arbiter
 	input  [15:0]   cpu_memory_data_in,
 	output reg [15:0] cpu_memory_data,
 	input		cpu_wr, // CPU is writing to memory
+	input		cpu_rd, // CPU is writing to memory
 	output reg	cpu_memory_success,
 	input  [1:0]	cpu_wr_mask, // Write mask from CPU (for byte wise writes)
+
+	input [14:0] cpu_imemory_address,
+	output reg [15:0] cpu_imemory_data,
+	output reg cpu_imemory_success,
 
 	output [13 : 0] B1_ADDR,
 	input  [15 : 0] B1_DOUT,
@@ -136,21 +141,43 @@ assign B4_WR = b4_periph_wr;
 /* mux signals going into cpu */
 
 reg [1:0] cpu_memory_address14;
+reg cpu_imemory_address14;
+
+wire cpu_memory_success_bank1;
+wire cpu_memory_success_bank2;
+wire cpu_imemory_success_bank1;
+wire cpu_imemory_success_bank2;
 
 always @(posedge CLK)
 begin
 	cpu_memory_address14 <= cpu_memory_address[15:14];
-	
-	if (b1_mux_sel == MUXSEL_CPU && cpu_memory_address[15:14] == 2'b00)
+	cpu_imemory_address14 <= cpu_imemory_address[14];
+
+	if (b1_mux_sel == MUXSEL_CPU && cpu_memory_address[15:14] == 2'b00) begin
+		cpu_memory_success <= cpu_memory_success_bank1;
+	end
+	else if (b2_mux_sel == MUXSEL_CPU && cpu_memory_address[15:14] == 2'b01) begin
+		cpu_memory_success <= cpu_memory_success_bank2;
+	end
+	else if (b3_mux_sel == MUXSEL_CPU && cpu_memory_address[15:14] == 2'b10) begin
 		cpu_memory_success <= 1'b1;
-	else if (b2_mux_sel == MUXSEL_CPU && cpu_memory_address[15:14] == 2'b01)
+	end
+	else if (b4_mux_sel == MUXSEL_CPU && cpu_memory_address[15:14] == 2'b11) begin
 		cpu_memory_success <= 1'b1;
-	else if (b3_mux_sel == MUXSEL_CPU && cpu_memory_address[15:14] == 2'b10)
-		cpu_memory_success <= 1'b1;
-	else if (b4_mux_sel == MUXSEL_CPU && cpu_memory_address[15:14] == 2'b11)
-		cpu_memory_success <= 1'b1;
+	end
 	else
 		cpu_memory_success <= 1'b0;
+
+
+	if (b1_mux_sel == MUXSEL_CPU && cpu_imemory_address[14] == 1'b0) begin
+		cpu_imemory_success <= cpu_imemory_success_bank1;
+	end
+	else if (b2_mux_sel == MUXSEL_CPU && cpu_imemory_address[14] == 1'b1) begin
+		cpu_imemory_success <= cpu_imemory_success_bank2;
+	end
+	else
+		cpu_imemory_success <= 1'b0;
+	
 end
 
 always @(*)
@@ -167,6 +194,15 @@ begin
 		end
 		2'b11: begin
 			cpu_memory_data = B4_DOUT; 
+		end
+	endcase
+
+	case (cpu_imemory_address14)
+		1'b0: begin
+			cpu_imemory_data = B1_DOUT;
+		end
+		1'b1: begin
+			cpu_imemory_data = B2_DOUT; 
 		end
 	endcase
 end
@@ -253,7 +289,7 @@ end
 
 /* instantiate perhiperal arbiters for banks 1-4 */
 
-slurm16_peripheral_memory_arbiter arb1
+slurm16_peripheral_lo_memory_arbiter arb1
 (
 	CLK,
 	RSTb,	
@@ -274,10 +310,14 @@ slurm16_peripheral_memory_arbiter arb1
 	cpu_memory_address,
 	cpu_memory_data_in,
 	cpu_wr && (cpu_memory_address[15:14] == 2'b00),
-	cpu_wr_mask
+	cpu_rd && (cpu_memory_address[15:14] == 2'b00),
+	cpu_wr_mask,
+	cpu_imemory_address,
+	cpu_memory_success_bank1,
+	cpu_imemory_success_bank1
 );
 
-slurm16_peripheral_memory_arbiter arb2
+slurm16_peripheral_lo_memory_arbiter arb2
 (
 	CLK,
 	RSTb,	
@@ -298,7 +338,11 @@ slurm16_peripheral_memory_arbiter arb2
 	cpu_memory_address,
 	cpu_memory_data_in,
 	cpu_wr && (cpu_memory_address[15:14] == 2'b01),
-	cpu_wr_mask
+	cpu_rd && (cpu_memory_address[15:14] == 2'b01),
+	cpu_wr_mask,
+	cpu_imemory_address,
+	cpu_memory_success_bank2,
+	cpu_imemory_success_bank2
 );
 
 slurm16_peripheral_memory_arbiter arb3
