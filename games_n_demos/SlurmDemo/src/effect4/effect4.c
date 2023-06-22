@@ -107,7 +107,7 @@ mutex_t eff4_mutex = RTOS_MUTEX_INITIALIZER;
 
 #include <applet.h>
 
-struct applet_vectors *vtors = (struct applet_vectors*)(APPLET_BASE);
+struct applet_vectors *vtors = (struct applet_vectors*)(APPLET_CODE_BASE);
 
 
 

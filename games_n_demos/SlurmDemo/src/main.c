@@ -52,7 +52,7 @@ int main()
 	int i;
 	int frame = 0;
 
-	my_printf("Hello world Slurm Demo!\n");
+	my_printf("Hello world Slurm Demo!\r\n");
 	
 	gfx_set_mode(VIDEO_MODE_320X240);
 	copper_set_bg_color(0x0000);
@@ -63,14 +63,17 @@ int main()
 	sprite_init_sprites();
 	background_init();
 
+	my_printf("Ready to start demo\r\n");
+
 	// Spin in a loop
 	
 	while (1)
 	{
-	
-/*		applet_load(effect1_applet_flash_offset_lo, effect1_applet_flash_offset_hi, 
+
+		applet_load(effect1_applet_flash_offset_lo, effect1_applet_flash_offset_hi, 
 			    effect1_applet_flash_size_lo >> 1);
 		applet_run();  
+
 
 		applet_load(effect2_applet_flash_offset_lo, effect2_applet_flash_offset_hi, 
 			    effect2_applet_flash_size_lo >> 1);
@@ -79,11 +82,10 @@ int main()
 		applet_load(effect3_applet_flash_offset_lo, effect3_applet_flash_offset_hi, 
 			    effect3_applet_flash_size_lo >> 1);
 		applet_run();  
-*/
+
 		applet_load(effect4_applet_flash_offset_lo, effect4_applet_flash_offset_hi, 
 			    effect4_applet_flash_size_lo >> 1);
-		applet_run();  
-				
+		applet_run();  				
 	}
 
 }

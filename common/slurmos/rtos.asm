@@ -347,6 +347,9 @@ rtos_handle_interrupt:
 	st [r2, TASK_STRUCTURE_R2], r3
 	ld r3, [r13, -2]
 	st [r2, TASK_STRUCTURE_R1], r3
+
+	// Switch to interrupt stack
+	mov r13, _eintstack
 	
 	// All registers preserved - store interrupt context
 

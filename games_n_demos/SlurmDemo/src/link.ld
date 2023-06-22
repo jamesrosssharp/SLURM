@@ -15,14 +15,17 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 
 BOOTLOADER_SIZE = 0x200;
-STACK_SIZE 	= 0x400;
-AUDIO_STACK_SIZE = 0x300;
-STORAGE_STACK_SIZE = 0x200;
-IDLE_STACK_SIZE = 0x200;
+STACK_SIZE 	= 0x300;
+AUDIO_STACK_SIZE = 0x280;
+STORAGE_STACK_SIZE = 0x180;
+IDLE_STACK_SIZE = 0x1c0;
 
 MEMORY {
 	bootloader (wx) : ORIGIN = 0x0000, LENGTH = BOOTLOADER_SIZE
-	ram1 (wx) : LENGTH = 0xc000 - BOOTLOADER_SIZE, ORIGIN = BOOTLOADER_SIZE 
+	code_ram (wx) : LENGTH = 0x5000 - BOOTLOADER_SIZE, ORIGIN = BOOTLOADER_SIZE 
+	applet_code_ram (wx) : LENGTH = 0x3000, ORIGIN = 0x5000
+	data_ram (wx) : LENGTH = 0x7000, ORIGIN = 0x8000
+	applet_data_ram (wx) : LENGTH = 0x1000, ORIGIN = 0xf000
 }
 
 SECTIONS
@@ -32,30 +35,20 @@ SECTIONS
 		KEEP(*(.vectors .vectors.*))
 		KEEP(*(.dummy))
 		*( .text .text.* )
-	} > ram1
+	} > code_ram
 
-
-	.text_mixer : {
-		. = ALIGN(0x100);
-		*( .mixer3.text )
-	} > ram1
 
 	.data : {
-		. = ALIGN(32);
-		*( .data )
-	} > ram1
-
-	.data_mixer : {
-		. = ALIGN(0x100);
-		*( .mixer3.data )
-	} > ram1
+		. = ALIGN(2);
+		*( .data .data.* )
+	} > data_ram
 
 	.bss (NOLOAD): {
 		. = ALIGN(2);
 		_szero = .;
 		*( .bss .bss.* )
 		_ezero = .;
-	} > ram1
+	} > data_ram
 
 	/* stacks */
 
@@ -78,16 +71,16 @@ SECTIONS
 		. = . + IDLE_STACK_SIZE;
 		. = ALIGN(2);
 		_eidlestack = .;
-		_sstartstack = .;
+		_sintstack = .;
 		. = . + 128;
-		_estartstack = .;
-   	} > ram1
+		_eintstack = .;
+   	} > data_ram
 
 	/* heap */
 
 	. = ALIGN(2);
 	_heap_start = .;	
-	. = ALIGN(0xc000);
+	. = ALIGN(0xf000);
 	_heap_end = .;
 
 }

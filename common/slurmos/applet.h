@@ -34,9 +34,13 @@ SOFTWARE.
 #ifndef APPLET_H
 #define APPLET_H
 
-#define APPLET_BASE 0xc000 /* Must match linker script for applet */
+#define APPLET_CODE_BASE 0x5000 /* Must match linker script for applet */
+#define APPLET_CODE_SIZE 0x3000
+
+#define APPLET_DATA_BASE 0xf000 /* Must match linker script for applet */
+#define APPLET_DATA_SIZE 0x1000
+
 #define N_APPLET_VECTORS 26 /* should match below */
-#define APPLET_SIZE 0x4000
 
 #ifndef __ASM__ 
 

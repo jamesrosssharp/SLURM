@@ -34,7 +34,7 @@ SOFTWARE.
 #include <applet.h>
 #include <bundle.h>
 
-struct applet_vectors *vtors = (struct applet_vectors*)(APPLET_BASE);
+struct applet_vectors *vtors = (struct applet_vectors*)(APPLET_CODE_BASE);
 
 #define COPPER_BAR_HEIGHT 16
 

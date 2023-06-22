@@ -78,7 +78,7 @@ static mutex_t my_mutex = RTOS_MUTEX_INITIALIZER;
 
 #include <applet.h>
 
-struct applet_vectors *vtors = (struct applet_vectors*)(APPLET_BASE);
+struct applet_vectors *vtors = (struct applet_vectors*)(APPLET_CODE_BASE);
 
 static void my_vsync_handler()
 {
@@ -91,6 +91,8 @@ void main(void)
 	int i;
 	int frame = 0;
 	int sprites = 0;
+
+	vtors->printf("Hello effect1 \r\n");
 
 	// Load the sprite sheet
 

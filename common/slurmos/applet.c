@@ -39,7 +39,7 @@ SOFTWARE.
 #include <sprite.h>
 #include <pwm.h>
 
-struct applet_vectors *vtors = (struct applet_vectors*)(APPLET_BASE);
+struct applet_vectors *vtors = (struct applet_vectors*)(APPLET_CODE_BASE);
 
 void load_palette(unsigned short* palette, int offset, int count); 
 unsigned short __in(unsigned short port);		
@@ -49,7 +49,8 @@ void copper_list_load(unsigned short* copper_list, unsigned short len);
 void applet_load(unsigned short applet_flash_lo, unsigned short applet_flash_hi, unsigned short size)
 {
 	// Load applet
-	storage_load_synch(applet_flash_lo, applet_flash_hi, 0, 0, APPLET_BASE, 0, size);
+	storage_load_synch(applet_flash_lo, applet_flash_hi, 0, 0, APPLET_CODE_BASE, 0, APPLET_CODE_SIZE>>1);
+	storage_load_synch(applet_flash_lo, applet_flash_hi, (APPLET_DATA_BASE - APPLET_CODE_BASE), 0, APPLET_DATA_BASE, 0, APPLET_DATA_SIZE>>1);
 
 	// Perform dynamic linking
 	
@@ -91,6 +92,7 @@ void applet_load(unsigned short applet_flash_lo, unsigned short applet_flash_hi,
 
 void applet_run()
 {
+	my_printf("Applet run\r\n");
 	vtors->applet_entry();
 }
 

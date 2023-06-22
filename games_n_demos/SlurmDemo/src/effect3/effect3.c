@@ -52,7 +52,7 @@ mutex_t eff3_mutex = RTOS_MUTEX_INITIALIZER;
 
 #include <applet.h>
 
-struct applet_vectors *vtors = (struct applet_vectors*)(APPLET_BASE);
+struct applet_vectors *vtors = (struct applet_vectors*)(APPLET_CODE_BASE);
 
 static void my_vsync_handler()
 {

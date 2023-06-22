@@ -152,7 +152,7 @@ int load_slurm_sng()
 	unsigned short offset_lo = 0;
 	unsigned short offset_hi = 0;
 	unsigned short pattern = 0;
-	char* row_offset = (char*)&pattern_B;	
+	char* row_offset = (char*)&pattern_A;	
 	unsigned short samples_loaded = 0;
 
 	my_printf("Loading slurm song...\r\n");		
@@ -264,7 +264,7 @@ int load_slurm_sng()
 
 	// Preload next pattern
 
-	pattern = pl.pl[1];
+	/*pattern = pl.pl[1];
 
 	my_printf("Loading pattern %d\r\n", pattern);
 
@@ -282,7 +282,7 @@ int load_slurm_sng()
 		  offset_lo, offset_hi, 
 		  (unsigned short)&pattern_B, 0, 
 		  (SLURM_PATTERN_SIZE >> 1));
-
+*/
 	for (i = 0; i < MIX_CHANNELS; i ++)
 	{
 		char note;
@@ -605,7 +605,7 @@ static void audio_interrupt()
 
 static void audio_task()
 {
-
+	my_printf("Audio task start...\r\n");
 	while (1)
 	{
 		rtos_lock_mutex(&audio_int_mutex);
@@ -687,7 +687,7 @@ void chip_tune_play()
 			if (count == ticks_per_frame)
 			{
 
-				row_offset = (cur_patt_buf ? &pattern_B : &pattern_A) + row*32;	
+				row_offset = (cur_patt_buf ? &pattern_A : &pattern_A) + row*32;	
 
 				for (i = 0; i < MIX_CHANNELS; i++)
 				{
@@ -761,10 +761,10 @@ void chip_tune_play()
 			
 						
 					//global_interrupt_enable();
-					storage_load_asynch(song_flash_offset_lo, song_flash_offset_hi, 
+					storage_load_synch(song_flash_offset_lo, song_flash_offset_hi, 
 						  offset_lo, offset_hi, 
-						  (unsigned short)(cur_patt_buf ? &pattern_B : &pattern_A), 0, 
-						  (SLURM_PATTERN_SIZE >> 1), 0, 0);
+						  (unsigned short)(cur_patt_buf ? &pattern_A : &pattern_A), 0, 
+						  (SLURM_PATTERN_SIZE >> 1));
 					//global_interrupt_disable();				
 
 					cur_patt_buf = !cur_patt_buf;

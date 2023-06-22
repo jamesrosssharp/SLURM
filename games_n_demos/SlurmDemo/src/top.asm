@@ -55,8 +55,8 @@ copy_loop:
 
 	// Set up stack
 	
-	.extern _estartstack
-	mov r13, _estartstack
+	.extern _eintstack
+	mov r13, _eintstack
 	
 	.extern rtos_init
 	bl rtos_init

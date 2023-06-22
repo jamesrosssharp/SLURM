@@ -15,17 +15,17 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 
 
-	.section mixer3.data
+	.section data.mixer3
 
 	.global pattern_A
 // Pattern buffer A - 2k
 pattern_A: 
 	.times 64*8*4 db 0
 
-	.global pattern_B
+//	.global pattern_B
 // Pattern buffer B - 2k
-pattern_B:
-	.times 64*8*4 db 0
+//pattern_B:
+//	.times 64*8*4 db 0
 
 // Sound mixing routines + stack (located in this bank so we have easy fast to sample data)
 // Must fit in 4kB
@@ -72,13 +72,13 @@ CHANNEL_STRUCT_PHASE	    equ 10
 CHANNEL_STRUCT_PHASE_HI	    equ 12	
 CHANNEL_STRUCT_VOLUME	    equ 14
 
-	.section mixer3.data
+	.section data.mixer3
 
 	.global channel_info
 channel_info:
 	.times 8*CHANNEL_STRUCT_SIZE db 0 
 
-	.section mixer3.text
+	.section text.mixer3
 
 
 // Register definitions for audio core
@@ -103,9 +103,8 @@ AUDIO_FREQ equ (25125000 / 512)
 
 SCRATCH_PAD equ	0x8000 
 
-.align 0x100
-
 	.global mix_audio_3
+	.function mix_audio_3
 mix_audio_3:
 
 
@@ -148,10 +147,6 @@ mix_audio_3:
 	ld  r9,  [r6, CHANNEL_STRUCT_LOOP_END]
 
 	add r4, SCRATCH_PAD - 1  
-
-	ba  mix_loop.ch1
-
-	.align 0x100
 
 	/*
  	 *	Audio mixing: 25125000 Cks/s / 1024 / 256 ~= 100 frames / s
@@ -306,10 +301,6 @@ mix_loop.ch4:
  	 *
  	 */
 
-	ba mix_loop.ch5
-
-	.align 0x100
-	
 mix_loop.ch5:
 	ldbsx  r10, [r1]   // load sample value; sign extend 8 bit to 16 bit
 	add   r2, r3       // add freq lo to phase
@@ -446,7 +437,10 @@ mix_loop.ch8:
 	// Restore old stack pointer
 	ret
 
+	.endfunc
+
 	.global mix_audio_3_update
+	.function mix_audio_3_update
 
 mix_audio_3_update:
 	sub r13, 64
@@ -520,5 +514,5 @@ update_loop2:
 	// Restore old stack pointer
 	ret
 
-
+	.endfunc
 	.end
