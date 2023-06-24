@@ -44,6 +44,8 @@ void triangle_rasterize(unsigned short framebuffer, struct Vertex* v0, struct Ve
 	short x1 	= 0;
 	short x2 	= 0;
 
+	short y_end = 0;
+
 	struct Vertex* top;
 	struct Vertex* middle;
 	struct Vertex* bottom;
@@ -51,27 +53,6 @@ void triangle_rasterize(unsigned short framebuffer, struct Vertex* v0, struct Ve
 	short middleCompare = 0;
 	short bottomCompare = 0;
 
-
-	/*if (v1->sy > v2->sy)
-	{
-		t = v1;
-		v1 = v2;
-		v2 = t;
-	} 
-
-	if (v2->sy > v3->sy)
-	{
-		t = v2;
-		v2 = v3;
-		v3 = t;
-	} 
-
-	if (v1->sy > v2->sy)
-	{
-		t = v1;
-		v1 = v2;
-		v2 = t;
-	} */
 
 	if (v0->sy < v1->sy)
 	{
@@ -136,16 +117,6 @@ void triangle_rasterize(unsigned short framebuffer, struct Vertex* v0, struct Ve
 		}
 	} 
 
-	/*if	(BottomCompare < MiddleCompare):
-		MiddleIsLeft = False
-		pLeft = TopToBottom
-		pRight = TopToMiddle
-	else:
-		MiddleIsLeft = True
-		pLeft = TopToMiddle
-		pRight = TopToBottom
-*/
-
 	if (bottomCompare < middleCompare)
 	{
 		midOnLeft = false;
@@ -179,21 +150,18 @@ void triangle_rasterize(unsigned short framebuffer, struct Vertex* v0, struct Ve
 		dxDy23 = 0;
 	}
 
-	//if (_mult_div_8_8(middle->sy - top->sy, dxDy13, 0x1) + top->sx > middle->sx)	
-	//	midOnLeft = true;
-
 	y = top->sy;
 	yPrestep = ((y + 0xf) & 0xfff0) - y;
 
 	if (midOnLeft)
 	{
-		x1 = (top->sx) + _mult_div_8_8(yPrestep, dxDy12, 0x10);
-		x2 = (top->sx) + _mult_div_8_8(yPrestep, dxDy13, 0x10);
+		x1 = (top->sx) + mult_8_8_div_16(yPrestep, dxDy12);
+		x2 = (top->sx) + mult_8_8_div_16(yPrestep, dxDy13);
 	}
 	else
 	{
-		x1 = (top->sx) + _mult_div_8_8(yPrestep, dxDy13, 0x10);
-		x2 = (top->sx) + _mult_div_8_8(yPrestep, dxDy12, 0x10);
+		x1 = (top->sx) + mult_8_8_div_16(yPrestep, dxDy13);
+		x2 = (top->sx) + mult_8_8_div_16(yPrestep, dxDy12);
 	}
 
 
@@ -201,7 +169,9 @@ void triangle_rasterize(unsigned short framebuffer, struct Vertex* v0, struct Ve
 
 	framebuffer += 8*y;
 
-	while (y < ((middle->sy + 0xf) & 0xfff0))
+	y_end = ((middle->sy + 0xf) & 0xfff0); 
+
+	while (y < y_end)
 	{
 		short sx, sx2, sy;
 		int j;
@@ -232,13 +202,15 @@ void triangle_rasterize(unsigned short framebuffer, struct Vertex* v0, struct Ve
 	yPrestep = ((y + 0xf) & 0xfff0) - y;
 
 	if (midOnLeft)
-		x1 = (middle->sx) + _mult_div_8_8(yPrestep, dxDy23, 0x10);
+		x1 = (middle->sx) + mult_8_8_div_16(yPrestep, dxDy23);
 	else
-		x2 = (middle->sx) + _mult_div_8_8(yPrestep, dxDy23, 0x10);
+		x2 = (middle->sx) + mult_8_8_div_16(yPrestep, dxDy23);
 
 	y += yPrestep;
 
-	while (y < ((bottom->sy + 0xf) & 0xfff0))
+	y_end = ((bottom->sy + 0xf) & 0xfff0); 
+
+	while (y < y_end)
 	{
 		short sx, sx2, sy;
 		int j;
@@ -249,6 +221,7 @@ void triangle_rasterize(unsigned short framebuffer, struct Vertex* v0, struct Ve
 
 		if (sx < sx2)
 			draw_scanline(framebuffer, sx, sx2 - sx, color);
+		
 		framebuffer += 128;
 
 		if (midOnLeft)

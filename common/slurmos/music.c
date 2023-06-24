@@ -114,8 +114,8 @@ struct channel_t {
 	char* loop_end;
 
 	char* sample_pos;
-	short frequency;	// 0 = channel off
-	short frequency_hi;	
+	unsigned short frequency;	// 0 = channel off
+	unsigned short frequency_hi;	
 
 	short phase;
 	short phase_hi;
@@ -351,7 +351,7 @@ void set_effect(short channel, char effect, char param)
 
 }
 
-void play_sample(short channel, short volume, short note_lo, short note_hi, short SAMPLE, char effect, char param, char note)
+void play_sample(short channel, short volume, unsigned short note_lo, unsigned short note_hi, short SAMPLE, char effect, char param, char note)
 {
 
 	if (g_samples[SAMPLE].loop != 0)
@@ -390,7 +390,7 @@ void arpeggiate(short tick, int channel)
 {
 	short dev = 0;
 	short sample = channel_info[channel].sample;
-	short note_hi, note_lo;
+	unsigned short note_hi, note_lo;
 
 	if (tick == 2)
 	{
@@ -404,7 +404,7 @@ void arpeggiate(short tick, int channel)
 	dev += channel_info[channel].base_note;
 
 	note_lo = note_table_lo[dev];
-	note_hi = note_table_hi[dev];
+	note_hi = note_table_hi[dev] & 0xff;
 
 	channel_info[channel].frequency  = note_mul_asm(note_lo, note_hi, g_samples[sample].speed);	
 	channel_info[channel].frequency_hi = note_mul_asm_hi(note_lo, note_hi, g_samples[sample].speed);	
@@ -706,11 +706,11 @@ void chip_tune_play()
 
 					if (note)
 					{
-						short note_lo, note_hi;
+						unsigned short note_lo, note_hi;
 						note --;
 
 						note_lo = note_table_lo[note];
-						note_hi = note_table_hi[note];
+						note_hi = note_table_hi[note] & 0xff;
 
 						play_sample(channels[i], volume, note_lo, note_hi, --sample, effect, effect_param, note);
 					

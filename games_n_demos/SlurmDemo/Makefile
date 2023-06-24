@@ -26,7 +26,6 @@ ASM_OBJ = $(patsubst %.asm1,$(BUILD_DIR)/%.asmo,$(notdir $(CPP_ASM)))
 
 TARGET_ELF=$(patsubst %.bin, %.elf, $(TARGET))
 
-.PRECIOUS: $(C_ASM_SRC) $(CPP_SRC) $(CPP_ASM)
 
 CHIPTUNE = assets/songs/demo.it
 CHIPTUNE_SLMSNG = $(BUILD_DIR)/demo.slurmsng
@@ -37,6 +36,8 @@ APPLETS_H  = $(BUILD_DIR)/applet_bundle.h
 APP_BUNDLE = $(BUILD_DIR)/applet_bundle.bin
 
 include ../../common/slurmos/slurmos.mk
+
+.PRECIOUS: $(SLURMOS_C_ASM_SRC) $(C_ASM_SRC) $(CPP_SRC) $(CPP_ASM)
 
 APPLETS=$(SRC_DIR)/effect1 \
 	$(SRC_DIR)/effect2 \

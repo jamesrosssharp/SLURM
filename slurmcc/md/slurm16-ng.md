@@ -830,8 +830,10 @@ static void defstring(int n, char *str) {
         char *s;
 
         for (s = str; s < str + n; s++)
-                print("\tdb 0x%x\n", (*s)&0377);
-		print(".align 2\n");
+                print("\tdb 0x%x\n", (*s)&0xff);
+
+	if (n & 1)
+		print("\tdb 0\n");
 }
 static void export(Symbol p) {
         print(".global %s\n", p->x.name);

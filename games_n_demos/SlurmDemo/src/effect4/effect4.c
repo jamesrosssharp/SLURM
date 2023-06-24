@@ -199,7 +199,7 @@ void main(void)
 	vtors->sprite_display(0, framebuffers_word_addr[cur_front_buffer], SPRITE_STRIDE_256, FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT, 54, 32);
 	vtors->sprite_update_sprite(0);
 
-	while (frame < 100)
+	while (frame < 500)
 	{
 		int i;
 		vtors->rtos_lock_mutex(&eff4_mutex);
@@ -218,7 +218,6 @@ void main(void)
 		matrix4_multiply(&proj, &trans);
 		matrix4_multiply(&proj, &rot);
 
-		//enter_critical();
 		for (i = 0; i < N_TORUS_POINTS; i++)
 		{
 			struct Vertex *v;
@@ -264,11 +263,8 @@ void main(void)
 			if (col < 1) col = 1;
 			if (col > 0xf) col = 0xf;
 		
-			enter_critical();
-
 			triangle_rasterize(framebuffers_upper_lo[!cur_front_buffer], &vertices[t->v1], &vertices[t->v2], &vertices[t->v3], col);			
 		
-			leave_critical();
 		}  
 
 		//{

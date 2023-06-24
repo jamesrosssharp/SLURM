@@ -40,7 +40,7 @@ const unsigned short slide_up_lo[256] = {
 	24799, 25363, 25929, 26497, 27066, 27638, 28212, 28788, 
 	29367, 29947, 30529, 31114, 31700, 32289, 32880, 33473, 
 	};
-const unsigned short slide_up_hi[256] = {
+const unsigned char slide_up_hi[256] = {
 	1, 1, 1, 1, 1, 1, 1, 1, 
 	1, 1, 1, 1, 1, 1, 1, 1, 
 	1, 1, 1, 1, 1, 1, 1, 1, 
@@ -108,7 +108,7 @@ const unsigned short slide_down_lo[256] = {
 	27554, 27455, 27356, 27257, 27159, 27061, 26964, 26866, 
 	26770, 26673, 26577, 26481, 26386, 26291, 26196, 26102, 
 	};
-const unsigned short slide_down_hi[256] = {
+const unsigned char slide_down_hi[256] = {
 	1, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
@@ -143,19 +143,19 @@ const unsigned short slide_down_hi[256] = {
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	};
 
-const unsigned short fine_slide_up_lo[256] = {
+const unsigned short fine_slide_up_lo[16] = {
 	0, 59, 118, 177, 237, 296, 355, 415, 
 	474, 534, 594, 653, 713, 773, 833, 893, 
 	};
-const unsigned short fine_slide_up_hi[256] = {
+const unsigned char fine_slide_up_hi[16] = {
 	1, 1, 1, 1, 1, 1, 1, 1, 
 	1, 1, 1, 1, 1, 1, 1, 1, 
 	};
-const unsigned short fine_slide_down_lo[256] = {
+const unsigned short fine_slide_down_lo[16] = {
 	0, 65476, 65417, 65358, 65299, 65240, 65182, 65123, 
 	65064, 65005, 64947, 64888, 64830, 64771, 64713, 64654, 
 	};
-const unsigned short fine_slide_down_hi[256] = {
+const unsigned char fine_slide_down_hi[16] = {
 	1, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	};
