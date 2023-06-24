@@ -271,8 +271,8 @@ class Triangle:
 		z2 = vertex_arr[self.idx2].pos.z
 		z3 = vertex_arr[self.idx3].pos.z
 
-		return (z1 + z2 + z3) / 3
-		#return z1
+		#return (z1 + z2 + z3) / 3
+		return z1
 
 	def calc_normal(self, vertex_arr):
 

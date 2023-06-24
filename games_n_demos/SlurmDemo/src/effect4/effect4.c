@@ -38,6 +38,8 @@ SOFTWARE.
 
 #include <copper.h>
 
+#include "qsort.h"
+
 unsigned short torus_palette[] = {
 	0x0000,	0xf100, 0xf211, 0xf411,
 	0xf711, 0xf811, 0xf922, 0xfa22,
@@ -65,6 +67,10 @@ struct Point3D {
 
 struct Vertex vertices[N_TORUS_POINTS];
 struct Vertex normals[N_TORUS_NORMALS];
+
+// Triangle pointers - for sorting
+
+struct Triangle* ptris[N_TORUS_TRIS];
 
 /* =============== Copper list ====================== */
 
@@ -162,6 +168,19 @@ void print_matrix(struct Matrix4* mat)
 	
 }
 
+int tri_compare_func(void* a, void* b)
+{
+	struct Triangle* t1 = (struct Triangle*)a;
+	struct Triangle* t2 = (struct Triangle*)b;
+
+	return (vertices[t1->v1].z - vertices[t2->v1].z);
+}
+
+void z_sort_tris(struct Triangle** tris, int n_tris)
+{
+	qsort((void**)tris, 0, n_tris - 1, tri_compare_func, 0);
+}
+
 
 void main(void)
 {
@@ -170,6 +189,7 @@ void main(void)
 	struct Matrix4 proj;
 	short test;
 	short z_t = 0xff00;
+	int j;
 
 	vtors->background_set(0, 
 		    0, 
@@ -198,6 +218,11 @@ void main(void)
 	
 	vtors->sprite_display(0, framebuffers_word_addr[cur_front_buffer], SPRITE_STRIDE_256, FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT, 54, 32);
 	vtors->sprite_update_sprite(0);
+
+	for (j = 0; j < N_TORUS_TRIS; j++)
+	{
+		ptris[j] = &torus_tris[j];
+	}
 
 	while (frame < 500)
 	{
@@ -250,9 +275,11 @@ void main(void)
 			vertex_multiply_matrix(n, &rot);
 		} 
 
+		z_sort_tris(ptris, N_TORUS_TRIS);
+
 		for (i = 0; i < N_TORUS_TRIS; i++)
 		{
-			struct Triangle* t = &torus_tris[i]; 
+			struct Triangle* t = ptris[i]; 
 			short col = 0;
 
 			if (normals[t->n].z > 0)

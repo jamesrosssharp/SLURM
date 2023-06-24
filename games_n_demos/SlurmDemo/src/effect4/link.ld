@@ -2,7 +2,7 @@
 MEMORY 
 {
 	applet_code (wx) : ORIGIN = 0x5000, LENGTH = 0x3000
-	applet_data (w) : ORIGIN = 0xe000, LENGTH = 0x2000
+	applet_data (w) : ORIGIN = 0xf000, LENGTH = 0x1000
 }
 
 SECTIONS 
@@ -16,7 +16,7 @@ SECTIONS
 	.data : {
 		. = ALIGN(32);
 		*( .data )
-	} > applet_data
+	} > applet_code
 
 	.bss (NOLOAD): {
 		. = ALIGN(2);

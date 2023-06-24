@@ -15,7 +15,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 
 BOOTLOADER_SIZE = 0x200;
-STACK_SIZE 	= 0x2c0;
+STACK_SIZE 	= 0x1300;
 AUDIO_STACK_SIZE = 0x240;
 STORAGE_STACK_SIZE = 0x140;
 IDLE_STACK_SIZE = 0x140;
@@ -25,7 +25,7 @@ MEMORY {
 	code_ram (wx) : LENGTH = 0x5000 - BOOTLOADER_SIZE, ORIGIN = BOOTLOADER_SIZE 
 	applet_code_ram (wx) : LENGTH = 0x3000, ORIGIN = 0x5000
 	data_ram (wx) : LENGTH = 0x7000, ORIGIN = 0x8000
-	applet_data_ram (wx) : LENGTH = 0x2000, ORIGIN = 0xe000
+	applet_data_ram (wx) : LENGTH = 0x1000, ORIGIN = 0xf000
 }
 
 SECTIONS
@@ -80,7 +80,7 @@ SECTIONS
 
 	. = ALIGN(2);
 	_heap_start = .;	
-	. = ALIGN(0xe000);
+	. = ALIGN(0xf000);
 	_heap_end = .;
 
 }
