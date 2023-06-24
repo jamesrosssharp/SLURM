@@ -37,6 +37,7 @@ struct Triangle {
 	unsigned char v2;
 	unsigned char v3;	
 	unsigned char n;
+	struct Triangle* next;
 }; 
 
 void triangle_rasterize(unsigned short framebuffer, struct Vertex* v1, struct Vertex* v2, struct Vertex* v3, unsigned short color);			

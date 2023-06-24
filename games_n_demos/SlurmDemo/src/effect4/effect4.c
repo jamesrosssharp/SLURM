@@ -47,6 +47,8 @@ unsigned short torus_palette[] = {
 	0xff66, 0xff88, 0xffaa, 0xffff	
 };
 
+#define NULL 0
+
 /* =============== Torus object data ================ */
 
 
@@ -68,9 +70,13 @@ struct Point3D {
 struct Vertex vertices[N_TORUS_POINTS];
 struct Vertex normals[N_TORUS_NORMALS];
 
-// Triangle pointers - for sorting
+short vertex_z[N_TORUS_POINTS];
 
-struct Triangle* ptris[N_TORUS_TRIS];
+// Triangle z buffer
+
+#define ZBUFFER_SIZE 2048
+
+struct Triangle* zbuffer[ZBUFFER_SIZE];
 
 /* =============== Copper list ====================== */
 
@@ -168,7 +174,7 @@ void print_matrix(struct Matrix4* mat)
 	
 }
 
-int tri_compare_func(void* a, void* b)
+/*int tri_compare_func(void* a, void* b)
 {
 	struct Triangle* t1 = (struct Triangle*)a;
 	struct Triangle* t2 = (struct Triangle*)b;
@@ -178,9 +184,63 @@ int tri_compare_func(void* a, void* b)
 
 void z_sort_tris(struct Triangle** tris, int n_tris)
 {
-	qsort((void**)tris, 0, n_tris - 1, tri_compare_func, 0);
-}
+	//qsort((void**)tris, 0, n_tris - 1, tri_compare_func, 0);
+}*/
 
+void create_zbuffer()
+{
+	int i;
+	short maxZ = -32768;
+	short minZ = 32767;
+
+	for (i = 0; i < ZBUFFER_SIZE; i++)	
+		zbuffer[i] = NULL;	
+
+	// Find out 
+	for (i = 0; i < N_TORUS_TRIS; i++)
+	{
+		short z = -vertex_z[torus_tris[i].v1]; 
+		if (z < minZ)
+			minZ = z;
+		if (z > maxZ)
+			maxZ = z;
+	}
+
+	//vtors->printf("Z min: %x %x %x\r\n", minZ, maxZ, maxZ - minZ);
+
+	for (i = 0; i < N_TORUS_TRIS; i++)
+	{
+		struct Triangle* t = &torus_tris[i];
+		short z = -vertex_z[t->v1]; 
+		
+		if (normals[t->n].z > 0)
+			continue;
+
+		z -= minZ;
+
+		z = ZBUFFER_SIZE - 1 - z;
+
+		//vtors->printf("Z: %x\r\n", z);
+
+		if (z >= 0 && z < ZBUFFER_SIZE)
+		{
+			if (zbuffer[z] != NULL)
+			{
+				struct Triangle* tt;	
+				for (tt = zbuffer[z]; tt->next != NULL; tt = tt->next)
+					;
+					
+				tt->next = t;
+				tt->next->next = NULL;
+			}
+			else {
+				zbuffer[z] = t;
+				zbuffer[z]->next = NULL;
+			}
+		}
+	}
+
+}
 
 void main(void)
 {
@@ -219,11 +279,6 @@ void main(void)
 	vtors->sprite_display(0, framebuffers_word_addr[cur_front_buffer], SPRITE_STRIDE_256, FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT, 54, 32);
 	vtors->sprite_update_sprite(0);
 
-	for (j = 0; j < N_TORUS_TRIS; j++)
-	{
-		ptris[j] = &torus_tris[j];
-	}
-
 	while (frame < 500)
 	{
 		int i;
@@ -258,6 +313,8 @@ void main(void)
 
 			vertex_multiply_matrix(v, &proj);
 
+			vertex_z[i] = v->z;
+
 			vertex_project(v);
 
 		}
@@ -275,23 +332,26 @@ void main(void)
 			vertex_multiply_matrix(n, &rot);
 		} 
 
-		z_sort_tris(ptris, N_TORUS_TRIS);
+		create_zbuffer();
 
-		for (i = 0; i < N_TORUS_TRIS; i++)
+		for (i = 0; i < ZBUFFER_SIZE; i++)
 		{
-			struct Triangle* t = ptris[i]; 
+			struct Triangle* t = zbuffer[i]; 
 			short col = 0;
 
-			if (normals[t->n].z > 0)
+			if (t == NULL)
 				continue;
 
-			col = ((-normals[t->n].z) >> 4);
+			do {
+
+				col = ((-normals[t->n].z) >> 4);
 			
-			if (col < 1) col = 1;
-			if (col > 0xf) col = 0xf;
+				if (col < 1) col = 1;
+				if (col > 0xf) col = 0xf;
 		
-			triangle_rasterize(framebuffers_upper_lo[!cur_front_buffer], &vertices[t->v1], &vertices[t->v2], &vertices[t->v3], col);			
+				triangle_rasterize(framebuffers_upper_lo[!cur_front_buffer], &vertices[t->v1], &vertices[t->v2], &vertices[t->v3], col);			
 		
+			} while (t = t->next);
 		}  
 
 		//{
