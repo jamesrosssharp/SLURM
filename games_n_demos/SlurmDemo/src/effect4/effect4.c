@@ -208,7 +208,7 @@ void create_zbuffer()
 
 	//vtors->printf("Z min: %x %x %x\r\n", minZ, maxZ, maxZ - minZ);
 
-	for (i = 0; i < N_TORUS_TRIS; i++)
+	for (i = 0; i < N_TORUS_TRIS; i ++)
 	{
 		struct Triangle* t = &torus_tris[i];
 		short z = -vertex_z[t->v1]; 
