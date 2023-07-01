@@ -9,7 +9,7 @@ Effect 2 - Raster bars + alpha text scrolling
 
 Effect 3 - Plasma
 
-Effect 4 - 3D flat / goraud shaded torus
+Effect 4 - 3D flat shaded torus
 
 Effect 5 - "Doom" demo?
 

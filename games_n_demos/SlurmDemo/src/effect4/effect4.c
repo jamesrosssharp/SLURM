@@ -260,6 +260,8 @@ void main(void)
 		    0,
 		    0,
 		    0);
+	vtors->background_update();
+
 
 	vtors->copper_set_bg_color(0x0000);
 	vtors->load_palette(torus_palette, 0, 16);
@@ -279,7 +281,7 @@ void main(void)
 	vtors->sprite_display(0, framebuffers_word_addr[cur_front_buffer], SPRITE_STRIDE_256, FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT, 54, 32);
 	vtors->sprite_update_sprite(0);
 
-	while (frame < 500)
+	while (frame < 300)
 	{
 		int i;
 		vtors->rtos_lock_mutex(&eff4_mutex);

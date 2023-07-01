@@ -109,9 +109,6 @@ void main(void)
 
 	vtors->load_palette(sprite_palette, 0, 16);
 	
-	// Add a vsync interrupt handler
-	vtors->rtos_set_interrupt_handler(SLURM_INTERRUPT_VSYNC_IDX, my_vsync_handler);
-
 	for (i = 0; i < 16; i ++)
 	{
 		bg_palette[i] = (bg_palette[i] & 0xfff) | 0x0000;
@@ -133,15 +130,15 @@ void main(void)
 
 	vtors->background_update();
 
-	while (frame < 256)
+	// Add a vsync interrupt handler
+	vtors->rtos_set_interrupt_handler(SLURM_INTERRUPT_VSYNC_IDX, my_vsync_handler);
+
+	while (frame < 64)
 	{
 		vtors->rtos_lock_mutex(&my_mutex);
 		
-		if (frame > 192)
-		{
-			vtors->__out(0x5d22, ((frame - 192) >> 2) * 0x1111U);
-			vtors->pwm_set(((frame - 192)), ((frame - 192)), ((frame - 192)));
-		}
+		vtors->__out(0x5d22, ((frame) >> 2) * 0x1111U);
+		vtors->pwm_set(frame, frame, frame);
 		frame++;
 	}
 

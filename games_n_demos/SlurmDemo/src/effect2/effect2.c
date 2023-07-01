@@ -309,7 +309,7 @@ mutex_t eff2_mutex = RTOS_MUTEX_INITIALIZER;
 
 
 
-char scrollText[] = "How about some old skool raster bars using SLURM16s gfx coprocessor also known as the copper       ";
+char scrollText[] = "How about some old skool raster bars      ";
 int scroll_x_major = 64;
 int scroll_x_minor = 0;
 char *scrollText_ptr  = scrollText;
@@ -452,7 +452,7 @@ void main(void)
 	vtors->copper_set_alpha(0x8008);
 	vtors->copper_control(1);
 
-	while (frame < 2000)
+	while (frame < 1000)
 	{
 
 		unsigned short btns;
@@ -514,7 +514,7 @@ void main(void)
 
 	frame = 0;
 
-	while (frame < 2000)
+	while (frame < 1000)
 	{
 		unsigned short btns;
 
@@ -551,7 +551,7 @@ void main(void)
 
 	frame = 0;
 
-	while (frame < 2200)
+	while (frame < 700)
 	{
 		frame++;
 		vtors->rtos_lock_mutex(&eff2_mutex);

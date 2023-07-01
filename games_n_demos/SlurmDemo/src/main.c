@@ -46,11 +46,17 @@ SOFTWARE.
 #include <applet.h>
 #include <applet_bundle.h>
 
+static int frame = 0;
+
+static void my_vsync_handler()
+{
+	frame++;
+}
+
 int main()
 {
 	int sprites = 0;
 	int i;
-	int frame = 0;
 
 	my_printf("Hello world Slurm Demo!\r\n");
 	
@@ -63,6 +69,11 @@ int main()
 	sprite_init_sprites();
 	background_init();
 
+	rtos_set_interrupt_handler(SLURM_INTERRUPT_VSYNC_IDX, my_vsync_handler);
+
+	while (frame < 256) ;
+
+
 	my_printf("Ready to start demo\r\n");
 
 	// Spin in a loop
@@ -70,7 +81,7 @@ int main()
 	while (1)
 	{
 
-/*		applet_load(effect1_applet_flash_offset_lo, effect1_applet_flash_offset_hi, 
+		applet_load(effect1_applet_flash_offset_lo, effect1_applet_flash_offset_hi, 
 			    effect1_applet_flash_size_lo >> 1);
 		applet_run();  
 
@@ -82,7 +93,7 @@ int main()
 		applet_load(effect3_applet_flash_offset_lo, effect3_applet_flash_offset_hi, 
 			    effect3_applet_flash_size_lo >> 1);
 		applet_run();  
-*/
+
 		applet_load(effect4_applet_flash_offset_lo, effect4_applet_flash_offset_hi, 
 			    effect4_applet_flash_size_lo >> 1);
 		applet_run();  				
