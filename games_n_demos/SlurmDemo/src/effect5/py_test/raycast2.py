@@ -8,15 +8,16 @@ import sys
 from PIL import Image
 import numpy as np
 
-SQUARE_WIDTH = 4
-SQUARE_SHIFT = 2
+SQUARE_WIDTH = 16
+SQUARE_SHIFT = 4
 # Window dimensions
-width = 32*SQUARE_WIDTH
-height = 32*SQUARE_WIDTH
+width = 640
+height = 240
 
-pixelWidth = 4
-pixelHeight = 4
+pixelWidth = 2
+pixelHeight = 2
 
+my_drawmap = False
 
 SINETABLE_SIZE = 1024
 
@@ -34,19 +35,19 @@ class Point:
 
 	def step_forward(self, ang, sine_table):
 
-		self._y -= my_sin(ang, sine_table)
-		self._x += my_cos(ang, sine_table)
+		self._y -= 4*my_sin(ang, sine_table)
+		self._x += 4*my_cos(ang, sine_table)
 
 	def step_backward(self, ang, sine_table):
 
-		self._y += my_sin(ang, sine_table)
-		self._x -= my_cos(ang, sine_table)
+		self._y += 4*my_sin(ang, sine_table)
+		self._x -= 4*my_cos(ang, sine_table)
 
 	def x(self):
-		return int(self._x)
+		return round(self._x)
 	
 	def y(self):
-		return int(self._y)	
+		return round(self._y)	
 
 
 
@@ -66,9 +67,14 @@ def putPixel(x, y, r, g, b):
 				screen.set_at((i, j), (r, g, b))
 
 
-def DrawVerticalLine(x, y1, y2, colour):
+def DrawVLine(x, y1, y2, colour):
 
-	for y in range(int(y1) + 120, int(y2) + 120):
+	if y1 < 0:
+		y1 = 0
+	if y2 > 240:
+		y2 = 240
+
+	for y in range(int(y1), int(y2)):
 		putPixel(x, y, colour[0], colour[1], colour[2])
 
 def my_sin(ang, sine_table):
@@ -78,6 +84,11 @@ def my_cos(ang, sine_table):
 	return sine_table[(ang + SINETABLE_SIZE//4) & (SINETABLE_SIZE - 1)]
 
 
+def dist(x1, y1, x2, y2):
+	a = x2 - x1
+	b = y2 - y1
+	return math.sqrt(a*a + b*b)
+
 def fire_ray(p, phi_ray, sx, height_map, sine_table, tan_table, cot_table):
 
 	up = False
@@ -85,7 +96,6 @@ def fire_ray(p, phi_ray, sx, height_map, sine_table, tan_table, cot_table):
 
 	if (0 < phi_ray < SINETABLE_SIZE // 2):
 		up = True
-
 
 	if (phi_ray > SINETABLE_SIZE * 3 // 4) or (phi_ray < (SINETABLE_SIZE // 4)):
 		right = True
@@ -100,18 +110,16 @@ def fire_ray(p, phi_ray, sx, height_map, sine_table, tan_table, cot_table):
 	ray2_x_step = 0
 	ray2_y_step = 0
 
-
-
 	# Ray1 looks at horizontal lines
 	if up:
-		ray1_y_prestep = ((p.y() >> SQUARE_SHIFT) << SQUARE_SHIFT) - p.y() - 1
+		ray1_y_prestep = ((p.y() >> SQUARE_SHIFT) << SQUARE_SHIFT) - p.y() - 1 
 		ray1_x_prestep = -ray1_y_prestep * cot_table[phi_ray & (SINETABLE_SIZE - 1)]
 
 		ray1_y_step = -SQUARE_WIDTH
 		ray1_x_step = SQUARE_WIDTH * cot_table[phi_ray & (SINETABLE_SIZE - 1)]
 
 	else:
-		ray1_y_prestep = (((p.y() >> SQUARE_SHIFT) << SQUARE_SHIFT) + SQUARE_WIDTH) - p.y()
+		ray1_y_prestep = (((p.y() >> SQUARE_SHIFT) << SQUARE_SHIFT) + SQUARE_WIDTH) - p.y() 
 		ray1_x_prestep = -ray1_y_prestep * cot_table[phi_ray & (SINETABLE_SIZE - 1)]
 
 		ray1_y_step = SQUARE_WIDTH
@@ -126,17 +134,13 @@ def fire_ray(p, phi_ray, sx, height_map, sine_table, tan_table, cot_table):
 		ray2_y_step = SQUARE_WIDTH * tan_table[phi_ray & (SINETABLE_SIZE - 1)]
 
 	else:
-		ray2_x_prestep = (((p.x() >> SQUARE_SHIFT) << SQUARE_SHIFT) + SQUARE_WIDTH) - p.x()
+		ray2_x_prestep = (((p.x() >> SQUARE_SHIFT) << SQUARE_SHIFT) + SQUARE_WIDTH) - p.x() 
 		ray2_y_prestep = -ray2_x_prestep * tan_table[phi_ray & (SINETABLE_SIZE - 1)]
 
 		ray2_x_step = SQUARE_WIDTH
 		ray2_y_step = -SQUARE_WIDTH * tan_table[phi_ray & (SINETABLE_SIZE - 1)]
 
-
-
-
-	print("Phi ray: %f %d" % (phi_ray / SINETABLE_SIZE * 360, phi_ray))
-	
+	#print("Phi ray: %f %d" % (phi_ray / SINETABLE_SIZE * 360, phi_ray))
 
 	x1 = x2 = p.x()
 	y1 = y2 = p.y()
@@ -146,13 +150,28 @@ def fire_ray(p, phi_ray, sx, height_map, sine_table, tan_table, cot_table):
 	
 	x2 += ray2_x_prestep
 	y2 += ray2_y_prestep
+
+	#if sx == 160:
+	#	print("%f %f %f %f" % (x1, y1, x2, y2))	
+
+	found1 = False
+	found2 = False
 	
 	i = 0
 	while i < 20:
 
-		putPixel(int(x1), int(y1), 0, 255, 0)
 
-		if (0 <= x1 < 32*SQUARE_WIDTH) and (0 <= y1 < 32*SQUARE_WIDTH) and height_map.getpixel((int(x1) >> SQUARE_SHIFT, int(y1) >> SQUARE_SHIFT)):
+		if not (0 <= round(x1) < 32*SQUARE_WIDTH):
+			break
+
+		if not (0 <= round(y1) < 32*SQUARE_WIDTH):
+			break
+		
+		if my_drawmap:
+			putPixel(int(x1), int(y1), 0, 255, 0)
+		
+		if height_map.getpixel((round(x1) >> SQUARE_SHIFT, round(y1) >> SQUARE_SHIFT)):
+			found1 = True
 			break
 
 		x1 += ray1_x_step
@@ -163,9 +182,18 @@ def fire_ray(p, phi_ray, sx, height_map, sine_table, tan_table, cot_table):
 	i = 0
 	while i < 20:
 
-		putPixel(int(x2), int(y2), 255, 255, 255)
 
-		if (0 <= x2 < 32*SQUARE_WIDTH) and (0 <= y2 < 32*SQUARE_WIDTH) and height_map.getpixel((int(x2) >> SQUARE_SHIFT, int(y2) >> SQUARE_SHIFT)):
+		if x2 < 0 or round(x2) >= 32*SQUARE_WIDTH:
+			break
+
+		if y2 < 0 or round(y2) >= 32*SQUARE_WIDTH:
+			break
+
+		if my_drawmap:
+			putPixel(int(x2), int(y2), 255, 255, 255)
+		
+		if height_map.getpixel((round(x2) >> SQUARE_SHIFT, round(y2) >> SQUARE_SHIFT)):
+			found2 = True
 			break
 
 		x2 += ray2_x_step
@@ -173,6 +201,15 @@ def fire_ray(p, phi_ray, sx, height_map, sine_table, tan_table, cot_table):
 
 		i += 1
 
+	d1 = dist(round(x1), round(y1), p.x(), p.y())
+	d2 = dist(round(x2), round(y2), p.x(), p.y())
+
+	if not found1:
+		d1 = 1000000.0
+	if not found2:
+		d2 = 1000000.0
+
+	return min(d1, d2)
 
 
 
@@ -180,20 +217,28 @@ def Render(p, phi, screen_width, screen_height, height_map, sine_table, tan_tabl
 
 	# phi = player viewing angle
 
-	phi_start = (phi - (SINETABLE_SIZE // 8))
-	phi_end   = (phi + (SINETABLE_SIZE // 8)) 
+	phi_start = (phi + (SINETABLE_SIZE // 8))
+	phi_end   = (phi - (SINETABLE_SIZE // 8)) 
 
 	phi_step = (phi_end - phi_start) / screen_width
 
 	phi_ray = phi_start
 
-	#for sx in range(0, screen_width):
+	for sx in range(0, screen_width):
+
+		phi_ray += phi_step
+
+		d = fire_ray(p, int(phi_ray) & (SINETABLE_SIZE - 1), sx, height_map, sine_table, tan_table, cot_table)
+
+		if d < 1.0:
+			d = 1.0
+		h = 600 / d;
 
 
+		y1 = 120 - h
+		y2 = 120 + h
 
-	#	phi_ray += phi_step
-
-	fire_ray(p, phi, 160, height_map, sine_table, tan_table, cot_table)
+		DrawVLine(320 + sx, y1, y2, (0, 0, 255)) 	
 
 
 def DrawMap(p, my_map):
@@ -232,7 +277,8 @@ for i in range(0, SINETABLE_SIZE):
 
 while running:
 
-	DrawMap(player, my_map)
+	if my_drawmap:
+		DrawMap(player, my_map)
 
 	Render( player, ang, 320, 240, my_map, sine_table, tan_table, cot_table )
 
