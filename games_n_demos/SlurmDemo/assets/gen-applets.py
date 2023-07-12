@@ -26,6 +26,7 @@ options = {
 			  ("../src/effect2/build/effect2.bin", "applet", "effect2_applet", 0x100),
 			  ("../src/effect3/build/effect3.bin", "applet", "effect3_applet", 0x100),
 			  ("../src/effect4/build/effect4.bin", "applet", "effect4_applet", 0x100),
+			  ("../src/effect5/build/effect5.bin", "applet", "effect5_applet", 0x100),
 			],
 	'bundle_load_address' : 1024*1024 + bundle_start,
 }

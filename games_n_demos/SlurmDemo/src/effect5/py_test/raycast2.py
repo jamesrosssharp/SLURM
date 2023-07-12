@@ -116,7 +116,7 @@ def dist(x1, y1, x2, y2):
 	b = y2 - y1
 	return math.sqrt(a*a + b*b)
 
-def fire_ray(p, phi_ray, sx, height_map, sine_table, tan_table, cot_table):
+def fire_ray(p, p_ang, phi_ray, sx, height_map, sine_table, tan_table, cot_table):
 
 	up = False
 	right = False
@@ -139,80 +139,39 @@ def fire_ray(p, phi_ray, sx, height_map, sine_table, tan_table, cot_table):
 	ray2_x_step = 0
 	ray2_y_step = 0
 
-	d1 = 0
-	d2 = 0
+	col1 = 0
+	col2 = 0
 
 	# Ray1 looks at horizontal lines
 	if up:
-		ray1_y_prestep = ((p.y() >> SQUARE_SHIFT) << SQUARE_SHIFT) - p.y() - 1 
+		ray1_y_prestep = ((p.y() >> SQUARE_SHIFT) << SQUARE_SHIFT) - p.y() 
 		ray1_x_prestep = -ray1_y_prestep * cot_table[phi_ray]
-
-		msin = abs(my_sin(phi_ray, sine_table))
-
-		if msin == 0.0:
-			d1 += 1000000.0
-			dd1 = 1000000.0
-		else:
-			d1 += abs(ray1_y_prestep / msin)
-			dd1 = SQUARE_WIDTH / msin
 
 		ray1_y_step = -SQUARE_WIDTH
 		ray1_x_step = SQUARE_WIDTH * cot_table[phi_ray]
 
 	else:
-		ray1_y_prestep = (((p.y() >> SQUARE_SHIFT) << SQUARE_SHIFT) + SQUARE_WIDTH) - p.y() 
+		ray1_y_prestep = ((((p.y() +  (SQUARE_WIDTH - 1)) >> SQUARE_SHIFT) << SQUARE_SHIFT)) - p.y()
 		ray1_x_prestep = -ray1_y_prestep * cot_table[phi_ray]
-
-		msin = abs(my_sin(phi_ray, sine_table))
-
-		if msin == 0.0:
-			d1 += 1000000.0
-			dd1 = 1000000.0
-		else:
-			d1 += abs(ray1_y_prestep / msin)
-			dd1 = SQUARE_WIDTH / msin
 
 		ray1_y_step = SQUARE_WIDTH
 		ray1_x_step = -SQUARE_WIDTH * cot_table[phi_ray]
 
 	# Ray2 looks at vertical lines
 	if not right:
-		ray2_x_prestep = ((p.x() >> SQUARE_SHIFT) << SQUARE_SHIFT) - p.x() - 1
+		ray2_x_prestep = ((p.x() >> SQUARE_SHIFT) << SQUARE_SHIFT) - p.x() 
 		ray2_y_prestep = -ray2_x_prestep * tan_table[phi_ray]
-
-		mcos = abs(my_cos(phi_ray, sine_table))
-
-		if mcos == 0.0:
-			d2 += 1000000.0
-			dd2 = 1000000.0
-		else:
-			d2 += abs(ray2_x_prestep / mcos)
-			dd2 = SQUARE_WIDTH / mcos
 
 		ray2_x_step = -SQUARE_WIDTH
 		ray2_y_step = SQUARE_WIDTH * tan_table[phi_ray]
 
 	else:
-		ray2_x_prestep = (((p.x() >> SQUARE_SHIFT) << SQUARE_SHIFT) + SQUARE_WIDTH) - p.x() 
+		ray2_x_prestep = ((((p.x() + SQUARE_WIDTH - 1) >> SQUARE_SHIFT) << SQUARE_SHIFT)) - p.x() 
 		ray2_y_prestep = -ray2_x_prestep * tan_table[phi_ray]
-
-		mcos = abs(my_cos(phi_ray, sine_table))
-
-		if mcos == 0.0:
-			d2 += 1000000.0
-			dd2 = 1000000.0
-		else:
-			d2 += abs(ray2_x_prestep / mcos)
-			dd2 = SQUARE_WIDTH / mcos
-
 
 		ray2_x_step = SQUARE_WIDTH
 		ray2_y_step = -SQUARE_WIDTH * tan_table[phi_ray]
 
-	dd1 = round(dd1)
-	dd2 = round(dd2)
-	d1 = round(d1)
-	d2 = round(d2)
 
 	#print("Phi ray: %f %d" % (phi_ray / SINETABLE_SIZE * 360, phi_ray))
 
@@ -229,57 +188,58 @@ def fire_ray(p, phi_ray, sx, height_map, sine_table, tan_table, cot_table):
 	found2 = False
 	
 	i = 0
-	while i < 20:
+	while i < 20 and not found1 and not found2:
+
+	
+		while (right and x1 <= x2) or (not right and x1 >= x2): 
+			if not (0 <= round(x1) < 32*SQUARE_WIDTH):
+				break
+
+			if not (0 <= round(y1) < 32*SQUARE_WIDTH):
+				break
+			
+			if my_drawmap:
+				putPixel(int(x1), int(y1), 0, 255, 0)
+			if up:
+				col1 = height_map.getpixel((int(x1) >> SQUARE_SHIFT, int(y1 - (SQUARE_WIDTH - 1)) >> SQUARE_SHIFT))
+			else:
+				col1 = height_map.getpixel((int(x1) >> SQUARE_SHIFT, int(y1) >> SQUARE_SHIFT))
+
+			if col1 != 0:
+				found1 = True
+				break
+
+			x1 += ray1_x_step
+			y1 += ray1_y_step
 
 
-		if not (0 <= round(x1) < 32*SQUARE_WIDTH):
-			break
+		while (up and y2 >= y1) or (not up and y2 <= y1):
 
-		if not (0 <= round(y1) < 32*SQUARE_WIDTH):
-			break
-		
-		if my_drawmap:
-			putPixel(int(x1), int(y1), 0, 255, 0)
-		col1 = height_map.getpixel((round(x1) >> SQUARE_SHIFT, round(y1) >> SQUARE_SHIFT))
-		
-		if col1 != 0:
-			found1 = True
-			break
+			if x2 < 0 or round(x2) >= 32*SQUARE_WIDTH:
+				break
 
-		x1 += ray1_x_step
-		y1 += ray1_y_step
-		d1 += dd1
+			if y2 < 0 or round(y2) >= 32*SQUARE_WIDTH:
+				break
+
+			if my_drawmap:
+				putPixel(int(x2), int(y2), 255, 255, 255)
+			
+			if not right:
+				col2 = height_map.getpixel((int(x2 - (SQUARE_WIDTH - 1) ) >> SQUARE_SHIFT, int(y2) >> SQUARE_SHIFT))
+			else:
+				col2 = height_map.getpixel((int(x2 ) >> SQUARE_SHIFT, int(y2) >> SQUARE_SHIFT))
+
+			if col2 != 0:
+				found2 = True
+				break
+
+			x2 += ray2_x_step
+			y2 += ray2_y_step
 
 		i += 1
 
-	i = 0
-	while i < 20:
-
-
-		if x2 < 0 or round(x2) >= 32*SQUARE_WIDTH:
-			break
-
-		if y2 < 0 or round(y2) >= 32*SQUARE_WIDTH:
-			break
-
-		if my_drawmap:
-			putPixel(int(x2), int(y2), 255, 255, 255)
-		
-		col2 = height_map.getpixel((round(x2) >> SQUARE_SHIFT, round(y2) >> SQUARE_SHIFT))
-		
-		if col2 != 0:
-			found2 = True
-			break
-
-		x2 += ray2_x_step
-		y2 += ray2_y_step
-		d2 += dd2
-
-		i += 1
-
-	#if sx == 160:
-	#	print("%f %f" % (d1, d2))	
-
+	d1 = my_cos(p_ang, sine_table)*(x1 - p.x()) - my_sin(p_ang, sine_table)*(y1 - p.y())
+	d2 = my_cos(p_ang, sine_table)*(x2 - p.x()) - my_sin(p_ang, sine_table)*(y2 - p.y())
 
 	if not found1:
 		d1 = 1000000.0
@@ -317,9 +277,9 @@ def Render(p, phi, screen_width, screen_height, height_map, sine_table, tan_tabl
 
 		phi_ray += phi_step
 
-		(d, u, horiz, col) = fire_ray(p, int(phi_ray) & (SINETABLE_SIZE - 1), sx, height_map, sine_table, tan_table, cot_table)
+		(d, u, horiz, col) = fire_ray(p, phi & (SINETABLE_SIZE - 1), int(phi_ray) & (SINETABLE_SIZE - 1), sx, height_map, sine_table, tan_table, cot_table)
 
-		d *= fish_eye_table[sx]
+		#d *= fish_eye_table[sx]
 
 		if d < 1.0:
 			d = 1.0

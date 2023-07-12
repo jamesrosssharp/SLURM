@@ -42,7 +42,8 @@ include ../../common/slurmos/slurmos.mk
 APPLETS=$(SRC_DIR)/effect1 \
 	$(SRC_DIR)/effect2 \
 	$(SRC_DIR)/effect3 \
-	$(SRC_DIR)/effect4
+	$(SRC_DIR)/effect4 \
+	$(SRC_DIR)/effect5
 
 all: $(TARGET)
 
