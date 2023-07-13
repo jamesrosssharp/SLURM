@@ -143,6 +143,47 @@ short _mult_div_8_8(short a, short m, short d)
 
 }
 
+#include "raycast.h"
+
+unsigned short px = 48 * 32;
+unsigned short py = 48 * 32;
+unsigned short pang = 0;
+
+#define UP_KEY 1
+#define DOWN_KEY 2
+#define LEFT_KEY 4
+#define RIGHT_KEY 8
+#define A_KEY 16
+#define B_KEY 32
+
+#include "trig.h"
+
+void poll_gpios()
+{
+	short keys = vtors->__in(0x1001);
+
+	if (keys & UP_KEY)
+	{
+		px += cos(pang) >> 4;
+		py -= sin(pang) >> 4;
+	}
+	if (keys & DOWN_KEY)
+	{
+		px -= cos(pang) >> 4;
+		py += sin(pang) >> 4;
+	}
+	if (keys & LEFT_KEY)
+	{
+		pang ++;
+		pang &= 0x1ff;
+	}
+	if (keys & RIGHT_KEY)
+	{
+		pang --;
+		pang &= 0x1ff;
+	}
+
+}
 
 void main(void)
 {
@@ -176,7 +217,8 @@ void main(void)
 	vtors->sprite_display(0, framebuffers_word_addr[cur_front_buffer], SPRITE_STRIDE_256, FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT, 54, 32);
 	vtors->sprite_update_sprite(0);
 
-	while (frame < 1000)
+	while (1)
+//	while (frame < 1000)
 	{
 		int i;
 		vtors->rtos_lock_mutex(&eff5_mutex);
@@ -184,8 +226,15 @@ void main(void)
 		
 		clear_fb(framebuffers_upper_lo[!cur_front_buffer], 0x0000);
 
+		raycast_render(framebuffers_upper_lo[!cur_front_buffer], px, py, pang);
+
+		poll_gpios();
+
 		if ((frame & 0xf) == 0)
+		{
 			vtors->printf("FPS x100: %d\r\n", _mult_div_8_8(frame, 6000, vsync_count));
+			vtors->printf("Px: %x py: %x pang: %x\n", px, py, pang);
+		}
 
 		flip_buffer = 1;
 

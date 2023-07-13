@@ -16,7 +16,7 @@ SECTIONS
 	.data : {
 		. = ALIGN(32);
 		*( .data )
-	} > applet_code
+	} > applet_data
 
 	.bss (NOLOAD): {
 		. = ALIGN(2);

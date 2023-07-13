@@ -296,4 +296,38 @@ mult_8_8_div_16:
 
 	.endfunc
 
+.global mult_655_88_div8
+	.function mult_655_88_div8
+mult_655_88_div8:
+	// r4 = a, r5 = b
+	// Compute a * b >> 3
+
+	sub r13, 4
+
+	st [r13, 0], r7 
+
+	mov r2, r4
+	mov r7, r4
+	mul r2, r5
+	mulu r7, r5
+
+	rorc r7
+	rorc r2
+
+	rorc r7
+	rorc r2
+
+	rorc r7
+	rorc r2
+
+	ld r7, [r13, 0]
+
+	add r13, 4
+
+	ret
+
+	.endfunc
+
+
+
 	.end
