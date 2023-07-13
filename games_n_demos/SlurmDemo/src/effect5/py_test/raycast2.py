@@ -14,12 +14,12 @@ SQUARE_SHIFT = 5
 width = 640
 height = 240
 
-pixelWidth = 1
-pixelHeight = 1
+pixelWidth = 2
+pixelHeight = 2
 
 my_drawmap = False
 
-SINETABLE_SIZE = 1024
+SINETABLE_SIZE = 512
 
 screen = pygame.display.set_mode((width * pixelWidth, height * pixelHeight))
 clock = pygame.time.Clock()
@@ -89,6 +89,11 @@ def DrawTexturedVLine(x, y1, y2, u, idx, colour):
 
 	dv = (v2 - v1) / (y2 - y1)
 	v = v1
+	
+	if y1 < 0:
+		v = dv * -y1
+		y1 = 0
+
 
 	for y in range(int(y1), min(int(y2), 240)):
 		if idx == 1:
@@ -99,6 +104,9 @@ def DrawTexturedVLine(x, y1, y2, u, idx, colour):
 	
 		if (y > 0):
 			putPixel(x, y, col[0], col[1], col[2])
+			putPixel(x + 1, y, col[0], col[1], col[2])
+			putPixel(x + 2, y, col[0], col[1], col[2])
+			putPixel(x + 3, y, col[0], col[1], col[2])
 		v += dv
 
 
@@ -266,23 +274,20 @@ def Render(p, phi, screen_width, screen_height, height_map, sine_table, tan_tabl
 
 	# phi = player viewing angle
 
-	phi_start = (phi + (SINETABLE_SIZE // 12))
-	phi_end   = (phi - (SINETABLE_SIZE // 12)) 
+	phi_start = phi + 40 # (phi + (SINETABLE_SIZE // 12))
+	phi_end   = phi - 40 #(phi - (SINETABLE_SIZE // 12)) 
 
 	phi_step = (phi_end - phi_start) / screen_width
 
 	phi_ray = phi_start
 
-	for sx in range(0, screen_width):
+	for sx in range(0, screen_width, 4):
 
-		phi_ray += phi_step
 
 		(d, u, horiz, col) = fire_ray(p, phi & (SINETABLE_SIZE - 1), int(phi_ray) & (SINETABLE_SIZE - 1), sx, height_map, sine_table, tan_table, cot_table)
 
-		#d *= fish_eye_table[sx]
-
-		if d < 1.0:
-			d = 1.0
+		if d < 5.0:
+			d = 5.0
 		h = 100 * SQUARE_WIDTH / d 
 
 		y1 = 120 - h
@@ -291,10 +296,17 @@ def Render(p, phi, screen_width, screen_height, height_map, sine_table, tan_tabl
 		if horiz:
 		#	DrawVLine(320 + sx, y1, y2, (0, 0, 255)) 	
 			DrawTexturedVLine(320 + sx, y1, y2, u, col, (1.0, 1.0, 1.0))
+			#DrawTexturedVLine(320 + sx + 1, y1, y2, u, col, (1.0, 1.0, 1.0))
+			#DrawTexturedVLine(320 + sx + 2, y1, y2, u, col, (1.0, 1.0, 1.0))
+			#DrawTexturedVLine(320 + sx + 3, y1, y2, u, col, (1.0, 1.0, 1.0))
 		else:
 		#	DrawVLine(320 + sx, y1, y2, (100, 100, 255)) 	
 			DrawTexturedVLine(320 + sx, y1, y2, u, col, (0.9, 0.9, 0.9))
+			#DrawTexturedVLine(320 + sx + 1, y1, y2, u, col, (0.9, 0.9, 0.9))
+			#DrawTexturedVLine(320 + sx + 2, y1, y2, u, col, (0.9, 0.9, 0.9))
+			#DrawTexturedVLine(320 + sx + 3, y1, y2, u, col, (0.9, 0.9, 0.9))
 
+		phi_ray += 4*phi_step
 
 def DrawMap(p, my_map):
 
@@ -331,7 +343,7 @@ for i in range(0, SINETABLE_SIZE):
 	if cot_table[i] != 0.0:
 		cot_table[i] = 1.0 / cot_table[i]
 	else:	
-		cot_table[i] = 100.0
+		cot_table[i] = 100000.0
 
 
 while running:
