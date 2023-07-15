@@ -43,9 +43,9 @@ short cos(unsigned short ang)
 	return sin_table_8_8[(ang + 128) & 0x1ff];
 }
 
-short tan(unsigned short ang)
+short tan_lo(unsigned short ang)
 {
-	return tan_table_8_8[ang & 0xff];
+	return tan_table_8_8[(ang & 0xff) << 2];
 }
 
 short cot(unsigned short ang)

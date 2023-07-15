@@ -2,7 +2,7 @@
 
 	SlurmDemo : A demo to show off SlURM16
 
-raycast.h : raycasting demo renderer
+effect5.h : raycasting demo 
 
 License: MIT License
 
@@ -27,9 +27,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef RAYCAST_H
-#define RAYCAST_H
+#ifndef EFFECT5_H
+#define EFFECT5_H
 
-void raycast_render(unsigned short fb, unsigned short* px, unsigned short* py, unsigned short pang);
+extern void move_player_forward(unsigned short* px, unsigned short* py, unsigned short pang);
+extern void move_player_backward(unsigned short* px, unsigned short* py, unsigned short pang);
+
+/* Return player x in fixed point form 11:5 */ 
+extern unsigned short get_player_xy(unsigned short* pxy);
 
 #endif

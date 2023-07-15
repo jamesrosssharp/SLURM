@@ -8,25 +8,30 @@
 
 import math
 
-print("sin_table_8_8:")
+print("\t.global sin_table_2_14")
+print("sin_table_2_14:")
 for i in range(0,512):
-	print("\tdw 0x%x" % (round(256*math.sin(2*3.14*i / 512)) & 0xffff))
+	print("\tdw 0x%x" % (round(16384*math.sin(2*3.14*i / 512)) & 0xffff))
 
-print("\ntan_table_8_8:")
+print("\n\t.global tan_table_16_16")
+print("tan_table_16_16:")
 for i in range(0,256):
 	tan = math.tan(2*3.14*i / 512) 
-	if tan > 127:
-		tan = 127
-	print("\tdw 0x%x // %f" % (round(256*tan) & 0xffff, tan))
+	if tan > 10000:
+		tan = 10000
+	print("\tdw 0x%x // " % (round(65536*tan) & 0xffff))
+	print("\tdw 0x%x // %f" % ((round(65536*tan) >> 16) & 0xffff, tan))
 
-print("\ncot_table_8_8:")
+print("\n\t.global cot_table_16_16:")
+print("cot_table_16_16:")
 for i in range(0,256):
 	tan = math.tan(2*3.14*i / 512) 
 	if tan == 0:
-		cot = 127
+		cot = 100000
 	else:
 		cot = 1/tan
-	print("\tdw 0x%x // %f" % (round(256*cot) & 0xffff, cot))
+	print("\tdw 0x%x // " % (round(65536*cot) & 0xffff))
+	print("\tdw 0x%x // %f" % ((round(65536*cot) >> 16) & 0xffff, cot))
 
 
 

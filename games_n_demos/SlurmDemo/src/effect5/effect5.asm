@@ -54,9 +54,9 @@ clear_fb:
 	mov r10, r9
 	add r10, 2
 
-	mov r6, 128
+	mov r6, 200
 y_loop:
-	mov r7, 16
+	mov r7, 20
 x_loop:
 	st.ex [r4], r5
 	st.ex [r8], r5
@@ -112,7 +112,7 @@ flip_buffer_spr:
 put_pixel:
 	// r4 = fb, r5 = x, r6 = y, r7 = col
 
-	mul r6, 256
+	mul r6, 320
 	add r6, r5
 
 	rln r5, r7
@@ -137,16 +137,197 @@ put_pixel:
 enter_critical:
 	cli
 	ret
+	.endfunc
 
 	.function leave_critical
 	.global leave_critical
 leave_critical:
 	sti
 	ret
+	.endfunc
+	
+	.function move_player_forward
+	.global move_player_forward
+move_player_forward:
 
+	sub r13, 32
 
+	// r4 = px[2], r5 = py[2], r6 = pang
+	
+	st [r13, 0], r4 
+	st [r13, 2], r5 
+	st [r13, 4], r6 
+	st [r13, 6], r7 
+	st [r13, 8], r8
+	st [r13, 10], r9
+	st [r13, 12], r10
+	st [r13, 14], r11
+	st [r13, 16], r12
+	st [r13, 18], r15
+
+	ld r7, [r4]
+	ld r8, [r4, 2]
+
+	mov r9, r6
+	add r9, 0x080
+	and r9, 0x1ff
+	lsl r9		// r9 = ((ang + 128) & 0x1ff) * 2
+
+	ld r10, [r9, sin_table_2_14]
+
+	asr r10
+	asr r10
+	mov r11, 0xffff
+	test r10, 0x8000
+	mov.z r11, r0
+	add r7, r10
+	adc r8, r11
+
+	st [r4], r7
+	st [r4, 2], r8
+
+	ld r7, [r5]
+	ld r8, [r5, 2]
+
+	mov r9, r6
+	and r9, 0x1ff
+	lsl r9		// r9 = (ang & 0x1ff) * 2
+
+	ld r10, [r9, sin_table_2_14]
+
+	asr r10
+	asr r10
+	mov r11, 0xffff
+	test r10, 0x8000
+	mov.z r11, r0
+	sub r7, r10
+	sbb r8, r11
+
+	st [r5], r7
+	st [r5, 2], r8
+
+	ld r4, [r13, 0]
+	ld r5, [r13, 2]
+	ld r6, [r13, 4]
+	ld r7, [r13, 6]
+	ld r8, [r13, 8]
+	ld r9, [r13, 10]
+	ld r10, [r13, 12]
+	ld r11, [r13, 14]
+	ld r12, [r13, 16]
+	ld r15, [r13, 18]
+
+	add r13, 32
+
+	ret
 
 	.endfunc
 
+	.function move_player_backward
+	.global move_player_backward
+move_player_backward:
+	sub r13, 32
+
+	// r4 = px[2], r5 = py[2], r6 = pang
+	
+	st [r13, 0], r4 
+	st [r13, 2], r5 
+	st [r13, 4], r6 
+	st [r13, 6], r7 
+	st [r13, 8], r8
+	st [r13, 10], r9
+	st [r13, 12], r10
+	st [r13, 14], r11
+	st [r13, 16], r12
+	st [r13, 18], r15
+
+	ld r7, [r4]
+	ld r8, [r4, 2]
+
+	mov r9, r6
+	add r9, 0x080
+	and r9, 0x1ff
+	lsl r9		// r9 = ((ang + 128) & 0x1ff) * 2
+
+	ld r10, [r9, sin_table_2_14]
+
+	asr r10
+	asr r10
+	mov r11, 0xffff
+	test r10, 0x8000
+	mov.z r11, r0
+	sub r7, r10
+	sbb r8, r11
+
+	st [r4], r7
+	st [r4, 2], r8
+
+	ld r7, [r5]
+	ld r8, [r5, 2]
+
+	mov r9, r6
+	and r9, 0x1ff
+	lsl r9		// r9 = (ang & 0x1ff) * 2
+
+	ld r10, [r9, sin_table_2_14]
+
+	asr r10
+	asr r10
+	mov r11, 0xffff
+	test r10, 0x8000
+	mov.z r11, r0
+	add r7, r10
+	adc r8, r11
+
+	st [r5], r7
+	st [r5, 2], r8
+
+	ld r4, [r13, 0]
+	ld r5, [r13, 2]
+	ld r6, [r13, 4]
+	ld r7, [r13, 6]
+	ld r8, [r13, 8]
+	ld r9, [r13, 10]
+	ld r10, [r13, 12]
+	ld r11, [r13, 14]
+	ld r12, [r13, 16]
+	ld r15, [r13, 18]
+
+	add r13, 32
+
+	ret
+
+	.endfunc
+
+	.function get_player_xy
+	.global get_player_xy
+get_player_xy:
+	// r4 = x or y [2]	
+	sub r13, 4
+
+	st [r13, 2], r5 
+
+
+	ld r5, [r4]
+	ld r2, [r4, 2]
+	
+	rolc r5
+	rolc r2
+	rolc r5
+	rolc r2
+	rolc r5
+	rolc r2
+	rolc r5
+	rolc r2
+	rolc r5
+	rolc r2
+
+	ld r5, [r13, 2]
+
+	add r13, 4
+
+	ret
+
+	.endfunc
 
 	.end

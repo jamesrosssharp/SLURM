@@ -33,8 +33,9 @@ SOFTWARE.
 #include <bool.h>
 #include <slurminterrupt.h>
 #include <copper.h>
-
-
+#include "effect5.h"
+#include "map.h"
+#include <bundle.h>
 
 unsigned short the_copper_list[] = {
 	COPPER_ALPHA(0xf),
@@ -74,6 +75,13 @@ mutex_t eff5_mutex = RTOS_MUTEX_INITIALIZER;
 #include <applet.h>
 
 struct applet_vectors *vtors = (struct applet_vectors*)(APPLET_CODE_BASE);
+
+unsigned short ray_palette[] = {
+	0x0000,	0xff00, 0xf0f0, 0xf00f,
+	0xffff, 0xf811, 0xf922, 0xfa22,
+	0xfb33, 0xfc33, 0xfd44, 0xfe44,
+	0xff66, 0xff88, 0xffaa, 0xffff	
+};
 
 
 
@@ -145,8 +153,8 @@ short _mult_div_8_8(short a, short m, short d)
 
 #include "raycast.h"
 
-unsigned short px = 48 * 32;
-unsigned short py = 48 * 32;
+unsigned short px[2] = {32768, 1};
+unsigned short py[2] = {32768, 1};
 unsigned short pang = 0;
 
 #define UP_KEY 1
@@ -164,57 +172,67 @@ void poll_gpios()
 
 	if (keys & UP_KEY)
 	{
-		px += cos(pang) >> 4;
-		py -= sin(pang) >> 4;
+		move_player_forward(px, py, pang);
+		if (map_data[py[1]][px[1]])
+			move_player_backward(px, py, pang);
 	}
 	if (keys & DOWN_KEY)
 	{
-		px -= cos(pang) >> 4;
-		py += sin(pang) >> 4;
+		move_player_backward(px, py, pang);
+		if (map_data[py[1]][px[1]])
+			move_player_forward(px, py, pang);
+	
 	}
 	if (keys & LEFT_KEY)
 	{
 		pang ++;
-		pang &= 0x1ff;
+		pang &= 0x7ff;
 	}
 	if (keys & RIGHT_KEY)
 	{
 		pang --;
-		pang &= 0x1ff;
+		pang &= 0x7ff;
 	}
 
 }
 
+#define RC_TILES_WORD_ADDRESS 0x3800
+#define RC_TILES_ADDRESS_LO 0x7000
+#define RC_TILES_ADDRESS_HI 0x0000
+
 void main(void)
 {
-	vtors->background_set(0, 
-		    0, 
+/*	vtors->background_set(0, 
+		    1, 
 		    0,
 		    0, 
 		    0, 
-		    0, 
-		    0,
-		    0,
-		    0);
+		    ((unsigned short)map_data) >> 1, 
+		    RC_TILES_WORD_ADDRESS,
+		    TILE_WIDTH_8X8,
+		    TILE_MAP_STRIDE_32);
 	vtors->background_update();
+*/
 
-
+	vtors->storage_load_synch(rc_map_tiles_flash_offset_lo, rc_map_tiles_flash_offset_hi, 0, 0, RC_TILES_ADDRESS_LO, RC_TILES_ADDRESS_HI, (rc_map_tiles_flash_size_lo>>1));
+	
 	vtors->copper_set_bg_color(0x0000);
 //	vtors->load_palette(torus_palette, 0, 16);
 
 	vtors->copper_list_load(the_copper_list, sizeof(the_copper_list) / sizeof(the_copper_list[0]));
 	vtors->copper_control(1);
-	vtors->copper_set_y_flip(1, 150); 
-	vtors->copper_set_alpha(0x8000);
+//	vtors->copper_set_y_flip(1, 150); 
+//	vtors->copper_set_alpha(0x8000);
 
 	vtors->rtos_set_interrupt_handler(SLURM_INTERRUPT_VSYNC_IDX, my_vsync_handler);
 
+	vtors->load_palette(ray_palette, 0, 16);
 	// Create the sprite array
 
 	clear_fb(framebuffers_upper_lo[0], 0x0000);
 	clear_fb(framebuffers_upper_lo[1], 0x0000);
 	
-	vtors->sprite_display(0, framebuffers_word_addr[cur_front_buffer], SPRITE_STRIDE_256, FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT, 54, 32);
+	vtors->sprite_display(0, framebuffers_word_addr[cur_front_buffer], SPRITE_STRIDE_320, FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT, 24, 16);
 	vtors->sprite_update_sprite(0);
 
 	while (1)
@@ -226,14 +244,14 @@ void main(void)
 		
 		clear_fb(framebuffers_upper_lo[!cur_front_buffer], 0x0000);
 
-		raycast_render(framebuffers_upper_lo[!cur_front_buffer], px, py, pang);
+		raycast_render(framebuffers_upper_lo[!cur_front_buffer], px, py, pang >> 2);
 
 		poll_gpios();
 
 		if ((frame & 0xf) == 0)
 		{
 			vtors->printf("FPS x100: %d\r\n", _mult_div_8_8(frame, 6000, vsync_count));
-			vtors->printf("Px: %x py: %x pang: %x\n", px, py, pang);
+			vtors->printf("Px: %x py: %x pang: %x\n", get_player_xy(px), get_player_xy(py), pang);
 		}
 
 		flip_buffer = 1;

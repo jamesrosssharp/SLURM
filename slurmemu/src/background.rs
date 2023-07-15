@@ -157,7 +157,7 @@ impl BackgroundCore {
         while xcoord < 720 {
 
             // Look up tile
-            let mapdata : u16 = mem[(addr>>1)];
+            let mapdata : u16 = mem[(addr>>1) & 0xffff];
 
             // Which byte has tile index
             let tile : u16 = match addr & 1 {

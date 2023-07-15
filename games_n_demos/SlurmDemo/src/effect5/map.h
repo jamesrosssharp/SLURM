@@ -30,6 +30,6 @@ SOFTWARE.
 #ifndef MAP_H
 #define MAP_H
 
-extern unsigned char map_data[];  
+extern unsigned char map_data[32][32];  
 
 #endif

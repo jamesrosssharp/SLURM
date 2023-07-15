@@ -328,6 +328,4 @@ mult_655_88_div8:
 
 	.endfunc
 
-
-
 	.end
