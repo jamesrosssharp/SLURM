@@ -34,7 +34,9 @@ SOFTWARE.
 
 short sin(unsigned short ang);
 short cos(unsigned short ang);
-short tan(unsigned short ang);
-short cot(unsigned short ang);
+short tan_lo(unsigned short ang);
+short tan_hi(unsigned short ang);
+short cot_lo(unsigned short ang);
+short cot_hi(unsigned short ang);
 
 #endif

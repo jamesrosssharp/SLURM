@@ -32,4 +32,8 @@ SOFTWARE.
 
 void raycast_render(unsigned short fb, unsigned short* px, unsigned short* py, unsigned short pang);
 
+/* raycast.asm routines */
+extern void mul_1616_1616_div65536(short*, short, short);
+extern void add_1616_1616(short *a, short *b);
+
 #endif

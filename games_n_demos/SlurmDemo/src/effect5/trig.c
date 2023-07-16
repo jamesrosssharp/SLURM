@@ -29,26 +29,38 @@ SOFTWARE.
 
 #include "trig.h"
 
-extern short sin_table_8_8[512];
-extern short tan_table_8_8[256];
-extern short cot_table_8_8[256];
+extern short sin_table_2_14[512];
+extern short tan_table_16_16[256];
+extern short cot_table_16_16[256];
 
 short sin(unsigned short ang)
 {
-	return sin_table_8_8[ang & 0x1ff];
+	return sin_table_2_14[ang & 0x1ff];
 }
 
 short cos(unsigned short ang)
 {
-	return sin_table_8_8[(ang + 128) & 0x1ff];
+	return sin_table_2_14[(ang + 128) & 0x1ff];
 }
 
 short tan_lo(unsigned short ang)
 {
-	return tan_table_8_8[(ang & 0xff) << 2];
+	return tan_table_16_16[(ang & 0xff) << 1];
 }
 
-short cot(unsigned short ang)
+short tan_hi(unsigned short ang)
 {
-	return cot_table_8_8[ang & 0xff];
+	return tan_table_16_16[((ang & 0xff) << 1) + 1];
 }
+
+short cot_lo(unsigned short ang)
+{
+	return cot_table_16_16[(ang & 0xff) << 1];
+}
+
+short cot_hi(unsigned short ang)
+{
+	return cot_table_16_16[((ang & 0xff) << 1) + 1];
+}
+
+

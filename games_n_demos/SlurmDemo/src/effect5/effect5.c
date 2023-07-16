@@ -153,8 +153,8 @@ short _mult_div_8_8(short a, short m, short d)
 
 #include "raycast.h"
 
-unsigned short px[2] = {32768, 1};
-unsigned short py[2] = {32768, 1};
+unsigned short px[2] = {32768, 4};
+unsigned short py[2] = {32768, 4};
 unsigned short pang = 0;
 
 #define UP_KEY 1
@@ -186,12 +186,12 @@ void poll_gpios()
 	if (keys & LEFT_KEY)
 	{
 		pang ++;
-		pang &= 0x7ff;
+		pang &= 0x1ff;
 	}
 	if (keys & RIGHT_KEY)
 	{
 		pang --;
-		pang &= 0x7ff;
+		pang &= 0x1ff;
 	}
 
 }
@@ -214,7 +214,7 @@ void main(void)
 	vtors->background_update();
 */
 
-	vtors->storage_load_synch(rc_map_tiles_flash_offset_lo, rc_map_tiles_flash_offset_hi, 0, 0, RC_TILES_ADDRESS_LO, RC_TILES_ADDRESS_HI, (rc_map_tiles_flash_size_lo>>1));
+//	vtors->storage_load_synch(rc_map_tiles_flash_offset_lo, rc_map_tiles_flash_offset_hi, 0, 0, RC_TILES_ADDRESS_LO, RC_TILES_ADDRESS_HI, (rc_map_tiles_flash_size_lo>>1));
 	
 	vtors->copper_set_bg_color(0x0000);
 //	vtors->load_palette(torus_palette, 0, 16);
@@ -244,7 +244,7 @@ void main(void)
 		
 		clear_fb(framebuffers_upper_lo[!cur_front_buffer], 0x0000);
 
-		raycast_render(framebuffers_upper_lo[!cur_front_buffer], px, py, pang >> 2);
+		raycast_render(framebuffers_upper_lo[!cur_front_buffer], px, py, pang);
 
 		poll_gpios();
 

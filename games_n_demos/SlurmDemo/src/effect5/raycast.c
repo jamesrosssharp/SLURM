@@ -41,183 +41,166 @@ extern struct applet_vectors *vtors;
 
 #define SQUARE_MASK 0xfc00
 
+short ray1_x_prestep[3] = {0, 0, 0};
+short ray1_y_prestep[3] = {0, 0, 0};
+short ray1_x_step[3] = {0, 0, 0};
+short ray1_y_step[3] = {0, 0, 0};
+
+short ray2_x_prestep[3] = {0, 0, 0};
+short ray2_y_prestep[3] = {0, 0, 0};
+short ray2_x_step[3] = {0, 0, 0};
+short ray2_y_step[3] = {0, 0, 0};
+
+unsigned char col1 = 0;
+unsigned char col2 = 0;
+
+short _x1[3]; 
+short _y1[3]; 
+short _x2[3]; 
+short _y2[3]; 
+
+int i = 0;
+
+bool found1 = false;
+bool found2 = false;
+
+unsigned short d1 = 65535, d2 = 65535;
+
+short one[3] = {1, 0, 0};
+
 unsigned short fire_ray(unsigned short fb, unsigned short *px, unsigned short *py, unsigned short phi)
 {
 
 	bool up = false;
 	bool right = false;
 
-	short ray1_x_prestep = 0;
-	short ray1_y_prestep = 0;
-	short ray1_x_step = 0;
-	short ray1_y_step = 0;
+	_x1[2] = 0;
+	_x1[0] = px[0];
+	_x1[1] = px[1];
 
-	short ray2_x_prestep = 0;
-	short ray2_y_prestep = 0;
-	short ray2_x_step = 0;
-	short ray2_y_step = 0;
+	_x2[2] = 0;
+	_x2[0] = px[0];
+	_x2[1] = px[1];
 
-	unsigned char col1 = 0;
-	unsigned char col2 = 0;
+	_y1[2] = 0;
+	_y1[0] = py[0];
+	_y1[1] = py[1];
 
-	short x1[2]; 
-	short y1[2]; 
-	short x2[2]; 
-	short y2[2]; 
-
-	int i = 0;
-
-	bool found1 = false;
-	bool found2 = false;
-
-	unsigned short d1 = 65535, d2 = 65535;
-
-	x1[0] = px[0];
-	x1[1] = px[1];
-	x2[0] = px[0];
-	x2[1] = px[1];
-	y1[0] = py[0];
-	y1[1] = py[1];
-	y2[0] = py[0];
-	y2[1] = py[1];
+	_y2[2] = 0;
+	_y2[0] = py[0];
+	_y2[1] = py[1];
 	
-	if ((0 < phi) && (phi < 256))
+
+
+	if (phi < 256)
 		up = true;
 
-	if ((phi > 384) || (phi < 128))
+	if ((phi < 128) || (phi > 384))
 		right = true;
 
-	/*
-	// Fixed point: 6 (grid coord) : 5 (tile u,v) : 5 (frac)
-
-	if (up)
+	if ( up )
 	{
-		short cot_phi = cot(phi);
+		ray1_y_prestep[2] = -1;
+		ray1_y_prestep[0] = -(short)py[0];
+		ray1_y_prestep[1] = -1;
 
-		ray1_y_prestep = (py & SQUARE_MASK) - py;
-		ray1_x_prestep = -mult_655_88_div8(ray1_y_prestep, cot_phi);
-		ray1_y_step = - SQUARE_WIDTH_FRAC;
-		ray1_x_step = mult_655_88_div8(SQUARE_WIDTH_FRAC, cot_phi);
+		ray1_x_prestep[2] = 0;
+		ray1_x_prestep[0] = -ray1_y_prestep[0];
+		ray1_x_prestep[1] = 0;
+
+		vtors->printf("-prestep y: %x %x\n", ray1_x_prestep[0], ray1_x_prestep[1]);
+		mul_1616_1616_div65536(ray1_x_prestep, cot_lo(phi), cot_hi(phi));
+
+		ray1_y_step[2] = -1;
+		ray1_y_step[0] = 0;
+		ray1_y_step[1] = -1;
+
+		ray1_x_step[2] = 0;
+  		ray1_x_step[0] = 0;
+		ray1_x_step[1] = 1;
+
+		mul_1616_1616_div65536(ray1_x_step, cot_lo(phi), cot_hi(phi));
+
 	}
 	else
 	{
-		short cot_phi = cot(phi);
+		ray1_y_prestep[2] = 0;
+		ray1_y_prestep[0] = -(short)py[0];
+		ray1_y_prestep[1] = 0;
 
-		ray1_y_prestep = ((py & SQUARE_MASK) + SQUARE_WIDTH_FRAC) - py;
-		ray1_x_prestep = -mult_655_88_div8(ray1_y_prestep, cot_phi);
-		ray1_y_step = SQUARE_WIDTH_FRAC;
-		ray1_x_step = -mult_655_88_div8(SQUARE_WIDTH_FRAC, cot_phi);
+		ray1_x_prestep[2] = 0;
+		ray1_x_prestep[0] = ray1_y_prestep[0];
+		ray1_x_prestep[1] = 0;
 
-	}
+		vtors->printf("-prestep y: %x %x\n", ray1_x_prestep[0], ray1_x_prestep[1]);
+		mul_1616_1616_div65536(ray1_x_prestep, cot_lo(phi), cot_hi(phi));
 
-	if (right)
-	{
-		short tan_phi = tan(phi);
+		ray1_y_step[2] = 0;
+		ray1_y_step[0] = 0;
+		ray1_y_step[1] = 1;
 
-		ray2_y_prestep = ((px & SQUARE_MASK) + SQUARE_WIDTH_FRAC) - px;
-		ray2_x_prestep = -mult_655_88_div8(ray2_y_prestep, tan_phi);
-		ray2_y_step = SQUARE_WIDTH_FRAC;
-		ray2_x_step = -mult_655_88_div8(SQUARE_WIDTH_FRAC, tan_phi);
-	}
-	else
-	{
-		short tan_phi = tan(phi);
+		ray1_x_step[2] = 0;
+  		ray1_x_step[0] = 0;
+		ray1_x_step[1] = 1;
 
-		ray2_y_prestep = ((px & SQUARE_MASK)) - px;
-		ray2_x_prestep = -mult_655_88_div8(ray2_y_prestep, tan_phi);
-		ray2_y_step = -SQUARE_WIDTH_FRAC;
-		ray2_x_step = mult_655_88_div8(SQUARE_WIDTH_FRAC, tan_phi);
-	
-	}
+		mul_1616_1616_div65536(ray1_x_step, cot_lo(phi), cot_hi(phi));
 
-	x1 += ray1_x_prestep;
-	y1 += ray1_y_prestep;
-
-	x2 += ray2_x_prestep;
-	y2 += ray2_y_prestep;
-
-
-	put_pixel(fb, px >> 8, py >> 8, 3);
-
-	while ((i < 20) && (! found1) && (! found2))
-	{
-		while ((right && (x1 <= x2)) || (!right && (x1 >= x2)))
-		{
-
-			short map_x;
-			short map_y;
-
-			map_x = x1 & SQUARE_MASK;
-			
-			if (up)
-			{
-				map_y = (y1 - SQUARE_WIDTH_FRAC - 1) & SQUARE_MASK;
-			}
-			else
-			{
-				map_y = y1 & SQUARE_MASK;
-			}
-
-			if ((map_x > (31 << 10)) || (map_y > (31 << 10))) break;
-
-			put_pixel(fb, map_x >> 8, map_y >> 8, 1);
-
-			col1 = map_data[map_y >> 10][map_x >> 10];
-			if (col1)
-			{
-				found1 = true;
-			 	break;
-			}
-
-			x1 += ray1_x_step;
-			y1 += ray1_y_step;
-		} 
-
-
-		while ((up && (y2 >= y1)) || (!up && (y2 <= y1)))
-		{
-
-			short map_x;
-			short map_y;
-
-			map_y = y2 & SQUARE_MASK;
-			
-			if (!right)
-			{
-				map_x = (x2 - SQUARE_WIDTH_FRAC - 1) & SQUARE_MASK;
-			}
-			else
-			{
-				map_y = y2 & SQUARE_MASK;
-			}
-
-			put_pixel(fb, map_x >> 8, map_y >> 8, 2);
-			
-			col2 = map_data[map_y >> 10][map_x >> 10];
-			if (col2)
-			{
-				found2 = true;
-			 	break;
-			}
-
-			x2 += ray2_x_step;
-			y2 += ray2_y_step;
-		} 
-
-		i ++;
-	}
-	if (found1)
-		d1 = cos(phi) * (x1 - px) - sin(phi) * (y1 - py);
-
-	if (found2)
-		d2 = cos(phi) * (x2 - px) - sin(phi) * (y2 - py);
-
-	if (d1 < d2)
-		return d1;
-	else
-		return d2;
- 
+		/*ray1_x_prestep[0] = ~ray1_x_prestep[0];
+		ray1_x_prestep[1] = ~ray1_x_prestep[1];
+		ray1_x_prestep[2] = ~ray1_x_prestep[2];
+		ray1_x_step[0] = ~ray1_x_step[0];
+		ray1_x_step[1] = ~ray1_x_step[1];
+		ray1_x_step[2] = ~ray1_x_step[2];
+		add_1616_1616(ray1_x_prestep, one);
+		add_1616_1616(ray1_x_step, one);
 */
+	}
+
+	vtors->printf("x1: %x %x %x\n", _x1[0], _x1[1], _x1[2]);
+	vtors->printf("y1: %x %x %x\n", _y1[0], _y1[1], _y1[2]);
+	
+	add_1616_1616(_x1, ray1_x_prestep);
+	add_1616_1616(_y1, ray1_y_prestep);
+
+
+	vtors->printf("tan phi y: %x %x\n", cot_lo(phi), cot_hi(phi));
+	vtors->printf("prestep x: %x %x %x\n", ray1_x_prestep[0], ray1_x_prestep[1], ray1_x_prestep[2]);
+	vtors->printf("phi: %x\n", phi);
+	vtors->printf("x1: %x %x %x\n", _x1[0], _x1[1], _x1[2]);
+	vtors->printf("y1: %x %x %x\n", _y1[0], _y1[1], _y1[2]);
+	
+	
+//	vtors->printf("up: %d right: %d\n", up, right);
+
+
+	i = 0;
+
+	col1 = 0;
+	col2 = 0;
+
+	while (i < 20)
+	{
+		if ((_x1[1] > 31) || (_y1[1] > 31) || _x1[2] || _y1[2] || (_x1[1] < 0) || (_y1[1] < 0)) 
+			break;
+
+		put_pixel(fb, get_player_xy(&_x1[0]) >> 2, get_player_xy(&_y1[0]) >> 2, 2);
+
+		if (up)
+			col1 = map_data[_y1[1] - 1][_x1[1]];
+		else
+			col1 = map_data[_y1[1]][_x1[1]];
+
+		if (col1)
+			break;
+
+		i++;
+		add_1616_1616(_x1, ray1_x_step);
+		add_1616_1616(_y1, ray1_y_step);
+
+		vtors->printf("x1: %x %x %x\n", _x1[0], _x1[1], _x1[2]);
+		vtors->printf("y1: %x %x %x\n", _y1[0], _y1[1], _y1[2]);
+	
+	}	
 
 	return 0;
 } 
