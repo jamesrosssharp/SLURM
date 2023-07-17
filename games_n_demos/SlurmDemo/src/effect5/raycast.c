@@ -254,6 +254,15 @@ unsigned short fire_ray(unsigned short fb, unsigned short *px, unsigned short *p
 		i++;	
 	}
 
+	if (col1)
+	{
+		//d1 = my_cos(p_ang, sine_table)*(x1 - p.x()) - my_sin(p_ang, sine_table)*(y1 - p.y())
+		d1 = calculate_distance(phi, px, py, _x1, _y1);			 
+	}
+	else
+	{
+		d1 = 65535;
+	}
 
 	return 0;
 } 

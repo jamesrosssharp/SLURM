@@ -204,4 +204,44 @@ add_1616_1616:
 
 	.endfunc
 
+.global calculate_distance
+	.function   calculate_distance
+calculate_distance:
+	sub r13, 32
+
+	//
+	//	r4: phi
+	//	r5: *px 
+	//	r6: *py
+	//	r7: *_x1
+	//	[r13, 0x30] : *_y1
+
+	st [r13, 0], r4 
+	st [r13, 2], r5 
+	st [r13, 4], r6 
+	st [r13, 6], r7 
+	st [r13, 8], r8
+	st [r13, 10], r9
+	st [r13, 12], r10
+	st [r13, 14], r11
+	st [r13, 16], r12
+	st [r13, 18], r15
+
+	ld r4, [r13, 0]
+	ld r5, [r13, 2]
+	ld r6, [r13, 4]
+	ld r7, [r13, 6]
+	ld r8, [r13, 8]
+	ld r9, [r13, 10]
+	ld r10, [r13, 12]
+	ld r11, [r13, 14]
+	ld r12, [r13, 16]
+	ld r15, [r13, 18]
+
+	add r13, 32
+
+	ret
+
+	.endfunc
+
 	.end
