@@ -103,6 +103,8 @@ flip_buffer_spr:
 	add r4, 16
 	out [r0, 0x5303], r4
 	add r4, 16
+	out [r0, 0x5304], r4
+	add r4, 16
 	ret
 	
 	.endfunc

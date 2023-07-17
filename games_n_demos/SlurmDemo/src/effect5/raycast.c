@@ -73,24 +73,24 @@ unsigned short fire_ray(unsigned short fb, unsigned short *px, unsigned short *p
 
 	bool up = false;
 	bool right = false;
+	bool done1 = false;
+	bool done2 = false;
 
-	_x1[2] = 0;
 	_x1[0] = px[0];
 	_x1[1] = px[1];
-
-	_x2[2] = 0;
+	_x1[2] = 0;
+	
 	_x2[0] = px[0];
 	_x2[1] = px[1];
+	_x2[2] = 0;
 
-	_y1[2] = 0;
 	_y1[0] = py[0];
 	_y1[1] = py[1];
+	_y1[2] = 0;
 
-	_y2[2] = 0;
 	_y2[0] = py[0];
 	_y2[1] = py[1];
-	
-
+	_y2[2] = 0;
 
 	if (phi < 256)
 		up = true;
@@ -100,21 +100,19 @@ unsigned short fire_ray(unsigned short fb, unsigned short *px, unsigned short *p
 
 	if ( up )
 	{
-		ray1_y_prestep[2] = -1;
 		ray1_y_prestep[0] = -(short)py[0];
 		ray1_y_prestep[1] = -1;
+		ray1_y_prestep[2] = -1;
 
-		ray1_x_prestep[2] = 0;
 		ray1_x_prestep[0] = -ray1_y_prestep[0];
 		ray1_x_prestep[1] = 0;
 
 		mul_1616_1616_div65536(ray1_x_prestep, cot_lo(phi), cot_hi(phi));
 
-		ray1_y_step[2] = -1;
 		ray1_y_step[0] = 0;
 		ray1_y_step[1] = -1;
+		ray1_y_step[2] = -1;
 
-		ray1_x_step[2] = 0;
   		ray1_x_step[0] = 0;
 		ray1_x_step[1] = 1;
 
@@ -123,21 +121,20 @@ unsigned short fire_ray(unsigned short fb, unsigned short *px, unsigned short *p
 	}
 	else
 	{
-		ray1_y_prestep[2] = 0;
 		ray1_y_prestep[0] = -(short)py[0];
 		ray1_y_prestep[1] = 0;
+		ray1_y_prestep[2] = 0;
+		
 
-		ray1_x_prestep[2] = 0;
 		ray1_x_prestep[0] = -ray1_y_prestep[0];
 		ray1_x_prestep[1] = -1;
 
 		mul_1616_1616_div65536(ray1_x_prestep, cot_lo(phi), cot_hi(phi));
 
-		ray1_y_step[2] = 0;
 		ray1_y_step[0] = 0;
 		ray1_y_step[1] = 1;
+		ray1_y_step[2] = 0;
 
-		ray1_x_step[2] = -1;
   		ray1_x_step[0] = 0;
 		ray1_x_step[1] = -1;
 
@@ -145,34 +142,118 @@ unsigned short fire_ray(unsigned short fb, unsigned short *px, unsigned short *p
 
 	}
 
+	if ( right )
+	{
+		ray2_x_prestep[0] = -(short)px[0];
+		ray2_x_prestep[1] = 0;
+		ray2_x_prestep[2] = 0;
+
+		ray2_y_prestep[0] = -ray2_x_prestep[0];
+		ray2_y_prestep[1] = -1;
+
+		mul_1616_1616_div65536(ray2_y_prestep, tan_lo(phi), tan_hi(phi));
+
+		ray2_x_step[0] = 0;
+		ray2_x_step[1] = 1;
+		ray2_x_step[2] = 0;
+
+  		ray2_y_step[0] = 0;
+		ray2_y_step[1] = -1;
+
+		mul_1616_1616_div65536(ray2_y_step, tan_lo(phi), tan_hi(phi));
+
+	}
+	else
+	{
+		ray2_x_prestep[0] = -(short)px[0];
+		ray2_x_prestep[1] = -1;
+		ray2_x_prestep[2] = -1;
+
+		ray2_y_prestep[0] = -ray2_x_prestep[0];
+		ray2_y_prestep[1] = 0;
+
+		mul_1616_1616_div65536(ray2_y_prestep, tan_lo(phi), tan_hi(phi));
+
+		ray2_x_step[0] = 0;
+		ray2_x_step[1] = -1;
+		ray2_x_step[2] = -1;
+
+  		ray2_y_step[0] = 0;
+		ray2_y_step[1] = 1;
+
+		mul_1616_1616_div65536(ray2_y_step, tan_lo(phi), tan_hi(phi));
+	}
+
+
 	add_1616_1616(_x1, ray1_x_prestep);
 	add_1616_1616(_y1, ray1_y_prestep);
+	add_1616_1616(_x2, ray2_x_prestep);
+	add_1616_1616(_y2, ray2_y_prestep);
+
 
 	i = 0;
 
 	col1 = 0;
 	col2 = 0;
 
-	while (i < 20)
+
+	while (i < 20 && !done1 && !done2)
 	{
-		if ((_x1[1] > 31) || (_y1[1] > 31) || _x1[2] || _y1[2] || (_x1[1] < 0) || (_y1[1] < 0)) 
-			break;
 
-		put_pixel(fb, get_player_xy(&_x1[0]) >> 2, get_player_xy(&_y1[0]) >> 2, 2);
+		while ((right && (_x1[1] <= _x2[1])) || (!right && (_x1[1] >= _x2[1])) && !done1)
+	    	{
+			if ((_x1[1] > 31) || (_y1[1] > 24) || (_x1[1] < 0) || (_y1[1] < 0) || (_x1[2]) || (_y1[2])) 
+			{
+				done1 = true;
+				break;
+			}
 
-		if (up)
-			col1 = map_data[_y1[1] - 1][_x1[1]];
-		else
-			col1 = map_data[_y1[1]][_x1[1]];
+			put_pixel(fb, get_player_xy(&_x1[0]) >> 2, get_player_xy(&_y1[0]) >> 2, 2);
 
-		if (col1)
-			break;
+			if (up)
+				col1 = map_data[_y1[1] - 1][_x1[1]];
+			else
+				col1 = map_data[_y1[1]][_x1[1]];
 
-		i++;
-		add_1616_1616(_x1, ray1_x_step);
-		add_1616_1616(_y1, ray1_y_step);
+			if (col1)
+			{
+				done1 = true;
+				break;
+			}
 
-	}	
+			add_1616_1616(_x1, ray1_x_step);
+			add_1616_1616(_y1, ray1_y_step);
+
+		}	
+	
+		//while (up and y2 >= y1) or (not up and y2 <= y1):
+		while ((up && (_y2[1] >= _y1[1])) || (!up && (_y2[1] <= _y1[1])) && !done2)
+		{
+			if ((_x2[1] > 31) || (_y2[1] > 24) || (_x2[1] < 0) || (_y2[1] < 0) || (_x2[2]) || (_y2[2])) 
+			{
+				done2 = true;	
+				break;
+			}
+
+			put_pixel(fb, get_player_xy(&_x2[0]) >> 2, get_player_xy(&_y2[0]) >> 2, 3);
+
+			if (right)
+				col2 = map_data[_y2[1]][_x2[1]];
+			else
+				col2 = map_data[_y2[1]][_x2[1] - 1];
+
+			if (col2)
+			{
+				done2 = true;
+				break;
+			}
+			add_1616_1616(_x2, ray2_x_step);
+			add_1616_1616(_y2, ray2_y_step);
+
+		}
+		i++;	
+	}
+
 
 	return 0;
 } 

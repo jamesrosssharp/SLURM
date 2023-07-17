@@ -232,14 +232,19 @@ void main(void)
 	clear_fb(framebuffers_upper_lo[0], 0x0000);
 	clear_fb(framebuffers_upper_lo[1], 0x0000);
 	
-	vtors->sprite_display(0, framebuffers_word_addr[cur_front_buffer], SPRITE_STRIDE_320, FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT, 24, 16);
+	vtors->sprite_display(0, framebuffers_word_addr[!cur_front_buffer], SPRITE_STRIDE_320, FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT, 24, 16);
 	vtors->sprite_update_sprite(0);
 
+	vtors->rtos_lock_mutex(&eff5_mutex);
 	while (1)
 //	while (frame < 1000)
 	{
 		int i;
+
+		enter_critical();
+		flip_buffer = 1;
 		vtors->rtos_lock_mutex(&eff5_mutex);
+		leave_critical();
 		frame++;
 		
 		clear_fb(framebuffers_upper_lo[!cur_front_buffer], 0x0000);
@@ -254,7 +259,6 @@ void main(void)
 			vtors->printf("Px: %x py: %x pang: %x\r\n", get_player_xy(px), get_player_xy(py), pang);
 		}
 
-		flip_buffer = 1;
 
 	}
 	
