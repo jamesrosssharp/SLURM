@@ -36,7 +36,7 @@ mul_1616_1616_div65536:
 	//
 	//	Multiply A 16: B 16 x C 16: D 16 -> 32:32, return middle 16:16 (bits [47:16]) in array in r4
 	//	
-
+	
 	st [r13, 0], r4 
 	st [r13, 2], r5 
 	st [r13, 4], r6 
@@ -48,44 +48,88 @@ mul_1616_1616_div65536:
 	st [r13, 16], r12
 	st [r13, 18], r15
 
-	ld r7, [r4]	// r7 = B
+	ld r7, [r4] 	// r7 = B	
 	ld r8, [r4, 2]  // r8 = A
 
-	// Compute A C 
+	// Compute B*D 
 
+	mov r9, r7
+	mov r10, r7
+	mul r9, r5
+	umulu r10, r5	// r10:r9 = B*D = k:w[0]
+
+	mov r2, r10 // r2 = k
+
+	// Compute A*D 
+	mov r9, r8
+	mov r10, r8
+	mul r9, r5
+	umulu r10, r5
+
+	add r9, r2
+	adc r10, r0   // r10:r9 = A*D + k = k:w[1]
+	mov x32, r9   // x32 = w[1]	
+	
+	mov r2, r10 // r2 = w[2]
+
+	// Compute B*C
+	mov r9, r7
+	mov r10, r7
+	mul r9, r6
+	umulu r10, r6
+	
+	add r9, x32
+	adc r10, r0   // r10:r9 = B*C + w[1] = k:w[1]
+	mov x32, r9   // x32 = w[1]
+
+	mov r15, r10 // r15 =  k
+
+	// Compute A*C
 	mov r9, r8
 	mov r10, r8
 	mul r9, r6
-	mulu r10, r6 // r10:r9 = AC (<<32) 
-
-	// Compute AD + BC
-
-	mov r11, r8
-	mov r12, r8
-	mul r11, r5
-	umulu r12, r5
-
-	mov r2, r7
-	mov r15,r7
-	mul r2, r6
-	umulu r15, r6
-
-	add r11, r2
-	adc r12, r15 // r12:r11 = AD + BC (<<16)
-	adc r10, r0
-
-	// Compute BD
+	umulu r10, r6
 	
-	mov r2, r7
-	mov r15, r7
-	mul r2, r5
-	umulu r15, r5 // r15:r2 = BD (<<0)
-
-	add r11, r15
-	adc r9, r12 
+	add r9, r2
+	adc r10, r0
+	add r9, r15
 	adc r10, r0
 
-	st [r4], r11
+	mov x33, r9	// x33 = w[2]
+	mov x34, r10	// x34 = w[3] 
+
+	// Now correct unsigned product
+
+	test r8, 0x8000
+	bz no_correct1 	
+
+	mov r9, x33
+	sub r9, r5
+	mov x33, r9
+	mov r9, x34
+	sbb r9, r0
+	sub r9, r6
+	mov x34, r9
+
+no_correct1:
+	test r6, 0x8000
+	bz no_correct2
+
+	mov r9, x33
+	sub r9, r7
+	mov x33, r9
+	mov r9, x34
+	sbb r9, r0
+	sub r9, r8
+	mov x34, r9
+
+no_correct2:
+
+	mov r2, x32
+	mov r9, x33
+	mov r10, x34
+
+	st [r4, 0], r2
 	st [r4, 2], r9
 	st [r4, 4], r10
 

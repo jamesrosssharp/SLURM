@@ -243,9 +243,11 @@ impl Slurm16CPU {
 
 	pub fn alu_mulu(&mut self, reg_dest: usize, src1_a : u16, src2_b : u16) {
 		
-		let a = (src1_a as i16) as i32;
-		let b = (src2_b as i16) as i32;
+		let a = ((src1_a as i16)) as i32;
+		let b = ((src2_b as i16)) as i32;
 		let mul = ((b * a) >> 16) & 0xffff;
+
+		println!("{:#01x} x {:#01x} = {:#01x} : {:#01x}", a, b, mul, a*b);
 
 		self.registers[reg_dest] = mul as u16;
 		self.z = mul & 0xffff == 0;

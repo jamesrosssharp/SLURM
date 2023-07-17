@@ -251,7 +251,7 @@ void main(void)
 		if ((frame & 0xf) == 0)
 		{
 			vtors->printf("FPS x100: %d\r\n", _mult_div_8_8(frame, 6000, vsync_count));
-			vtors->printf("Px: %x py: %x pang: %x\n", get_player_xy(px), get_player_xy(py), pang);
+			vtors->printf("Px: %x py: %x pang: %x\r\n", get_player_xy(px), get_player_xy(py), pang);
 		}
 
 		flip_buffer = 1;

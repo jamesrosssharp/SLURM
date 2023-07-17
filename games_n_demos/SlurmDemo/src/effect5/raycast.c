@@ -108,7 +108,6 @@ unsigned short fire_ray(unsigned short fb, unsigned short *px, unsigned short *p
 		ray1_x_prestep[0] = -ray1_y_prestep[0];
 		ray1_x_prestep[1] = 0;
 
-		vtors->printf("-prestep y: %x %x\n", ray1_x_prestep[0], ray1_x_prestep[1]);
 		mul_1616_1616_div65536(ray1_x_prestep, cot_lo(phi), cot_hi(phi));
 
 		ray1_y_step[2] = -1;
@@ -129,49 +128,25 @@ unsigned short fire_ray(unsigned short fb, unsigned short *px, unsigned short *p
 		ray1_y_prestep[1] = 0;
 
 		ray1_x_prestep[2] = 0;
-		ray1_x_prestep[0] = ray1_y_prestep[0];
-		ray1_x_prestep[1] = 0;
+		ray1_x_prestep[0] = -ray1_y_prestep[0];
+		ray1_x_prestep[1] = -1;
 
-		vtors->printf("-prestep y: %x %x\n", ray1_x_prestep[0], ray1_x_prestep[1]);
 		mul_1616_1616_div65536(ray1_x_prestep, cot_lo(phi), cot_hi(phi));
 
 		ray1_y_step[2] = 0;
 		ray1_y_step[0] = 0;
 		ray1_y_step[1] = 1;
 
-		ray1_x_step[2] = 0;
+		ray1_x_step[2] = -1;
   		ray1_x_step[0] = 0;
-		ray1_x_step[1] = 1;
+		ray1_x_step[1] = -1;
 
 		mul_1616_1616_div65536(ray1_x_step, cot_lo(phi), cot_hi(phi));
 
-		/*ray1_x_prestep[0] = ~ray1_x_prestep[0];
-		ray1_x_prestep[1] = ~ray1_x_prestep[1];
-		ray1_x_prestep[2] = ~ray1_x_prestep[2];
-		ray1_x_step[0] = ~ray1_x_step[0];
-		ray1_x_step[1] = ~ray1_x_step[1];
-		ray1_x_step[2] = ~ray1_x_step[2];
-		add_1616_1616(ray1_x_prestep, one);
-		add_1616_1616(ray1_x_step, one);
-*/
 	}
 
-	vtors->printf("x1: %x %x %x\n", _x1[0], _x1[1], _x1[2]);
-	vtors->printf("y1: %x %x %x\n", _y1[0], _y1[1], _y1[2]);
-	
 	add_1616_1616(_x1, ray1_x_prestep);
 	add_1616_1616(_y1, ray1_y_prestep);
-
-
-	vtors->printf("tan phi y: %x %x\n", cot_lo(phi), cot_hi(phi));
-	vtors->printf("prestep x: %x %x %x\n", ray1_x_prestep[0], ray1_x_prestep[1], ray1_x_prestep[2]);
-	vtors->printf("phi: %x\n", phi);
-	vtors->printf("x1: %x %x %x\n", _x1[0], _x1[1], _x1[2]);
-	vtors->printf("y1: %x %x %x\n", _y1[0], _y1[1], _y1[2]);
-	
-	
-//	vtors->printf("up: %d right: %d\n", up, right);
-
 
 	i = 0;
 
@@ -197,9 +172,6 @@ unsigned short fire_ray(unsigned short fb, unsigned short *px, unsigned short *p
 		add_1616_1616(_x1, ray1_x_step);
 		add_1616_1616(_y1, ray1_y_step);
 
-		vtors->printf("x1: %x %x %x\n", _x1[0], _x1[1], _x1[2]);
-		vtors->printf("y1: %x %x %x\n", _y1[0], _y1[1], _y1[2]);
-	
 	}	
 
 	return 0;
@@ -218,7 +190,7 @@ void raycast_render(unsigned short fb, unsigned short *px, unsigned short *py, u
 
 	put_pixel(fb, get_player_xy(px) >> 2, get_player_xy(py) >> 2, 1);
 
-	for (x = 0; x < 128; x++)
+/*	for (x = 0; x < 128; x++)
 	{
 		for (y = 0; y < 64; y++)
 		{
@@ -226,10 +198,10 @@ void raycast_render(unsigned short fb, unsigned short *px, unsigned short *py, u
 			put_pixel(fb, x, y, col);
 		}
 	}
-	
+*/	
 
 
-//	for (phi = phi_start; phi < phi_end; phi++)
+	for (phi = phi_start; phi < phi_end; phi++)
 	{
 		unsigned short d = fire_ray(fb, px, py, phi & 0x1ff);
 
