@@ -309,7 +309,7 @@ begin
 	gout_r <= bout;
 end
 
-wire DE = (hcount >= H_BACK_PORCH && hcount < (H_BACK_PORCH + H_PIXELS + 32) && vcount >= V_BACK_PORCH && vcount < (V_DISPLAY_LINES + V_BACK_PORCH + 16));
+wire DE = (hcount >= (H_BACK_PORCH + 4) && hcount < (H_BACK_PORCH + H_PIXELS) && vcount >= V_BACK_PORCH && vcount < (V_DISPLAY_LINES + V_BACK_PORCH + 16));
 
 assign RR = DE ? rout_r  : 4'b0000;
 assign GG = DE ? gout_r  : 4'b0000;

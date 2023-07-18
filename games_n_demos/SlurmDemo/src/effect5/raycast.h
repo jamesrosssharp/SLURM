@@ -37,5 +37,6 @@ extern void mul_1616_1616_div65536(short*, short, short);
 extern void add_1616_1616(short *a, short *b);
 extern unsigned short calculate_distance(unsigned short phi, unsigned short* px, unsigned short* py, short* x1, short* y1);			 
  
+extern void draw_vline(unsigned short fb, unsigned short y1, unsigned short y2, unsigned short col);
 
 #endif

@@ -247,7 +247,7 @@ impl Slurm16CPU {
 		let b = ((src2_b as i16)) as i32;
 		let mul = ((b * a) >> 16) & 0xffff;
 
-		println!("{:#01x} x {:#01x} = {:#01x} : {:#01x}", a, b, mul, a*b);
+		//println!("{:#01x} x {:#01x} = {:#01x} : {:#01x}", a, b, mul, a*b);
 
 		self.registers[reg_dest] = mul as u16;
 		self.z = mul & 0xffff == 0;
@@ -353,7 +353,7 @@ impl Slurm16CPU {
 		
 		let a = src as u16;
 		let carry = if self.c { 1 } else { 0 } as u16;
-		let rolc = a << 1 | carry;
+		let rolc = (a << 1) | carry;
 
 		self.registers[reg_dest] = rolc as u16;
 		self.z = rolc == 0;
@@ -369,7 +369,7 @@ impl Slurm16CPU {
 		
 		let a = src as u16;
 		let carry = if self.c { 0x8000 } else { 0 } as u16;
-		let rorc = a >> 1 | carry;
+		let rorc = (a >> 1) | carry;
 
 		self.registers[reg_dest] = rorc as u16;
 		self.z = rorc == 0;

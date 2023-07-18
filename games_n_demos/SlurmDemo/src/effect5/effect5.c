@@ -39,22 +39,22 @@ SOFTWARE.
 
 unsigned short the_copper_list[] = {
 	COPPER_ALPHA(0xf),
-	COPPER_BG(0x0aaf),
-	COPPER_VWAIT(50),
+	COPPER_BG(0x0000),
+	COPPER_VWAIT(36),
 	COPPER_BG(0x099f),
-	COPPER_VWAIT(80),
+	COPPER_VWAIT(60),
 	COPPER_BG(0x088f),
-	COPPER_VWAIT(100),
+	COPPER_VWAIT(70),
 	COPPER_BG(0x077f),
-	COPPER_VWAIT(110),
+	COPPER_VWAIT(80),
 	COPPER_BG(0x066f),
-	COPPER_VWAIT(120),
+	COPPER_VWAIT(100),
 	COPPER_BG(0x055f),
-	COPPER_VWAIT(130),
+	COPPER_VWAIT(110),
 	COPPER_BG(0x044f),
-	COPPER_VWAIT(140),
+	COPPER_VWAIT(120),
 	COPPER_BG(0x033f),
-	COPPER_VWAIT(150),
+	COPPER_VWAIT(140),
 	COPPER_ALPHA(0x4),
 	COPPER_BG(0x0fff),
 	COPPER_VWAIT(152),
@@ -63,10 +63,10 @@ unsigned short the_copper_list[] = {
 	COPPER_BG(0x0888),
 	COPPER_VWAIT(180),
 	COPPER_BG(0x0666),
-	COPPER_VWAIT(210),
-	COPPER_BG(0x0555),
-	COPPER_VWAIT(240),
-	COPPER_BG(0x0333),
+	COPPER_VWAIT(220),
+	COPPER_BG(0x0444),
+	COPPER_VWAIT(236),
+	COPPER_BG(0x0000),
 	COPPER_VWAIT(0xfff)
 };
 
@@ -77,10 +77,10 @@ mutex_t eff5_mutex = RTOS_MUTEX_INITIALIZER;
 struct applet_vectors *vtors = (struct applet_vectors*)(APPLET_CODE_BASE);
 
 unsigned short ray_palette[] = {
-	0x0000,	0xff00, 0xf0f0, 0xf00f,
-	0xffff, 0xf811, 0xf922, 0xfa22,
-	0xfb33, 0xfc33, 0xfd44, 0xfe44,
-	0xff66, 0xff88, 0xffaa, 0xffff	
+	0x0000,	0xf111, 0xf222, 0xf333,
+	0xf444, 0xf555, 0xf666, 0xf777,
+	0xf888, 0xf999, 0xfaaa, 0xfbbb,
+	0xfccc, 0xfddd, 0xfeee, 0xffff	
 };
 
 
@@ -232,7 +232,7 @@ void main(void)
 	clear_fb(framebuffers_upper_lo[0], 0x0000);
 	clear_fb(framebuffers_upper_lo[1], 0x0000);
 	
-	vtors->sprite_display(0, framebuffers_word_addr[!cur_front_buffer], SPRITE_STRIDE_320, FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT, 24, 16);
+	vtors->sprite_display(0, framebuffers_word_addr[!cur_front_buffer], SPRITE_STRIDE_320, FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT, 24, 35);
 	vtors->sprite_update_sprite(0);
 
 	vtors->rtos_lock_mutex(&eff5_mutex);

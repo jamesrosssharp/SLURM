@@ -59,7 +59,7 @@ short _y1[3];
 short _x2[3]; 
 short _y2[3]; 
 
-int i = 0;
+volatile int i = 0;
 
 bool found1 = false;
 bool found2 = false;
@@ -75,6 +75,10 @@ unsigned short fire_ray(unsigned short fb, unsigned short *px, unsigned short *p
 	bool right = false;
 	bool done1 = false;
 	bool done2 = false;
+	short done1_i = 0;
+	short done2_i = 0;
+
+	unsigned short distance = 65535;
 
 	_x1[0] = px[0];
 	_x1[1] = px[1];
@@ -197,18 +201,18 @@ unsigned short fire_ray(unsigned short fb, unsigned short *px, unsigned short *p
 	col2 = 0;
 
 
-	while (i < 20 && !done1 && !done2)
+	while (i < 20 && !(done1 && (done1_i < i - 1)) && !(done2 && (done2_i < i - 1)))
 	{
 
 		while ((right && (_x1[1] <= _x2[1])) || (!right && (_x1[1] >= _x2[1])) && !done1)
 	    	{
-			if ((_x1[1] > 31) || (_y1[1] > 24) || (_x1[1] < 0) || (_y1[1] < 0) || (_x1[2]) || (_y1[2])) 
+			if ((_x1[1] > 31) || (_y1[1] > 31) || (_x1[1] < 0) || (_y1[1] < 0) || (_x1[2]) || (_y1[2])) 
 			{
 				done1 = true;
 				break;
 			}
 
-			put_pixel(fb, get_player_xy(&_x1[0]) >> 2, get_player_xy(&_y1[0]) >> 2, 2);
+//			put_pixel(fb, get_player_xy(&_x1[0]) >> 2, get_player_xy(&_y1[0]) >> 2, 2);
 
 			if (up)
 				col1 = map_data[_y1[1] - 1][_x1[1]];
@@ -218,6 +222,7 @@ unsigned short fire_ray(unsigned short fb, unsigned short *px, unsigned short *p
 			if (col1)
 			{
 				done1 = true;
+				done1_i = i;
 				break;
 			}
 
@@ -229,13 +234,13 @@ unsigned short fire_ray(unsigned short fb, unsigned short *px, unsigned short *p
 		//while (up and y2 >= y1) or (not up and y2 <= y1):
 		while ((up && (_y2[1] >= _y1[1])) || (!up && (_y2[1] <= _y1[1])) && !done2)
 		{
-			if ((_x2[1] > 31) || (_y2[1] > 24) || (_x2[1] < 0) || (_y2[1] < 0) || (_x2[2]) || (_y2[2])) 
+			if ((_x2[1] > 31) || (_y2[1] > 31) || (_x2[1] < 0) || (_y2[1] < 0) || (_x2[2]) || (_y2[2])) 
 			{
 				done2 = true;	
 				break;
 			}
 
-			put_pixel(fb, get_player_xy(&_x2[0]) >> 2, get_player_xy(&_y2[0]) >> 2, 3);
+//			put_pixel(fb, get_player_xy(&_x2[0]) >> 2, get_player_xy(&_y2[0]) >> 2, 3);
 
 			if (right)
 				col2 = map_data[_y2[1]][_x2[1]];
@@ -245,6 +250,7 @@ unsigned short fire_ray(unsigned short fb, unsigned short *px, unsigned short *p
 			if (col2)
 			{
 				done2 = true;
+				done2_i = true;
 				break;
 			}
 			add_1616_1616(_x2, ray2_x_step);
@@ -256,29 +262,47 @@ unsigned short fire_ray(unsigned short fb, unsigned short *px, unsigned short *p
 
 	if (col1)
 	{
-		//d1 = my_cos(p_ang, sine_table)*(x1 - p.x()) - my_sin(p_ang, sine_table)*(y1 - p.y())
 		d1 = calculate_distance(phi, px, py, _x1, _y1);			 
 	}
 	else
 	{
-		d1 = 65535;
+		d1 = 32767;
 	}
 
-	return 0;
+	if (col2)
+	{
+		d2 = calculate_distance(phi, px, py, _x2, _y2);			 
+	}
+	else
+	{
+		d2 = 32767;
+	}
+
+	if (d1 < d2)
+	{
+		distance = d1;
+	}
+	else
+	{
+		distance = d2;
+	}
+	
+
+	return distance;
 } 
 
 void raycast_render(unsigned short fb, unsigned short *px, unsigned short *py, unsigned short pang)
 {
 
-	short phi_start = pang - 40;
-	short phi_end   = pang + 40;
+	short phi_start = pang + 40;
+	short phi_end   = pang - 40;
 
 	short phi = pang;
 
 	
 	int x, y;
 
-	put_pixel(fb, get_player_xy(px) >> 2, get_player_xy(py) >> 2, 1);
+//	put_pixel(fb, get_player_xy(px) >> 2, get_player_xy(py) >> 2, 1);
 
 /*	for (x = 0; x < 128; x++)
 	{
@@ -291,11 +315,25 @@ void raycast_render(unsigned short fb, unsigned short *px, unsigned short *py, u
 */	
 
 
-	for (phi = phi_start; phi < phi_end; phi++)
+	for (phi = phi_start; phi > phi_end; phi--)
 	{
 		unsigned short d = fire_ray(fb, px, py, phi & 0x1ff);
+		unsigned short h;
+		unsigned short y1, y2;
 
-		//vtors->printf("Phi: %x d: %x\n", phi, d);		
+		if (d < 10) d = 10;
+		h = mult_div_8_8(1, 32767, d);  
+
+		if (h > 100)
+			h = 100;
+
+		y1 = 100 - h;
+		y2 = 100 + h;
+
+		draw_vline(fb, 100 - h, 100 + h, (h<<1) + 16);
+
+		fb += 2;
+
 	}
 
 }

@@ -226,6 +226,86 @@ calculate_distance:
 	st [r13, 14], r11
 	st [r13, 16], r12
 	st [r13, 18], r15
+	
+	ld r8, [r13, 0x30] // r8 = &_y1
+
+	// Compute dx
+	//d1 = my_cos(p_ang, sine_table)*(x1 - p.x()) - my_sin(p_ang, sine_table)*(y1 - p.y())
+
+	ld r9, [r7]
+	ld r10, [r7, 2] // r10:r9 = _x1
+	ld r11, [r5]
+	ld r12, [r5, 2] // r12:r11 = px
+
+	sub r9, r11
+	sbb r10, r12	// r10:r9 = _x1 - px
+
+
+	// condense r10:r9 into a single 16 bit register (remove some of fractional part) -> rotate 6 times
+	rorc r10
+	rorc r9
+	rorc r10
+	rorc r9
+	rorc r10
+	rorc r9
+	rorc r10
+	rorc r9
+	rorc r10
+	rorc r9
+	rorc r10
+	rorc r9	       // r9 = dx 6:10
+
+	// compute cos p_ang
+	mov r10, r4
+	add r10, 0x080
+	and r10, 0x1ff
+	lsl r10		// r10 = ((pang + 128) & 0x1ff) * 2
+
+	ld r10, [r10, sin_table_2_14]
+
+	mov r11, r9
+	mul r9, r10
+	mulu r11, r10	// r11:r9 = dx * cos(pang) 8:24
+
+	mov r2, r11
+
+	ld r9, [r8]
+	ld r10, [r8, 2] // r10:r9 = _y1
+	ld r11, [r6]
+	ld r12, [r6, 2] // r12:r11 = py
+
+	sub r9, r11
+	sbb r10, r12	// r10:r9 = _y1 - py
+
+	// condense r10:r9 into a single 16 bit register (remove some of fractional part) -> rotate 6 times
+	rorc r10
+	rorc r9
+	rorc r10
+	rorc r9
+	rorc r10
+	rorc r9
+	rorc r10
+	rorc r9
+	rorc r10
+	rorc r9
+	rorc r10
+	rorc r9	       // r9 = dy 6:10
+	
+	// compute -sin p_ang
+	mov r10, r4
+	add r10, 0x100
+	and r10, 0x1ff
+	lsl r10		// r10 = ((pang + 256) & 0x1ff) * 2
+
+	ld r10, [r10, sin_table_2_14]
+
+	mov r11, r9
+	mul r9, r10
+	mulu r11, r10	// r11:r9 = -dy * sin(pang) 8:24
+
+	add r2, r11
+
+done_it:
 
 	ld r4, [r13, 0]
 	ld r5, [r13, 2]
@@ -243,5 +323,60 @@ calculate_distance:
 	ret
 
 	.endfunc
+
+
+//extern void draw_vline(unsigned short* fb, unsigned short y1, unsigned short y2, unsigned short col);
+.global draw_vline
+	.function   draw_vline
+draw_vline:
+	sub r13, 32
+
+	//
+	//	r4: fb
+	//	r5: y1
+	//	r6: y2
+	//	r7: col
+
+	st [r13, 0], r4 
+	st [r13, 2], r5 
+	st [r13, 4], r6 
+	st [r13, 6], r7 
+	st [r13, 8], r8
+	st [r13, 10], r9
+	st [r13, 12], r10
+	st [r13, 14], r11
+	st [r13, 16], r12
+	st [r13, 18], r15
+
+	mov r9, 0x1111
+	rrn r7, r7
+	and r7, 0xf
+	mul r7, r9
+
+	mov r8, r5	
+	mul r8, 160
+	add r4, r8
+
+draw_vline_loop:
+	st.ex [r4], r7
+	add r4, 160
+	add r5, 1
+	cmp r5, r6
+	bltu draw_vline_loop
+	
+	ld r4, [r13, 0]
+	ld r5, [r13, 2]
+	ld r6, [r13, 4]
+	ld r7, [r13, 6]
+	ld r8, [r13, 8]
+	ld r9, [r13, 10]
+	ld r10, [r13, 12]
+	ld r11, [r13, 14]
+	ld r12, [r13, 16]
+	ld r15, [r13, 18]
+
+	add r13, 32
+
+	ret
 
 	.end
