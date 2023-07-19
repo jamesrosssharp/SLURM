@@ -39,4 +39,6 @@ extern unsigned short calculate_distance(unsigned short phi, unsigned short* px,
  
 extern void draw_vline(unsigned short fb, unsigned short y1, unsigned short y2, unsigned short col);
 
+extern unsigned short height_table[];
+
 #endif

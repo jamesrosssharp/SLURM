@@ -304,7 +304,7 @@ calculate_distance:
 	mulu r11, r10	// r11:r9 = -dy * sin(pang) 8:24
 
 	add r2, r11
-
+	
 done_it:
 
 	ld r4, [r13, 0]
@@ -379,4 +379,88 @@ draw_vline_loop:
 
 	ret
 
+	.endfunc
+
+.global draw_textured_vline
+	.function   draw_textured_vline
+draw_textured_vline:
+	sub r13, 32
+
+	//
+	//	r4: fb
+	//	r5: y1
+	//	r6: y2
+	//	r7: texture u
+
+	st [r13, 0], r4 
+	st [r13, 2], r5 
+	st [r13, 4], r6 
+	st [r13, 6], r7 
+	st [r13, 8], r8
+	st [r13, 10], r9
+	st [r13, 12], r10
+	st [r13, 14], r11
+	st [r13, 16], r12
+	st [r13, 18], r15
+
+	bswap r7, r7
+	and r7, 0xff
+	lsr r7
+	lsr r7
+	lsr r7 // r7 = 5 bits texture U	
+
+	cmp r5, r0
+	bge not_less_than_zero
+
+	// TODO: Clip texture V here
+	mov r5, r0
+
+not_less_than_zero:
+
+	mov r8, r5	
+	mul r8, 160
+	add r4, r8
+
+	mov r9, r0 // DDA for texture
+	mov r11, r6
+	sub r11, r5
+	mov r12, 32
+
+draw_textured_vline_loop:
+	ldb r2, [r7, map_data]
+	mul r2, 0x1111 
+
+	st.ex [r4], r2
+
+	add r9, r12
+	cmp r9, r11
+	blt no_adj
+
+	sub r9, r11
+	add r7, r12
+	
+no_adj:
+	add r4, 160
+	add r5, 1
+	cmp r5, r6
+	bltu draw_textured_vline_loop
+	
+	ld r4, [r13, 0]
+	ld r5, [r13, 2]
+	ld r6, [r13, 4]
+	ld r7, [r13, 6]
+	ld r8, [r13, 8]
+	ld r9, [r13, 10]
+	ld r10, [r13, 12]
+	ld r11, [r13, 14]
+	ld r12, [r13, 16]
+	ld r15, [r13, 18]
+
+	add r13, 32
+
+	ret
+
+	.endfunc
+
 	.end
+

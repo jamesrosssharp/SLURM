@@ -185,12 +185,12 @@ void poll_gpios()
 	}
 	if (keys & LEFT_KEY)
 	{
-		pang ++;
+		pang += 2;
 		pang &= 0x1ff;
 	}
 	if (keys & RIGHT_KEY)
 	{
-		pang --;
+		pang -= 2;
 		pang &= 0x1ff;
 	}
 
