@@ -391,6 +391,7 @@ draw_textured_vline:
 	//	r5: y1
 	//	r6: y2
 	//	r7: texture u
+	//	r13 + 0x30: texture pointer
 
 	st [r13, 0], r4 
 	st [r13, 2], r5 
@@ -409,11 +410,40 @@ draw_textured_vline:
 	lsr r7
 	lsr r7 // r7 = 5 bits texture U	
 
+	ld r2, [r13, 0x30]
+	mov r15, r7
+
+	lsr r7
+	add r7, r2
+
+	mov r2, 200
+	cmp r6, r2
+	mov.gtu r6, r2
+
+	mov r9, r0 // DDA for texture
+	mov r11, r6
+	sub r11, r5
+	mov r12, 32
+
 	cmp r5, r0
 	bge not_less_than_zero
 
 	// TODO: Clip texture V here
-	mov r5, r0
+
+less_than_zero:
+	add r5, 1
+
+	add r9, r12
+	cmp r9, r11
+	blt no_adjz
+
+	sub r9, r11
+	add r7, 16
+	
+no_adjz:
+	cmp r5, r0
+	blt less_than_zero	
+
 
 not_less_than_zero:
 
@@ -421,13 +451,14 @@ not_less_than_zero:
 	mul r8, 160
 	add r4, r8
 
-	mov r9, r0 // DDA for texture
-	mov r11, r6
-	sub r11, r5
-	mov r12, 32
+	test r15, 1
+	bnz  do_texture_high_nibble
 
 draw_textured_vline_loop:
-	ldb r2, [r7, map_data]
+
+
+	ldb r2, [r7]
+	and r2, 0xf
 	mul r2, 0x1111 
 
 	st.ex [r4], r2
@@ -437,14 +468,39 @@ draw_textured_vline_loop:
 	blt no_adj
 
 	sub r9, r11
-	add r7, r12
+	add r7, 16
 	
 no_adj:
 	add r4, 160
 	add r5, 1
 	cmp r5, r6
 	bltu draw_textured_vline_loop
+
+	ba done
+
+do_texture_high_nibble:
+
+	ldb r2, [r7]
+	rrn r2, r2
+	and r2, 0xf
+	mul r2, 0x1111 
+
+	st.ex [r4], r2
+
+	add r9, r12
+	cmp r9, r11
+	blt no_adj2
+
+	sub r9, r11
+	add r7, 16
 	
+no_adj2:
+	add r4, 160
+	add r5, 1
+	cmp r5, r6
+	bltu do_texture_high_nibble
+
+done:	
 	ld r4, [r13, 0]
 	ld r5, [r13, 2]
 	ld r6, [r13, 4]

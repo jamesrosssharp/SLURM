@@ -30,6 +30,7 @@ SOFTWARE.
 #include "raycast.h"
 #include "map.h"
 #include "trig.h"
+#include "effect5.h"
 
 #include <applet.h>
 
@@ -69,6 +70,7 @@ unsigned short d1 = 65535, d2 = 65535;
 short one[3] = {1, 0, 0};
 
 unsigned short texture_u = 0;
+unsigned short texture = 0;
 
 unsigned short fire_ray(unsigned short fb, unsigned short *px, unsigned short *py, unsigned short phi)
 {
@@ -281,11 +283,13 @@ unsigned short fire_ray(unsigned short fb, unsigned short *px, unsigned short *p
 
 	if (d1 < d2)
 	{
+		texture = col1 - 1;
 		texture_u = _x1[0];
 		distance = d1;
 	}
 	else
 	{
+		texture = col2 - 1;
 		texture_u = _y2[0];
 		distance = d2;
 	}
@@ -333,15 +337,15 @@ void raycast_render(unsigned short fb, unsigned short *px, unsigned short *py, u
 
 		h = height_table[d]; 
 
-		if (h > 100)
-			h = 100;
+//		if (h > 100)
+//			h = 100;
 
 		y1 = 100 - h;
 		y2 = 100 + h;
 
 		// flat shaded
 		//draw_vline(fb, 100 - h, 100 + h, (h<<1) + 16);
-		draw_textured_vline(fb, 100 - h, 100 + h, texture_u);
+		draw_textured_vline(fb, 100 - h, 100 + h, texture_u, (unsigned short)&texture_cache[texture & 0x3]);
 
 		fb += 2;
 

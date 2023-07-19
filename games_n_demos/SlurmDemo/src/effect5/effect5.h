@@ -36,4 +36,6 @@ extern void move_player_backward(unsigned short* px, unsigned short* py, unsigne
 /* Return player x in fixed point form 11:5 */ 
 extern unsigned short get_player_xy(unsigned short* pxy);
 
+extern unsigned char texture_cache[4][32][16];
+
 #endif

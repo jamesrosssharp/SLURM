@@ -25,6 +25,9 @@ options = {
 		          ("images_out/SlurmSprite256x75.png", "image_palette", "slurm_sprite_pal", 2),
 		          ("images_out/Blocks.png", "image_palette", "blocks_pal", 2),
 		          ("images_out/rc-map-tiles.png", "image", "rc_map_tiles", 2),
+		          ("images_out/Brick32.png", "image", "brick_texture", 2),
+		          ("images_out/Brick32-2.png", "image", "brick_texture2", 2),
+		          ("images_out/Brick32.png", "image_palette", "rc_pal", 2),
 
 			],
 	'bundle_load_address' : 1024*1024 + bundle_start,

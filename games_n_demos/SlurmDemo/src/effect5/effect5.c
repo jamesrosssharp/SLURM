@@ -153,9 +153,11 @@ short _mult_div_8_8(short a, short m, short d)
 
 #include "raycast.h"
 
-unsigned short px[2] = {32768, 4};
-unsigned short py[2] = {32768, 4};
+unsigned short px[2] = {32768, 1};
+unsigned short py[2] = {32768, 1};
 unsigned short pang = 0;
+
+unsigned char texture_cache[4][32][16];
 
 #define UP_KEY 1
 #define DOWN_KEY 2
@@ -200,6 +202,7 @@ void poll_gpios()
 #define RC_TILES_ADDRESS_LO 0x7000
 #define RC_TILES_ADDRESS_HI 0x0000
 
+
 void main(void)
 {
 /*	vtors->background_set(0, 
@@ -215,6 +218,12 @@ void main(void)
 */
 
 //	vtors->storage_load_synch(rc_map_tiles_flash_offset_lo, rc_map_tiles_flash_offset_hi, 0, 0, RC_TILES_ADDRESS_LO, RC_TILES_ADDRESS_HI, (rc_map_tiles_flash_size_lo>>1));
+
+
+	vtors->storage_load_synch(brick_texture_flash_offset_lo, brick_texture_flash_offset_hi, 0, 0, (unsigned short)&texture_cache[0], 0, (brick_texture_flash_size_lo>>1));
+	vtors->storage_load_synch(brick_texture2_flash_offset_lo, brick_texture2_flash_offset_hi, 0, 0, (unsigned short)&texture_cache[1], 0, (brick_texture_flash_size_lo>>1));
+
+	vtors->storage_load_synch(rc_pal_flash_offset_lo, rc_pal_flash_offset_hi, 0, 0, (unsigned int)ray_palette, 0, (sizeof(ray_palette)>>1));
 	
 	vtors->copper_set_bg_color(0x0000);
 //	vtors->load_palette(torus_palette, 0, 16);
