@@ -72,7 +72,7 @@ short one[3] = {1, 0, 0};
 unsigned short texture_u = 0;
 unsigned short texture = 0;
 
-unsigned short fire_ray(unsigned short fb, unsigned short *px, unsigned short *py, unsigned short phi)
+unsigned short fire_ray(unsigned short fb, unsigned short *px, unsigned short *py, unsigned short phi, unsigned short pang)
 {
 
 	bool up = false;
@@ -265,7 +265,7 @@ unsigned short fire_ray(unsigned short fb, unsigned short *px, unsigned short *p
 
 	if (col1)
 	{
-		d1 = calculate_distance(phi, px, py, _x1, _y1);			 
+		d1 = calculate_distance(pang, px, py, _x1, _y1);			 
 	}
 	else
 	{
@@ -274,7 +274,7 @@ unsigned short fire_ray(unsigned short fb, unsigned short *px, unsigned short *p
 
 	if (col2)
 	{
-		d2 = calculate_distance(phi, px, py, _x2, _y2);			 
+		d2 = calculate_distance(pang, px, py, _x2, _y2);			 
 	}
 	else
 	{
@@ -324,7 +324,7 @@ void raycast_render(unsigned short fb, unsigned short *px, unsigned short *py, u
 
 	for (phi = phi_start; phi > phi_end; phi--)
 	{
-		unsigned short d = fire_ray(fb, px, py, phi & 0x1ff);
+		unsigned short d = fire_ray(fb, px, py, phi & 0x1ff, pang);
 		unsigned short h;
 		unsigned short y1, y2;
 

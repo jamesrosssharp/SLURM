@@ -168,9 +168,98 @@ unsigned char texture_cache[4][32][16];
 
 #include "trig.h"
 
+unsigned short prev_keys = 0;
+unsigned short prev_key_count = 0;
+
+struct key_script {
+	unsigned short keys;
+	unsigned short len;
+};
+
+struct key_script script[] = {
+{0x0000, 7},
+{0x0001, 12},
+{0x0009, 19},
+{0x0001, 6},
+{0x0005, 5},
+{0x0001, 16},
+{0x0009, 49},
+{0x0008, 10},
+{0x000a, 12},
+{0x0008, 1},
+{0x0000, 6},
+{0x0001, 8},
+{0x0005, 8},
+{0x0004, 14},
+{0x0005, 12},
+{0x0004, 29},
+{0x0005, 6},
+{0x0001, 6},
+{0x0009, 7},
+{0x0001, 1},
+{0x0005, 41},
+{0x0004, 1},
+{0x0000, 3},
+{0x0008, 34},
+{0x0009, 29},
+{0x0001, 2},
+{0x0005, 22},
+{0x0001, 1},
+{0x0009, 19},
+{0x0005, 15},
+{0x0001, 16},
+{0x0009, 30},
+{0x0001, 22},
+{0x0009, 6},
+{0x0001, 41},
+{0x0005, 5},
+{0x0004, 14},
+{0x0005, 53},
+{0x0001, 29},
+{0x0005, 15},
+{0x0001, 3},
+{0x0009, 18},
+{0x0001, 24},
+{0x0005, 32},
+{0x0001, 15},
+{0x0005, 22},
+{0x0001, 18},
+{0x0005, 3},
+{0x0001, 34},
+{0x0005, 59},
+{0x0001, 22},
+{0x0005, 7},
+{0x0001, 20},
+{0x0009, 7},
+{0x0001, 19},
+{0x0005, 5},
+{0x0001, 30},
+
+};
+
+short script_idx = 0;
+
 void poll_gpios()
 {
+//#define USE_GPIO
+#ifdef USE_GPIO
 	short keys = vtors->__in(0x1001);
+
+	if (keys != prev_keys)
+	{
+		vtors->printf("{0x%x, %d},\r\n", prev_keys, prev_key_count);
+		prev_key_count = 1;
+	}
+	else
+	{
+		prev_key_count++;
+	}
+#else
+	short keys = script[script_idx].keys;
+	script[script_idx].len--;
+	if (script[script_idx].len <= 0)
+		script_idx++;
+#endif
 
 	if (keys & UP_KEY)
 	{
@@ -178,24 +267,32 @@ void poll_gpios()
 		if (map_data[py[1]][px[1]])
 			move_player_backward(px, py, pang);
 	}
+
 	if (keys & DOWN_KEY)
 	{
 		move_player_backward(px, py, pang);
 		if (map_data[py[1]][px[1]])
 			move_player_forward(px, py, pang);
-	
+
 	}
+
 	if (keys & LEFT_KEY)
 	{
 		pang += 2;
 		pang &= 0x1ff;
+
 	}
+
+
+
 	if (keys & RIGHT_KEY)
 	{
 		pang -= 2;
 		pang &= 0x1ff;
+
 	}
 
+	prev_keys = keys;
 }
 
 #define RC_TILES_WORD_ADDRESS 0x3800
@@ -245,7 +342,7 @@ void main(void)
 	vtors->sprite_update_sprite(0);
 
 	vtors->rtos_lock_mutex(&eff5_mutex);
-	while (1)
+	while (script_idx < (sizeof(script) / sizeof(script[0])))
 //	while (frame < 1000)
 	{
 		int i;
@@ -262,12 +359,12 @@ void main(void)
 
 		poll_gpios();
 
-		if ((frame & 0xf) == 0)
+	/*	if ((frame & 0xf) == 0)
 		{
 			vtors->printf("FPS x100: %d\r\n", _mult_div_8_8(frame, 6000, vsync_count));
 			vtors->printf("Px: %x py: %x pang: %x\r\n", get_player_xy(px), get_player_xy(py), pang);
 		}
-
+	*/
 
 	}
 	

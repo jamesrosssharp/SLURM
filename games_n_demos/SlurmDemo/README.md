@@ -11,11 +11,11 @@ Effect 3 - Plasma
 
 Effect 4 - 3D flat shaded torus
 
-Effect 5 - "Doom" demo?
+Effect 5 - Raycasting demo
 
 Effect 6 - Star field with tie fighters ?
 
-Effect 7 - 3D chess game ?
+Effect 7 - Tunnel / Vortex ?
 
 Effect 8 - Voxel landscape ?
 
