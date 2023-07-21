@@ -13,9 +13,9 @@ Effect 4 - 3D flat shaded torus
 
 Effect 5 - Raycasting demo
 
-Effect 6 - Star field with tie fighters ?
+Effect 6 - Tunnel
 
-Effect 7 - Tunnel / Vortex ?
+Effect 7 - Star field with tie fighters ?
 
 Effect 8 - Voxel landscape ?
 
