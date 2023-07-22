@@ -117,7 +117,7 @@ impl FlashDMA {
 
                 if self.dummy_cycles == 0
                 {
-                    self.dummy_cycles = 25 / 3 * 16;
+                    self.dummy_cycles = 1; //16; //25 / 3 * 16;
 
                     let data : u16 = if (self.flash_address2 as usize) < self.flash_data.len() { self.flash_data[self.flash_address2 as usize] } else { 0xffff}; 
                     mem[self.dma_address2 as usize] = data;

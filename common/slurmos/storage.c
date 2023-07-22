@@ -18,6 +18,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include "storage.h"
 #include "rtos.h"
 #include "printf.h"
+#include "bool.h"
 
 extern unsigned short _sstoragestack[];
 extern unsigned short _estoragestack[];
@@ -44,6 +45,8 @@ static struct storage_q_item storage_q[STORAGE_Q_SIZE];
 static int storage_q_head = 0;
 static int storage_q_tail = 0;
 
+static bool storage_thread_waiting = false;
+
 static void storage_interrupt()
 {
 	//my_printf("Storage interrupt!\r\n");
@@ -65,6 +68,7 @@ static void storage_task()
 
 		while (q_items < 1)
 		{
+			storage_thread_waiting = true;
 			//my_printf("No queue items, sleeping\r\n");
 			rtos_lock_mutex(&storage_q_wait_read_mutex);
 			//my_printf("Woke up again\r\n");
@@ -193,8 +197,12 @@ void storage_load_asynch(unsigned short base_lo, unsigned short base_hi,
 		// Advance head
 		storage_q_head = (storage_q_head + 1) & (STORAGE_Q_SIZE - 1);
 
-		if (queue_space == STORAGE_Q_SIZE - 1)
+		//if (queue_space == STORAGE_Q_SIZE - 1)
+		if (storage_thread_waiting)
+		{
+			storage_thread_waiting = false;
 			rtos_unlock_mutex(&storage_q_wait_read_mutex);
+		}
 
 	rtos_unlock_mutex(&storage_q_mutex);
 	

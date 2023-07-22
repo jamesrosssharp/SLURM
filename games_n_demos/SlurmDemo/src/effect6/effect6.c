@@ -139,7 +139,7 @@ void main(void)
 	vtors->sprite_update_sprite(0);
 
 	vtors->rtos_lock_mutex(&eff6_mutex);
-	while (frame < 1000)
+	while (frame < 300)
 	{
 		int i;
 
