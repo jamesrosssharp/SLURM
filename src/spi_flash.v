@@ -247,10 +247,10 @@ begin
 			tick_counter_r_next 	= tick_counter_r + 1;	
 			MOSI_r			= serialOut_r[23];
 
-			if (tick_counter_r == 3'b100)
+			if (tick_counter_r == 3'b000)
 				SCK_r_next = 1'b1;
 
-			if (tick_counter_r == 3'b111)
+			if (tick_counter_r == 3'b1)
 			begin
 				bit_counter_r_next 	= bit_counter_r + 1;
 				serialOut_r_next 	= {serialOut_r[22:0], 1'b0};
@@ -268,10 +268,10 @@ begin
 			tick_counter_r_next = tick_counter_r + 1;	
 			MOSI_r		= serialOut_r[23];
 
-			if (tick_counter_r == 3'b100)
+			if (tick_counter_r == 3'b0)
 				SCK_r_next = 1'b1;
 
-			if (tick_counter_r == 3'b111)
+			if (tick_counter_r == 3'b1)
 			begin
 				bit_counter_r_next = bit_counter_r + 1;
 				serialOut_r_next = {serialOut_r[22:0], 1'b0};
@@ -287,12 +287,12 @@ begin
 		get_data: begin
 			tick_counter_r_next = tick_counter_r + 1;	
 
-			if (tick_counter_r == 3'b100) begin
+			if (tick_counter_r == 3'b0) begin
 				SCK_r_next = 1'b1;
 				data_out_r_next = {data_out_r[14:0], MISO};
 			end
 
-			if (tick_counter_r == 3'b111)
+			if (tick_counter_r == 3'b1)
 			begin
 				bit_counter_r_next = bit_counter_r + 1;
 				SCK_r_next = 1'b0;

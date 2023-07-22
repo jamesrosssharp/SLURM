@@ -11,11 +11,11 @@ import numpy as np
 SQUARE_WIDTH = 32
 SQUARE_SHIFT = 5
 # Window dimensions
-width = 320
-height = 200
+width = 80
+height = 40
 
-pixelWidth = 1
-pixelHeight = 1
+pixelWidth = 4
+pixelHeight = 4
 
 my_drawmap = False
 
@@ -71,7 +71,7 @@ def render(frame):
 			
 			if d == 0:
 				d = 0
-			elif d > 80:
+			elif d > 20:
 				d = int(300 - d) >> 4
 			else:
 				d = 15		
@@ -92,7 +92,7 @@ def render(frame):
 
 # Open level map
 
-texture = Image.open("texture2.png")
+texture = Image.open("texture3.png")
 
 # compute tables
 

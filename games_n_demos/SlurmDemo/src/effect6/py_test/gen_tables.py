@@ -5,13 +5,13 @@ import sys
 from PIL import Image
 import numpy as np
 
-width = 160
-height = 100
+width = 80
+height = 50
 
 TEXTURE_WIDTH = 64
 TEXTURE_HEIGHT = 64
 
-texture = Image.open("texture.png")
+texture = Image.open("texture3.png")
 
 distance_table = np.zeros((height*2, width*2), dtype = int)
 shade_table = np.zeros((height*2, width*2), dtype = int)
@@ -31,7 +31,7 @@ for y in range(0, height*2):
 
 		if d == 0:
 			shade = 0
-		elif d > 80:
+		elif d > 20:
 			shade = int(300 - d) >> 4
 		else:
 			shade = 15		

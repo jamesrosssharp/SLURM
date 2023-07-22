@@ -56,7 +56,7 @@ compute_flash_offset:
 
 	// multiply y by table width in words
 	mov r8, r7
-	mov r9, 320
+	mov r9, 160
 	mul r7, r9	
 	umulu r8, r9
 
@@ -120,8 +120,13 @@ tunnel_render_asm:
 
 
 	mov r15, r4
-	mov r9, 160
-	add r15, r9
+	mov r9, 80
+	add r15, 160
+	mov r2, r15
+	add r2, 160
+	mov r3, r2
+	add r3, 160
+
 tunnel_loop:
 	ldb r8, [r5]
 	add r8, r11
@@ -145,14 +150,18 @@ low_nibble:
 	rln r8, r8
 	or  r10, r8
 	.extern color_tab
-	ld  r10,[r10, color_tab]
-	mul r10,0x11
+	ldb  r10,[r10, color_tab]
+	mul r10,0x1111
 
-	stb.ex [r4], r10
-	stb.ex [r15], r10
+	st.ex [r4], r10
+	st.ex [r15], r10
+	st.ex [r2], r10
+	st.ex [r3], r10
 
-	add r4, 1
-	add r15, 1
+	add r4, 2
+	add r15, 2
+	add r2, 2
+	add r3, 2
 	add r5, 1
 	add r6, 1
 	add r7, 1

@@ -42,8 +42,8 @@ unsigned char color_tab[16][16];
 
 unsigned char texture[64][32];
 
-#define WIDTH 160
-#define HEIGHT 100
+#define WIDTH 80
+#define HEIGHT 50
 
 extern struct applet_vectors *vtors;
 
@@ -51,7 +51,7 @@ mutex_t distance_mutex = RTOS_MUTEX_INITIALIZER;
 mutex_t angle_mutex = RTOS_MUTEX_INITIALIZER;
 mutex_t shade_mutex = RTOS_MUTEX_INITIALIZER;
 
-char sine_table[256] = {
+short sine_table[256] = {
           0,  2,  3,  5,  6,  8,  9, 11, 12, 14, 16, 17, 19, 20, 22, 23,
          24, 26, 27, 29, 30, 32, 33, 34, 36, 37, 38, 39, 41, 42, 43, 44,
          45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 56, 57, 58, 59,
@@ -125,14 +125,14 @@ void render_tunnel(unsigned short fb, unsigned short frame)
 	shiftU = frame << 2;
 	shiftV = frame;
 
-	shiftX = WIDTH + sine_table[(frame << 1) & 255];
-	shiftY = (HEIGHT >> 1) + (sine_table[frame & 255] >> 1);
+	shiftX = WIDTH + (sine_table[(frame << 2) & 255] >> 1);
+	shiftY = (HEIGHT >> 1) + (sine_table[(frame << 1) & 255] >> 2);
 
 	// Preload first row of each table
 
-	load_table_row_synch((unsigned short)distance_buffer[0], distance_table_flash_offset_lo, distance_table_flash_offset_hi, shiftX, shiftY, 80);
-	load_table_row_synch((unsigned short)angle_buffer[0], angle_table_flash_offset_lo, angle_table_flash_offset_hi, shiftX, shiftY, 80);
-	load_table_row_synch((unsigned short)shade_buffer[0], shade_table_flash_offset_lo, shade_table_flash_offset_hi, shiftX, shiftY, 80);
+	load_table_row_synch((unsigned short)distance_buffer[0], distance_table_flash_offset_lo, distance_table_flash_offset_hi, shiftX, shiftY, 40);
+	load_table_row_synch((unsigned short)angle_buffer[0], angle_table_flash_offset_lo, angle_table_flash_offset_hi, shiftX, shiftY, 40);
+	load_table_row_synch((unsigned short)shade_buffer[0], shade_table_flash_offset_lo, shade_table_flash_offset_hi, shiftX, shiftY, 40);
 
 	buf_idx = !buf_idx;
 
@@ -140,24 +140,37 @@ void render_tunnel(unsigned short fb, unsigned short frame)
 
 	for (y = 0; y < HEIGHT; y++)
 	{
+		unsigned char* b1, *b2, *b3;
+
 		shiftY++;
 		// Asynch load next row
-		load_table_row_asynch((unsigned short)distance_buffer[buf_idx], distance_table_flash_offset_lo, distance_table_flash_offset_hi, shiftX, shiftY, 80, &distance_mutex);
-		load_table_row_asynch((unsigned short)angle_buffer[buf_idx], angle_table_flash_offset_lo, angle_table_flash_offset_hi, shiftX, shiftY, 80, &angle_mutex);
-		load_table_row_asynch((unsigned short)shade_buffer[buf_idx], shade_table_flash_offset_lo, shade_table_flash_offset_hi, shiftX, shiftY, 80, &shade_mutex);
+		load_table_row_asynch((unsigned short)distance_buffer[buf_idx], distance_table_flash_offset_lo, distance_table_flash_offset_hi, shiftX, shiftY, 40, &distance_mutex);
+		load_table_row_asynch((unsigned short)angle_buffer[buf_idx], angle_table_flash_offset_lo, angle_table_flash_offset_hi, shiftX, shiftY, 40, &angle_mutex);
+		load_table_row_asynch((unsigned short)shade_buffer[buf_idx], shade_table_flash_offset_lo, shade_table_flash_offset_hi, shiftX, shiftY, 40, &shade_mutex);
 
 		buf_idx = !buf_idx;
 		
 		// Render current row
 
-		tunnel_render_asm(fb, (unsigned char*)distance_buffer[buf_idx], (unsigned char*)angle_buffer[buf_idx], (unsigned char*)shade_buffer[buf_idx], shiftU, shiftV);
+		b1 = (unsigned char*)distance_buffer[buf_idx]; 
+		b2 = (unsigned char*)angle_buffer[buf_idx];
+		b3 = (unsigned char*)shade_buffer[buf_idx]; 
+
+		if (shiftX & 1)
+		{
+			b1 ++;
+			b2 ++;
+			b3 ++;
+		}	
+
+		tunnel_render_asm(fb, b1, b2, b3, shiftU, shiftV);
 
 		// Wait for IO
 		vtors->rtos_lock_mutex(&distance_mutex);
 		vtors->rtos_lock_mutex(&angle_mutex);
 		vtors->rtos_lock_mutex(&shade_mutex);
 
-		fb += 320;
+		fb += 640;
 	}
 
 }

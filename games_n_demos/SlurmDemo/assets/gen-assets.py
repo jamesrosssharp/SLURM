@@ -32,8 +32,8 @@ options = {
 			  ("images_out/tunnel_angle_table.bin", "lut", "angle_table", 2),
 			  ("images_out/color_table.bin", "lut", "color_table", 2),
 			  ("images_out/tunnel_shade_table.bin", "lut", "shade_table", 2),
-			  ("images_out/texture2.png", "image", "tunnel_texture2", 2),
-		          ("images_out/texture2.png", "image_palette", "tunnel_pal", 2),
+			  ("images_out/texture3.png", "image", "tunnel_texture2", 2),
+		          ("images_out/texture3.png", "image_palette", "tunnel_pal", 2),
 			  
 			],
 	'bundle_load_address' : 1024*1024 + bundle_start,
