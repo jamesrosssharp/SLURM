@@ -43,7 +43,8 @@ APPLETS=$(SRC_DIR)/effect1 \
 	$(SRC_DIR)/effect2 \
 	$(SRC_DIR)/effect3 \
 	$(SRC_DIR)/effect4 \
-	$(SRC_DIR)/effect5
+	$(SRC_DIR)/effect5 \
+	$(SRC_DIR)/effect6
 
 all: $(TARGET)
 
@@ -55,6 +56,7 @@ $(CHIPTUNE_SLMSNG): $(CHIPTUNE) Makefile
 	mkdir -p $(BUILD_DIR)
 	python3 ../../scripts/it2slurmsng.py $(CHIPTUNE) $(CHIPTUNE_SLMSNG)
 
+.PHONY: $(ASSETS_H)
 $(ASSETS_H): assets/gen-assets.py $(CHIPTUNE_SLMSNG)
 	cd assets; python3 gen-assets.py
 

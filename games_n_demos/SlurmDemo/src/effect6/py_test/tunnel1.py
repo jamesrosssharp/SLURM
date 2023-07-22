@@ -11,11 +11,11 @@ import numpy as np
 SQUARE_WIDTH = 32
 SQUARE_SHIFT = 5
 # Window dimensions
-width = 160
-height = 100
+width = 320
+height = 200
 
-pixelWidth = 4
-pixelHeight = 4
+pixelWidth = 1
+pixelHeight = 1
 
 my_drawmap = False
 
@@ -55,7 +55,7 @@ def putPixel(x, y, r, g, b):
 def render(frame):
 
 	shiftX = int(TEXTURE_WIDTH * 0.1 * frame)	
-	shiftY = int(TEXTURE_WIDTH * 0.01 * frame)	
+	shiftY = int(TEXTURE_WIDTH * 0.1 * frame)	
 	
 	shiftLookX = width // 2 + int (width / 2 * 0.75 * math.sin(frame * 0.05))
 	shiftLookY = height // 2 + int (height / 2 * 0.75 * math.sin(frame * 0.1))
@@ -72,7 +72,7 @@ def render(frame):
 			if d == 0:
 				d = 0
 			elif d > 80:
-				d = int(200 - d) >> 4
+				d = int(300 - d) >> 4
 			else:
 				d = 15		
 
@@ -92,7 +92,7 @@ def render(frame):
 
 # Open level map
 
-texture = Image.open("texture.png")
+texture = Image.open("texture2.png")
 
 # compute tables
 
@@ -105,7 +105,7 @@ for y in range(0, height*2):
 			pass
 		else :
 			distance_table[y][x] = int(ratio * TEXTURE_HEIGHT / math.sqrt((x - width)*(x - width) + (y - height)*(y - height)))
-		angle_table[y][x] =  int(0.5 * TEXTURE_WIDTH * math.atan2(float(y - height), float(x - width)) / 3.1416);		
+		angle_table[y][x] =  int(2.0 * TEXTURE_WIDTH * math.atan2(float(y - height), float(x - width)) / 3.1416) % TEXTURE_WIDTH;		
 	
 # build color table
 

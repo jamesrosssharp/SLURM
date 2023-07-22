@@ -17,6 +17,9 @@ Effect 6 - Tunnel
 
 Effect 7 - Star field with tie fighters ?
 
-Effect 8 - Voxel landscape ?
+Effect 8 - Voxel landscape ? Or voxel procedural water?
 
 Effect 9 - Mandel zoomer ?
+
+Effect 10 - procedural fire ?
+

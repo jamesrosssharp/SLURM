@@ -47,7 +47,7 @@ SOFTWARE.
 
 	typedef struct rtos_wait_object mutex_t;
 
-	#define RTOS_MUTEX_INITIALIZER {WOT_MUTEX, 0};
+	#define RTOS_MUTEX_INITIALIZER {WOT_MUTEX, 0}
 
 	extern void 	rtos_resume_task();
 

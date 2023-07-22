@@ -2,7 +2,7 @@
 
 	SlurmDemo : A demo to show off SlURM16
 
-copper.c: Copper routines 
+tunnel.h : tunnel effect
 
 License: MIT License
 
@@ -27,38 +27,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include "copper.h"
+#ifndef TUNNEL_H
+#define TUNNEL_H
 
-#define COPPER_CTL 	0x5d20
-#define COPPER_Y_FLIP 	0x5d21
-#define COPPER_BGCOLOR  0x5d22
-#define COPPER_XPAN_REG	0x5d23
-#define COPPER_ALPHA_REG	0x5d24
-#define COPPER_LIST_RAM 0x5400
+void render_tunnel(unsigned short fb, unsigned short frame);
 
-/* Set copper control settings */
-void copper_control(short enable)
-{
-	__out(COPPER_CTL, enable);
-}
+extern void compute_flash_offset(unsigned short* flash_lo, unsigned short* flash_hi, unsigned short x, unsigned short y);
+extern void tunnel_render_asm(unsigned short fb, unsigned char* distance_buffer, unsigned char* angle_buffer, unsigned char* shade_buffer, unsigned short shiftU, unsigned short shiftV );
 
-void copper_set_y_flip(short enable, short flip_y)
-{
-	__out(COPPER_Y_FLIP, (enable << 15) | (flip_y));   
-}
+void tunnel_init();
 
-void copper_set_x_pan(short xpan)
-{
-	__out(COPPER_XPAN_REG, xpan);
-}
-
-void copper_set_bg_color(unsigned short color)
-{
-	__out(COPPER_BGCOLOR, color);
-}
-
-void copper_set_alpha(unsigned short alpha)
-{
-	__out(COPPER_ALPHA_REG, alpha);
-}
-
+#endif

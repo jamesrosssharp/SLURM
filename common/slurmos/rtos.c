@@ -76,7 +76,7 @@ static void task_print()
 {
 	int i;
 
-/*	my_printf("TASKS tick = %x%x\r\n", g_major_tick, __in(0x9000));
+	my_printf("TASKS tick = %x%x\r\n", g_major_tick, __in(0x9000));
 	my_printf("======================\r\n");
 	
 	for (i = 0; i < RTOS_NUM_TASKS; i++)
@@ -91,20 +91,21 @@ static void task_print()
 		my_printf("hw=%x\tpc=%x\tflg=%x\t", hw, g_tasks[i].pc, g_tasks[i].t_flags);
 		my_printf("ticks=%x %x\r\n", g_tasks[i].ticks_total_hi, g_tasks[i].ticks_total_lo);
 	}
-*/
+
 }
 
 static void rtos_idle_task()
 {
-	int tick = 0;
 	int i;
 
+	int prev_g_major_tick = 0;
 	while (1)
 	{
-		tick++;
 
-		if ((tick & 255) == 0)
+		if ((g_major_tick & 0xfff0) != (prev_g_major_tick & 0xfff0))
 		{
+			prev_g_major_tick = g_major_tick;
+
 			task_print();		
 
 			global_interrupt_disable();

@@ -38,7 +38,7 @@ struct storage_q_item {
 };
 
 // Power of two
-#define STORAGE_Q_SIZE 8
+#define STORAGE_Q_SIZE 16
 
 static struct storage_q_item storage_q[STORAGE_Q_SIZE];
 static int storage_q_head = 0;
@@ -58,6 +58,8 @@ static void storage_task()
 		struct storage_q_item* q_p;
 
 		// Check queue
+
+		//my_printf("Storage queue head: %x tail: %x\r\n", storage_q_head, storage_q_tail);
 
 		q_items = (storage_q_head - storage_q_tail) & (STORAGE_Q_SIZE - 1); 
 
@@ -100,7 +102,10 @@ static void storage_task()
 
 		// This should be a counting semaphore
 		if (q_items == STORAGE_Q_SIZE - 1)
+		{
+			//my_printf("Unlocking storage_q_wait_write_mutex\r\n");
 			rtos_unlock_mutex(&storage_q_wait_write_mutex);
+		}
 	}
 }
 
@@ -158,6 +163,7 @@ void storage_load_asynch(unsigned short base_lo, unsigned short base_hi,
 	unsigned short queue_space = 0;
 	struct storage_q_item* q_p;
 
+	//my_printf("storage_load_asynch\r\n");
 	// Lock queue mutex
 	rtos_lock_mutex(&storage_q_mutex);
 
@@ -165,6 +171,8 @@ void storage_load_asynch(unsigned short base_lo, unsigned short base_hi,
 		
 		if (queue_space < 1)
 		{
+			//my_printf("No space... sleeping\r\n");
+
 			// Unlock access to queue
 			rtos_unlock_mutex(&storage_q_mutex);
 
@@ -179,11 +187,11 @@ void storage_load_asynch(unsigned short base_lo, unsigned short base_hi,
 		
 		q_p = &storage_q[storage_q_head];
 
+		//my_printf("queuing\r\n");
 		storage_fill_q_item(q_p, base_lo, base_hi, offset_lo, offset_hi, address_lo, address_hi, count, cb, user_data);
 
 		// Advance head
 		storage_q_head = (storage_q_head + 1) & (STORAGE_Q_SIZE - 1);
-
 
 		if (queue_space == STORAGE_Q_SIZE - 1)
 			rtos_unlock_mutex(&storage_q_wait_read_mutex);
