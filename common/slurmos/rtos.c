@@ -94,11 +94,11 @@ static void task_print()
 
 }
 
+unsigned short prev_g_major_tick = 0;
 static void rtos_idle_task()
 {
 	int i;
 
-	int prev_g_major_tick = 0;
 	while (1)
 	{
 
