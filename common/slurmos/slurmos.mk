@@ -18,11 +18,11 @@ SLURMOS_OBJ = $(SLURM_OS_C_OBJ) $(SLURMOS_ASM_OBJ)
 
 $(BUILD_DIR)/%.cc1: $(SLURMOS_DIR)/%.c $(ASSETS_H) $(HEADERS)
 	mkdir -p $(BUILD_DIR)
-	$(CPP) -o $@ -I../../include -I$(SLURMOS_DIR) -I$(BUILD_DIR) $<
+	$(CPP) -o $@ -I$(SLURMOS_DIR)../../include -I$(SLURMOS_DIR) -I$(BUILD_DIR) $<
 
 $(BUILD_DIR)/%.asm11: $(SLURMOS_DIR)/%.asm $(SLURMOS_HEADERS)
 	mkdir -p $(BUILD_DIR)
-	$(CPP) -o $@ -I../../include -I$(BUILD_DIR) $<
+	$(CPP) -o $@ -I$(SLURMOS_DIR)../../include -I$(BUILD_DIR) $<
 
 $(BUILD_DIR)/%.casm: $(BUILD_DIR)/%.cc1
 	$(CC) -target=slurm16_ng -c $< -o $@

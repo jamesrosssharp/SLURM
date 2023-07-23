@@ -477,7 +477,7 @@ impl Slurm16CPU {
 	pub fn alu_op_reg_imm(&mut self, instruction : u16) {
 		let imm			= self.imm_hi | (instruction & 0xf);
 		let reg_dest : usize	= ((instruction & 0xf0) >> 4) as usize;
-		let src1_a : u16 = self.registers[reg_dest];
+		let src1_a : u16 = self.get_register(reg_dest);
 	
 		match (instruction & 0x0f00) >> 8 {
 		//0 - mov : DEST <- IMM
@@ -523,7 +523,7 @@ impl Slurm16CPU {
 	pub fn alu_op_reg_reg(&mut self, instruction : u16) {
 		let reg_src = (instruction & 0xf) as usize;
 		let reg_dest : usize	= ((instruction & 0xf0) >> 4) as usize;
-		let src1_a : u16 = self.registers[reg_dest];
+		let src1_a : u16 = self.get_register(reg_dest);
 		let src2_b = self.get_register(reg_src);
 		
 		match (instruction & 0x0f00) >> 8 {

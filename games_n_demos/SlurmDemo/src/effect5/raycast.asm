@@ -425,7 +425,7 @@ draw_textured_vline:
 	sub r11, r5
 	mov r12, 32
 
-	cmp r5, r0
+	cmp r5, 0
 	bge not_less_than_zero
 
 	// TODO: Clip texture V here
@@ -441,7 +441,7 @@ less_than_zero:
 	add r7, 16
 	
 no_adjz:
-	cmp r5, r0
+	cmp r5, 0
 	blt less_than_zero	
 
 

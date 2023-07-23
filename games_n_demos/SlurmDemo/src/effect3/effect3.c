@@ -101,6 +101,16 @@ void main(void)
 		frame++;
 	}
 
+	vtors->background_set(0, 
+		    0, 
+		    0,
+		    0, 
+		    0, 
+		    0, 
+		    0,
+		    0,
+		    0);
+	
 	vtors->rtos_set_interrupt_handler(SLURM_INTERRUPT_VSYNC_IDX, 0);
 
 }
