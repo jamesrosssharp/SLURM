@@ -20,5 +20,18 @@ for i in range(0,256):
 		h = 65535
 	print("\tdw 0x%x // %f" % (h&0xffff, h) )
 
+print("gradient_table:")
+for i in range(0,200):
+	if i == 0:
+		d = 1
+	else:
+		d = i
+	h = round(32*256 / d) 
+	if h > 65535:
+		h = 65535
+	print("\tdw 0x%x // %f" % (h&0xffff, h) )
 
 
+
+
+print("\t.end")

@@ -164,6 +164,13 @@ impl Slurm16CPU {
 		}
 		self.c = sum > 65535;
 		self.v = (((a ^ b) & 0x8000) == 0x8000) && !(((b ^ sum) & 0x8000) == 0x8000);
+
+		//if b == 0 && ((a & 0x8000) == 0x8000) {
+		
+		//	println!("compare with zero: a = {} b = {} sum = {} z = {}  s = {} c = {} v = {}", a, b, sum, self.z, self.s, self.c, self.v);
+
+		//}
+
 	}
 
 	pub fn alu_and(&mut self, reg_dest: usize, src1_a : u16, src2_b : u16) {

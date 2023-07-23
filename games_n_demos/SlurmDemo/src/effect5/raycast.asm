@@ -416,12 +416,13 @@ draw_textured_vline:
 	lsr r7
 	add r7, r2
 
+	mov r11, r6
+	
 	mov r2, 200
 	cmp r6, r2
+	mov r9, r0 // DDA for texture
 	mov.gtu r6, r2
 
-	mov r9, r0 // DDA for texture
-	mov r11, r6
 	sub r11, r5
 	mov r12, 32
 
