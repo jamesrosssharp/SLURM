@@ -288,27 +288,27 @@ begin
 			f_begin: begin
 
 				if (bg_tile_size == 1'b0) begin // 16x16
-					case (bg_tile_stride)
-						2'b00: /* stride 256 */
-							tilemap_index_r_next = {tile_map_address, 1'd0} + {      tilemap_y_disp[12:4], tile_map_x[11:4]}; 
-						2'b01: /* stride 128 */
-							tilemap_index_r_next = {tile_map_address, 1'd0} + {      tilemap_y_disp[13:4], tile_map_x[10:4]}; 
-						2'b10: /* stride 64 */
+					//case (bg_tile_stride)
+					//	2'b00: /* stride 256 */
+					//		tilemap_index_r_next = {tile_map_address, 1'd0} + {      tilemap_y_disp[12:4], tile_map_x[11:4]}; 
+					//	2'b01: /* stride 128 */
+					//		tilemap_index_r_next = {tile_map_address, 1'd0} + {      tilemap_y_disp[13:4], tile_map_x[10:4]}; 
+					//	2'b10: /* stride 64 */
 							tilemap_index_r_next = {tile_map_address, 1'd0} + {      tilemap_y_disp[14:4], tile_map_x[9:4]}; 
-						2'b11: /* stride 32 */
-							tilemap_index_r_next = {tile_map_address, 1'd0} + {      tilemap_y_disp[15:4], tile_map_x[8:4]}; 
-					endcase
+					//	2'b11: /* stride 32 */
+					//		tilemap_index_r_next = {tile_map_address, 1'd0} + {      tilemap_y_disp[15:4], tile_map_x[8:4]}; 
+					//endcase
 				end else begin // 8x8
-					case (bg_tile_stride)
-						2'b00: /* stride 256 */
-							tilemap_index_r_next = {tile_map_address, 1'd0} + {tilemap_y_disp[11:3], tile_map_x[10:3]}; 
-						2'b01: /* stride 128 */
-							tilemap_index_r_next = {tile_map_address, 1'd0} + {tilemap_y_disp[12:3], tile_map_x[9:3]}; 
-						2'b10: /* stride 64 */
+					//case (bg_tile_stride)
+					//	2'b00: /* stride 256 */
+					//		tilemap_index_r_next = {tile_map_address, 1'd0} + {tilemap_y_disp[11:3], tile_map_x[10:3]}; 
+					//	2'b01: /* stride 128 */
+					//		tilemap_index_r_next = {tile_map_address, 1'd0} + {tilemap_y_disp[12:3], tile_map_x[9:3]}; 
+					//	2'b10: /* stride 64 */
 							tilemap_index_r_next = {tile_map_address, 1'd0} + {tilemap_y_disp[13:3], tile_map_x[8:3]}; 
-						2'b11: /* stride 32 */
-							tilemap_index_r_next = {tile_map_address, 1'd0} + {tilemap_y_disp[14:3], tile_map_x[7:3]}; 
-					endcase
+					//	2'b11: /* stride 32 */
+					//		tilemap_index_r_next = {tile_map_address, 1'd0} + {tilemap_y_disp[14:3], tile_map_x[7:3]}; 
+					//endcase
 				end
 
 				f_state_r_next 		 = f_fetch_tile;
@@ -319,27 +319,27 @@ begin
 			f_begin2: begin
 				
 				if (bg_tile_size2 == 1'b0) begin // 16x16
-					case (bg_tile_stride2)
-						2'b00: /* stride 256 */
-							tilemap_index_r_next = {tile_map_address2, 1'd0} + {      tilemap_y_disp[12:4], tile_map_x2[11:4]}; 
-						2'b01: /* stride 128 */
-							tilemap_index_r_next = {tile_map_address2, 1'd0} + {      tilemap_y_disp[13:4], tile_map_x2[10:4]}; 
-						2'b10: /* stride 64 */
+					//case (bg_tile_stride2)
+						//2'b00: /* stride 256 */
+						//	tilemap_index_r_next = {tile_map_address2, 1'd0} + {      tilemap_y_disp[12:4], tile_map_x2[11:4]}; 
+						//2'b01: /* stride 128 */
+						//	tilemap_index_r_next = {tile_map_address2, 1'd0} + {      tilemap_y_disp[13:4], tile_map_x2[10:4]}; 
+						//2'b10: /* stride 64 */
 							tilemap_index_r_next = {tile_map_address2, 1'd0} + {      tilemap_y_disp[14:4], tile_map_x2[9:4]}; 
-						2'b11: /* stride 32 */
-							tilemap_index_r_next = {tile_map_address2, 1'd0} + {      tilemap_y_disp[15:4], tile_map_x2[8:4]}; 
-					endcase
+						//2'b11: /* stride 32 */
+						//	tilemap_index_r_next = {tile_map_address2, 1'd0} + {      tilemap_y_disp[15:4], tile_map_x2[8:4]}; 
+					//endcase
 				end else begin // 8x8
-					case (bg_tile_stride)
-						2'b00: /* stride 256 */
-							tilemap_index_r_next = {tile_map_address2, 1'd0} + {tilemap_y_disp[11:3], tile_map_x2[10:3]}; 
-						2'b01: /* stride 128 */
-							tilemap_index_r_next = {tile_map_address2, 1'd0} + {tilemap_y_disp[12:3], tile_map_x2[9:3]}; 
-						2'b10: /* stride 64 */
+					//case (bg_tile_stride)
+					//	2'b00: /* stride 256 */
+					//		tilemap_index_r_next = {tile_map_address2, 1'd0} + {tilemap_y_disp[11:3], tile_map_x2[10:3]}; 
+					//	2'b01: /* stride 128 */
+					//		tilemap_index_r_next = {tile_map_address2, 1'd0} + {tilemap_y_disp[12:3], tile_map_x2[9:3]}; 
+					//	2'b10: /* stride 64 */
 							tilemap_index_r_next = {tile_map_address2, 1'd0} + {tilemap_y_disp[13:3], tile_map_x2[8:3]}; 
-						2'b11: /* stride 32 */
-							tilemap_index_r_next = {tile_map_address2, 1'd0} + {tilemap_y_disp[14:3], tile_map_x2[7:3]}; 
-					endcase
+					//	2'b11: /* stride 32 */
+					//		tilemap_index_r_next = {tile_map_address2, 1'd0} + {tilemap_y_disp[14:3], tile_map_x2[7:3]}; 
+					//endcase
 				end
 	
 				f_state_r_next 		 = f_fetch_tile;
