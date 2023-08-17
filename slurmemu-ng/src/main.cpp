@@ -35,8 +35,38 @@ SOFTWARE.
 
 #include <cstdint>
 
+#include <chrono>
+#include <iostream>
+
+#include <unistd.h>
+
+#include <sstream>
+
 #define WINDOW_WIDTH 	640
 #define WINDOW_HEIGHT 	480
+
+float getFPS() {
+    static std::chrono::time_point<std::chrono::high_resolution_clock> oldTime = std::chrono::high_resolution_clock::now();
+    static int fps; fps++;
+
+    float ret = 0.0;
+
+    auto msecs = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - oldTime);
+
+    if (msecs.count() != 0)
+        ret = fps * 1000 / msecs.count();
+
+    if (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - oldTime) >= std::chrono::seconds{ 1 }) {
+
+        oldTime = std::chrono::high_resolution_clock::now();
+
+        fps = 0;
+    }
+
+    return ret;
+}
+
+
 
 int main(int argc, char** argv)
 {
@@ -86,6 +116,14 @@ int main(int argc, char** argv)
         glClear(GL_COLOR_BUFFER_BIT);
 
         SDL_GL_SwapWindow(window);
+
+        float fps = getFPS();
+
+        std::stringstream s;
+
+        s << "slurmemu-ng : " << fps << " FPS";
+
+        SDL_SetWindowTitle(window, s.str().c_str());
 
     }
 
