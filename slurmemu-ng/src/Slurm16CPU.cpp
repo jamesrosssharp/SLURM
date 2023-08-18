@@ -29,4 +29,45 @@ SOFTWARE.
 
 */
 
+#include "Slurm16CPU.h"
 
+Slurm16CPU::Slurm16CPU()    :
+    m_z(0),
+    m_c(0),
+    m_s(0),
+    m_v(0),
+    m_z_int(0),
+    m_c_int(0),
+    m_s_int(0),
+    m_v_int(0),
+    m_imm_hi(0),
+    m_imm_int(0),
+    m_pc(0),
+    m_int_flag(false),
+    m_halt(false)
+{
+    calc_tables(); 
+}
+
+Slurm16CPU::~Slurm16CPU()
+{
+
+}
+
+void Slurm16CPU::execute_one_instruction(PortController* pcon, std::uint16_t* mem, std::uint8_t irq)
+{
+
+} 
+
+void Slurm16CPU::calc_tables()
+{
+        //ins_t m_instruction_jump_table[65536];
+        //std::uint16_t* m_reg_lo_nibble_table[65536];  /* table to select register based on bits 3:0 */
+        //std::uint16_t* m_reg_mid_nibble_table[65536]; /* table to select register based on bits 7:4 */
+        //std::uint16_t* m_reg_hi_nibble_table[65536];  /* table to select register based on bits 11:8 */
+        
+        //std::uint8_t m_zero_table[65536]; /* table to compare to zero */
+        //std::uint8_t m_sign_table[65536]; /* table to decode sign bit */
+        //std::uint8_t m_carry_table[65536]; /* table to decode carry bit */
+
+}
