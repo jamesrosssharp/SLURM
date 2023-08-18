@@ -125,6 +125,8 @@ int main(int argc, char** argv)
 
         SDL_SetWindowTitle(window, s.str().c_str());
 
+        usleep(16000);
+
     }
 
 }
