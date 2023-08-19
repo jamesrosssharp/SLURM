@@ -32,6 +32,7 @@ SOFTWARE.
 #include "Slurm16CPU.h"
 
 #include <vector>
+#include <iostream>
 
 Slurm16CPU::Slurm16CPU()    :
     m_z(0),
@@ -71,6 +72,10 @@ void Slurm16CPU::calc_tables()
         
         /* compute instruction jump table */
 
+        std::cout << "Computing instruction jump table..." << std::endl;
+
+        std::cout << "2^16 = " << kTwoPower16 << std::endl;
+
         struct ins_mask {
             std::uint16_t mask;
             std::uint16_t val;
@@ -81,16 +86,18 @@ void Slurm16CPU::calc_tables()
             {0xff00, 0x2000, alu_mov_reg_reg}
         };
 
-        for (std::uint16_t j = 0; j < kTwoPower16; j++)
+        for (std::uint32_t j = 0; j < kTwoPower16; j++)
         {
             m_instruction_jump_table[j] = nullptr;
         }
 
         for (const auto &i : insts)
         {
-            for (std::uint16_t j = 0; j < kTwoPower16; j++)
+            for (std::uint32_t j = 0; j < kTwoPower16; j++)
             {
                 std::uint16_t a = (j & ~i.mask) | (i.val & i.mask);
+
+                //std::cout << "Jump table " << std::hex << a << " = " << (void*)i.ptr << std::endl;
 
                 m_instruction_jump_table[a] = i.ptr;
             }
@@ -98,8 +105,10 @@ void Slurm16CPU::calc_tables()
 
         /* compute register lookups */
 
+        std::cout << "Computing register LUTs..." << std::endl;
+
         struct reg_lut {
-            std::uint16_t* tab;
+            std::uint16_t** tab;
             std::uint16_t  mask;
         };        
 
@@ -111,7 +120,7 @@ void Slurm16CPU::calc_tables()
 
         for (const auto &l : r_luts)
         {
-            for (std::uint16_t j = 0; j < kTwoPower16)
+            for (std::uint32_t j = 0; j < kTwoPower16; j++)
             {
                 std::uint16_t r = (j & l.mask);
                 l.tab[j] = &m_regs[r];               
@@ -120,7 +129,9 @@ void Slurm16CPU::calc_tables()
 
         /* compute zero, sign, carry table */
         
-        for (std::uint16_t i = 0; i < kTwoPower16)
+        std::cout << "Computing zero, sign, carry tables..." << std::endl;
+
+        for (std::uint32_t i = 0; i < kTwoPower16; i++)
         {
             m_zero_table[i] = (i == 0) ? 1 : 0;
             m_sign_table[i] = (i & 0x8000) ? 1 : 0;
