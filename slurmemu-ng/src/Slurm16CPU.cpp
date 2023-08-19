@@ -31,6 +31,8 @@ SOFTWARE.
 
 #include "Slurm16CPU.h"
 
+#include <vector>
+
 Slurm16CPU::Slurm16CPU()    :
     m_z(0),
     m_c(0),
@@ -46,6 +48,11 @@ Slurm16CPU::Slurm16CPU()    :
     m_int_flag(false),
     m_halt(false)
 {
+    for (int i = 0; i < kNumRegs; i++)
+    {
+        m_regs[i] = 0;
+    } 
+
     calc_tables(); 
 }
 
@@ -61,13 +68,77 @@ void Slurm16CPU::execute_one_instruction(PortController* pcon, std::uint16_t* me
 
 void Slurm16CPU::calc_tables()
 {
-        //ins_t m_instruction_jump_table[65536];
-        //std::uint16_t* m_reg_lo_nibble_table[65536];  /* table to select register based on bits 3:0 */
-        //std::uint16_t* m_reg_mid_nibble_table[65536]; /* table to select register based on bits 7:4 */
-        //std::uint16_t* m_reg_hi_nibble_table[65536];  /* table to select register based on bits 11:8 */
         
-        //std::uint8_t m_zero_table[65536]; /* table to compare to zero */
-        //std::uint8_t m_sign_table[65536]; /* table to decode sign bit */
-        //std::uint8_t m_carry_table[65536]; /* table to decode carry bit */
+        /* compute instruction jump table */
 
+        struct ins_mask {
+            std::uint16_t mask;
+            std::uint16_t val;
+            ins_t    ptr;
+        };
+
+        std::vector<struct ins_mask> insts = {
+            {0xff00, 0x2000, alu_mov_reg_reg}
+        };
+
+        for (std::uint16_t j = 0; j < kTwoPower16; j++)
+        {
+            m_instruction_jump_table[j] = nullptr;
+        }
+
+        for (const auto &i : insts)
+        {
+            for (std::uint16_t j = 0; j < kTwoPower16; j++)
+            {
+                std::uint16_t a = (j & ~i.mask) | (i.val & i.mask);
+
+                m_instruction_jump_table[a] = i.ptr;
+            }
+        } 
+
+        /* compute register lookups */
+
+        struct reg_lut {
+            std::uint16_t* tab;
+            std::uint16_t  mask;
+        };        
+
+        std::vector<struct reg_lut> r_luts = {
+            {m_reg_lo_nibble_table, 0x000f},
+            {m_reg_mid_nibble_table, 0x00f0},
+            {m_reg_hi_nibble_table, 0x0f00}
+        };
+
+        for (const auto &l : r_luts)
+        {
+            for (std::uint16_t j = 0; j < kTwoPower16)
+            {
+                std::uint16_t r = (j & l.mask);
+                l.tab[j] = &m_regs[r];               
+            } 
+        }
+
+        /* compute zero, sign, carry table */
+        
+        for (std::uint16_t i = 0; i < kTwoPower16)
+        {
+            m_zero_table[i] = (i == 0) ? 1 : 0;
+            m_sign_table[i] = (i & 0x8000) ? 1 : 0;
+            m_carry_table[i] = (i != 0) ? 1 : 0;
+        }
+
+}
+
+#define R_DEST(cpu, ins) \
+    cpu->m_reg_mid_nibble_table[ins];
+
+#define R_SRC(cpu, ins) \
+    cpu->m_reg_lo_nibble_table[ins];
+
+void Slurm16CPU::alu_mov_reg_reg(Slurm16CPU* cpu, std::uint16_t instruction)
+{
+    uint16_t* r_dest = R_DEST(cpu, instruction);
+    uint16_t* r_src  = R_SRC(cpu, instruction);
+    *r_dest = *r_src;
+    /* flags unaffected */
 }

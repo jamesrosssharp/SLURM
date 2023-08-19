@@ -45,89 +45,10 @@ class Slurm16CPU
 
     protected:
 
-        using ins_t = void (*) (std::uint16_t);
+        using ins_t = void (*) (Slurm16CPU*, std::uint16_t);
 
         /* ALU operations */
-        void alu_mov_reg_reg(std::uint16_t instruction);
-        void alu_mov_reg_imm(std::uint16_t instruction);
-        void alu_mov_reg_reg_reg(std::uint16_t instruction);
-
-        void alu_add_reg_reg(std::uint16_t instruction);
-        void alu_add_reg_imm(std::uint16_t instruction);
-        void alu_add_reg_reg_reg(std::uint16_t instruction);
-
-        void alu_adc_reg_reg(std::uint16_t instruction);
-        void alu_adc_reg_imm(std::uint16_t instruction);
-        void alu_adc_reg_reg_reg(std::uint16_t instruction);
-
-        void alu_sub_reg_reg(std::uint16_t instruction);
-        void alu_sub_reg_imm(std::uint16_t instruction);
-        void alu_sub_reg_reg_reg(std::uint16_t instruction);
-
-        void alu_sbb_reg_reg(std::uint16_t instruction);
-        void alu_sbb_reg_imm(std::uint16_t instruction);
-        void alu_sbb_reg_reg_reg(std::uint16_t instruction);
-
-        void alu_and_reg_reg(std::uint16_t instruction);
-        void alu_and_reg_imm(std::uint16_t instruction);
-        void alu_and_reg_reg_reg(std::uint16_t instruction);
-
-        void alu_or_reg_reg(std::uint16_t instruction);
-        void alu_or_reg_imm(std::uint16_t instruction);
-        void alu_or_reg_reg_reg(std::uint16_t instruction);
-
-        void alu_xor_reg_reg(std::uint16_t instruction);
-        void alu_xor_reg_imm(std::uint16_t instruction);
-        void alu_xor_reg_reg_reg(std::uint16_t instruction);
-
-        void alu_cmp_reg_reg(std::uint16_t instruction);
-        void alu_cmp_reg_imm(std::uint16_t instruction);
-        void alu_cmp_reg_reg_reg(std::uint16_t instruction);
-
-        void alu_test_reg_reg(std::uint16_t instruction);
-        void alu_test_reg_imm(std::uint16_t instruction);
-        void alu_test_reg_reg_reg(std::uint16_t instruction);
-
-        void alu_mul_reg_reg(std::uint16_t instruction);
-        void alu_mul_reg_imm(std::uint16_t instruction);
-        void alu_mul_reg_reg_reg(std::uint16_t instruction);
-
-        void alu_mulu_reg_reg(std::uint16_t instruction);
-        void alu_mulu_reg_imm(std::uint16_t instruction);
-        void alu_mulu_reg_reg_reg(std::uint16_t instruction);
-
-        void alu_rrn_reg_reg(std::uint16_t instruction);
-        void alu_rrn_reg_imm(std::uint16_t instruction);
-        void alu_rrn_reg_reg_reg(std::uint16_t instruction);
-
-        void alu_rln_reg_reg(std::uint16_t instruction);
-        void alu_rln_reg_imm(std::uint16_t instruction);
-        void alu_rln_reg_reg_reg(std::uint16_t instruction);
-
-        void alu_umulu_reg_reg(std::uint16_t instruction);
-        void alu_umulu_reg_imm(std::uint16_t instruction);
-        void alu_umulu_reg_reg_reg(std::uint16_t instruction);
-
-        void alu_bswap_reg_reg(std::uint16_t instruction);
-        void alu_bswap_reg_imm(std::uint16_t instruction);
-        void alu_bswap_reg_reg_reg(std::uint16_t instruction);
-
-        /* Logical operations */
-        void alu_asr(std::uint16_t instruction);
-        void alu_lsr(std::uint16_t instruction);
-        void alu_lsl(std::uint16_t instruction);
-        void alu_rolc(std::uint16_t instruction);
-        void alu_rorc(std::uint16_t instruction);
-        void alu_rol(std::uint16_t instruction);
-        void alu_ror(std::uint16_t instruction);
-        void alu_cc(std::uint16_t instruction);
-        void alu_sc(std::uint16_t instruction);
-        void alu_cz(std::uint16_t instruction);
-        void alu_sz(std::uint16_t instruction);
-        void alu_cs(std::uint16_t instruction);
-        void alu_ss(std::uint16_t instruction);
-        void alu_stf(std::uint16_t instruction);
-        void alu_rsf(std::uint16_t instruction);
+        static void alu_mov_reg_reg(Slurm16CPU* cpu, std::uint16_t instruction);
 
         /* branch operations */ 
 
@@ -140,7 +61,11 @@ class Slurm16CPU
         void calc_tables();
 
         /* members */
-        
+
+        static constexpr int kNumRegs = 128;
+        static constexpr int kNumLoRegs = 16;
+        static constexpr int kTwoPower16 = 65536;       
+ 
         std::uint8_t m_z;
         std::uint8_t m_c;
         std::uint8_t m_s;
@@ -155,18 +80,21 @@ class Slurm16CPU
         std::uint16_t m_imm_int;
 
         std::uint16_t m_pc;
-        std::uint16_t m_regs[128];
+        std::uint16_t m_regs[kNumRegs];
 
         bool m_int_flag;
         bool m_halt;
 
-        ins_t m_instruction_jump_table[65536];
-        std::uint16_t* m_reg_lo_nibble_table[65536];  /* table to select register based on bits 3:0 */
-        std::uint16_t* m_reg_mid_nibble_table[65536]; /* table to select register based on bits 7:4 */
-        std::uint16_t* m_reg_hi_nibble_table[65536];  /* table to select register based on bits 11:8 */
+        /* Will these LUTs improve performance, or won't they fit in cache - would raw instructions be better? Should really test */
+        ins_t m_instruction_jump_table[kTwoPower16];    /* 4 bytes * 64k = 256k */
+        std::uint16_t* m_reg_lo_nibble_table[kTwoPower16];  /* table to select register based on bits 3:0 : 4 bytes * 64k = 256k */
+        std::uint16_t* m_reg_mid_nibble_table[kTwoPower16]; /* table to select register based on bits 7:4 : 256k */
+        std::uint16_t* m_reg_hi_nibble_table[kTwoPower16];  /* table to select register based on bits 11:8 : 256k */
         
-        std::uint8_t m_zero_table[65536]; /* table to compare to zero */
-        std::uint8_t m_sign_table[65536]; /* table to decode sign bit */
-        std::uint8_t m_carry_table[65536]; /* table to decode carry bit */
+        std::uint8_t m_zero_table[kTwoPower16]; /* table to compare to zero : 64k   */
+        std::uint8_t m_sign_table[kTwoPower16]; /* table to decode sign bit : 64k   */
+        std::uint8_t m_carry_table[kTwoPower16]; /* table to decode carry bit : 64k */
+
+        /* total LUTs: 1,216 kBytes : hard to fit in cache... */
 
 };
