@@ -1,9 +1,9 @@
 /* vim: set et ts=4 sw=4: */
 
 /*
-	slurmemu-ng: Next-Generation Slurm16 emulator
+	slurmemu-ng : Next-Generation SlURM16 Emulator
 
-cpuTest.cpp: CPU Tester
+    PortController.cpp: Emulate the SlURM16 Port Controller
 
 License: MIT License
 
@@ -29,36 +29,5 @@ SOFTWARE.
 
 */
 
-#include <gtest/gtest.h>
 
-#include <Slurm16CPU.h>
-
-class Slurm16CPUTest : public ::testing::Test {
-    protected:
-
-        void SetUp() override {
-            m_cpu = new Slurm16CPU();
-        }
-
-        void TearDown() override {
-            delete m_cpu;
-        }
-
-        Slurm16CPU *m_cpu;
-};
-
-TEST_F(Slurm16CPUTest, TestMov)
-{
-
-    constexpr int kNumInst = 3;
-    uint16_t memory[kNumInst] = {0x3013 /* mov r1, 3 */, 0x2021 /* mov r2, r1 */, 0x3037 /* mov r3, 7 */};
-
-    for (int i = 0; i < kNumInst; i++)
-        m_cpu->execute_one_instruction(nullptr, memory, 0);
-
-    ASSERT_EQ(m_cpu->get_register(0), 0);
-    ASSERT_EQ(m_cpu->get_register(1), 3);
-    ASSERT_EQ(m_cpu->get_register(2), 3);
-    ASSERT_EQ(m_cpu->get_register(3), 7);
-}
 
