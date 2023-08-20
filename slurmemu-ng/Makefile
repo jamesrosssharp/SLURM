@@ -15,6 +15,7 @@ CPP_OBJ_NOMAIN = $(filter-out $(BUILD_DIR)/main.o, $(CPP_OBJ))
 TEST_DIR=test
 
 TEST_SRC = $(TEST_DIR)/main.cpp
+TEST_SRC_DEP = $(wildcard $(TEST_DIR)/*.cpp)
 TEST_OBJ = $(patsubst %.cpp, $(BUILD_DIR)/%.to,$(notdir $(TEST_SRC)))
 
 $(info $(CPP_OBJ_NOMAIN))
@@ -24,7 +25,7 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp $(HEADERS)
 	@echo "CXX $<"
 	@g++ -std=c++17 -c -o $@ -I$(SRC_DIR) $<
 
-$(BUILD_DIR)/%.to: $(TEST_DIR)/%.cpp $(HEADERS)
+$(BUILD_DIR)/%.to: $(TEST_DIR)/%.cpp $(HEADERS) $(TEST_SRC_DEP)
 	@mkdir -p $(BUILD_DIR)
 	@echo "CXX $<"
 	@g++ -std=c++17 -c -o $@ -I$(SRC_DIR) -I$(TEST_DIR) $<

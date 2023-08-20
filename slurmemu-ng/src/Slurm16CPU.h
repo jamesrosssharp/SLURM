@@ -53,6 +53,11 @@ class Slurm16CPU
         static void alu_mov_reg_reg(Slurm16CPU* cpu, std::uint16_t instruction);
         static void alu_mov_reg_imm(Slurm16CPU* cpu, std::uint16_t instruction);
 
+        static void alu_add_reg_reg(Slurm16CPU* cpu, std::uint16_t instruction);
+        static void alu_add_reg_imm(Slurm16CPU* cpu, std::uint16_t instruction);
+
+
+
         /* branch operations */ 
 
 

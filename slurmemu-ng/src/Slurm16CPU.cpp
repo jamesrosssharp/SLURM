@@ -89,10 +89,6 @@ void Slurm16CPU::calc_tables()
         
         /* compute instruction jump table */
 
-        std::cout << "Computing instruction jump table..." << std::endl;
-
-        std::cout << "2^16 = " << kTwoPower16 << std::endl;
-
         struct ins_mask {
             std::uint16_t mask;
             std::uint16_t val;
@@ -102,6 +98,8 @@ void Slurm16CPU::calc_tables()
         std::vector<struct ins_mask> insts = {
             {0xff00, 0x2000, alu_mov_reg_reg},
             {0xff00, 0x3000, alu_mov_reg_imm},
+            {0xff00, 0x2100, alu_add_reg_reg},
+            {0xff00, 0x3100, alu_add_reg_imm},
         };
 
         for (std::uint32_t j = 0; j < kTwoPower16; j++)
@@ -122,8 +120,6 @@ void Slurm16CPU::calc_tables()
         } 
 
         /* compute register lookups */
-
-        std::cout << "Computing register LUTs..." << std::endl;
 
         struct reg_lut {
             std::uint16_t** tab;
@@ -148,8 +144,6 @@ void Slurm16CPU::calc_tables()
 
         /* compute zero, sign, carry table */
         
-        std::cout << "Computing zero, sign, carry tables..." << std::endl;
-
         for (std::uint32_t i = 0; i < kTwoPower16; i++)
         {
             m_zero_table[i] = (i == 0) ? 1 : 0;
@@ -160,10 +154,19 @@ void Slurm16CPU::calc_tables()
 }
 
 #define R_DEST(cpu, ins) \
-    cpu->m_reg_mid_nibble_table[ins];
+    cpu->m_reg_mid_nibble_table[ins]
 
 #define R_SRC(cpu, ins) \
-    cpu->m_reg_lo_nibble_table[ins];
+    cpu->m_reg_lo_nibble_table[ins]
+
+#define ZERO_FLAG(val) \
+    cpu->m_zero_table[(val)]
+
+#define SIGN_FLAG(val) \
+    cpu->m_sign_table[(val)]
+
+#define CARRY_FLAG(val) \
+    cpu->m_carry_table[(val)]
 
 void Slurm16CPU::alu_mov_reg_reg(Slurm16CPU* cpu, std::uint16_t instruction)
 {
@@ -183,5 +186,37 @@ void Slurm16CPU::alu_mov_reg_imm(Slurm16CPU* cpu, std::uint16_t instruction)
     /* flags unaffected */
     cpu->m_imm_hi = 0;
     cpu->m_pc += 2;
+}
+
+void Slurm16CPU::alu_add_reg_reg(Slurm16CPU* cpu, std::uint16_t instruction)
+{
+    uint16_t* r_dest = R_DEST(cpu, instruction);
+    uint16_t* r_src  = R_SRC(cpu, instruction);
+    uint32_t sum = *r_dest;
+    sum += *r_src;
+    /* flags unaffected */
+    cpu->m_imm_hi = 0;
+    cpu->m_pc += 2;
+    cpu->m_z = ZERO_FLAG(sum & 0xffff);
+    cpu->m_s = SIGN_FLAG(sum & 0xffff);
+    cpu->m_c = CARRY_FLAG(sum >> 16);
+    cpu->m_v = !(SIGN_FLAG(*r_dest ^ *r_src) && SIGN_FLAG((*r_src ^ sum) & 0xffff)); 
+    *r_dest = sum;
+}
+
+void Slurm16CPU::alu_add_reg_imm(Slurm16CPU* cpu, std::uint16_t instruction)
+{
+    uint16_t* r_dest = R_DEST(cpu, instruction);
+    uint16_t imm = (cpu->m_imm_hi << 4) | (instruction & 0xf);
+    uint32_t sum = *r_dest;
+    sum += imm;
+    /* flags unaffected */
+    cpu->m_imm_hi = 0;
+    cpu->m_pc += 2;
+    cpu->m_z = ZERO_FLAG(sum & 0xffff);
+    cpu->m_s = SIGN_FLAG(sum & 0xffff);
+    cpu->m_c = CARRY_FLAG(sum >> 16);
+    cpu->m_v = !(SIGN_FLAG(*r_dest ^ imm) && SIGN_FLAG((imm ^ sum) & 0xffff)); 
+    *r_dest = sum;
 }
 

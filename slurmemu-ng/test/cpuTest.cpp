@@ -62,3 +62,17 @@ TEST_F(Slurm16CPUTest, TestMov)
     ASSERT_EQ(m_cpu->get_register(3), 7);
 }
 
+TEST_F(Slurm16CPUTest, TestAdd)
+{
+
+    constexpr int kNumInst = 4;
+    uint16_t memory[kNumInst] = {0x3013 /* mov r1, 3 */, 0x2021 /* mov r2, r1 */, 0x2112 /* add r1, r2 */, 0x3127 /* add r2, 7 */};
+
+    for (int i = 0; i < kNumInst; i++)
+        m_cpu->execute_one_instruction(nullptr, memory, 0);
+
+    ASSERT_EQ(m_cpu->get_register(0), 0);
+    ASSERT_EQ(m_cpu->get_register(1), 6);
+    ASSERT_EQ(m_cpu->get_register(2), 10);
+}
+
