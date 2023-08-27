@@ -49,6 +49,9 @@ class Slurm16CPU
 
         using ins_t = void (*) (Slurm16CPU*, std::uint16_t);
 
+        /* IMM instruction */
+        static void imm_ins(Slurm16CPU* cpu, std::uint16_t instruction);
+
         /* ALU operations */
         static void alu_mov_reg_reg(Slurm16CPU* cpu, std::uint16_t instruction);
         static void alu_mov_reg_imm(Slurm16CPU* cpu, std::uint16_t instruction);
@@ -56,7 +59,11 @@ class Slurm16CPU
         static void alu_add_reg_reg(Slurm16CPU* cpu, std::uint16_t instruction);
         static void alu_add_reg_imm(Slurm16CPU* cpu, std::uint16_t instruction);
 
+        static void alu_adc_reg_reg(Slurm16CPU* cpu, std::uint16_t instruction);
+        static void alu_adc_reg_imm(Slurm16CPU* cpu, std::uint16_t instruction);
 
+        static void alu_sub_reg_reg(Slurm16CPU* cpu, std::uint16_t instruction);
+        static void alu_sub_reg_imm(Slurm16CPU* cpu, std::uint16_t instruction);
 
         /* branch operations */ 
 
