@@ -18,8 +18,6 @@ TEST_SRC = $(TEST_DIR)/main.cpp
 TEST_SRC_DEP = $(wildcard $(TEST_DIR)/*.cpp)
 TEST_OBJ = $(patsubst %.cpp, $(BUILD_DIR)/%.to,$(notdir $(TEST_SRC)))
 
-$(info $(CPP_OBJ_NOMAIN))
-
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp $(HEADERS)
 	@mkdir -p $(BUILD_DIR)
 	@echo "CXX $<"
