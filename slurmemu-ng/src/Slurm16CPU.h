@@ -47,23 +47,26 @@ class Slurm16CPU
 
     protected:
 
-        using ins_t = void (*) (Slurm16CPU*, std::uint16_t);
+        using ins_t = void (*) (Slurm16CPU*, std::uint16_t, std::uint16_t*, PortController*);
 
         /* IMM instruction */
-        static void imm_ins(Slurm16CPU* cpu, std::uint16_t instruction);
+        static void imm_ins(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
 
         /* ALU operations */
-        static void alu_mov_reg_reg(Slurm16CPU* cpu, std::uint16_t instruction);
-        static void alu_mov_reg_imm(Slurm16CPU* cpu, std::uint16_t instruction);
+        static void alu_mov_reg_reg(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
+        static void alu_mov_reg_imm(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
 
-        static void alu_add_reg_reg(Slurm16CPU* cpu, std::uint16_t instruction);
-        static void alu_add_reg_imm(Slurm16CPU* cpu, std::uint16_t instruction);
+        static void alu_add_reg_reg(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
+        static void alu_add_reg_imm(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
 
-        static void alu_adc_reg_reg(Slurm16CPU* cpu, std::uint16_t instruction);
-        static void alu_adc_reg_imm(Slurm16CPU* cpu, std::uint16_t instruction);
+        static void alu_adc_reg_reg(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
+        static void alu_adc_reg_imm(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
 
-        static void alu_sub_reg_reg(Slurm16CPU* cpu, std::uint16_t instruction);
-        static void alu_sub_reg_imm(Slurm16CPU* cpu, std::uint16_t instruction);
+        static void alu_sub_reg_reg(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
+        static void alu_sub_reg_imm(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
+
+        static void alu_sbb_reg_reg(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
+        static void alu_sbb_reg_imm(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
 
         /* branch operations */ 
 

@@ -73,11 +73,11 @@ void Slurm16CPU::execute_one_instruction(PortController* pcon, std::uint16_t* me
 
     if (ifunc != nullptr)
     {
-        ifunc(this, instruction);
+        ifunc(this, instruction, mem, pcon);
     }
     else
     {
-        std::cout << "Undefined instruction at 0x" << std::hex << std::setw(4) << m_pc << std::endl;
+        std::cout << "Undefined instruction at 0x" << std::hex << std::setw(4) << std::setfill('0') << m_pc << std::endl;
     }
 
     // Clear zero reg, just in case
@@ -105,6 +105,8 @@ void Slurm16CPU::calc_tables()
             {0xff00, 0x3200, alu_adc_reg_imm},
             {0xff00, 0x2300, alu_sub_reg_reg},
             {0xff00, 0x3300, alu_sub_reg_imm},
+            {0xff00, 0x2400, alu_sbb_reg_reg},
+            {0xff00, 0x3400, alu_sbb_reg_imm},
         };
 
         for (std::uint32_t j = 0; j < kTwoPower16; j++)
@@ -173,7 +175,7 @@ void Slurm16CPU::calc_tables()
 #define CARRY_FLAG(val) \
     cpu->m_carry_table[(val)]
 
-void Slurm16CPU::alu_mov_reg_reg(Slurm16CPU* cpu, std::uint16_t instruction)
+void Slurm16CPU::alu_mov_reg_reg(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon)
 {
     uint16_t* r_dest = R_DEST(cpu, instruction);
     uint16_t* r_src  = R_SRC(cpu, instruction);
@@ -183,7 +185,7 @@ void Slurm16CPU::alu_mov_reg_reg(Slurm16CPU* cpu, std::uint16_t instruction)
     cpu->m_pc += 2;
 }
 
-void Slurm16CPU::alu_mov_reg_imm(Slurm16CPU* cpu, std::uint16_t instruction)
+void Slurm16CPU::alu_mov_reg_imm(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon)
 {
     uint16_t* r_dest = R_DEST(cpu, instruction);
     uint16_t imm = (cpu->m_imm_hi << 4) | (instruction & 0xf);
@@ -193,7 +195,7 @@ void Slurm16CPU::alu_mov_reg_imm(Slurm16CPU* cpu, std::uint16_t instruction)
     cpu->m_pc += 2;
 }
 
-void Slurm16CPU::alu_add_reg_reg(Slurm16CPU* cpu, std::uint16_t instruction)
+void Slurm16CPU::alu_add_reg_reg(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon)
 {
     uint16_t* r_dest = R_DEST(cpu, instruction);
     uint16_t* r_src  = R_SRC(cpu, instruction);
@@ -209,7 +211,7 @@ void Slurm16CPU::alu_add_reg_reg(Slurm16CPU* cpu, std::uint16_t instruction)
     *r_dest = sum;
 }
 
-void Slurm16CPU::alu_add_reg_imm(Slurm16CPU* cpu, std::uint16_t instruction)
+void Slurm16CPU::alu_add_reg_imm(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon)
 {
     uint16_t* r_dest = R_DEST(cpu, instruction);
     uint16_t imm = (cpu->m_imm_hi << 4) | (instruction & 0xf);
@@ -225,7 +227,7 @@ void Slurm16CPU::alu_add_reg_imm(Slurm16CPU* cpu, std::uint16_t instruction)
     *r_dest = sum;
 }
 
-void Slurm16CPU::alu_adc_reg_reg(Slurm16CPU* cpu, std::uint16_t instruction)
+void Slurm16CPU::alu_adc_reg_reg(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon)
 {
     uint16_t* r_dest = R_DEST(cpu, instruction);
     uint16_t* r_src  = R_SRC(cpu, instruction);
@@ -241,7 +243,7 @@ void Slurm16CPU::alu_adc_reg_reg(Slurm16CPU* cpu, std::uint16_t instruction)
     *r_dest = sum;
 }
 
-void Slurm16CPU::alu_adc_reg_imm(Slurm16CPU* cpu, std::uint16_t instruction)
+void Slurm16CPU::alu_adc_reg_imm(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon)
 {
     uint16_t* r_dest = R_DEST(cpu, instruction);
     uint16_t imm = (cpu->m_imm_hi << 4) | (instruction & 0xf);
@@ -257,13 +259,13 @@ void Slurm16CPU::alu_adc_reg_imm(Slurm16CPU* cpu, std::uint16_t instruction)
     *r_dest = sum;
 }
 
-void Slurm16CPU::imm_ins(Slurm16CPU* cpu, std::uint16_t instruction)
+void Slurm16CPU::imm_ins(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon)
 {
     cpu->m_imm_hi = instruction & 0x0fff;
     cpu->m_pc += 2;
 }
 
-void Slurm16CPU::alu_sub_reg_reg(Slurm16CPU* cpu, std::uint16_t instruction)
+void Slurm16CPU::alu_sub_reg_reg(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon)
 {
     uint16_t* r_dest = R_DEST(cpu, instruction);
     uint16_t* r_src  = R_SRC(cpu, instruction);
@@ -279,12 +281,44 @@ void Slurm16CPU::alu_sub_reg_reg(Slurm16CPU* cpu, std::uint16_t instruction)
     *r_dest = sum;
 }
 
-void Slurm16CPU::alu_sub_reg_imm(Slurm16CPU* cpu, std::uint16_t instruction)
+void Slurm16CPU::alu_sub_reg_imm(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon)
 {
     uint16_t* r_dest = R_DEST(cpu, instruction);
     uint16_t imm = (cpu->m_imm_hi << 4) | (instruction & 0xf);
     uint32_t sum = *r_dest;
     sum -= imm;
+    /* flags unaffected */
+    cpu->m_imm_hi = 0;
+    cpu->m_pc += 2;
+    cpu->m_z = ZERO_FLAG(sum & 0xffff);
+    cpu->m_s = SIGN_FLAG(sum & 0xffff);
+    cpu->m_c = CARRY_FLAG(sum >> 16);
+    cpu->m_v = (SIGN_FLAG(*r_dest ^ imm) && !SIGN_FLAG((imm ^ sum) & 0xffff)); 
+    *r_dest = sum;
+}
+
+void Slurm16CPU::alu_sbb_reg_reg(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon)
+{
+    uint16_t* r_dest = R_DEST(cpu, instruction);
+    uint16_t* r_src  = R_SRC(cpu, instruction);
+    uint32_t sum = *r_dest;
+    sum -= *r_src + cpu->m_c;
+    /* flags unaffected */
+    cpu->m_imm_hi = 0;
+    cpu->m_pc += 2;
+    cpu->m_z = ZERO_FLAG(sum & 0xffff);
+    cpu->m_s = SIGN_FLAG(sum & 0xffff);
+    cpu->m_c = CARRY_FLAG(sum >> 16);
+    cpu->m_v = (SIGN_FLAG(*r_dest ^ *r_src) && !SIGN_FLAG((*r_src ^ sum) & 0xffff)); 
+    *r_dest = sum;
+}
+
+void Slurm16CPU::alu_sbb_reg_imm(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon)
+{
+    uint16_t* r_dest = R_DEST(cpu, instruction);
+    uint16_t imm = (cpu->m_imm_hi << 4) | (instruction & 0xf);
+    uint32_t sum = *r_dest;
+    sum -= imm + cpu->m_c;
     /* flags unaffected */
     cpu->m_imm_hi = 0;
     cpu->m_pc += 2;
