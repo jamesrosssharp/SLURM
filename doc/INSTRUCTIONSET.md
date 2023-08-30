@@ -133,10 +133,10 @@ Class 2: Register to register ALU operation
         7 - xor : DEST <- DEST ^ SRC
     	8 - mul : DEST <- DEST * SRC (LO)
         9 - mulu : DEST <- DEST * SRC (HI)
-        10: - rrn : rotate nibble right
-	11: - rln : rotate nibble left
-        12: cmp 
-        13: test
+        10 - rrn : rotate nibble right
+	11 - rln : rotate nibble left
+        12 - cmp : compare 
+        13 - test : bitwise test
         14 - umulu : DEST <- (UNSIGNED) DEST * (UNSIGNED) SRC (HI) 
         15 - bswap : DEST <- bytes swapped SRC
  

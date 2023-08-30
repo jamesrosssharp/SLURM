@@ -170,3 +170,59 @@ TEST_F(Slurm16CPUTest, TestXor)
 
 }
 
+TEST_F(Slurm16CPUTest, TestMul)
+{
+    constexpr int kNumInst = 6;
+    uint16_t memory[kNumInst] = {0x3013 /* mov r1, 3 */, 0x3812 /* mul r1, 2 */, 0x1fff /* imm 0xfff0 */, 0x302f /* mov r2, -1 */, 0x3032 /* mov r3, 2 */, 0x2823 /* mul r2, r3 */ };
+
+    for (int i = 0; i < kNumInst; i++)
+        m_cpu->execute_one_instruction(nullptr, memory, 0);
+
+    ASSERT_EQ(m_cpu->get_register(0), 0);
+    ASSERT_EQ(m_cpu->get_register(1), 6);
+    ASSERT_EQ(m_cpu->get_register(2), (uint16_t)-2);
+
+}
+
+TEST_F(Slurm16CPUTest, TestMulu)
+{
+    constexpr int kNumInst = 5;
+    uint16_t memory[kNumInst] = {0x1fff /* imm 0xfff0 */, 0x301f /* mov r1, -1 */, 0x1010 /* imm 0xfff0 */, 0x3020 /* mov r2, -256 */, 0x2912 /* mulu r1, r2 */ };
+
+    for (int i = 0; i < kNumInst; i++)
+        m_cpu->execute_one_instruction(nullptr, memory, 0);
+
+    ASSERT_EQ(m_cpu->get_register(0), 0);
+    ASSERT_EQ(m_cpu->get_register(1), 0xffff);
+
+}
+
+TEST_F(Slurm16CPUTest, TestRRN)
+{
+    constexpr int kNumInst = 3;
+    uint16_t memory[kNumInst] = {0x1123 /* imm 0x1230 */, 0x3014 /* mov r1, 0x1234 */, 0x2a21 /* rrn r2, r1 */ };
+
+    for (int i = 0; i < kNumInst; i++)
+        m_cpu->execute_one_instruction(nullptr, memory, 0);
+
+    ASSERT_EQ(m_cpu->get_register(0), 0);
+    ASSERT_EQ(m_cpu->get_register(1), 0x1234);
+    ASSERT_EQ(m_cpu->get_register(2), 0x4123);
+
+}
+
+TEST_F(Slurm16CPUTest, TestRLN)
+{
+    constexpr int kNumInst = 3;
+    uint16_t memory[kNumInst] = {0x1123 /* imm 0x1230 */, 0x3014 /* mov r1, 0x1234 */, 0x2b21 /* rln r2, r1 */ };
+
+    for (int i = 0; i < kNumInst; i++)
+        m_cpu->execute_one_instruction(nullptr, memory, 0);
+
+    ASSERT_EQ(m_cpu->get_register(0), 0);
+    ASSERT_EQ(m_cpu->get_register(1), 0x1234);
+    ASSERT_EQ(m_cpu->get_register(2), 0x2341);
+
+}
+
+

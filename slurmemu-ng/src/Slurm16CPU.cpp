@@ -113,7 +113,15 @@ void Slurm16CPU::calc_tables()
             {0xff00, 0x3600, alu_or_reg_imm},
             {0xff00, 0x2700, alu_xor_reg_reg},
             {0xff00, 0x3700, alu_xor_reg_imm}, 
-        };
+            {0xff00, 0x2800, alu_mul_reg_reg},
+            {0xff00, 0x3800, alu_mul_reg_imm}, 
+            {0xff00, 0x2900, alu_mulu_reg_reg},
+            {0xff00, 0x3900, alu_mulu_reg_imm}, 
+            {0xff00, 0x2a00, alu_rrn_reg_reg},
+            {0xff00, 0x3a00, alu_rrn_reg_imm}, 
+            {0xff00, 0x2b00, alu_rln_reg_reg},
+            {0xff00, 0x3b00, alu_rln_reg_imm}, 
+         };
 
         for (std::uint32_t j = 0; j < kTwoPower16; j++)
         {
@@ -409,5 +417,109 @@ void Slurm16CPU::alu_xor_reg_imm(Slurm16CPU* cpu, std::uint16_t instruction, std
     cpu->m_s = SIGN_FLAG(res & 0xffff);
     cpu->m_c = 0;
     *r_dest = res;
+}
+
+void Slurm16CPU::alu_mul_reg_reg(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon)
+{
+    uint16_t* r_dest = R_DEST(cpu, instruction);
+    uint16_t* r_src  = R_SRC(cpu, instruction);
+    int32_t res = (int32_t)*r_dest;
+    int32_t src = (int32_t)*r_src;
+    res *= src;
+    cpu->m_imm_hi = 0;
+    cpu->m_pc += 2;
+    cpu->m_z = ZERO_FLAG(res & 0xffff);
+    cpu->m_s = SIGN_FLAG(res & 0xffff);
+    cpu->m_c = 0;
+    *r_dest = res;
+}
+
+void Slurm16CPU::alu_mul_reg_imm(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon)
+{
+    uint16_t* r_dest = R_DEST(cpu, instruction);
+    int32_t imm = (int32_t)((cpu->m_imm_hi << 4) | (instruction & 0xf));
+    int32_t res = (int32_t)*r_dest;
+    res *= imm;
+    cpu->m_imm_hi = 0;
+    cpu->m_pc += 2;
+    cpu->m_z = ZERO_FLAG(res & 0xffff);
+    cpu->m_s = SIGN_FLAG(res & 0xffff);
+    cpu->m_c = 0;
+    *r_dest = res;
+}
+
+void Slurm16CPU::alu_mulu_reg_reg(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon)
+{
+    uint16_t* r_dest = R_DEST(cpu, instruction);
+    uint16_t* r_src  = R_SRC(cpu, instruction);
+    int32_t res = (int32_t)(int16_t)*r_dest;
+    int32_t src = (int32_t)(int16_t)*r_src;
+    res *= src;
+    cpu->m_imm_hi = 0;
+    cpu->m_pc += 2;
+    cpu->m_z = ZERO_FLAG(res & 0xffff);
+    cpu->m_s = SIGN_FLAG(res & 0xffff);
+    cpu->m_c = 0;
+    *r_dest = res >> 16;
+}
+
+void Slurm16CPU::alu_mulu_reg_imm(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon)
+{
+    uint16_t* r_dest = R_DEST(cpu, instruction);
+    int32_t imm = (int32_t)(int16_t)((cpu->m_imm_hi << 4) | (instruction & 0xf));
+    int32_t res = (int32_t)(int16_t)*r_dest;
+    res *= imm;
+    cpu->m_imm_hi = 0;
+    cpu->m_pc += 2;
+    cpu->m_z = ZERO_FLAG(res & 0xffff);
+    cpu->m_s = SIGN_FLAG(res & 0xffff);
+    cpu->m_c = 0;
+    *r_dest = res >> 16;
+}
+
+void Slurm16CPU::alu_rrn_reg_reg(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon)
+{
+    uint16_t* r_dest = R_DEST(cpu, instruction);
+    uint16_t* r_src  = R_SRC(cpu, instruction);
+    uint16_t res = (*r_src >> 4) | (*r_src << 12);
+    cpu->m_imm_hi = 0;
+    cpu->m_pc += 2;
+    *r_dest = res;
+}
+
+void Slurm16CPU::alu_rrn_reg_imm(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon)
+{
+    uint16_t* r_dest = R_DEST(cpu, instruction);
+    uint16_t imm = ((cpu->m_imm_hi << 4) | (instruction & 0xf));
+    uint16_t res = (imm >> 4) | (imm << 12);
+    cpu->m_imm_hi = 0;
+    cpu->m_pc += 2;
+    cpu->m_z = ZERO_FLAG(res & 0xffff);
+    cpu->m_s = SIGN_FLAG(res & 0xffff);
+    cpu->m_c = 0;
+    *r_dest = res >> 16;
+}
+
+void Slurm16CPU::alu_rln_reg_reg(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon)
+{
+    uint16_t* r_dest = R_DEST(cpu, instruction);
+    uint16_t* r_src  = R_SRC(cpu, instruction);
+    uint16_t res = (*r_src << 4) | (*r_src >> 12);
+    cpu->m_imm_hi = 0;
+    cpu->m_pc += 2;
+    *r_dest = res;
+}
+
+void Slurm16CPU::alu_rln_reg_imm(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon)
+{
+    uint16_t* r_dest = R_DEST(cpu, instruction);
+    uint16_t imm = ((cpu->m_imm_hi << 4) | (instruction & 0xf));
+    uint16_t res = (imm << 4) | (imm >> 12);
+    cpu->m_imm_hi = 0;
+    cpu->m_pc += 2;
+    cpu->m_z = ZERO_FLAG(res & 0xffff);
+    cpu->m_s = SIGN_FLAG(res & 0xffff);
+    cpu->m_c = 0;
+    *r_dest = res >> 16;
 }
 
