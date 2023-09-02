@@ -225,4 +225,16 @@ TEST_F(Slurm16CPUTest, TestRLN)
 
 }
 
+TEST_F(Slurm16CPUTest, TestCMP)
+{
+    constexpr int kNumInst = 3;
+    uint16_t memory[kNumInst] = {0x3012 /* mov r1, 2 */, 0x3024 /* mov r2, 0x4 */, 0x2c12 /* cmp r1, r2 */ };
 
+    for (int i = 0; i < kNumInst; i++)
+        m_cpu->execute_one_instruction(nullptr, memory, 0);
+
+    ASSERT_EQ(m_cpu->get_register(0), 0);
+    ASSERT_EQ(m_cpu->get_register(1), 2);
+    ASSERT_EQ(m_cpu->get_c_flag(), 1);
+
+}
