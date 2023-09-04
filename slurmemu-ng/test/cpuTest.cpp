@@ -238,3 +238,32 @@ TEST_F(Slurm16CPUTest, TestCMP)
     ASSERT_EQ(m_cpu->get_c_flag(), 1);
 
 }
+
+TEST_F(Slurm16CPUTest, TestTest)
+{
+
+    constexpr int kNumInst = 3;
+    uint16_t memory[kNumInst] = {0x3012 /* mov r1, 2 */, 0x3024 /* mov r2, 0x4 */, 0x2d12 /* test r1, r2 */ };
+
+    for (int i = 0; i < kNumInst; i++)
+        m_cpu->execute_one_instruction(nullptr, memory, 0);
+
+    ASSERT_EQ(m_cpu->get_register(0), 0);
+    ASSERT_EQ(m_cpu->get_register(1), 2);
+    ASSERT_EQ(m_cpu->get_z_flag(), 1);
+
+}
+
+TEST_F(Slurm16CPUTest, TestUMULU)
+{
+
+    constexpr int kNumInst = 5;
+    uint16_t memory[kNumInst] = {0x1fff /* imm 0xfff0 */, 0x301f /* mov r1, 0xffff */, 0x1010 /* imm 0xfff0 */, 0x3020 /* mov r2, 0x100 */, 0x2e12 /* umulu r1, r2 */ };
+
+    for (int i = 0; i < kNumInst; i++)
+        m_cpu->execute_one_instruction(nullptr, memory, 0);
+
+    ASSERT_EQ(m_cpu->get_register(0), 0);
+    ASSERT_EQ(m_cpu->get_register(1), (0xffffUL * 0x100UL) >> 16);
+
+}

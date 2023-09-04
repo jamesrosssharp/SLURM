@@ -46,6 +46,7 @@ class Slurm16CPU
         std::uint16_t get_register(std::uint8_t reg) { return m_regs[reg & 0x7f]; }
 
         std::uint8_t get_c_flag() { return m_c; }
+        std::uint8_t get_z_flag() { return m_z; }
 
     protected:
 
@@ -94,6 +95,11 @@ class Slurm16CPU
         static void alu_cmp_reg_reg(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
         static void alu_cmp_reg_imm(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
 
+        static void alu_test_reg_reg(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
+        static void alu_test_reg_imm(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
+
+        static void alu_umulu_reg_reg(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
+        static void alu_umulu_reg_imm(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
 
         /* branch operations */ 
 
