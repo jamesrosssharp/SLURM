@@ -267,3 +267,17 @@ TEST_F(Slurm16CPUTest, TestUMULU)
     ASSERT_EQ(m_cpu->get_register(1), (0xffffUL * 0x100UL) >> 16);
 
 }
+
+TEST_F(Slurm16CPUTest, TestBswap)
+{
+
+    constexpr int kNumInst = 3;
+    uint16_t memory[kNumInst] = {0x1123 /* imm 0x1230 */, 0x3014 /* mov r1, 0x1234 */, 0x2f21 /* bwap r2, r1 */ };
+
+    for (int i = 0; i < kNumInst; i++)
+        m_cpu->execute_one_instruction(nullptr, memory, 0);
+
+    ASSERT_EQ(m_cpu->get_register(0), 0);
+    ASSERT_EQ(m_cpu->get_register(1), 0x1234);
+    ASSERT_EQ(m_cpu->get_register(2), 0x3412);
+}
