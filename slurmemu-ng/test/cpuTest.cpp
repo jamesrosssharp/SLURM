@@ -47,6 +47,8 @@ class Slurm16CPUTest : public ::testing::Test {
         Slurm16CPU *m_cpu;
 };
 
+/* ALU operations */
+
 TEST_F(Slurm16CPUTest, TestMov)
 {
 
@@ -280,4 +282,19 @@ TEST_F(Slurm16CPUTest, TestBswap)
     ASSERT_EQ(m_cpu->get_register(0), 0);
     ASSERT_EQ(m_cpu->get_register(1), 0x1234);
     ASSERT_EQ(m_cpu->get_register(2), 0x3412);
+}
+
+/* Branch operations */
+
+TEST_F(Slurm16CPUTest, TestBZ)
+{
+
+    std::vector<uint16_t> program = { 0x2600, /* or r0, r0 */ 0x1100, /* imm 0x1000 */ 0x4000, /* bz 0x1000 */};
+
+    for (const auto ins : program)
+        m_cpu->execute_one_instruction(nullptr, program.data(), 0);
+
+    ASSERT_EQ(m_cpu->get_z_flag(), 1);
+    ASSERT_EQ(m_cpu->get_pc(), 0x1000);
+
 }

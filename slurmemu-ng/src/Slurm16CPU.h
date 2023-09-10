@@ -48,6 +48,8 @@ class Slurm16CPU
         std::uint8_t get_c_flag() { return m_c; }
         std::uint8_t get_z_flag() { return m_z; }
 
+        std::uint16_t get_pc() { return m_pc; }
+
     protected:
 
         using ins_t = void (*) (Slurm16CPU*, std::uint16_t, std::uint16_t*, PortController*);
@@ -104,13 +106,26 @@ class Slurm16CPU
         static void alu_bswap_reg_reg(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
         static void alu_bswap_reg_imm(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
 
-
-
         /* branch operations */ 
 
+        static void bz(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
+        static void bnz(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
+        static void bs(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
+        static void bns(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
+        static void bc(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
+        static void bnc(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
+        static void bv(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
+        static void bnv(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
+        static void blt(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
+        static void ble(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
+        static void bgt(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
+        static void bge(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
+        static void bleu(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
+        static void bgtu(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
+        static void ba(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
+        static void bl(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
 
         /* memory operations */
-
 
         /* init */
 
@@ -121,7 +136,9 @@ class Slurm16CPU
         static constexpr int kNumRegs = 128;
         static constexpr int kNumLoRegs = 16;
         static constexpr int kTwoPower16 = 65536;       
+        static constexpr int kTwoPower8 = 256;       
  
+
         std::uint8_t m_z;
         std::uint8_t m_c;
         std::uint8_t m_s;
@@ -141,16 +158,7 @@ class Slurm16CPU
         bool m_int_flag;
         bool m_halt;
 
-        /* Will these LUTs improve performance, or won't they fit in cache - would raw instructions be better? Should really test */
-        ins_t m_instruction_jump_table[kTwoPower16];    /* 4 bytes * 64k = 256k */
-        std::uint16_t* m_reg_lo_nibble_table[kTwoPower16];  /* table to select register based on bits 3:0 : 4 bytes * 64k = 256k */
-        std::uint16_t* m_reg_mid_nibble_table[kTwoPower16]; /* table to select register based on bits 7:4 : 256k */
-        std::uint16_t* m_reg_hi_nibble_table[kTwoPower16];  /* table to select register based on bits 11:8 : 256k */
-        
-        std::uint8_t m_zero_table[kTwoPower16]; /* table to compare to zero : 64k   */
-        std::uint8_t m_sign_table[kTwoPower16]; /* table to decode sign bit : 64k   */
-        std::uint8_t m_carry_table[kTwoPower16]; /* table to decode carry bit : 64k */
-
-        /* total LUTs: 1,216 kBytes : hard to fit in cache... */
+        /* Instruction jump table */
+        ins_t m_instruction_jump_table[kTwoPower8];    /* 8 bytes * 256 = 2k */
 
 };
