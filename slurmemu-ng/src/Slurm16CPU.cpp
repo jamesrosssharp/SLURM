@@ -144,7 +144,23 @@ void Slurm16CPU::calc_tables()
             {0xff00, 0x4c00, bleu},
             {0xff00, 0x4d00, bgtu},
             {0xff00, 0x4e00, ba},
-            {0xff00, 0x4f00, bl}
+            {0xff00, 0x4f00, bl},
+            {0xff00, 0x5000, movz},
+            {0xff00, 0x5100, movnz},
+            {0xff00, 0x5200, movs},
+            {0xff00, 0x5300, movns},
+            {0xff00, 0x5400, movc},
+            {0xff00, 0x5500, movnc},
+            {0xff00, 0x5600, movv},
+            {0xff00, 0x5700, movnv},
+            {0xff00, 0x5800, movlt},
+            {0xff00, 0x5900, movle},
+            {0xff00, 0x5a00, movgt},
+            {0xff00, 0x5b00, movge},
+            {0xff00, 0x5c00, movleu},
+            {0xff00, 0x5d00, movgtu},
+            {0xff00, 0x5e00, mova},
+            {0xff00, 0x5f00, mova},
          };
 
         for (std::uint32_t j = 0; j < kTwoPower8; j++)
@@ -694,5 +710,88 @@ void Slurm16CPU::bl(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* m
 {
     cpu->m_regs[15] = cpu->m_pc;
     BRANCH(true);
+}
+
+#define COND_MOV(cond) \
+    uint16_t* r_dest = R_DEST(cpu, instruction);    \
+    uint16_t* r_src = R_SRC(cpu, instruction);      \
+    if (cond) *r_dest = *r_src;    \
+    cpu->m_pc += 2;    \
+    cpu->m_imm_hi = 0
+
+
+void Slurm16CPU::movz(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon)
+{
+    COND_MOV(cpu->m_z);
+}
+
+void Slurm16CPU::movnz(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon)
+{
+    COND_MOV(!cpu->m_z);
+}
+
+void Slurm16CPU::movs(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon)
+{
+    COND_MOV(cpu->m_s);
+}
+
+void Slurm16CPU::movns(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon)
+{
+    COND_MOV(!cpu->m_s);
+}
+
+void Slurm16CPU::movc(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon)
+{
+    COND_MOV(cpu->m_c);
+}
+
+void Slurm16CPU::movnc(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon)
+{
+    COND_MOV(!cpu->m_c);
+}
+
+void Slurm16CPU::movv(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon)
+{
+    COND_MOV(cpu->m_v);
+}
+
+void Slurm16CPU::movnv(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon)
+{
+    COND_MOV(!cpu->m_v);
+}
+
+void Slurm16CPU::movlt(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon)
+{
+    COND_MOV(cpu->m_v != cpu->m_s);
+}
+
+void Slurm16CPU::movle(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon)
+{
+    COND_MOV(cpu->m_z || (cpu->m_v != cpu->m_s));
+}
+
+void Slurm16CPU::movgt(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon)
+{
+    COND_MOV(!cpu->m_z && (cpu->m_v == cpu->m_s));
+}
+
+void Slurm16CPU::movge(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon)
+{
+    COND_MOV((cpu->m_v == cpu->m_s));
+}
+
+void Slurm16CPU::movleu(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon)
+{
+    COND_MOV(cpu->m_c || cpu->m_z);
+}
+
+void Slurm16CPU::movgtu(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon)
+{
+    COND_MOV(!cpu->m_c && !cpu->m_z);
+}
+
+void Slurm16CPU::mova(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon)
+{
+    COND_MOV(true);
 }
 

@@ -298,3 +298,31 @@ TEST_F(Slurm16CPUTest, TestBZ)
     ASSERT_EQ(m_cpu->get_pc(), 0x1000);
 
 }
+
+/* Cond mov operations */
+
+TEST_F(Slurm16CPUTest, TestMOVZ)
+{
+
+    std::vector<uint16_t> program = { 0x2600, /* or r0, r0 */ 0x3023, /* mov r2, 3 */  0x5012, /* movz r1, r2 */};
+
+    for (const auto ins : program)
+        m_cpu->execute_one_instruction(nullptr, program.data(), 0);
+
+    ASSERT_EQ(m_cpu->get_z_flag(), 1);
+    ASSERT_EQ(m_cpu->get_register(1), 3);
+
+}
+
+TEST_F(Slurm16CPUTest, TestMOVNZ)
+{
+
+    std::vector<uint16_t> program = { 0x2600, /* or r0, r0 */ 0x3023, /* mov r2, 3 */  0x5112, /* movnz r1, r2 */};
+
+    for (const auto ins : program)
+        m_cpu->execute_one_instruction(nullptr, program.data(), 0);
+
+    ASSERT_EQ(m_cpu->get_z_flag(), 1);
+    ASSERT_EQ(m_cpu->get_register(1), 0);
+
+}
