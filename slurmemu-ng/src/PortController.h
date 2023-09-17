@@ -32,10 +32,14 @@ SOFTWARE.
 #pragma once
 
 #include <cstdint>
+#include <SpiFlash.h>
 
 class PortController {
 
     public:
+
+        PortController(const char* flash_file);
+        ~PortController();
 
         void     port_wr(uint16_t port, uint16_t value);
         uint16_t port_rd(uint16_t port);
@@ -44,6 +48,8 @@ class PortController {
 
         void    uart_wr(uint16_t port, uint16_t value);
         uint16_t uart_rd(uint16_t port);
+
+        SpiFlash m_flash;
 
 };
 

@@ -24,6 +24,16 @@ VECTORS:
 start:
 	mov r1, 'A'
 	out [r0, 0], r1
+	mov r2, 5
+outer:
+	mov r1, 0xffff
+loop:
+	sub r1, 1
+	bnz loop
+	
+	sub r2, 1
+	bnz outer
+
 	ba start
 
 	.endfunc

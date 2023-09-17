@@ -34,7 +34,8 @@ SOFTWARE.
 
 #include <cstdio>
 
-Slurm16SoC::Slurm16SoC(const char* boot_rom_file, const char* flash_rom_file)
+Slurm16SoC::Slurm16SoC(const char* boot_rom_file, const char* flash_rom_file)   :
+    m_pcon(flash_rom_file)
 {
 
     m_memory = new uint16_t[65536]; 

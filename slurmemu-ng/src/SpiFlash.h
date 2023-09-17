@@ -1,9 +1,9 @@
 /* vim: set et ts=4 sw=4: */
 
 /*
-	slurmemu-ng : Next-Generation SlURM16 Emulator
+		slurmemu-ng : Next-Generation SlURM16 Emulator
 
-    PortController.cpp: Emulate the SlURM16 Port Controller
+    SpiFlash.h: Emulate the SlURM16 SPI Flash peripheral
 
 License: MIT License
 
@@ -29,58 +29,20 @@ SOFTWARE.
 
 */
 
-#include "PortController.h"
-#include <cstdio>
+#pragma once
 
-PortController::PortController(const char* flash_file)  :
-    m_flash(flash_file)
-{
+#include <cstdint>
 
+class SpiFlash {
 
-}
+    public:
+    
+        SpiFlash(const char* flash_file);
+        ~SpiFlash();
 
-PortController::~PortController()
-{
+    private:
 
+        uint16_t* m_flashMem;
 
-}
-
-#define PORT_UART       0x0000
-#define PORT_SPI_FLASH  0x4000
-
-void    PortController::port_wr(uint16_t port, uint16_t value)
-{
-    switch (port & 0xf000)
-    {
-        case PORT_UART:  /* UART */
-            uart_wr(port, value);
-            break;
-        default:
-            break;
-    }
-
-}
-
-uint16_t PortController::port_rd(uint16_t port)
-{
-    switch (port & 0xf000)
-    {
-        case PORT_UART:  /* UART */
-            return uart_rd(port);
-        default:
-            break;
-    }
-    return 0;
-}
-
-void    PortController::uart_wr(uint16_t port, uint16_t value)
-{
-    printf("%c", (char)value);
-    fflush(0);
-}
-
-uint16_t    PortController::uart_rd(uint16_t port)
-{
-    return 1;
-}
+};
 

@@ -1,9 +1,10 @@
 /* vim: set et ts=4 sw=4: */
 
 /*
-	slurmemu-ng : Next-Generation SlURM16 Emulator
+		slurmemu-ng : Next-Generation SlURM16 Emulator
 
-    PortController.cpp: Emulate the SlURM16 Port Controller
+    SpiFlash.cpp: Emulate the SlURM16 SPI Flash peripheral
+
 
 License: MIT License
 
@@ -29,58 +30,47 @@ SOFTWARE.
 
 */
 
-#include "PortController.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
 #include <cstdio>
+#include <stdexcept>
 
-PortController::PortController(const char* flash_file)  :
-    m_flash(flash_file)
+#include "SpiFlash.h"
+
+SpiFlash::SpiFlash(const char* flash_file)
 {
 
+    // Get size of flash_file
 
-}
+    struct stat my_stat;
 
-PortController::~PortController()
-{
-
-
-}
-
-#define PORT_UART       0x0000
-#define PORT_SPI_FLASH  0x4000
-
-void    PortController::port_wr(uint16_t port, uint16_t value)
-{
-    switch (port & 0xf000)
+    if (::stat(flash_file, &my_stat) < 0)
     {
-        case PORT_UART:  /* UART */
-            uart_wr(port, value);
-            break;
-        default:
-            break;
+        throw std::runtime_error("Could not stat flash_file\n");
     }
 
-}
+    printf("Flash file size is: %ld bytes\n", my_stat.st_size);
 
-uint16_t PortController::port_rd(uint16_t port)
-{
-    switch (port & 0xf000)
+    m_flashMem = new uint16_t[my_stat.st_size];
+
+    FILE* f;
+
+    f = fopen(flash_file, "rb");
+
+    if (fread(m_flashMem, 1, my_stat.st_size, f) != my_stat.st_size)
     {
-        case PORT_UART:  /* UART */
-            return uart_rd(port);
-        default:
-            break;
+        fclose(f);
+        throw std::runtime_error("Could not read from flash_file\n");
     }
-    return 0;
+
+    fclose(f);
+
 }
 
-void    PortController::uart_wr(uint16_t port, uint16_t value)
+SpiFlash::~SpiFlash()
 {
-    printf("%c", (char)value);
-    fflush(0);
-}
-
-uint16_t    PortController::uart_rd(uint16_t port)
-{
-    return 1;
+    delete [] m_flashMem;
 }
 
