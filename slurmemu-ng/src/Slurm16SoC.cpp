@@ -1,9 +1,10 @@
 /* vim: set et ts=4 sw=4: */
 
 /*
+	
 	slurmemu-ng : Next-Generation SlURM16 Emulator
 
-PortController.h: Emulate the SlURM16 Port Controller
+Slurm16SoC.cpp: Top level SoC class
 
 License: MIT License
 
@@ -29,21 +30,30 @@ SOFTWARE.
 
 */
 
-#pragma once
+#include "Slurm16SoC.h"
 
-#include <cstdint>
+#include <cstdio>
 
-class PortController {
+Slurm16SoC::Slurm16SoC(const char* boot_rom_file, const char* flash_rom_file)
+{
 
-    public:
+    m_memory = new uint16_t[65536]; 
 
-        void     port_wr(uint16_t port, uint16_t value);
-        uint16_t port_rd(uint16_t port);
+    // Load boot rom into memory 
 
-    private:
+    FILE* b = fopen(boot_rom_file, "rb");
+    fread(m_memory, 2, 256, b);
+    fclose(b); 
 
-        void    uart_wr(uint16_t port, uint16_t value);
-        uint16_t uart_rd(uint16_t port);
+}
 
-};
+Slurm16SoC::~Slurm16SoC()
+{
+    delete [] m_memory;
+}
+
+void Slurm16SoC::executeOneCycle()
+{
+    m_cpu.execute_one_instruction(&m_pcon, m_memory, 0);
+}
 

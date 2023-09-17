@@ -54,6 +54,9 @@ class Slurm16CPU
 
         using ins_t = void (*) (Slurm16CPU*, std::uint16_t, std::uint16_t*, PortController*);
 
+        /* NOP instruction */
+        static void nop_ins(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
+
         /* IMM instruction */
         static void imm_ins(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
 
@@ -144,6 +147,11 @@ class Slurm16CPU
         static void mova(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
 
         /* memory operations */
+
+        /* port operations */
+
+        static void port_wr(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
+        static void port_rd(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
 
         /* init */
 

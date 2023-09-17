@@ -42,6 +42,8 @@ SOFTWARE.
 
 #include <sstream>
 
+#include "Slurm16SoC.h"
+
 #define WINDOW_WIDTH 	640
 #define WINDOW_HEIGHT 	480
 
@@ -70,6 +72,14 @@ float getFPS() {
 
 int main(int argc, char** argv)
 {
+    if (argc != 3)
+    {
+        printf("Usage: %s <BOOT_ROM.bin> <FLASH_IMG.bin>\n", argv[0]);
+        exit(EXIT_FAILURE);
+    }
+
+    Slurm16SoC* soc = new Slurm16SoC(argv[1], argv[2]);
+
     std::uint32_t window_flags = SDL_WINDOW_OPENGL;
     SDL_Window *window = SDL_CreateWindow("slurmemu-ng", 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, window_flags);
   
@@ -125,8 +135,15 @@ int main(int argc, char** argv)
 
         SDL_SetWindowTitle(window, s.str().c_str());
 
-        usleep(16000);
+        for (int i = 0; i < 418750; i++)
+        {
+            soc->executeOneCycle();
+        }
+
+        usleep(160);
 
     }
 
+    printf("Bye!\n");
+    exit(EXIT_SUCCESS);
 }

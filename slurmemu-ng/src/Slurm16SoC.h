@@ -1,9 +1,9 @@
 /* vim: set et ts=4 sw=4: */
 
 /*
-	slurmemu-ng : Next-Generation SlURM16 Emulator
+		slurmemu-ng : Next-Generation SlURM16 Emulator
 
-PortController.h: Emulate the SlURM16 Port Controller
+Slurm16SoC.h: Top level SoC class
 
 License: MIT License
 
@@ -31,19 +31,24 @@ SOFTWARE.
 
 #pragma once
 
-#include <cstdint>
+#include "Slurm16CPU.h"
+#include "PortController.h"
 
-class PortController {
+class Slurm16SoC {
 
     public:
+    
+        Slurm16SoC(const char* boot_rom_file, const char* flash_rom_file);
+        ~Slurm16SoC();
 
-        void     port_wr(uint16_t port, uint16_t value);
-        uint16_t port_rd(uint16_t port);
+        void executeOneCycle();
 
     private:
 
-        void    uart_wr(uint16_t port, uint16_t value);
-        uint16_t uart_rd(uint16_t port);
+        Slurm16CPU      m_cpu;
+        PortController  m_pcon;    
+    
+        uint16_t*       m_memory;
 
 };
 

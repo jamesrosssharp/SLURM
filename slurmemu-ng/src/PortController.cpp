@@ -29,5 +29,44 @@ SOFTWARE.
 
 */
 
+#include "PortController.h"
+#include <cstdio>
 
+#define PORT_UART 0x0000
+
+void    PortController::port_wr(uint16_t port, uint16_t value)
+{
+    switch (port & 0xf000)
+    {
+        case PORT_UART:  /* UART */
+            uart_wr(port, value);
+            break;
+        default:
+            break;
+    }
+
+}
+
+uint16_t PortController::port_rd(uint16_t port)
+{
+    switch (port & 0xf000)
+    {
+        case PORT_UART:  /* UART */
+            return uart_rd(port);
+        default:
+            break;
+    }
+    return 0;
+}
+
+void    PortController::uart_wr(uint16_t port, uint16_t value)
+{
+    printf("%c", (char)value);
+    fflush(0);
+}
+
+uint16_t    PortController::uart_rd(uint16_t port)
+{
+    return 1;
+}
 
