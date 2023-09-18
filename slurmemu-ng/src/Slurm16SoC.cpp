@@ -33,6 +33,7 @@ SOFTWARE.
 #include "Slurm16SoC.h"
 
 #include <cstdio>
+#include <stdexcept>
 
 Slurm16SoC::Slurm16SoC(const char* boot_rom_file, const char* flash_rom_file)   :
     m_pcon(flash_rom_file)
@@ -43,7 +44,10 @@ Slurm16SoC::Slurm16SoC(const char* boot_rom_file, const char* flash_rom_file)   
     // Load boot rom into memory 
 
     FILE* b = fopen(boot_rom_file, "rb");
-    fread(m_memory, 2, 256, b);
+    if (fread(m_memory, 2, 256, b) != 512) 
+    {
+        throw std::runtime_error("Could not read from rom file.\n");
+    }
     fclose(b); 
 
 }

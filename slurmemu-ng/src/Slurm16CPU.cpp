@@ -99,6 +99,7 @@ void Slurm16CPU::calc_tables()
 
         std::vector<struct ins_mask> insts = {
             {0xff00, 0x0000, nop_ins}, 
+            {0xff00, 0x0100, ret_ins},
             {0xf000, 0x1000, imm_ins},
             {0xff00, 0x2000, alu_mov_reg_reg},
             {0xff00, 0x3000, alu_mov_reg_imm},
@@ -856,3 +857,21 @@ void Slurm16CPU::port_rd(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16
     cpu->m_imm_hi = 0;  
 }
 
+// =================== RET / IRET =================
+
+void Slurm16CPU::ret_ins(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon)
+{
+    if (instruction & 1)
+    {
+        // iret
+        cpu->m_pc = cpu->m_regs[14];
+
+        // TODO: reenable interrupts
+    }
+    else
+    {
+        cpu->m_pc = cpu->m_regs[15];
+    }
+    
+    cpu->m_imm_hi = 0;  
+}

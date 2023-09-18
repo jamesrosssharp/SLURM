@@ -57,6 +57,9 @@ class Slurm16CPU
         /* NOP instruction */
         static void nop_ins(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
 
+        /* RET / IRET */
+        static void ret_ins(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
+
         /* IMM instruction */
         static void imm_ins(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
 

@@ -140,7 +140,7 @@ int main(int argc, char** argv)
             soc->executeOneCycle();
         }
 
-        usleep(8000);
+        usleep(13000);
 
     }
 
