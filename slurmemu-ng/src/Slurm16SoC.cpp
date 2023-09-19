@@ -44,7 +44,7 @@ Slurm16SoC::Slurm16SoC(const char* boot_rom_file, const char* flash_rom_file)   
     // Load boot rom into memory 
 
     FILE* b = fopen(boot_rom_file, "rb");
-    if (fread(m_memory, 2, 256, b) != 512) 
+    if (fread(m_memory, 2, 256, b) == 0) 
     {
         throw std::runtime_error("Could not read from rom file.\n");
     }
