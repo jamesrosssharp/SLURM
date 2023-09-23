@@ -47,6 +47,8 @@ SOFTWARE.
 #define WINDOW_WIDTH 	640
 #define WINDOW_HEIGHT 	480
 
+#include <AudioSDL2.h>
+
 float getFPS() {
     static std::chrono::time_point<std::chrono::high_resolution_clock> oldTime = std::chrono::high_resolution_clock::now();
     static int fps; fps++;
@@ -79,6 +81,14 @@ int main(int argc, char** argv)
     }
 
     Slurm16SoC* soc = new Slurm16SoC(argv[1], argv[2]);
+
+    if (SDL_Init(SDL_INIT_AUDIO | SDL_INIT_EVENTS) < 0)
+    {
+        printf("Could not init SDL!\n");
+        exit(EXIT_FAILURE);
+    }
+
+    AudioSDL2 aud;
 
     std::uint32_t window_flags = SDL_WINDOW_OPENGL;
     SDL_Window *window = SDL_CreateWindow("slurmemu-ng", 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, window_flags);
