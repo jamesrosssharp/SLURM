@@ -91,7 +91,7 @@ void Slurm16CPU::execute_one_instruction(PortController* pcon, std::uint16_t* me
     }
     else
     {
-        std::cout << "Undefined instruction at 0x" << std::hex << std::setw(4) << std::setfill('0') << m_pc << std::endl;
+        std::cout << "Undefined instruction at 0x" << std::hex << std::setw(4) << std::setfill('0') << m_pc << " : " << instruction << std::endl;
         throw std::runtime_error("CPU Brk");
     }
 
@@ -113,6 +113,7 @@ void Slurm16CPU::calc_tables()
         std::vector<struct ins_mask> insts = {
             {0xff00, 0x0000, nop_ins}, 
             {0xff00, 0x0100, ret_ins},
+            {0xff00, 0x0400, single_reg_alu_op},
             {0xff00, 0x0600, sti_cli_ins},
             {0xff00, 0x0700, sleep_ins},
             {0xf000, 0x1000, imm_ins},
@@ -180,7 +181,8 @@ void Slurm16CPU::calc_tables()
             {0xff00, 0x5d00, movgtu},
             {0xff00, 0x5e00, mova},
             {0xff00, 0x5f00, mova},
-    
+            {0xf000, 0xa000, byte_load_mem_op},
+            {0xf000, 0xb000, byte_store_mem_op},
             {0xf000, 0xe000, port_rd},
             {0xf000, 0xf000, port_wr}
  
@@ -213,6 +215,12 @@ void Slurm16CPU::calc_tables()
 
 #define R_V(cpu, ins) \
     &cpu->m_regs[ (ins & 0x00f0) >> 4 ]
+
+#define R_MEM_SRCDEST(cpu, ins) \
+    &cpu->m_regs[ (ins >> 4) & 0xf ]
+
+#define R_MEM_IDX(cpu, ins) \
+    &cpu->m_regs[ (ins >> 8) & 0xf ]
 
 #define ZERO_FLAG(val) \
     ((val) == 0)
@@ -652,6 +660,86 @@ void Slurm16CPU::alu_bswap_reg_imm(Slurm16CPU* cpu, std::uint16_t instruction, s
     *r_dest = (imm >> 8) | (imm << 8);
 }
 
+// ====================== Single reg ALU ops ===============================
+
+void Slurm16CPU::single_reg_alu_op(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon)
+{
+    uint16_t* r_srcdest = R_SRC(cpu, instruction);
+    uint16_t res = 0;    
+
+    switch ((instruction & 0xf0) >> 4)
+    {
+        case 0: /* ASR */
+            res = ((int16_t)*r_srcdest) >> 1;
+            cpu->m_z = ZERO_FLAG(res & 0xffff);
+            *r_srcdest = res;
+            break;    
+        case 1: /* LSR */
+            res = (*r_srcdest) >> 1;
+            cpu->m_z = ZERO_FLAG(res & 0xffff);
+            *r_srcdest = res;
+            break;
+        case 2: /* LSL */
+            res = (*r_srcdest) << 1;
+            cpu->m_z = ZERO_FLAG(res & 0xffff);
+            *r_srcdest = res;
+            break;
+        case 3: /* ROLC */
+            res = (*r_srcdest) << 1 | cpu->m_c;
+            cpu->m_z = ZERO_FLAG(res & 0xffff);
+            cpu->m_c = (*r_srcdest) >> 15;
+            *r_srcdest = res;
+            break;
+        case 4: /* RORC */
+            res = (*r_srcdest) >> 1 | (cpu->m_c << 15);
+            cpu->m_z = ZERO_FLAG(res & 0xffff);
+            cpu->m_c = (*r_srcdest & 1);
+            *r_srcdest = res;
+            break;
+        case 5: /* ROL */
+            res = (*r_srcdest) << 1 | (*r_srcdest >> 15) ;
+            cpu->m_z = ZERO_FLAG(res & 0xffff);
+            *r_srcdest = res;
+            break;
+        case 6: /* ROR */
+            res = (*r_srcdest) >> 1 | (*r_srcdest << 15);
+            cpu->m_z = ZERO_FLAG(res & 0xffff);
+            *r_srcdest = res;
+            break;
+        case 7: /* CC */
+            cpu->m_c = 0;
+            break;
+        case 8: /* SC */
+            cpu->m_c = 1;
+            break;
+        case 9: /* CZ */
+            cpu->m_z = 0;
+            break;
+        case 10: /* SZ */
+            cpu->m_z = 1;
+            break;
+        case 11: /* CS */
+            cpu->m_s = 0;
+            break;
+        case 12: /* SS */
+            cpu->m_s = 1;
+            break;
+        case 13: /* STF */
+            throw std::runtime_error("STF not implemented!\n");
+            break;
+        case 14: /* RSF */
+            throw std::runtime_error("STF not implemented!\n");
+            break;
+        default: break;
+    } 
+
+    cpu->m_imm_hi = 0;
+    cpu->m_pc += 2;
+ 
+}
+
+// ====================== Branches =========================================
+
 #define BRANCH(cond) \
     uint16_t* r_dest = R_DEST(cpu, instruction);    \
     uint32_t imm = (uint32_t)(uint16_t)((cpu->m_imm_hi << 4) | (instruction & 0xf));    \
@@ -917,4 +1005,33 @@ void Slurm16CPU::sleep_ins(Slurm16CPU* cpu, std::uint16_t instruction, std::uint
     cpu->m_pc += 2;
     cpu->m_imm_hi = 0;
 }
+
+// ================ Memory =================
+
+void Slurm16CPU::byte_load_mem_op(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon)
+{
+    uint16_t* r_dest = R_MEM_SRCDEST(cpu, instruction);
+    uint16_t* r_idx = R_MEM_IDX(cpu, instruction);
+    uint32_t imm = (uint32_t)(uint16_t)((cpu->m_imm_hi << 4) | (instruction & 0xf));
+
+    uint16_t addr = imm + *r_idx;
+    *r_dest = ((uint8_t*)mem)[addr];
+
+    cpu->m_pc += 2;
+    cpu->m_imm_hi = 0;
+}
+ 
+void Slurm16CPU::byte_store_mem_op(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon)
+{
+    uint16_t* r_src = R_MEM_SRCDEST(cpu, instruction);
+    uint16_t* r_idx = R_MEM_IDX(cpu, instruction);
+    uint32_t imm = (uint32_t)(uint16_t)((cpu->m_imm_hi << 4) | (instruction & 0xf));
+
+    uint16_t addr = imm + *r_idx;
+    ((uint8_t*)mem)[addr] = *r_src;
+
+    cpu->m_pc += 2;
+    cpu->m_imm_hi = 0;
+}
+ 
 

@@ -118,6 +118,8 @@ class Slurm16CPU
         static void alu_bswap_reg_reg(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
         static void alu_bswap_reg_imm(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
 
+        static void single_reg_alu_op(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
+
         /* branch operations */ 
 
         static void bz(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
@@ -156,6 +158,9 @@ class Slurm16CPU
         static void mova(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
 
         /* memory operations */
+
+        static void byte_load_mem_op(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon); 
+        static void byte_store_mem_op(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon); 
 
         /* port operations */
 
