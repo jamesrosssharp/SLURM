@@ -48,7 +48,7 @@ class Slurm16CPU
         std::uint8_t get_c_flag() { return m_c; }
         std::uint8_t get_z_flag() { return m_z; }
 
-        std::uint16_t get_pc() { return m_pc; }
+        std::uint16_t get_pc() const { return m_pc; }
 
     protected:
 
@@ -62,6 +62,9 @@ class Slurm16CPU
 
         /* STI / CLI instructions */
         static void sti_cli_ins(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
+
+        /* SLEEP instruction */
+        static void sleep_ins(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
 
         /* IMM instruction */
         static void imm_ins(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);

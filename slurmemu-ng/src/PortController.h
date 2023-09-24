@@ -32,7 +32,8 @@ SOFTWARE.
 #pragma once
 
 #include <cstdint>
-#include <SpiFlash.h>
+#include "SpiFlash.h"
+#include "InterruptController.h"
 
 class PortController {
 
@@ -41,15 +42,17 @@ class PortController {
         PortController(const char* flash_file);
         ~PortController();
 
-        void     port_wr(uint16_t port, uint16_t value);
-        uint16_t port_rd(uint16_t port);
+        void     port_wr(std::uint16_t port, std::uint16_t value);
+        uint16_t port_rd(std::uint16_t port);
+
+        int /* returns IRQ */ step(std::uint16_t* mem);
 
     private:
 
-        void    uart_wr(uint16_t port, uint16_t value);
-        uint16_t uart_rd(uint16_t port);
+        void    uart_wr(std::uint16_t port, std::uint16_t value);
+        uint16_t uart_rd(std::uint16_t port);
 
         SpiFlash m_flash;
-
+        InterruptController m_intcon;
 };
 

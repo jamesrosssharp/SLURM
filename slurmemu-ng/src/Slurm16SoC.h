@@ -43,6 +43,8 @@ class Slurm16SoC {
 
         void executeOneCycle();
 
+        const Slurm16CPU& get_cpu() { return m_cpu; }
+
     private:
 
         Slurm16CPU      m_cpu;

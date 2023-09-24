@@ -47,6 +47,7 @@ PortController::~PortController()
 
 #define PORT_UART       0x0000
 #define PORT_SPI_FLASH  0x4000
+#define PORT_INTC       0x7000 
 
 void    PortController::port_wr(uint16_t port, uint16_t value)
 {
@@ -58,6 +59,9 @@ void    PortController::port_wr(uint16_t port, uint16_t value)
         case PORT_SPI_FLASH: /* FLASH DMA */
             m_flash.port_op(port, true, value);
             break;
+        case PORT_INTC: /* INTERRUPT CONTROLLER */
+            m_intcon.port_op(port, true, value);
+            break;  
         default:
             break;
     }
@@ -71,7 +75,10 @@ uint16_t PortController::port_rd(uint16_t port)
         case PORT_UART:  /* UART */
             return uart_rd(port);
         case PORT_SPI_FLASH: /* FLASH DMA */
-            retur m_flash.port_op(port, false, 0);
+            return m_flash.port_op(port, false, 0);
+        case PORT_INTC: /* INTERRUPT CONTROLLER */
+            m_intcon.port_op(port, false, 0);
+            break;  
         default:
             break;
     }
@@ -87,5 +94,18 @@ void    PortController::uart_wr(uint16_t port, uint16_t value)
 uint16_t    PortController::uart_rd(uint16_t port)
 {
     return 1;
+}
+
+int PortController::step(std::uint16_t* mem)
+{
+    bool flash_int = m_flash.step(mem);
+    bool vs = false;
+    bool hs = false;
+    bool timer = false;
+    bool gpio = false;
+    bool audio = false; 
+
+
+    return m_intcon.step(flash_int, vs, hs, timer, gpio, audio);     
 }
 

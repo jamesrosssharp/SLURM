@@ -68,8 +68,21 @@ Slurm16CPU::~Slurm16CPU()
 void Slurm16CPU::execute_one_instruction(PortController* pcon, std::uint16_t* mem, std::uint8_t irq)
 {
 
-    std::uint16_t instruction = mem[m_pc >> 1];
+    if (irq && m_int_flag)
+    {
+        m_regs[14] = m_pc;
+        m_pc = irq << 2;
+        m_int_flag = false;
+        m_halt = false;
+    }
 
+    if (m_halt)
+        return;
+
+    //printf("PC = %x\n", m_pc);
+
+    std::uint16_t instruction = mem[m_pc >> 1];
+    
     ins_t ifunc = m_instruction_jump_table[instruction >> 8];
 
     if (ifunc != nullptr)
@@ -101,6 +114,7 @@ void Slurm16CPU::calc_tables()
             {0xff00, 0x0000, nop_ins}, 
             {0xff00, 0x0100, ret_ins},
             {0xff00, 0x0600, sti_cli_ins},
+            {0xff00, 0x0700, sleep_ins},
             {0xf000, 0x1000, imm_ins},
             {0xff00, 0x2000, alu_mov_reg_reg},
             {0xff00, 0x3000, alu_mov_reg_imm},
@@ -867,7 +881,7 @@ void Slurm16CPU::ret_ins(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16
         // iret
         cpu->m_pc = cpu->m_regs[14];
 
-        // TODO: reenable interrupts
+        cpu->m_int_flag = true; 
     }
     else
     {
@@ -889,4 +903,18 @@ void Slurm16CPU::sti_cli_ins(Slurm16CPU* cpu, std::uint16_t instruction, std::ui
     {
         cpu->m_int_flag = false;
     }
+    cpu->m_pc += 2;
+    cpu->m_imm_hi = 0;  
+
 }
+
+// ================= SLEEP =================
+
+void Slurm16CPU::sleep_ins(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon)
+{
+    cpu->m_int_flag = true;
+    cpu->m_halt = true;
+    cpu->m_pc += 2;
+    cpu->m_imm_hi = 0;
+}
+

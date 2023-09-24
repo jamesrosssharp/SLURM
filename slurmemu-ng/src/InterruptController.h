@@ -1,9 +1,9 @@
 /* vim: set et ts=4 sw=4: */
 
 /*
-		slurmemu-ng : Next-Generation SlURM16 Emulator
+	slurmemu-ng : Next-Generation SlURM16 Emulator
 
-    SpiFlash.h: Emulate the SlURM16 SPI Flash peripheral
+InterruptController.h: Interrupt controller
 
 License: MIT License
 
@@ -32,51 +32,29 @@ SOFTWARE.
 #pragma once
 
 #include <cstdint>
-#include <cstddef>
 
-enum FlashState
-{
-    Flash_Idle,
-    Flash_WakeFlash,
-    Flash_PerformDMA,
-};
-
-class SpiFlash {
+class InterruptController {
 
     public:
-    
-        SpiFlash(const char* flash_file);
-        ~SpiFlash();
 
-        std::uint16_t port_op(std::uint16_t port, bool write, std::uint16_t wr_val); 
-   
-        bool /* returns true if interrupt */ step(std::uint16_t* mem);
+        InterruptController();
+        ~InterruptController();
+
+        int step(bool flash_int, bool vs, bool hs, bool timer, bool gpio, bool audio);    
+        std::uint16_t port_op(std::uint16_t port, bool write, std::uint16_t wr_val);
 
     private:
 
-        uint16_t* m_flashMem;
-        std::size_t m_flashSize; 
+        static constexpr std::uint8_t HSYNC_INTERRUPT = 1;
+        static constexpr std::uint8_t VSYNC_INTERRUPT = 2;
+        static constexpr std::uint8_t AUDIO_INTERRUPT = 3;
+        static constexpr std::uint8_t FLASH_INTERRUPT = 4;
+        static constexpr std::uint8_t GPIO_INTERRUPT  = 5;
+        static constexpr std::uint8_t TIMER_INTERRUPT = 6;
+        static constexpr std::uint8_t NUM_INTERRUPTS  = 6;
 
-        std::uint16_t m_flash_address_lo;
-        std::uint16_t m_flash_address_hi;
-        std::uint32_t m_flash_address2;
 
-        bool m_go;
-        bool m_wake;
-        
-        enum FlashState m_state;
-
-        std::uint16_t m_dma_address;
-        std::uint16_t m_dma_count;
-
-        std::uint16_t m_dma_address2;
-        std::uint16_t m_dma_count2;
-
-        bool m_done;
-
-        std::uint16_t m_data_reg;
-
-        std::uint32_t m_dummy_cycles;
-    
+        std::uint8_t m_interrupt_pending;
+        std::uint8_t m_interrupt_enabled;
+  
 };
-

@@ -59,6 +59,9 @@ Slurm16SoC::~Slurm16SoC()
 
 void Slurm16SoC::executeOneCycle()
 {
-    m_cpu.execute_one_instruction(&m_pcon, m_memory, 0);
+    int irq = m_pcon.step(m_memory);
+
+    m_cpu.execute_one_instruction(&m_pcon, m_memory, irq);
+
 }
 

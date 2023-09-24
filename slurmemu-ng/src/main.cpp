@@ -41,6 +41,7 @@ SOFTWARE.
 #include <unistd.h>
 
 #include <sstream>
+#include <iomanip>
 
 #include "Slurm16SoC.h"
 
@@ -141,7 +142,7 @@ int main(int argc, char** argv)
 
         std::stringstream s;
 
-        s << "slurmemu-ng : " << fps << " FPS";
+        s << "slurmemu-ng : " << fps << " FPS, PC = " << std::hex << std::setw(4) << std::setfill('0') << soc->get_cpu().get_pc();
 
         SDL_SetWindowTitle(window, s.str().c_str());
 
