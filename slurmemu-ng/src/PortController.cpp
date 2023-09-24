@@ -55,6 +55,9 @@ void    PortController::port_wr(uint16_t port, uint16_t value)
         case PORT_UART:  /* UART */
             uart_wr(port, value);
             break;
+        case PORT_SPI_FLASH: /* FLASH DMA */
+            m_flash.port_op(port, true, value);
+            break;
         default:
             break;
     }
@@ -67,6 +70,8 @@ uint16_t PortController::port_rd(uint16_t port)
     {
         case PORT_UART:  /* UART */
             return uart_rd(port);
+        case PORT_SPI_FLASH: /* FLASH DMA */
+            retur m_flash.port_op(port, false, 0);
         default:
             break;
     }
