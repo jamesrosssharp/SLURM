@@ -74,6 +74,13 @@ void Slurm16CPU::execute_one_instruction(PortController* pcon, std::uint16_t* me
         m_pc = irq << 2;
         m_int_flag = false;
         m_halt = false;
+
+        m_z_int = m_z;
+        m_c_int = m_c;
+        m_s_int = m_s;
+        m_v_int = m_v;
+        
+        m_imm_int = m_imm_hi;
     }
 
     if (m_halt)
@@ -113,6 +120,8 @@ void Slurm16CPU::calc_tables()
         std::vector<struct ins_mask> insts = {
             {0xff00, 0x0000, nop_ins}, 
             {0xff00, 0x0100, ret_ins},
+            {0xff00, 0x0200, stix_ins},
+            {0xff00, 0x0300, rsix_ins},
             {0xff00, 0x0400, single_reg_alu_op},
             {0xff00, 0x0600, sti_cli_ins},
             {0xff00, 0x0700, sleep_ins},
@@ -1078,4 +1087,36 @@ void Slurm16CPU::byte_load_sx_mem_op(Slurm16CPU* cpu, std::uint16_t instruction,
 
 
 }
- 
+
+// ================ STIX / RSIX ====================
+
+void Slurm16CPU::stix_ins(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon)
+{
+
+    std::uint16_t stix = (cpu->m_imm_int << 4) | (cpu->m_v_int << 3) | (cpu->m_s_int << 2) | (cpu->m_c_int << 1) | (cpu->m_z_int);
+
+    std::uint16_t* r_dest = R_MEM_SRCDEST(cpu, instruction);
+
+    *r_dest = stix;
+
+    cpu->m_pc += 2;
+    cpu->m_imm_hi = 0;
+}
+
+void Slurm16CPU::rsix_ins(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon)
+{
+
+    std::uint16_t* r_dest = R_MEM_SRCDEST(cpu, instruction);
+   
+    std::uint16_t rsix = *r_dest;
+
+    cpu->m_imm_int = rsix >> 4;
+    cpu->m_v_int = !!(rsix & 0x8);
+    cpu->m_s_int = !!(rsix & 0x4);
+    cpu->m_c_int = !!(rsix & 0x2);
+    cpu->m_z_int = !!(rsix & 0x1);
+
+    cpu->m_pc += 2;
+    cpu->m_imm_hi = 0;
+}
+

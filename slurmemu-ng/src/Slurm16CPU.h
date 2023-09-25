@@ -60,6 +60,10 @@ class Slurm16CPU
         /* RET / IRET */
         static void ret_ins(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
 
+        /* STIX / RSIX */
+        static void stix_ins(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
+        static void rsix_ins(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
+
         /* STI / CLI instructions */
         static void sti_cli_ins(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
 
