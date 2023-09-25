@@ -181,8 +181,11 @@ void Slurm16CPU::calc_tables()
             {0xff00, 0x5d00, movgtu},
             {0xff00, 0x5e00, mova},
             {0xff00, 0x5f00, mova},
+            {0xf000, 0x8000, byte_load_sx_mem_op},
             {0xf000, 0xa000, byte_load_mem_op},
             {0xf000, 0xb000, byte_store_mem_op},
+            {0xf000, 0xc000, word_load_mem_op},
+            {0xf000, 0xd000, word_store_mem_op},
             {0xf000, 0xe000, port_rd},
             {0xf000, 0xf000, port_wr}
  
@@ -1034,4 +1037,45 @@ void Slurm16CPU::byte_store_mem_op(Slurm16CPU* cpu, std::uint16_t instruction, s
     cpu->m_imm_hi = 0;
 }
  
+void Slurm16CPU::word_load_mem_op(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon)
+{
+    uint16_t* r_dest = R_MEM_SRCDEST(cpu, instruction);
+    uint16_t* r_idx = R_MEM_IDX(cpu, instruction);
+    uint32_t imm = (uint32_t)(uint16_t)((cpu->m_imm_hi << 4) | (instruction & 0xf));
 
+    uint16_t addr = imm + *r_idx;
+    *r_dest = mem[addr >> 1];
+
+    cpu->m_pc += 2;
+    cpu->m_imm_hi = 0;
+}
+        
+void Slurm16CPU::word_store_mem_op(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon)
+{
+    uint16_t* r_src = R_MEM_SRCDEST(cpu, instruction);
+    uint16_t* r_idx = R_MEM_IDX(cpu, instruction);
+    uint32_t imm = (uint32_t)(uint16_t)((cpu->m_imm_hi << 4) | (instruction & 0xf));
+
+    uint16_t addr = imm + *r_idx;
+    mem[addr >> 1] = *r_src;
+
+    cpu->m_pc += 2;
+    cpu->m_imm_hi = 0;
+} 
+
+
+void Slurm16CPU::byte_load_sx_mem_op(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon)
+{
+    uint16_t* r_dest = R_MEM_SRCDEST(cpu, instruction);
+    uint16_t* r_idx = R_MEM_IDX(cpu, instruction);
+    uint32_t imm = (uint32_t)(uint16_t)((cpu->m_imm_hi << 4) | (instruction & 0xf));
+
+    uint16_t addr = imm + *r_idx;
+    *r_dest = (uint16_t)((int16_t)((int8_t*)mem)[addr]);
+
+    cpu->m_pc += 2;
+    cpu->m_imm_hi = 0;
+
+
+}
+ 
