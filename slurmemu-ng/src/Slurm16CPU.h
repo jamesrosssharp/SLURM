@@ -161,6 +161,26 @@ class Slurm16CPU
         static void movgtu(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
         static void mova(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
 
+        /* extended register alu operation */
+        static void extreg_alu_op(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon);
+
+        static void alu_mov_reg_reg_reg(Slurm16CPU* cpu, uint16_t* r_dest, uint16_t* r_src1, uint16_t* r_src2, std::uint16_t* mem, PortController* pcon);
+        static void alu_add_reg_reg_reg(Slurm16CPU* cpu, uint16_t* r_dest, uint16_t* r_src1, uint16_t* r_src2, std::uint16_t* mem, PortController* pcon);
+        static void alu_adc_reg_reg_reg(Slurm16CPU* cpu, uint16_t* r_dest, uint16_t* r_src1, uint16_t* r_src2,  std::uint16_t* mem, PortController* pcon);
+        static void alu_sub_reg_reg_reg(Slurm16CPU* cpu, uint16_t* r_dest, uint16_t* r_src1, uint16_t* r_src2,  std::uint16_t* mem, PortController* pcon);
+        static void alu_sbb_reg_reg_reg(Slurm16CPU* cpu, uint16_t* r_dest, uint16_t* r_src1, uint16_t* r_src2,  std::uint16_t* mem, PortController* pcon);
+        static void alu_and_reg_reg_reg(Slurm16CPU* cpu, uint16_t* r_dest, uint16_t* r_src1, uint16_t* r_src2,  std::uint16_t* mem, PortController* pcon);
+        static void alu_or_reg_reg_reg(Slurm16CPU* cpu, uint16_t* r_dest, uint16_t* r_src1, uint16_t* r_src2,  std::uint16_t* mem, PortController* pcon);
+        static void alu_xor_reg_reg_reg(Slurm16CPU* cpu, uint16_t* r_dest, uint16_t* r_src1, uint16_t* r_src2,  std::uint16_t* mem, PortController* pcon);
+        static void alu_mul_reg_reg_reg(Slurm16CPU* cpu, uint16_t* r_dest, uint16_t* r_src1, uint16_t* r_src2,  std::uint16_t* mem, PortController* pcon);
+        static void alu_mulu_reg_reg_reg(Slurm16CPU* cpu, uint16_t* r_dest, uint16_t* r_src1, uint16_t* r_src2,  std::uint16_t* mem, PortController* pcon);
+        static void alu_rrn_reg_reg_reg(Slurm16CPU* cpu, uint16_t* r_dest, uint16_t* r_src1, uint16_t* r_src2,  std::uint16_t* mem, PortController* pcon);
+        static void alu_rln_reg_reg_reg(Slurm16CPU* cpu, uint16_t* r_dest, uint16_t* r_src1, uint16_t* r_src2,  std::uint16_t* mem, PortController* pcon);
+        static void alu_cmp_reg_reg_reg(Slurm16CPU* cpu, uint16_t* r_dest, uint16_t* r_src1, uint16_t* r_src2,  std::uint16_t* mem, PortController* pcon);
+        static void alu_test_reg_reg_reg(Slurm16CPU* cpu, uint16_t* r_dest, uint16_t* r_src1, uint16_t* r_src2,  std::uint16_t* mem, PortController* pcon);
+        static void alu_umulu_reg_reg_reg(Slurm16CPU* cpu, uint16_t* r_dest, uint16_t* r_src1, uint16_t* r_src2,  std::uint16_t* mem, PortController* pcon);
+        static void alu_bswap_reg_reg_reg(Slurm16CPU* cpu, uint16_t* r_dest, uint16_t* r_src1, uint16_t* r_src2,  std::uint16_t* mem, PortController* pcon);
+
         /* memory operations */
 
         static void byte_load_mem_op(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon); 
@@ -211,3 +231,5 @@ class Slurm16CPU
         ins_t m_instruction_jump_table[kTwoPower8];    /* 8 bytes * 256 = 2k */
 
 };
+
+

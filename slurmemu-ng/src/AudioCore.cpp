@@ -1,9 +1,9 @@
 /* vim: set et ts=4 sw=4: */
 
 /*
-	slurmemu-ng : Next-Generation SlURM16 Emulator
+		slurmemu-ng : Next-Generation SlURM16 Emulator
 
-PortController.h: Emulate the SlURM16 Port Controller
+AudioCore.cpp: Audio core emulation
 
 License: MIT License
 
@@ -29,36 +29,45 @@ SOFTWARE.
 
 */
 
-#pragma once
-
-#include <cstdint>
-#include "SpiFlash.h"
-#include "InterruptController.h"
-#include "Timer.h"
-#include "GFXCore.h"
 #include "AudioCore.h"
 
-class PortController {
+AudioCore::AudioCore()  :
+    m_count(0),
+    m_run(0)
+{
 
-    public:
+}
 
-        PortController(const char* flash_file);
-        ~PortController();
+AudioCore::~AudioCore()
+{
 
-        void     port_wr(std::uint16_t port, std::uint16_t value);
-        uint16_t port_rd(std::uint16_t port);
+}
 
-        int /* returns IRQ */ step(std::uint16_t* mem);
+std::uint16_t AudioCore::port_op(std::uint16_t port, bool write, std::uint16_t wr_val)
+{
+    if (write)
+    {
+        if (port & 0xfff == 400)
+            m_run = wr_val & 1; 
+    }
 
-    private:
 
-        void    uart_wr(std::uint16_t port, std::uint16_t value);
-        uint16_t uart_rd(std::uint16_t port);
+    return 0;
+} 
+   
+bool AudioCore::step(std::uint16_t* mem, uint16_t &audioLeft, uint16_t &audioRight)
+{
+    bool intrpt = false;
 
-        SpiFlash m_flash;
-        InterruptController m_intcon;
-        Timer    m_tim;
-        GFXCore  m_gfx;
-        AudioCore m_audio;
-};
+    if (m_run)
+        m_count ++;
+
+    if (m_count == 1023)
+    {
+        intrpt = true;
+        m_count = 0;
+    }
+
+    return intrpt;
+}
 

@@ -105,13 +105,16 @@ uint16_t    PortController::uart_rd(uint16_t port)
 
 int PortController::step(std::uint16_t* mem)
 {
+    std::uint16_t left, right;
+
     bool flash_int = m_flash.step(mem);
     bool vs = false;
     bool hs = false;
     bool timer = m_tim.step(mem);
     bool gpio = false;
-    bool audio = false; 
+    bool audio = m_audio.step(mem, left, right); 
 
+    m_gfx.step(mem, hs, vs);
 
     return m_intcon.step(flash_int, vs, hs, timer, gpio, audio);     
 }

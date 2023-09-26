@@ -3,7 +3,7 @@
 /*
 	slurmemu-ng : Next-Generation SlURM16 Emulator
 
-PortController.h: Emulate the SlURM16 Port Controller
+GFXCore.cpp: GFX core emulation
 
 License: MIT License
 
@@ -29,36 +29,54 @@ SOFTWARE.
 
 */
 
-#pragma once
-
-#include <cstdint>
-#include "SpiFlash.h"
-#include "InterruptController.h"
-#include "Timer.h"
 #include "GFXCore.h"
-#include "AudioCore.h"
+#include <cstdint>
 
-class PortController {
+constexpr uint16_t  H_BACK_PORCH   = 48; 
+constexpr uint16_t  V_BACK_PORCH   = 33; 
+constexpr uint16_t  H_SYNC_PULSE   = 96;
+constexpr uint16_t  H_FRONT_PORCH  = 16;
+constexpr uint16_t  V_FRONT_PORCH  = 10;
+constexpr uint16_t  V_SYNC_PULSE   = 2;
+constexpr uint16_t  TOTAL_X        = 800;
+constexpr uint16_t  TOTAL_Y        = 525;
 
-    public:
 
-        PortController(const char* flash_file);
-        ~PortController();
+GFXCore::GFXCore()  :
+    m_x(0),
+    m_y(0)
+{
 
-        void     port_wr(std::uint16_t port, std::uint16_t value);
-        uint16_t port_rd(std::uint16_t port);
 
-        int /* returns IRQ */ step(std::uint16_t* mem);
+}
 
-    private:
+GFXCore::~GFXCore()
+{
 
-        void    uart_wr(std::uint16_t port, std::uint16_t value);
-        uint16_t uart_rd(std::uint16_t port);
 
-        SpiFlash m_flash;
-        InterruptController m_intcon;
-        Timer    m_tim;
-        GFXCore  m_gfx;
-        AudioCore m_audio;
-};
+}
+
+std::uint16_t GFXCore::port_op(std::uint16_t port, bool write, std::uint16_t wr_val)
+{
+    
+    return 0;
+} 
+   
+void GFXCore::step(std::uint16_t* mem, bool& hs_int, bool& vs_int)
+{
+
+    hs_int = m_x == (TOTAL_X - H_FRONT_PORCH - H_SYNC_PULSE);
+    vs_int = m_y == ((TOTAL_Y - V_FRONT_PORCH - V_SYNC_PULSE)) && (m_x == 0);
+
+    m_x ++;
+
+    if (m_x >= TOTAL_X)
+    {
+        m_x = 0;
+        m_y ++;
+
+        if (m_y >= TOTAL_Y)
+            m_y = 0;
+    }
+}
 
