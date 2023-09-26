@@ -104,6 +104,7 @@ std::uint16_t SpiFlash::port_op(std::uint16_t port, bool write, std::uint16_t wr
                 m_dma_address = wr_val; 
                 break;
             case 6:
+                printf("Spi flash count: %d\n", wr_val);
                 m_dma_count = wr_val;
                 break;
         }
@@ -178,9 +179,9 @@ bool SpiFlash::step(std::uint16_t* mem)
                 mem[m_dma_address2] = data;
                 m_flash_address2 += 1;
                 m_dma_address2 += 1;
-                m_dma_count -= 1;
+                m_dma_count2 -= 1;
 
-                if (m_dma_count == 0)
+                if (m_dma_count2 == 0)
                 {
                     m_done = true;
                     m_state = Flash_Idle;

@@ -153,6 +153,7 @@ static void storage_fill_q_item(struct storage_q_item* q_p,
 {
 	q_p->flash_offset_lo = calculate_flash_offset_lo(base_lo, base_hi, offset_lo, offset_hi);
 	q_p->flash_offset_hi = calculate_flash_offset_hi(base_lo, base_hi, offset_lo, offset_hi);
+	my_printf("flash offset lo: %x hi: %x\n", q_p->flash_offset_lo, q_p->flash_offset_hi);
 	q_p->word_address = (address_hi ? 0x8000U : 0x0000U) | (address_lo >> 1);
 	q_p->count_minus_one = count - 1;
 	q_p->cb = cb;

@@ -92,6 +92,9 @@ void Slurm16CPU::execute_one_instruction(PortController* pcon, std::uint16_t* me
     if (m_halt)
         return;
 
+    //if (log)
+    //    printf("PC = %04x\n", m_pc);
+
     std::uint16_t instruction = mem[m_pc >> 1];
     
     ins_t ifunc = m_instruction_jump_table[instruction >> 8];
@@ -855,8 +858,10 @@ void Slurm16CPU::ba(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* m
 
 void Slurm16CPU::bl(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon)
 {
-    cpu->m_regs[15] = cpu->m_pc + 2;
+    
+    uint16_t new_pc = cpu->m_pc + 2;
     BRANCH(true);
+    cpu->m_regs[15] = new_pc;
 }
 
 #define COND_MOV(cond) \
