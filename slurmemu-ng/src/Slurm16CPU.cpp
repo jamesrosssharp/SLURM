@@ -68,8 +68,12 @@ Slurm16CPU::~Slurm16CPU()
 void Slurm16CPU::execute_one_instruction(PortController* pcon, std::uint16_t* mem, std::uint8_t irq)
 {
 
+    static bool log = false;
+
     if (irq && m_int_flag)
     {
+        printf("Intterupt!\n");
+
         m_regs[14] = m_pc;
         m_pc = irq << 2;
         m_int_flag = false;
@@ -81,12 +85,12 @@ void Slurm16CPU::execute_one_instruction(PortController* pcon, std::uint16_t* me
         m_v_int = m_v;
         
         m_imm_int = m_imm_hi;
+
+        log = true;
     }
 
     if (m_halt)
         return;
-
-    //printf("PC = %x\n", m_pc);
 
     std::uint16_t instruction = mem[m_pc >> 1];
     

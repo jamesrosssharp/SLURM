@@ -3,7 +3,7 @@
 /*
 	slurmemu-ng : Next-Generation SlURM16 Emulator
 
-PortController.h: Emulate the SlURM16 Port Controller
+Timer.cpp: Timer emulator
 
 License: MIT License
 
@@ -29,32 +29,42 @@ SOFTWARE.
 
 */
 
-#pragma once
-
-#include <cstdint>
-#include "SpiFlash.h"
-#include "InterruptController.h"
 #include "Timer.h"
 
-class PortController {
+Timer::Timer()
+{
 
-    public:
+}
 
-        PortController(const char* flash_file);
-        ~PortController();
+Timer::~Timer()
+{
 
-        void     port_wr(std::uint16_t port, std::uint16_t value);
-        uint16_t port_rd(std::uint16_t port);
+}
 
-        int /* returns IRQ */ step(std::uint16_t* mem);
+std::uint16_t Timer::port_op(std::uint16_t port, bool write, std::uint16_t wr_val)
+{
+    if (write)
+    {
+        switch (port & 0xf)
+        {
+            case 0:
+                m_en = !!(wr_val & 1);
+                break;
+            case 1:
+                m_match_val = wr_val;
+        }
+    }
+    
+    return m_count_out;
+} 
+   
+bool Timer::step(std::uint16_t* mem)
+{
+    if (m_en)
+        m_count = (m_count + 1) & 0x007fffff;
 
-    private:
+    m_count_out = (m_count >> 7);
 
-        void    uart_wr(std::uint16_t port, std::uint16_t value);
-        uint16_t uart_rd(std::uint16_t port);
-
-        SpiFlash m_flash;
-        InterruptController m_intcon;
-        Timer    m_tim;
-};
+    return (m_count_out = m_match_val);
+}
 
