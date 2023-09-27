@@ -148,10 +148,14 @@ int main(int argc, char** argv)
 
         for (int i = 0; i < 418750; i++)
         {
-            soc->executeOneCycle();
-        }
+            bool emitAudio;
+            std::int16_t left = 20, right = 37;
 
-        usleep(1000);
+            soc->executeOneCycle(emitAudio, left, right);
+       
+            if (emitAudio)
+                aud.feedRingbuffer(left, right);
+        }
 
     }
 

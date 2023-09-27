@@ -43,10 +43,20 @@ class AudioCore {
 
         std::uint16_t port_op(std::uint16_t port, bool write, std::uint16_t wr_val); 
    
-        bool step(std::uint16_t* mem, uint16_t &audioLeft, uint16_t &audioRight);
+        bool step(std::uint16_t* mem, bool& emitAudio, int16_t &audioLeft, int16_t &audioRight);
 
     private:
 
-        std::uint32_t m_count;
         bool          m_run;
+
+        static constexpr int AUDIO_RAM_SIZE = 512;
+
+        std::int16_t m_left_ram[AUDIO_RAM_SIZE];
+        std::int16_t m_right_ram[AUDIO_RAM_SIZE];
+        std::uint16_t m_left_read_pointer;
+        std::uint16_t m_right_read_pointer;
+        std::uint32_t m_ticks;
+        bool m_prev_left_read_high;
+        std::int16_t m_left_accu;
+        std::int16_t m_right_accu;
 };

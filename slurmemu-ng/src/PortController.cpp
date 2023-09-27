@@ -83,6 +83,8 @@ uint16_t PortController::port_rd(uint16_t port)
     {
         case PORT_UART:  /* UART */
             return uart_rd(port);
+        case PORT_AUDIO: /* audio */
+            return m_audio.port_op(port, false, 0);
         case PORT_SPI_FLASH: /* FLASH DMA */
             return m_flash.port_op(port, false, 0);
         case PORT_INTC: /* INTERRUPT CONTROLLER */
@@ -108,16 +110,14 @@ uint16_t    PortController::uart_rd(uint16_t port)
     return 1;
 }
 
-int PortController::step(std::uint16_t* mem)
+int PortController::step(std::uint16_t* mem, bool& emitAudio, std::int16_t& left, std::int16_t& right)
 {
-    std::uint16_t left, right;
-
     bool flash_int = m_flash.step(mem);
     bool vs = false;
     bool hs = false;
     bool timer = m_tim.step(mem);
     bool gpio = false;
-    bool audio = m_audio.step(mem, left, right); 
+    bool audio = m_audio.step(mem, emitAudio, left, right); 
 
     m_gfx.step(mem, hs, vs);
 

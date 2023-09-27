@@ -57,9 +57,9 @@ Slurm16SoC::~Slurm16SoC()
     delete [] m_memory;
 }
 
-void Slurm16SoC::executeOneCycle()
+void Slurm16SoC::executeOneCycle(bool& emitAudio, std::int16_t &left, std::int16_t &right)
 {
-    int irq = m_pcon.step(m_memory);
+    int irq = m_pcon.step(m_memory, emitAudio, left, right);
 
     m_cpu.execute_one_instruction(&m_pcon, m_memory, irq);
 

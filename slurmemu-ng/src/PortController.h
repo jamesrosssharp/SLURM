@@ -48,7 +48,7 @@ class PortController {
         void     port_wr(std::uint16_t port, std::uint16_t value);
         uint16_t port_rd(std::uint16_t port);
 
-        int /* returns IRQ */ step(std::uint16_t* mem);
+        int /* returns IRQ */ step(std::uint16_t* mem, bool& emitAudio, std::int16_t& left, std::int16_t& right);
 
     private:
 

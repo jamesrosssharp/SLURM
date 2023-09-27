@@ -32,6 +32,8 @@ SOFTWARE.
 #pragma once
 
 #include <SDL2/SDL.h>
+#include <cstdint>
+#include <semaphore>
 
 class AudioSDL2 {
 
@@ -40,6 +42,19 @@ class AudioSDL2 {
         AudioSDL2();
         ~AudioSDL2();
 
+        void feedRingbuffer(std::int16_t left, std::int16_t right);
+
+        void fillStream(std::uint8_t* stream, int len);
+
     private:
         SDL_AudioSpec m_audioSpec;
+
+        int m_rb_head;
+        int m_rb_tail;
+    
+        static constexpr int kRBSize = 4096;
+
+        int16_t m_left_rb[kRBSize];
+        int16_t m_right_rb[kRBSize];
+
 };

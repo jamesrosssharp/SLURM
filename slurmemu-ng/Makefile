@@ -21,12 +21,12 @@ TEST_OBJ = $(patsubst %.cpp, $(BUILD_DIR)/%.to,$(notdir $(TEST_SRC)))
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp $(HEADERS)
 	@mkdir -p $(BUILD_DIR)
 	@echo "CXX $<"
-	@g++ -std=c++17 -O3 -c -o $@ -I$(SRC_DIR) $<
+	@g++ -std=c++20 -O3 -c -o $@ -I$(SRC_DIR) $<
 
 $(BUILD_DIR)/%.to: $(TEST_DIR)/%.cpp $(HEADERS) $(TEST_SRC_DEP)
 	@mkdir -p $(BUILD_DIR)
 	@echo "CXX $<"
-	@g++ -std=c++17 -c -o $@ -I$(SRC_DIR) -I$(TEST_DIR) $<
+	@g++ -std=c++20 -c -o $@ -I$(SRC_DIR) -I$(TEST_DIR) $<
 
 $(TARGET): $(CPP_OBJ) 
 	@g++ -o $@ $(CPP_OBJ) -O3 -lGL -lSDL2

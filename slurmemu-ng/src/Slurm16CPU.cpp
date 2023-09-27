@@ -70,6 +70,9 @@ void Slurm16CPU::execute_one_instruction(PortController* pcon, std::uint16_t* me
 
     static bool log = false;
 
+    if (m_pc == 0x5034)
+        log = true; 
+
     if (irq && m_int_flag)
     {
 
@@ -87,14 +90,14 @@ void Slurm16CPU::execute_one_instruction(PortController* pcon, std::uint16_t* me
         
         m_imm_int = m_imm_hi;
 
-        log = true;
+       // log = true;
     }
 
     if (m_halt)
         return;
 
-    //if (log)
-    //    printf("PC = %04x %d\n", m_pc, m_int_flag);
+    if (log)
+        printf("PC = %04x %d\n", m_pc, m_int_flag);
 
     std::uint16_t instruction = mem[m_pc >> 1];
     

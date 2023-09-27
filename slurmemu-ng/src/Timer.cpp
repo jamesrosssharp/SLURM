@@ -70,6 +70,8 @@ bool Timer::step(std::uint16_t* mem)
 
     m_count_out = (m_count >> 7);
 
-    return (m_en && (m_count_out == m_match_val));
+    bool intrpt = (m_en && (m_count_out == m_match_val));
+
+    return intrpt;
 }
 
