@@ -47,6 +47,6 @@ class AudioCore {
 
     private:
 
-        std::uint16_t m_count;
+        std::uint32_t m_count;
         bool          m_run;
 };

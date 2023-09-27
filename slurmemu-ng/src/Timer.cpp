@@ -31,7 +31,11 @@ SOFTWARE.
 
 #include "Timer.h"
 
-Timer::Timer()
+#include <cstdio>
+
+Timer::Timer()  :
+    m_en(false),
+    m_match_val(0x1234)
 {
 
 }
@@ -52,6 +56,7 @@ std::uint16_t Timer::port_op(std::uint16_t port, bool write, std::uint16_t wr_va
                 break;
             case 1:
                 m_match_val = wr_val;
+                break;
         }
     }
     
@@ -65,6 +70,6 @@ bool Timer::step(std::uint16_t* mem)
 
     m_count_out = (m_count >> 7);
 
-    return (m_count_out = m_match_val);
+    return (m_en && (m_count_out == m_match_val));
 }
 

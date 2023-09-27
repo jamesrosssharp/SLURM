@@ -46,9 +46,11 @@ PortController::~PortController()
 }
 
 #define PORT_UART       0x0000
+#define PORT_AUDIO      0x3000
 #define PORT_SPI_FLASH  0x4000
 #define PORT_INTC       0x7000 
 #define PORT_TIMER      0x9000 
+
 
 void    PortController::port_wr(uint16_t port, uint16_t value)
 {
@@ -56,6 +58,9 @@ void    PortController::port_wr(uint16_t port, uint16_t value)
     {
         case PORT_UART:  /* UART */
             uart_wr(port, value);
+            break;
+        case PORT_AUDIO: /* AUDIO */
+            m_audio.port_op(port, true, value);
             break;
         case PORT_SPI_FLASH: /* FLASH DMA */
             m_flash.port_op(port, true, value);
@@ -84,7 +89,7 @@ uint16_t PortController::port_rd(uint16_t port)
             m_intcon.port_op(port, false, 0);
             break;
         case PORT_TIMER: /* TIMER */
-            m_tim.port_op(port, true, 0);
+            m_tim.port_op(port, false, 0);
             break;  
         default:
             break;

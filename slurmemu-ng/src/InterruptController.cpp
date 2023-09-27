@@ -30,6 +30,7 @@ SOFTWARE.
 */
 
 #include <InterruptController.h>
+#include <cstdio>
 
 InterruptController::InterruptController()
 {
@@ -95,6 +96,8 @@ int InterruptController::step(bool flash_int, bool vs, bool hs, bool timer, bool
     for (int i = 0; i < NUM_INTERRUPTS; i++)
         if ((m_interrupt_pending & m_interrupt_enabled) & (1 << (arr[i] - 1)))
             return arr[i];
+
+//    printf("Int en: %x p: %x\n", m_interrupt_enabled, m_interrupt_pending);
 
     return 0;
 } 

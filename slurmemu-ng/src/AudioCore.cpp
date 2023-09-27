@@ -30,10 +30,11 @@ SOFTWARE.
 */
 
 #include "AudioCore.h"
+#include <cstdio>
 
 AudioCore::AudioCore()  :
     m_count(0),
-    m_run(0)
+    m_run(false)
 {
 
 }
@@ -47,8 +48,11 @@ std::uint16_t AudioCore::port_op(std::uint16_t port, bool write, std::uint16_t w
 {
     if (write)
     {
-        if (port & 0xfff == 400)
-            m_run = wr_val & 1; 
+        if ((port & 0xfff) == 0x400)
+        {
+            printf("Audio write: %x\n", wr_val);
+            m_run = !!(wr_val & 1); 
+        }
     }
 
 
@@ -60,9 +64,11 @@ bool AudioCore::step(std::uint16_t* mem, uint16_t &audioLeft, uint16_t &audioRig
     bool intrpt = false;
 
     if (m_run)
+    {
         m_count ++;
+    }
 
-    if (m_count == 1023)
+    if (m_count == (256*1024))
     {
         intrpt = true;
         m_count = 0;

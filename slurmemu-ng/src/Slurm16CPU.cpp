@@ -72,7 +72,8 @@ void Slurm16CPU::execute_one_instruction(PortController* pcon, std::uint16_t* me
 
     if (irq && m_int_flag)
     {
-        printf("Int!! %d\n", irq);
+
+    //    printf("Int: %d\n", irq);
 
         m_regs[14] = m_pc;
         m_pc = irq << 2;
@@ -92,8 +93,8 @@ void Slurm16CPU::execute_one_instruction(PortController* pcon, std::uint16_t* me
     if (m_halt)
         return;
 
-    if (log)
-        printf("PC = %04x\n", m_pc);
+    //if (log)
+    //    printf("PC = %04x %d\n", m_pc, m_int_flag);
 
     std::uint16_t instruction = mem[m_pc >> 1];
     
@@ -869,8 +870,7 @@ void Slurm16CPU::bl(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* m
     uint16_t* r_dest = R_DEST(cpu, instruction);    \
     uint16_t* r_src = R_SRC(cpu, instruction);      \
     if (cond) *r_dest = *r_src;    \
-    cpu->m_pc += 2;    \
-    cpu->m_imm_hi = 0
+    cpu->m_pc += 2
 
 
 void Slurm16CPU::movz(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon)
@@ -963,6 +963,7 @@ void Slurm16CPU::port_wr(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16
     uint16_t imm = ((cpu->m_imm_hi << 4) | (instruction & 0xf));
 
     uint16_t port = *reg_p + imm;
+
     pcon->port_wr(port, *reg_v);
 
     cpu->m_pc += 2;
@@ -1149,10 +1150,10 @@ void Slurm16CPU::extreg_alu_op(Slurm16CPU* cpu, std::uint16_t instruction, std::
 
     // direction?
     
-    if (instruction & 0x800)
+    if (!(instruction & 0x800))
     {
-       reg_dest = reg_lo;
-       reg_src = reg_ext; 
+       reg_dest = reg_ext;
+       reg_src = reg_lo; 
     } 
 
     switch (alu_op)
