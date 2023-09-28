@@ -66,7 +66,7 @@ void GFXCore::step(std::uint16_t* mem, bool& hs_int, bool& vs_int)
 {
 
     hs_int = m_x == (TOTAL_X - H_FRONT_PORCH - H_SYNC_PULSE);
-    vs_int = m_y == ((TOTAL_Y - V_FRONT_PORCH - V_SYNC_PULSE)) && (m_x == 0);
+    vs_int = (m_y == (TOTAL_Y - V_FRONT_PORCH - V_SYNC_PULSE)) && (m_x == 0);
 
     m_x ++;
 

@@ -1,10 +1,10 @@
 /* vim: set et ts=4 sw=4: */
 
 /*
-	
 	slurmemu-ng : Next-Generation SlURM16 Emulator
 
-Slurm16SoC.cpp: Top level SoC class
+ElfDebug.h: Wrapper around ELF library, so that symbols can be 
+            debugged in debug interface
 
 License: MIT License
 
@@ -30,38 +30,37 @@ SOFTWARE.
 
 */
 
-#include "Slurm16SoC.h"
+#pragma once
 
-#include <cstdio>
-#include <stdexcept>
+#include <vector>
+#include <map>
+#include <cstdint>
+#include <string>
 
-Slurm16SoC::Slurm16SoC(const char* boot_rom_file, const char* flash_rom_file)   :
-    m_pcon(flash_rom_file)
-{
+#include <ElfFile.h>
 
-    m_memory = new uint16_t[65536]; 
+struct ElfFunc {
 
-    // Load boot rom into memory 
+    std::string name;
+    std::uint16_t offset;
+    std::uint16_t size; 
 
-    FILE* b = fopen(boot_rom_file, "rb");
-    if (fread(m_memory, 2, 256, b) == 0) 
-    {
-        throw std::runtime_error("Could not read from rom file.\n");
-    }
-    fclose(b); 
+};
 
-}
+class ElfDebug {
 
-Slurm16SoC::~Slurm16SoC()
-{
-    delete [] m_memory;
-}
+    public:
 
-void Slurm16SoC::executeOneCycle(bool& emitAudio, std::int16_t &left, std::int16_t &right, ElfDebug& edbg)
-{
-    int irq = m_pcon.step(m_memory, emitAudio, left, right);
+        ElfDebug(const std::string& elf_file);
 
-    m_cpu.execute_one_instruction(&m_pcon, m_memory, irq, edbg);
+        const std::string& addr2Sym(std::uint16_t addr);
+        std::uint16_t sym2addr(const std::string& name);
+        const std::string& addr2func(std::uint16_t addr);
 
-}
+    private:
 
+        std::map<std::uint16_t, std::string> m_addr2sym;
+        std::map<std::string, std::uint16_t> m_sym2addr;
+        std::vector<ElfFunc> m_funcs;
+        std::string m_null_name;
+};

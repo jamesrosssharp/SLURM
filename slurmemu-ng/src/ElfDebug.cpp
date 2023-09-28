@@ -1,10 +1,10 @@
 /* vim: set et ts=4 sw=4: */
 
 /*
-	
-	slurmemu-ng : Next-Generation SlURM16 Emulator
+		slurmemu-ng : Next-Generation SlURM16 Emulator
 
-Slurm16SoC.cpp: Top level SoC class
+ElfDebug.cpp: Wrapper around ELF library, so that symbols can be 
+            debugged in debug interface
 
 License: MIT License
 
@@ -30,38 +30,61 @@ SOFTWARE.
 
 */
 
-#include "Slurm16SoC.h"
+#include "ElfDebug.h"
 
-#include <cstdio>
-#include <stdexcept>
-
-Slurm16SoC::Slurm16SoC(const char* boot_rom_file, const char* flash_rom_file)   :
-    m_pcon(flash_rom_file)
+ElfDebug::ElfDebug(const std::string& elf_file) :
+   m_null_name("UNKNOWN") 
 {
+    ElfFile e;
 
-    m_memory = new uint16_t[65536]; 
+    e.load(elf_file.c_str());
 
-    // Load boot rom into memory 
-
-    FILE* b = fopen(boot_rom_file, "rb");
-    if (fread(m_memory, 2, 256, b) == 0) 
+    for (const auto& sym : e.getSymbols())
     {
-        throw std::runtime_error("Could not read from rom file.\n");
+        uint8_t bind, type;
+
+        sym.get_bind_type(bind, type);
+
+        if (type & STT_FUNC)
+        {
+            ElfFunc f;
+
+            printf("Found func: %s\n", sym.name.c_str());
+
+            f.name = sym.name;
+            f.offset = sym.value;
+            f.size = sym.size;
+        
+            m_funcs.push_back(f);
+        } 
+
     }
-    fclose(b); 
+
+    m_funcs.emplace_back("Applet", 0x5000, 0x3000);
 
 }
 
-Slurm16SoC::~Slurm16SoC()
+const std::string& ElfDebug::addr2Sym(std::uint16_t addr)
 {
-    delete [] m_memory;
+    return m_null_name;
 }
 
-void Slurm16SoC::executeOneCycle(bool& emitAudio, std::int16_t &left, std::int16_t &right, ElfDebug& edbg)
+std::uint16_t ElfDebug::sym2addr(const std::string& name)
 {
-    int irq = m_pcon.step(m_memory, emitAudio, left, right);
+    return 0;
+}
 
-    m_cpu.execute_one_instruction(&m_pcon, m_memory, irq, edbg);
+const std::string& ElfDebug::addr2func(std::uint16_t addr)
+{
+    
+    for (const auto &f : m_funcs)
+    {
 
+        if ((addr >= f.offset) && (addr <= f.offset + f.size))
+            return f.name;
+
+    }
+
+    return m_null_name;
 }
 

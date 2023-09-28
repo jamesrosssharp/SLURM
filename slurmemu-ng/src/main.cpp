@@ -42,6 +42,7 @@ SOFTWARE.
 
 #include <sstream>
 #include <iomanip>
+#include <string>
 
 #include "Slurm16SoC.h"
 
@@ -49,6 +50,8 @@ SOFTWARE.
 #define WINDOW_HEIGHT 	480
 
 #include <AudioSDL2.h>
+
+#include "ElfDebug.h"
 
 float getFPS() {
     static std::chrono::time_point<std::chrono::high_resolution_clock> oldTime = std::chrono::high_resolution_clock::now();
@@ -75,9 +78,9 @@ float getFPS() {
 
 int main(int argc, char** argv)
 {
-    if (argc != 3)
+    if (argc != 4)
     {
-        printf("Usage: %s <BOOT_ROM.bin> <FLASH_IMG.bin>\n", argv[0]);
+        printf("Usage: %s <BOOT_ROM.bin> <FLASH_IMG.bin> <debug.elf>\n", argv[0]);
         exit(EXIT_FAILURE);
     }
 
@@ -90,6 +93,8 @@ int main(int argc, char** argv)
     }
 
     AudioSDL2 aud;
+
+    ElfDebug edbg(argv[3]);
 
     std::uint32_t window_flags = SDL_WINDOW_OPENGL;
     SDL_Window *window = SDL_CreateWindow("slurmemu-ng", 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, window_flags);
@@ -151,7 +156,7 @@ int main(int argc, char** argv)
             bool emitAudio;
             std::int16_t left = 20, right = 37;
 
-            soc->executeOneCycle(emitAudio, left, right);
+            soc->executeOneCycle(emitAudio, left, right, edbg);
        
             if (emitAudio)
                 aud.feedRingbuffer(left, right);

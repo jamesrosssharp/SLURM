@@ -35,6 +35,8 @@ SOFTWARE.
 #include "Slurm16CPU.h"
 #include "PortController.h"
 
+#include "ElfDebug.h"
+
 class Slurm16SoC {
 
     public:
@@ -42,7 +44,7 @@ class Slurm16SoC {
         Slurm16SoC(const char* boot_rom_file, const char* flash_rom_file);
         ~Slurm16SoC();
 
-        void executeOneCycle(bool& emitAudio, std::int16_t &left, std::int16_t &right );
+        void executeOneCycle(bool& emitAudio, std::int16_t &left, std::int16_t &right, ElfDebug& edbg);
 
         const Slurm16CPU& get_cpu() { return m_cpu; }
 

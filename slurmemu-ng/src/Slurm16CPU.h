@@ -30,6 +30,7 @@ SOFTWARE.
 */
 
 #include <cstdint>
+#include "ElfDebug.h"
 
 class PortController;
 
@@ -41,7 +42,7 @@ class Slurm16CPU
         Slurm16CPU();
         ~Slurm16CPU();
 
-        void execute_one_instruction(PortController* pcon, std::uint16_t* mem, std::uint8_t irq);  
+        void execute_one_instruction(PortController* pcon, std::uint16_t* mem, std::uint8_t irq, ElfDebug& edbg);  
 
         std::uint16_t get_register(std::uint8_t reg) { return m_regs[reg & 0x7f]; }
 

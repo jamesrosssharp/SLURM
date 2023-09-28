@@ -65,10 +65,13 @@ Slurm16CPU::~Slurm16CPU()
 
 }
 
-void Slurm16CPU::execute_one_instruction(PortController* pcon, std::uint16_t* mem, std::uint8_t irq)
+void Slurm16CPU::execute_one_instruction(PortController* pcon, std::uint16_t* mem, std::uint8_t irq, ElfDebug& edbg)
 {
 
     static bool log = false;
+    static int logn = 0;
+
+    static std::string func_name;
 
     if (m_pc == 0x5034)
         log = true; 
@@ -96,8 +99,25 @@ void Slurm16CPU::execute_one_instruction(PortController* pcon, std::uint16_t* me
     if (m_halt)
         return;
 
-    if (log)
-        printf("PC = %04x %d\n", m_pc, m_int_flag);
+    if (log) 
+    {
+        if (edbg.addr2func(m_pc) != "UNKNOWN")
+        {
+
+            if (func_name != edbg.addr2func(m_pc))
+            { 
+
+                func_name = edbg.addr2func(m_pc);
+
+                int task = mem[0x962a >> 1] - 0x9814;
+
+                printf("PC = %04x, IFLAG = %d, FUNC = %s, TASK = %d\n", m_pc, m_int_flag, func_name.c_str(), task/ 48);
+        
+                if (logn++ > 20000)
+                    throw std::runtime_error("Log end"); 
+            }
+        }
+    }
 
     std::uint16_t instruction = mem[m_pc >> 1];
     
