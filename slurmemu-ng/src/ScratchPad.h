@@ -1,9 +1,9 @@
 /* vim: set et ts=4 sw=4: */
 
 /*
-	slurmemu-ng : Next-Generation SlURM16 Emulator
+		slurmemu-ng : Next-Generation SlURM16 Emulator
 
-PortController.h: Emulate the SlURM16 Port Controller
+ScratchPad.h: Scratch pad RAM
 
 License: MIT License
 
@@ -32,35 +32,18 @@ SOFTWARE.
 #pragma once
 
 #include <cstdint>
-#include "SpiFlash.h"
-#include "InterruptController.h"
-#include "Timer.h"
-#include "GFXCore.h"
-#include "AudioCore.h"
-#include "ScratchPad.h"
 
-class PortController {
+class ScratchPad {
 
     public:
 
-        PortController(const char* flash_file);
-        ~PortController();
-
-        void     port_wr(std::uint16_t port, std::uint16_t value);
-        uint16_t port_rd(std::uint16_t port);
-
-        int /* returns IRQ */ step(std::uint16_t* mem, bool& emitAudio, std::int16_t& left, std::int16_t& right);
-
+        std::uint16_t port_op(std::uint16_t port, bool write, std::uint16_t wr_val); 
+   
     private:
 
-        void    uart_wr(std::uint16_t port, std::uint16_t value);
-        uint16_t uart_rd(std::uint16_t port);
+        static constexpr int kRAMSize = 512;
 
-        SpiFlash m_flash;
-        InterruptController m_intcon;
-        Timer    m_tim;
-        GFXCore  m_gfx;
-        AudioCore m_audio;
-        ScratchPad m_scratch;
+        std::uint16_t m_mem[kRAMSize];
+
 };
 

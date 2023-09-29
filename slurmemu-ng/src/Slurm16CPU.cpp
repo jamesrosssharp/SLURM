@@ -99,7 +99,7 @@ void Slurm16CPU::execute_one_instruction(PortController* pcon, std::uint16_t* me
     if (m_halt)
         return;
 
-    if (log) 
+    if (/*log*/ 0) 
     {
         if (edbg.addr2func(m_pc) != "UNKNOWN")
         {
