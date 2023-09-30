@@ -222,6 +222,7 @@ void Slurm16CPU::calc_tables()
             {0xff00, 0x5e00, mova},
             {0xff00, 0x5f00, mova},
             {0xf000, 0x6000, extreg_alu_op}, 
+            {0xf000, 0x7000, upper_bank_mem_op}, 
             {0xf000, 0x8000, byte_load_sx_mem_op},
             {0xf000, 0xa000, byte_load_mem_op},
             {0xf000, 0xb000, byte_store_mem_op},
@@ -1123,9 +1124,59 @@ void Slurm16CPU::byte_load_sx_mem_op(Slurm16CPU* cpu, std::uint16_t instruction,
 
     cpu->m_pc += 2;
     cpu->m_imm_hi = 0;
-
-
 }
+
+void Slurm16CPU::upper_bank_mem_op(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon)
+{
+    /*	FLG:
+		3'b000 :  LD
+		3'b001 :  LDB
+		3'b01x :  LDBSX
+		3'b10x :  ST
+		3'b11x :  STB
+    */
+
+    uint16_t* r_dest = R_MEM_SRCDEST(cpu, instruction);
+    uint16_t* r_idx = R_MEM_IDX(cpu, instruction);
+
+    uint32_t addr = *r_idx + 0x10000;
+    
+    switch(instruction & 0x7)
+    {
+        case 0:
+        {
+            *r_dest = mem[addr >> 1];
+        }
+        break;
+        case 1:
+        {
+            *r_dest = ((uint8_t*)mem)[addr];
+        }
+        break;
+        case 2:
+        case 3:
+        {
+            *r_dest = (uint16_t)((int16_t)((int8_t*)mem)[addr]);
+        }
+        break;
+        case 4:
+        case 5:
+        {
+            mem[addr >> 1] = *r_dest;
+        }
+        break;
+        case 6:
+        case 7:
+        {
+            ((uint8_t*)mem)[addr] = (uint8_t)*r_dest;
+        }
+        break;
+    }
+
+    cpu->m_pc += 2;
+    cpu->m_imm_hi = 0;
+
+} 
 
 // ================ STIX / RSIX ====================
 

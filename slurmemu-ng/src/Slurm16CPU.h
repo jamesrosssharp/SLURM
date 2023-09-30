@@ -190,7 +190,7 @@ class Slurm16CPU
 
         static void word_load_mem_op(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon); 
         static void word_store_mem_op(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon); 
-
+        static void upper_bank_mem_op(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon); 
 
         /* port operations */
 
