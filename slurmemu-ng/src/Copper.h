@@ -3,7 +3,7 @@
 /*
 		slurmemu-ng : Next-Generation SlURM16 Emulator
 
-    SpiFlash.h: Emulate the SlURM16 SPI Flash peripheral
+Copper.h : Emulate copper
 
 License: MIT License
 
@@ -30,53 +30,4 @@ SOFTWARE.
 */
 
 #pragma once
-
-#include <cstdint>
-#include <cstddef>
-
-enum FlashState
-{
-    Flash_Idle,
-    Flash_WakeFlash,
-    Flash_PerformDMA,
-};
-
-class SpiFlash {
-
-    public:
-    
-        SpiFlash(const char* flash_file);
-        ~SpiFlash();
-
-        std::uint16_t port_op(std::uint16_t port, bool write, std::uint16_t wr_val); 
-   
-        bool /* returns true if interrupt */ step(std::uint16_t* mem);
-
-    private:
-
-        uint16_t* m_flashMem;
-        std::size_t m_flashSize; 
-
-        std::uint16_t m_flash_address_lo;
-        std::uint16_t m_flash_address_hi;
-        std::uint32_t m_flash_address2;
-
-        bool m_go;
-        bool m_wake;
-        
-        enum FlashState m_state;
-
-        std::uint16_t m_dma_address;
-        std::uint16_t m_dma_count;
-
-        std::uint16_t m_dma_address2;
-        std::uint32_t m_dma_count2;
-
-        bool m_done;
-
-        std::uint16_t m_data_reg;
-
-        std::uint32_t m_dummy_cycles;
-    
-};
 
