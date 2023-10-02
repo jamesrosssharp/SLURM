@@ -31,3 +31,47 @@ SOFTWARE.
 
 #pragma once
 
+enum CopperState {
+	COPPER_IDLE,
+	COPPER_BEGIN,
+	COPPER_EXECUTE,
+	COPPER_WAITV,
+	COPPER_WAITH,
+	COPPER_WRITEREG,
+}
+
+class Copper {
+
+public:
+
+    Copper();
+
+    std::uint16_t port_op(std::uint16_t port, bool write, std::uint16_t wr_val); 
+   
+    void step(std::uint16_t* mem, uint16_t& x, uint16_t& y);
+
+private:
+
+    bool m_enable;
+
+    static constexpr int kCopperListSize = 512;
+    std::uint16_t m_copperList[kCopperListSize];
+
+    std::uint16_t m_copper_pc;
+    enum CopperState m_state;
+
+    /* background color */
+    std::uint8_t m_r, m_g, m_b;
+
+    std::uint16_t m_regAddr;
+    std::uint16_t m_hvWait;
+    std::uint16_t m_yFlip;
+    bool          m_yFlipEn;
+
+    std::uint16_t m_xPan;
+
+    std::uint8_t  m_globalAlpha;
+    bool          m_alphaOverride; 
+
+};
+

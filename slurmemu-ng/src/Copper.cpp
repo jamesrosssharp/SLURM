@@ -29,5 +29,21 @@ SOFTWARE.
 
 */
 
+Copper::Copper()
+{
 
+
+}
+
+std::uint16_t Copper::port_op(std::uint16_t port, bool write, std::uint16_t wr_val)
+{
+
+
+} 
+   
+void Copper::step(std::uint16_t* mem, uint16_t& x, uint16_t& y)
+{
+
+
+}
 
