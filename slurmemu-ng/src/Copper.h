@@ -31,6 +31,8 @@ SOFTWARE.
 
 #pragma once
 
+#include <cstdint>
+
 enum CopperState {
 	COPPER_IDLE,
 	COPPER_BEGIN,
@@ -38,7 +40,7 @@ enum CopperState {
 	COPPER_WAITV,
 	COPPER_WAITH,
 	COPPER_WRITEREG,
-}
+};
 
 class Copper {
 
@@ -51,6 +53,9 @@ public:
     void step(std::uint16_t* mem, uint16_t& x, uint16_t& y);
 
 private:
+
+    void execute(int x, int y); 
+
 
     bool m_enable;
 
