@@ -48,6 +48,12 @@ GFXCore::~GFXCore()
 
 std::uint16_t GFXCore::port_op(std::uint16_t port, bool write, std::uint16_t wr_val)
 {
+    if (port == 0x5f02)
+    {
+        if (write)
+            m_videoMode = wr_val & 1;
+
+    }
     if ((port & 0xff0) == 0xd20)
     {
         return m_copper.port_op(port, write, wr_val);
@@ -68,7 +74,15 @@ void GFXCore::step(std::uint16_t* mem, bool& hs_int, bool& vs_int)
 
     std::uint16_t x_out, y_out;
 
-    m_copper.step(mem, m_x, m_y, x_out, y_out, vs_int);
+    std::uint16_t xmod = m_x, ymod = m_y;
+
+    if (m_videoMode == kVideoMode320x240)
+    {
+        xmod = m_x >> 1;
+        ymod = m_y >> 1;
+    }
+
+    m_copper.step(mem, m_x, m_y, xmod, ymod, x_out, y_out, vs_int);
 
     m_x ++;
 

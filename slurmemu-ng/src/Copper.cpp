@@ -30,7 +30,7 @@ SOFTWARE.
 */
 
 #include "Copper.h"
-#include <stdio.h>
+//#include <stdio.h>
 
 Copper::Copper()    :
     m_enable(false),
@@ -185,7 +185,7 @@ void Copper::wait_hv(std::uint16_t hv)
         m_state = COPPER_EXECUTE; 
 }
   
-void Copper::step(std::uint16_t* mem, uint16_t x_in, uint16_t y_in, uint16_t& x, uint16_t& y, bool vs)
+void Copper::step(std::uint16_t* mem, uint16_t x1, uint16_t y1, uint16_t x_in, uint16_t y_in, uint16_t& x, uint16_t& y, bool vs)
 {
 
     if (y_in == 0)
@@ -223,20 +223,12 @@ void Copper::step(std::uint16_t* mem, uint16_t x_in, uint16_t y_in, uint16_t& x,
         }
     }
 
-    int idx = (x_in + y_in*800) * 4;
+    int idx = (x1 + y1*800) * 4;
     m_copperBG[idx + 0] = m_r;
     m_copperBG[idx + 1] = m_g;
     m_copperBG[idx + 2] = m_b;
     m_copperBG[idx + 3] = m_globalAlpha;
     
-/*    m_copperBG[idx + 0] = x_in & 0xff;
-    m_copperBG[idx + 1] = 0;
-    m_copperBG[idx + 2] = 0;
-    m_copperBG[idx + 3] = m_globalAlpha;
-*/
-    
-    // = (x_in & 0xfff) | ((y_in & 0xfff) << 12) | 0xff000000; // (m_r) | (m_g << 8) | (m_b << 16) | (m_globalAlpha << 24);
-
     // TODO: Fix this
     x = x_in;
     y = y_in;

@@ -50,7 +50,7 @@ public:
 
     std::uint16_t port_op(std::uint16_t port, bool write, std::uint16_t wr_val); 
    
-    void step(std::uint16_t* mem, uint16_t x_in, uint16_t y_in, uint16_t& x, uint16_t& y, bool vs);
+    void step(std::uint16_t* mem, uint16_t x1, uint16_t y1, uint16_t x_in, uint16_t y_in, uint16_t& x, uint16_t& y, bool vs);
 
     std::uint8_t* getCopperBG() { return m_copperBG; }
 

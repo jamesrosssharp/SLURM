@@ -162,7 +162,11 @@ int main(int argc, char** argv)
         
             if (vs)
             {
-                glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+                int w, h;
+
+                SDL_GetWindowSize(window, &w, &h);
+
+                glViewport(0, 0, w, h);
                 glClearColor(1.f, 0.f, 0.f, 0.f);
                 glClear(GL_COLOR_BUFFER_BIT);
 

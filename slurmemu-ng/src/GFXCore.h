@@ -58,11 +58,16 @@ class GFXCore {
 
         std::uint8_t* getCopperBG() { return m_copper.getCopperBG(); }
 
+        static constexpr int kVideoMode320x240 = 1;
+        static constexpr int kVideoMode640x480 = 0;
+
+
     private:
 
         std::uint16_t m_x;
         std::uint16_t m_y;
 
         Copper m_copper; 
-    
+   
+        int m_videoMode;  
 };
