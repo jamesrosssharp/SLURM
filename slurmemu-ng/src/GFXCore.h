@@ -34,6 +34,8 @@ SOFTWARE.
 
 #include <cstdint>
 
+#include "Copper.h"
+
 class GFXCore {
 
     public:
@@ -45,9 +47,22 @@ class GFXCore {
    
         void step(std::uint16_t* mem, bool& hs_int, bool& vs_int);
 
+        static constexpr uint16_t  H_BACK_PORCH   = 48; 
+        static constexpr uint16_t  V_BACK_PORCH   = 33; 
+        static constexpr uint16_t  H_SYNC_PULSE   = 96;
+        static constexpr uint16_t  H_FRONT_PORCH  = 16;
+        static constexpr uint16_t  V_FRONT_PORCH  = 10;
+        static constexpr uint16_t  V_SYNC_PULSE   = 2;
+        static constexpr uint16_t  TOTAL_X        = 800;
+        static constexpr uint16_t  TOTAL_Y        = 525;
+
+        std::uint8_t* getCopperBG() { return m_copper.getCopperBG(); }
+
     private:
 
         std::uint16_t m_x;
         std::uint16_t m_y;
 
+        Copper m_copper; 
+    
 };

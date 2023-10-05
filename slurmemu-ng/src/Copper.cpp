@@ -30,6 +30,7 @@ SOFTWARE.
 */
 
 #include "Copper.h"
+#include <stdio.h>
 
 Copper::Copper()    :
     m_enable(false),
@@ -74,106 +75,16 @@ std::uint16_t Copper::port_op(std::uint16_t port, bool write, std::uint16_t wr_v
                 m_globalAlpha = (wr_val & 0xf) << 4;
                 break;
             default:
-                if (((port & 0xf00) == 4) ||
-                    ((port & 0xf00) == 5)) {
+                if (((port & 0xf00) == 0x400) ||
+                    ((port & 0xf00) == 0x500)) {
             
-                   m_copperList[(port & 0xfff - 0x400)] = wr_val;
+                   m_copperList[((port & 0xfff) - 0x400)] = wr_val;
                 }
                 break;
         }       
     } 
     return 0;
 } 
-
-#if 0
-	pub fn execute(& mut self, x : u16, y : u16)
-	{
-		let mut inc_pc : bool = true;
-
-		let ins = self.copper_list[(self.copper_pc & 0x1ff) as usize];
-
-		match (ins & 0xf000) >> 12 { 
-			0x1 => /* jump */
-			{
-				inc_pc = false;
-				self.copper_pc = ins & 0x1ff;
-			},
-			0x2 => /* V wait */
-			{
-				self.hv_wait = ins & 0x3ff;
-				self.copper_state = CopperState::WaitV;
-			},
-			0x3 => /* H wait */
-			{
-				self.hv_wait = ins & 0x3ff;
-				self.copper_state = CopperState::WaitH; 
-			},
-			0x4 => /* skip V */
-			{
-				if y >= ins & 0x3ff {
-					self.copper_state = CopperState::Begin;
-					self.copper_pc += 2;
-					inc_pc = false;
-				}
-			},
-			0x5 => /* skip H */
-			{
-				if x >= ins & 0x3ff {
-					self.copper_state = CopperState::Begin;
-					self.copper_pc += 2;
-					inc_pc = false;
-				}
-	 
-			},
-			0x6 => /* update background color and wait next scanline */
-			{
-				self.r = ((ins & 0xf00) >> 4) as u8;
-				self.g = (ins & 0x0f0) as u8;
-				self.b = ((ins & 0x00f) << 4) as u8;
-				self.hv_wait = y + 1;
-				self.copper_state = CopperState::WaitV;
-			},
-			0x7 => /* V wait N */
-			{
-				self.hv_wait = y + (ins & 0x3ff);
-				self.copper_state = CopperState::WaitV;
-	
-			},
-			0x8 => /* H wait N */
-			{
-				self.hv_wait = x + (ins & 0x3ff);
-				self.copper_state = CopperState::WaitH;
-			},
-			0x9 => /* write gfx register */
-			{
-
-			},
-			0xa => /* x pan write */
-			{
-				self.x_pan = ins & 0x3ff; 
-			},
-			0xb => /* x pan write and v wait next scanline */
-			{
-				self.x_pan = ins & 0x3ff; 
-				self.hv_wait = y + 1;
-				self.copper_state = CopperState::WaitV;
-			},
-			0xc => /* write background color */ {
-				self.r = ((ins & 0xf00) >> 4) as u8;
-				self.g = (ins & 0x0f0) as u8;
-				self.b = ((ins & 0x00f) << 4) as u8; 
-			},
-			0xd => /* write alpha */ {
-				self.global_alpha = (ins & 0xf) as u8;
-			},
-			_ => {}
-		}
-
-		if inc_pc {
-			self.copper_pc += 1;
-		}
-	}
-#endif
 
 void Copper::execute(int x, int y)
 {
@@ -234,34 +145,100 @@ void Copper::execute(int x, int y)
             m_xPan = ins & 0x3ff;
             break;
         case 0xb:   /* x pan write and v wait next scanline */
-			//{
-			//	self.x_pan = ins & 0x3ff; 
-			//	self.hv_wait = y + 1;
-			//	self.copper_state = CopperState::WaitV;
-			//},
-			//0xc => 			0xd => 
+            m_xPan = ins & 0x3ff;
+            m_hvWait = y + 1;
+            m_state = COPPER_WAITV;
             break;
         case 0xc: /* write background color */ 
-            //{
-			//	self.r = ((ins & 0xf00) >> 4) as u8;
-			//	self.g = (ins & 0x0f0) as u8;
-			//	self.b = ((ins & 0x00f) << 4) as u8; 
-			//},
+            m_r = (ins & 0xf00) >> 4;
+            m_g = (ins & 0x0f0);
+            m_b = (ins & 0x00f) << 4;
             break;
         case 0xd: /* write alpha */ 
-            //{
-			//	self.global_alpha = (ins & 0xf) as u8;
-			//},
+			m_globalAlpha = (ins & 0xf) << 4;
             break;
         default: 
             break;
     }
 
+    if (inc_pc)
+        m_copper_pc++;
+
 } 
-   
-void Copper::step(std::uint16_t* mem, uint16_t& x, uint16_t& y)
+
+void Copper::begin()
+{
+    m_state = COPPER_EXECUTE;
+}
+
+void Copper::wait_hv(std::uint16_t hv)
+{
+    /*static std::uint16_t wait = 0;
+
+    if (wait != m_hvWait)
+    {
+        printf("CPR wait: %d %d\n", m_hvWait, hv);
+        wait = m_hvWait;
+    }*/
+
+    if (hv >= m_hvWait)
+        m_state = COPPER_EXECUTE; 
+}
+  
+void Copper::step(std::uint16_t* mem, uint16_t x_in, uint16_t y_in, uint16_t& x, uint16_t& y, bool vs)
 {
 
+    if (y_in == 0)
+    {
+        if (m_enable)
+        {
+            m_state = COPPER_BEGIN;
+            m_copper_pc = 0;
+        }
+        else
+        {
+            m_state = COPPER_IDLE;
+        }
+    }
+    else
+    {
+        switch (m_state)
+        {
+            case COPPER_IDLE: 
+                break;
+            case COPPER_BEGIN: 
+                begin();
+                break;
+            case COPPER_EXECUTE: 
+                execute(x_in, y_in);
+                break;
+            case COPPER_WAITH:
+                wait_hv(x_in);
+                break;
+            case COPPER_WAITV:
+                wait_hv(y_in);
+                break;
+            case COPPER_WRITEREG:
+                break;
+        }
+    }
 
+    int idx = (x_in + y_in*800) * 4;
+    m_copperBG[idx + 0] = m_r;
+    m_copperBG[idx + 1] = m_g;
+    m_copperBG[idx + 2] = m_b;
+    m_copperBG[idx + 3] = m_globalAlpha;
+    
+/*    m_copperBG[idx + 0] = x_in & 0xff;
+    m_copperBG[idx + 1] = 0;
+    m_copperBG[idx + 2] = 0;
+    m_copperBG[idx + 3] = m_globalAlpha;
+*/
+    
+    // = (x_in & 0xfff) | ((y_in & 0xfff) << 12) | 0xff000000; // (m_r) | (m_g << 8) | (m_b << 16) | (m_globalAlpha << 24);
+
+    // TODO: Fix this
+    x = x_in;
+    y = y_in;
 }
 

@@ -50,12 +50,15 @@ public:
 
     std::uint16_t port_op(std::uint16_t port, bool write, std::uint16_t wr_val); 
    
-    void step(std::uint16_t* mem, uint16_t& x, uint16_t& y);
+    void step(std::uint16_t* mem, uint16_t x_in, uint16_t y_in, uint16_t& x, uint16_t& y, bool vs);
+
+    std::uint8_t* getCopperBG() { return m_copperBG; }
 
 private:
 
     void execute(int x, int y); 
-
+    void begin();
+    void wait_hv(std::uint16_t hv);
 
     bool m_enable;
 
@@ -78,5 +81,6 @@ private:
     std::uint8_t  m_globalAlpha;
     bool          m_alphaOverride; 
 
+    std::uint8_t m_copperBG[800*525*4];
 };
 

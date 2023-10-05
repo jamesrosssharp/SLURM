@@ -48,6 +48,7 @@ PortController::~PortController()
 #define PORT_UART       0x0000
 #define PORT_AUDIO      0x3000
 #define PORT_SPI_FLASH  0x4000
+#define PORT_GFX        0x5000
 #define PORT_INTC       0x7000 
 #define PORT_SCRATCH    0x8000 
 #define PORT_TIMER      0x9000 
@@ -65,6 +66,9 @@ void    PortController::port_wr(uint16_t port, uint16_t value)
             break;
         case PORT_SPI_FLASH: /* FLASH DMA */
             m_flash.port_op(port, true, value);
+            break;
+        case PORT_GFX: /* GFX CORE */
+            m_gfx.port_op(port, true, value);
             break;
         case PORT_INTC: /* INTERRUPT CONTROLLER */
             m_intcon.port_op(port, true, value);
@@ -91,6 +95,8 @@ uint16_t PortController::port_rd(uint16_t port)
             return m_audio.port_op(port, false, 0);
         case PORT_SPI_FLASH: /* FLASH DMA */
             return m_flash.port_op(port, false, 0);
+        case PORT_GFX: /* GFX CORE */
+            return m_gfx.port_op(port, false, 0);
         case PORT_INTC: /* INTERRUPT CONTROLLER */
             return m_intcon.port_op(port, false, 0);
          case PORT_SCRATCH: /* SCRATCHPAD RAM */
@@ -114,11 +120,9 @@ uint16_t    PortController::uart_rd(uint16_t port)
     return 1;
 }
 
-int PortController::step(std::uint16_t* mem, bool& emitAudio, std::int16_t& left, std::int16_t& right)
+int PortController::step(std::uint16_t* mem, bool& emitAudio, std::int16_t& left, std::int16_t& right, bool& hs, bool& vs)
 {
     bool flash_int = m_flash.step(mem);
-    bool vs = false;
-    bool hs = false;
     bool timer = m_tim.step(mem);
     bool gpio = false;
     bool audio = m_audio.step(mem, emitAudio, left, right); 

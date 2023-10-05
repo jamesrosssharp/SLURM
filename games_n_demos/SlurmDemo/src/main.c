@@ -81,16 +81,16 @@ int main()
 	while (1)
 	{
 
-		applet_load(effect1_applet_flash_offset_lo, effect1_applet_flash_offset_hi, 
+/*		applet_load(effect1_applet_flash_offset_lo, effect1_applet_flash_offset_hi, 
 			    effect1_applet_flash_size_lo >> 1);
 		applet_run();  
-
+*/
 
 		applet_load(effect2_applet_flash_offset_lo, effect2_applet_flash_offset_hi, 
 			    effect2_applet_flash_size_lo >> 1);
 		applet_run();  
 
-		applet_load(effect3_applet_flash_offset_lo, effect3_applet_flash_offset_hi, 
+/*		applet_load(effect3_applet_flash_offset_lo, effect3_applet_flash_offset_hi, 
 			    effect3_applet_flash_size_lo >> 1);
 		applet_run();  
 
@@ -105,7 +105,7 @@ int main()
 		applet_load(effect6_applet_flash_offset_lo, effect6_applet_flash_offset_hi, 
 			    effect6_applet_flash_size_lo >> 1);
 		applet_run();  
-
+*/
 	}
 
 }

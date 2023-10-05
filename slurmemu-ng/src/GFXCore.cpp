@@ -32,16 +32,6 @@ SOFTWARE.
 #include "GFXCore.h"
 #include <cstdint>
 
-constexpr uint16_t  H_BACK_PORCH   = 48; 
-constexpr uint16_t  V_BACK_PORCH   = 33; 
-constexpr uint16_t  H_SYNC_PULSE   = 96;
-constexpr uint16_t  H_FRONT_PORCH  = 16;
-constexpr uint16_t  V_FRONT_PORCH  = 10;
-constexpr uint16_t  V_SYNC_PULSE   = 2;
-constexpr uint16_t  TOTAL_X        = 800;
-constexpr uint16_t  TOTAL_Y        = 525;
-
-
 GFXCore::GFXCore()  :
     m_x(0),
     m_y(0)
@@ -58,7 +48,15 @@ GFXCore::~GFXCore()
 
 std::uint16_t GFXCore::port_op(std::uint16_t port, bool write, std::uint16_t wr_val)
 {
-    
+    if ((port & 0xff0) == 0xd20)
+    {
+        return m_copper.port_op(port, write, wr_val);
+    } 
+    else if (((port & 0xf00) == 0x400) || ((port & 0xf00) == 0x500))
+    {
+        return m_copper.port_op(port, write, wr_val);
+    }
+
     return 0;
 } 
    
@@ -67,6 +65,10 @@ void GFXCore::step(std::uint16_t* mem, bool& hs_int, bool& vs_int)
 
     hs_int = m_x == (TOTAL_X - H_FRONT_PORCH - H_SYNC_PULSE);
     vs_int = (m_y == (TOTAL_Y - V_FRONT_PORCH - V_SYNC_PULSE)) && (m_x == 0);
+
+    std::uint16_t x_out, y_out;
+
+    m_copper.step(mem, m_x, m_y, x_out, y_out, vs_int);
 
     m_x ++;
 

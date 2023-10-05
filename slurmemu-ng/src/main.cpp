@@ -101,6 +101,10 @@ int main(int argc, char** argv)
   
     SDL_GLContext Context = SDL_GL_CreateContext(window);
 
+    GLuint tex;
+    glGenTextures(1, &tex);
+
+
     bool running = true;
     bool full_screen = false;
 
@@ -137,12 +141,6 @@ int main(int argc, char** argv)
             }
         }
      
-        glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-        glClearColor(1.f, 0.f, 0.f, 0.f);
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        SDL_GL_SwapWindow(window);
-
         float fps = getFPS();
 
         std::stringstream s;
@@ -155,11 +153,42 @@ int main(int argc, char** argv)
         {
             bool emitAudio;
             std::int16_t left = 20, right = 37;
+            bool hs = false, vs = false;
 
-            soc->executeOneCycle(emitAudio, left, right, edbg);
+            soc->executeOneCycle(emitAudio, left, right, edbg, hs, vs);
        
             if (emitAudio)
                 aud.feedRingbuffer(left, right);
+        
+            if (vs)
+            {
+                glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+                glClearColor(1.f, 0.f, 0.f, 0.f);
+                glClear(GL_COLOR_BUFFER_BIT);
+
+                glBindTexture(GL_TEXTURE_2D, tex);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 800, 525, 0,  GL_RGBA, GL_UNSIGNED_BYTE, soc->getGfxCore()->getCopperBG());
+                glBindTexture(GL_TEXTURE_2D, 0);
+
+                glBindTexture(GL_TEXTURE_2D, tex);
+                glEnable(GL_TEXTURE_2D);
+                glBegin(GL_QUADS);
+                glTexCoord2i(0, 1); glVertex2f(-1, -1);
+                glTexCoord2i(1, 1); glVertex2f(1, -1);
+                glTexCoord2i(1, 0); glVertex2f(1, 1);
+                glTexCoord2i(0, 0); glVertex2f(-1, 1);
+                glEnd();
+                glDisable(GL_TEXTURE_2D);
+                glBindTexture(GL_TEXTURE_2D, 0);
+
+                glFlush();
+
+                SDL_GL_SwapWindow(window);
+
+            }
+        
         }
 
     }
