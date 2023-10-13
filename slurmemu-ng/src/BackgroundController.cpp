@@ -31,6 +31,8 @@ SOFTWARE.
 
 #include "BackgroundController.h"
 
+#include "GFXCore.h"
+
 BackgroundCore::BackgroundCore()    :
     m_tilemap_x(0),
     m_tilemap_y(0),
@@ -91,4 +93,48 @@ std::uint16_t BackgroundController::port_op(std::uint16_t port, bool write, std:
         }
     }      
     return 0;
-} 
+}
+
+void BackgroundCore::render(std::uint16_t y, std::uint16_t y_actual, uint16_t* mem)
+{
+
+    uint32_t address = 0;
+    uint16_t tilesize = 0;
+
+    switch (m_tile_size)
+    {
+        case TILESIZE_16:
+            address = (m_tilemap_address<<1) + (m_tilemap_x>>4) + ((m_tilemap_y + y)>>4)*64;
+            tilesize = 16;
+            break;
+        case TILESIZE_8:
+            address = (m_tilemap_address<<1) + (m_tilemap_x>>3) + ((m_tilemap_y + y)>>3)*64;
+            tilesize = 8;
+            break;
+    }
+
+    uint8_t* tilemap = &((uint8_t*)mem)[address];
+    uint8_t* line = &m_texture[(y_actual * GFXCore::TOTAL_X) + tilesize - (m_tilemap_x & (tilesize - 1))];  
+
+    uint16_t x = 0;
+    while (x < GFXCore::TOTAL_X - tilesize)
+    {
+        uint8_t tile = *tilemap; 
+        uint16_t* tile_data = &mem[m_tileset_address + tile*(tilesize>>2)];
+
+        for (int i = 0; i < (tilesize>>2); i ++)
+        {
+            uint16_t tdat = *tile_data++;
+            
+            for (int j = 0; j < 4; j++)
+            {
+                *line++ = (m_pal_hi<<4) | (tdat & 0xf);
+                tdat >>= 4;
+            }
+        } 
+
+        x += tilesize;
+        tilemap++;        
+    }
+}
+

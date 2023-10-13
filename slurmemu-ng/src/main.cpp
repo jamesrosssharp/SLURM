@@ -173,7 +173,9 @@ int main(int argc, char** argv)
                 glBindTexture(GL_TEXTURE_2D, tex);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 800, 525, 0,  GL_RGBA, GL_UNSIGNED_BYTE, soc->getGfxCore()->getCopperBG());
+
+
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, 800, 525, 0,  GL_RED, GL_UNSIGNED_BYTE, soc->getGfxCore()->getBG0Texture());
                 glBindTexture(GL_TEXTURE_2D, 0);
 
                 glBindTexture(GL_TEXTURE_2D, tex);

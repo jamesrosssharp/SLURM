@@ -33,16 +33,23 @@ SOFTWARE.
 
 #include <cstdint>
 
+enum {
+    TILESIZE_16 = 0,
+    TILESIZE_8  = 1
+}; 
+
 class BackgroundCore {
 
     public:
 
         BackgroundCore();
 
-        void render(std::uint16_t y, std::uint16_t y_actual);
+        void render(std::uint16_t y, std::uint16_t y_actual, uint16_t* mem);
+
+        std::uint8_t* get_texture() { return m_texture; }
 
         void set_tilemap_x(std::uint16_t x) { m_tilemap_x = x; }
-        void set_tilemap_y(std::uint16_t y) { m_tilemap_x = y; }
+        void set_tilemap_y(std::uint16_t y) { m_tilemap_y = y; }
         void set_tilemap_address(std::uint16_t addr) { m_tilemap_address = addr; }
         void set_tileset_address(std::uint16_t addr) { m_tileset_address = addr; }
         void set_tilemap_stride(std::uint16_t stride) { m_tilemap_stride = stride; }
@@ -69,8 +76,11 @@ class BackgroundController {
     public:
         std::uint16_t port_op(std::uint16_t port, bool write, std::uint16_t wr_val);
 
-        void render_bg0(std::uint16_t y, std::uint16_t y_actual) { m_bg0.render(y, y_actual); }
-        void render_bg1(std::uint16_t y, std::uint16_t y_actual) { m_bg1.render(y, y_actual); }
+        void render_bg0(std::uint16_t y, std::uint16_t y_actual, uint16_t* mem) { m_bg0.render(y, y_actual, mem); }
+        void render_bg1(std::uint16_t y, std::uint16_t y_actual, uint16_t* mem) { m_bg1.render(y, y_actual, mem); }
+
+        std::uint8_t* getBG0Texture(){ return m_bg0.get_texture(); }
+        std::uint8_t* getBG1Texture(){ return m_bg1.get_texture(); }
 
     private:
         BackgroundCore m_bg0;

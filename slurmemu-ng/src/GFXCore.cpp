@@ -97,6 +97,7 @@ void GFXCore::step(std::uint16_t* mem, bool& hs_int, bool& vs_int)
 
     m_y_thread = y_out;
     m_y_thread_actual = m_y;
+    m_mem_thread = mem;
 
     if (hs_int)
     {
@@ -122,7 +123,7 @@ void GFXCore::bg0_render_loop()
     while (true)
     {
         m_bg0_sem.acquire();
-
+        m_bg.render_bg0(m_y_thread, m_y_thread_actual, m_mem_thread);
 
     }
 }

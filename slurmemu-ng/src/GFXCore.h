@@ -60,6 +60,7 @@ class GFXCore {
         static constexpr uint16_t  TOTAL_Y        = 525;
 
         std::uint8_t* getCopperBG() { return m_copper.getCopperBG(); }
+        std::uint8_t* getBG0Texture() { return m_bg.getBG0Texture(); }
 
         static constexpr int kVideoMode320x240 = 1;
         static constexpr int kVideoMode640x480 = 0;
@@ -83,6 +84,7 @@ class GFXCore {
 
         std::uint16_t m_y_thread;
         std::uint16_t m_y_thread_actual;
+        std::uint16_t* m_mem_thread;
 
         BackgroundController m_bg;
 
