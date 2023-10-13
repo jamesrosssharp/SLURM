@@ -62,7 +62,7 @@ float getFPS() {
     auto msecs = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - oldTime);
 
     if (msecs.count() != 0)
-        ret = fps * 1000 / msecs.count();
+        ret = fps * 1000.0 / msecs.count();
 
     if (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - oldTime) >= std::chrono::seconds{ 1 }) {
 

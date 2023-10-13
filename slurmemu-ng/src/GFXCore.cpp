@@ -32,12 +32,19 @@ SOFTWARE.
 #include "GFXCore.h"
 #include <cstdint>
 
+void GFXCore::bg0_render_th(void* gfx)
+{
+   GFXCore* core = (GFXCore*)gfx;
+   core->bg0_render_loop(); 
+}
+
+
 GFXCore::GFXCore()  :
     m_x(0),
-    m_y(0)
+    m_y(0),
+    m_bg0_sem(0)
 {
-
-
+    m_bg0_renderer = std::thread(bg0_render_th, this);
 }
 
 GFXCore::~GFXCore()
@@ -62,6 +69,10 @@ std::uint16_t GFXCore::port_op(std::uint16_t port, bool write, std::uint16_t wr_
     {
         return m_copper.port_op(port, write, wr_val);
     }
+    else if ((port & 0xff0) == 0xd00)
+    {
+        return m_bg.port_op(port, write, wr_val);
+    }
 
     return 0;
 } 
@@ -84,6 +95,16 @@ void GFXCore::step(std::uint16_t* mem, bool& hs_int, bool& vs_int)
 
     m_copper.step(mem, m_x, m_y, xmod, ymod, x_out, y_out, vs_int);
 
+    m_y_thread = y_out;
+    m_y_thread_actual = m_y;
+
+    if (hs_int)
+    {
+        // Wake render threads
+        m_bg0_sem.release();
+
+    }
+
     m_x ++;
 
     if (m_x >= TOTAL_X)
@@ -96,3 +117,12 @@ void GFXCore::step(std::uint16_t* mem, bool& hs_int, bool& vs_int)
     }
 }
 
+void GFXCore::bg0_render_loop()
+{
+    while (true)
+    {
+        m_bg0_sem.acquire();
+
+
+    }
+}

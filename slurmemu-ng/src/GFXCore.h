@@ -33,8 +33,11 @@ SOFTWARE.
 #pragma once
 
 #include <cstdint>
+#include <thread>
+#include <semaphore>
 
 #include "Copper.h"
+#include "BackgroundController.h"
 
 class GFXCore {
 
@@ -64,10 +67,23 @@ class GFXCore {
 
     private:
 
+        static void bg0_render_th(void* gfx);
+        void bg0_render_loop();
+
         std::uint16_t m_x;
         std::uint16_t m_y;
 
         Copper m_copper; 
    
         int m_videoMode;  
+
+        std::thread m_bg0_renderer;
+
+        std::binary_semaphore m_bg0_sem;
+
+        std::uint16_t m_y_thread;
+        std::uint16_t m_y_thread_actual;
+
+        BackgroundController m_bg;
+
 };

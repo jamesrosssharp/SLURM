@@ -31,7 +31,6 @@ SOFTWARE.
 */
 
 #include <stdexcept>
-#include <math.h>
 #include <cstdint>
 
 #include "AudioSDL2.h"

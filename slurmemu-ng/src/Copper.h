@@ -52,7 +52,7 @@ public:
    
     void step(std::uint16_t* mem, uint16_t x1, uint16_t y1, uint16_t x_in, uint16_t y_in, uint16_t& x, uint16_t& y, bool vs);
 
-    std::uint8_t* getCopperBG() { return m_copperBG; }
+    std::uint8_t* getCopperBG() { return (std::uint8_t*)&m_copperBG; }
 
 private:
 
@@ -81,6 +81,6 @@ private:
     std::uint8_t  m_globalAlpha;
     bool          m_alphaOverride; 
 
-    std::uint8_t m_copperBG[800*525*4];
+    std::uint32_t m_copperBG[800*525];
 };
 
