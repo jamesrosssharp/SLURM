@@ -31,6 +31,7 @@ SOFTWARE.
 
 #include "GFXCore.h"
 #include <cstdint>
+#include <string.h>
 
 void GFXCore::bg0_render_th(void* gfx)
 {
@@ -73,7 +74,11 @@ std::uint16_t GFXCore::port_op(std::uint16_t port, bool write, std::uint16_t wr_
     {
         return m_bg.port_op(port, write, wr_val);
     }
-
+    else if ((port & 0xf00) == 0xe00)
+    {
+        if (write)
+            m_palette[port & 0xff] = wr_val;
+    }
     return 0;
 } 
    
@@ -101,6 +106,7 @@ void GFXCore::step(std::uint16_t* mem, bool& hs_int, bool& vs_int)
 
     if (hs_int)
     {
+        memcpy(&m_paletteTexture[kPaletteSize*m_y], m_palette, kPaletteSize); 
         // Wake render threads
         m_bg0_sem.release();
 
@@ -124,6 +130,5 @@ void GFXCore::bg0_render_loop()
     {
         m_bg0_sem.acquire();
         m_bg.render_bg0(m_y_thread, m_y_thread_actual, m_mem_thread);
-
     }
 }

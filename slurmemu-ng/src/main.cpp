@@ -49,7 +49,8 @@ SOFTWARE.
 #define WINDOW_WIDTH 	640
 #define WINDOW_HEIGHT 	480
 
-#include <AudioSDL2.h>
+#include "AudioSDL2.h"
+#include "Renderer.h"
 
 #include "ElfDebug.h"
 
@@ -101,9 +102,9 @@ int main(int argc, char** argv)
   
     SDL_GLContext Context = SDL_GL_CreateContext(window);
 
-    GLuint tex;
-    glGenTextures(1, &tex);
+    (void)Context;
 
+    Renderer r;
 
     bool running = true;
     bool full_screen = false;
@@ -166,7 +167,7 @@ int main(int argc, char** argv)
 
                 SDL_GetWindowSize(window, &w, &h);
 
-                glViewport(0, 0, w, h);
+                /*glViewport(0, 0, w, h);
                 glClearColor(1.f, 0.f, 0.f, 0.f);
                 glClear(GL_COLOR_BUFFER_BIT);
 
@@ -190,7 +191,10 @@ int main(int argc, char** argv)
                 glBindTexture(GL_TEXTURE_2D, 0);
 
                 glFlush();
+                */
 
+                r.renderScene(soc, w, h);
+    
                 SDL_GL_SwapWindow(window);
 
             }

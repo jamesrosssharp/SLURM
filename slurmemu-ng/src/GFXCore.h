@@ -61,6 +61,7 @@ class GFXCore {
 
         std::uint8_t* getCopperBG() { return m_copper.getCopperBG(); }
         std::uint8_t* getBG0Texture() { return m_bg.getBG0Texture(); }
+        std::uint16_t* getPaletteTexture() { return m_paletteTexture; }
 
         static constexpr int kVideoMode320x240 = 1;
         static constexpr int kVideoMode640x480 = 0;
@@ -87,5 +88,9 @@ class GFXCore {
         std::uint16_t* m_mem_thread;
 
         BackgroundController m_bg;
+
+        static constexpr int kPaletteSize = 256;
+        std::uint16_t m_palette[kPaletteSize];
+        std::uint16_t m_paletteTexture[TOTAL_Y * kPaletteSize];
 
 };

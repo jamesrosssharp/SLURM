@@ -119,8 +119,25 @@ void BackgroundCore::render(std::uint16_t y, std::uint16_t y_actual, uint16_t* m
     uint16_t x = 0;
     while (x < GFXCore::TOTAL_X - tilesize)
     {
-        uint8_t tile = *tilemap; 
-        uint16_t* tile_data = &mem[m_tileset_address + tile*(tilesize>>2)];
+        uint8_t tile = *tilemap;
+        
+        uint16_t tile_x = 0;
+        uint16_t tile_y = 0;
+
+        switch (m_tile_size)
+        {
+            case TILESIZE_16:
+                tile_x = tile & 15;
+                tile_y = tile >> 4;
+                break;
+            case TILESIZE_8:
+                tile_x = tile & 31;
+                tile_y = tile >> 5;
+                break;
+        }
+
+ 
+        uint16_t* tile_data = &mem[m_tileset_address + (tile_x)*(tilesize>>2) + (tile_y)*64*tilesize + 64*((m_tilemap_y + y) & (tilesize - 1))];
 
         for (int i = 0; i < (tilesize>>2); i ++)
         {
