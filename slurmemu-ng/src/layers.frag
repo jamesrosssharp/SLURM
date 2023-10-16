@@ -5,7 +5,7 @@ in vec3 ourColor;
 in vec2 TexCoord;
 
 uniform sampler2D BG0Texture;
-//uniform sampler2D BG1Texture;
+uniform sampler2D BG1Texture;
 // uniform sampler2D SpriteTexture;
 uniform sampler2D PaletteTexture;
 //uniform sampler1D XPanTexture;
@@ -14,14 +14,22 @@ uniform sampler2D PaletteTexture;
 
 void main()
 {
-    vec2 t = TexCoord;
-    t.x *= 0.5;
-    float bg0 = texture(BG0Texture, t).r;
-    vec2  pal; 
-    pal.x = bg0;
-    pal.y = TexCoord.y;
+	vec2 t = TexCoord;
+	t.x *= 0.5;
+	float bg0 = texture(BG0Texture, t).r;
+	float bg1 = texture(BG0Texture, t).r;
+	vec2  pal;
 
-    FragColor = texture(PaletteTexture, pal);
 
-    //FragColor = texture(PaletteTexture, TexCoord);
+	pal.x = 0;
+
+	if (bg0 != 0.0)
+		pal.x = bg0;
+	if (bg1 != 0.0)
+		pal.x = bg1;
+
+	pal.y = TexCoord.y;
+
+	FragColor = texture(PaletteTexture, pal);
+
 }

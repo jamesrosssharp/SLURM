@@ -34,6 +34,8 @@ SOFTWARE.
 #include <fstream>
 #include <sstream>
 
+#include "GFXConst.h"
+
 static const char* vertex_shader =
 "#version 330 core                                                     \n"
 "                                                                      \n"
@@ -65,11 +67,16 @@ static const char* vanilla_fragment_shader  =
 "    FragColor = texture(texture1, TexCoord);                          \n"
 "}                                                                     \n";
 
+static constexpr float minTX = (float)H_BACK_PORCH / (float)TOTAL_X;
+static constexpr float minTY = (float)V_BACK_PORCH / (float)TOTAL_Y;
+static constexpr float maxTX = 1.0 - ((float)H_FRONT_PORCH + (float)H_SYNC_PULSE) / (float)TOTAL_X;
+static constexpr float maxTY = 1.0 - ((float)V_FRONT_PORCH + (float)V_SYNC_PULSE) / (float)TOTAL_Y;
+
 Renderer::Renderer()    :
-    m_vertexData{-1, -1, 0, 0, 1,
-                  1, -1, 0, 1, 1,
-                  1,  1, 0, 1, 0,
-                  -1, 1, 0, 0, 0},
+    m_vertexData{-1, -1, 0, minTX, maxTY,
+                  1, -1, 0, maxTX, maxTY,
+                  1,  1, 0, maxTX, minTY,
+                  -1, 1, 0, minTX, minTY},
     m_indexData{0, 1, 2, 0, 2, 3}
 {
 
@@ -182,19 +189,29 @@ void Renderer::renderScene(Slurm16SoC* soc, int w, int h)
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, 800, 525, 0,
                  GL_RED, GL_UNSIGNED_BYTE, soc->getGfxCore()->getBG0Texture());
 
-
     glUniform1i(glGetUniformLocation(m_layersShaderProgram, "BG0Texture"), 0);
+    
+    // Load BG1 texture
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, m_textures[kBG1Texture]);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST); 
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, 800, 525, 0,
+                 GL_RED, GL_UNSIGNED_BYTE, soc->getGfxCore()->getBG1Texture());
+
+
+    glUniform1i(glGetUniformLocation(m_layersShaderProgram, "BG1Texture"), 1);
 
     // Load palette texture
 
-    glActiveTexture(GL_TEXTURE1);
+    glActiveTexture(GL_TEXTURE2);
     glBindTexture(GL_TEXTURE_2D, m_textures[kPaletteTexture]);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST); 
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 525, 0,
                  GL_BGRA, GL_UNSIGNED_SHORT_4_4_4_4_REV, soc->getGfxCore()->getPaletteTexture());
 
-    glUniform1i(glGetUniformLocation(m_layersShaderProgram, "PaletteTexture"), 1);
+    glUniform1i(glGetUniformLocation(m_layersShaderProgram, "PaletteTexture"), 2);
 
 
     // Draw

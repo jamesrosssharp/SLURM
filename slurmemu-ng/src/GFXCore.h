@@ -38,6 +38,7 @@ SOFTWARE.
 
 #include "Copper.h"
 #include "BackgroundController.h"
+#include "GFXConst.h"
 
 class GFXCore {
 
@@ -50,17 +51,9 @@ class GFXCore {
    
         void step(std::uint16_t* mem, bool& hs_int, bool& vs_int);
 
-        static constexpr uint16_t  H_BACK_PORCH   = 48; 
-        static constexpr uint16_t  V_BACK_PORCH   = 33; 
-        static constexpr uint16_t  H_SYNC_PULSE   = 96;
-        static constexpr uint16_t  H_FRONT_PORCH  = 16;
-        static constexpr uint16_t  V_FRONT_PORCH  = 10;
-        static constexpr uint16_t  V_SYNC_PULSE   = 2;
-        static constexpr uint16_t  TOTAL_X        = 800;
-        static constexpr uint16_t  TOTAL_Y        = 525;
-
         std::uint8_t* getCopperBG() { return m_copper.getCopperBG(); }
         std::uint8_t* getBG0Texture() { return m_bg.getBG0Texture(); }
+        std::uint8_t* getBG1Texture() { return m_bg.getBG1Texture(); }
         std::uint16_t* getPaletteTexture() { return m_paletteTexture; }
 
         static constexpr int kVideoMode320x240 = 1;
@@ -70,7 +63,9 @@ class GFXCore {
     private:
 
         static void bg0_render_th(void* gfx);
+        static void bg1_render_th(void* gfx);
         void bg0_render_loop();
+        void bg1_render_loop();
 
         std::uint16_t m_x;
         std::uint16_t m_y;
@@ -80,8 +75,9 @@ class GFXCore {
         int m_videoMode;  
 
         std::thread m_bg0_renderer;
-
         std::binary_semaphore m_bg0_sem;
+        std::thread m_bg1_renderer;
+        std::binary_semaphore m_bg1_sem;
 
         std::uint16_t m_y_thread;
         std::uint16_t m_y_thread_actual;
