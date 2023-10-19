@@ -79,7 +79,7 @@ void Slurm16CPU::execute_one_instruction(PortController* pcon, std::uint16_t* me
     if (irq && m_int_flag)
     {
 
-    //    printf("Int: %d\n", irq);
+        //printf("Int: %d\n", irq);
 
         m_regs[14] = m_pc;
         m_pc = irq << 2;
@@ -1183,14 +1183,14 @@ void Slurm16CPU::upper_bank_mem_op(Slurm16CPU* cpu, std::uint16_t instruction, s
 void Slurm16CPU::stix_ins(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon)
 {
 
-    std::uint16_t stix = (cpu->m_imm_int << 4) | (cpu->m_v_int << 3) | (cpu->m_s_int << 2) | (cpu->m_c_int << 1) | (cpu->m_z_int);
+    std::uint16_t stix = (cpu->m_imm_int << 4) | (!!cpu->m_v_int << 3) | (!!cpu->m_s_int << 2) | (!!cpu->m_c_int << 1) | (!!cpu->m_z_int);
 
     std::uint16_t* r_dest = R_SRC(cpu, instruction);
 
     *r_dest = stix;
 
     cpu->m_pc += 2;
-    //cpu->m_imm_hi = 0;
+    cpu->m_imm_hi = 0;
 }
 
 void Slurm16CPU::rsix_ins(Slurm16CPU* cpu, std::uint16_t instruction, std::uint16_t* mem, PortController* pcon)
@@ -1207,7 +1207,7 @@ void Slurm16CPU::rsix_ins(Slurm16CPU* cpu, std::uint16_t instruction, std::uint1
     cpu->m_z_int = !!(rsix & 0x1);
 
     cpu->m_pc += 2;
-    //cpu->m_imm_hi = 0;
+    cpu->m_imm_hi = 0;
 }
 
 // ================= extreg ALU op ===============

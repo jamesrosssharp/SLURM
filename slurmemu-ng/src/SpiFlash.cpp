@@ -121,6 +121,8 @@ std::uint16_t SpiFlash::port_op(std::uint16_t port, bool write, std::uint16_t wr
     return 0;
 } 
 
+#include <stdio.h>
+
 bool SpiFlash::step(std::uint16_t* mem)
 {
     bool intrpt = false;
@@ -136,7 +138,9 @@ bool SpiFlash::step(std::uint16_t* mem)
                 m_dummy_cycles = 25 / 3 * 24;
                 m_flash_address2 = ((((uint32_t)m_flash_address_hi) << 16)  | ((uint32_t)m_flash_address_lo)) - 1024*1024/2;  
                 m_dma_address2 = m_dma_address;
-                m_dma_count2 = m_dma_count + 1;
+                m_dma_count2 = (uint32_t)m_dma_count + 1;
+                m_done = false;
+            
             }
             else if (m_wake)
             {
@@ -162,12 +166,13 @@ bool SpiFlash::step(std::uint16_t* mem)
         case Flash_PerformDMA:
         {
 
+
             m_dummy_cycles -= 1;
 
             if (m_dummy_cycles == 0)
             {
                 m_dummy_cycles = 25 / 3 * 16;
-
+            
                 std::uint16_t data = 0;
 
                 if (m_flash_address2 < m_flashSize)

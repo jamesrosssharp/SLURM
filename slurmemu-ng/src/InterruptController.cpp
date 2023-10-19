@@ -29,8 +29,7 @@ SOFTWARE.
 
 */
 
-#include <InterruptController.h>
-#include <cstdio>
+#include "InterruptController.h"
 
 InterruptController::InterruptController()
 {
@@ -53,7 +52,7 @@ std::uint16_t InterruptController::port_op(std::uint16_t port, bool write, std::
                 m_interrupt_enabled = wr_val;
                 break;
             case 1:
-                m_interrupt_pending = m_interrupt_pending & (!wr_val);
+                m_interrupt_pending = m_interrupt_pending & (~wr_val);
                 break;
         }
     }
