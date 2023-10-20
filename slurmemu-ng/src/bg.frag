@@ -13,10 +13,8 @@ uniform float pal_hi;
 
 void main()
 {
-
-
-
-	float addr = (tileset_addr + ((TexCoord.x*320.0)/4.0) + ((TexCoord.y*240.0)*256.0/4.0));
+	float addr = tileset_addr + (floor(TexCoord.y*240.0)*256.0/4.0);
+	addr += ((TexCoord.x*320.0)/4.0); 
 
 	float frac = fract(addr) * 4.0;
 
@@ -32,6 +30,5 @@ void main()
 	else if ((3 < frac) && (frac < 4))
 		val = texture(mem_4bpp, t).r;
 
-
-	FragColor = texture(palette, vec2((val / 16.0) + pal_hi, TexCoord.y));
+	FragColor = texture(palette, vec2((val * 15.0 / 255.0 ) + pal_hi, TexCoord.y));
 }
