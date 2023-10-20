@@ -50,6 +50,8 @@ class Slurm16SoC {
         const Slurm16CPU& get_cpu() { return m_cpu; }
         GFXCore* getGfxCore() { return m_pcon.getGfxCore(); }
 
+        uint16_t* get_mem() { return m_memory; }
+
     private:
 
         Slurm16CPU      m_cpu;

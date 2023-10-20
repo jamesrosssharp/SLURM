@@ -50,6 +50,7 @@ class Renderer {
 
         GLuint m_layersShaderProgram;
         GLuint m_copperShaderProgram;
+        GLuint m_backgroundShaderProgram;
 
         GLuint m_vertexArrayID;
         GLuint m_vertexBufferID;
@@ -62,8 +63,10 @@ class Renderer {
         static constexpr int kXPanTexture    = 4;
         static constexpr int kAlphaOverrideTexture  = 5;
         static constexpr int kCopperTexture = 6;  
+        static constexpr int kMem4bppTexture = 7;
+        static constexpr int kMem8bppTexture = 8;
 
-        static constexpr int kNumTextures = 7;
+        static constexpr int kNumTextures = 9;
 
         GLuint m_textures[kNumTextures];
 

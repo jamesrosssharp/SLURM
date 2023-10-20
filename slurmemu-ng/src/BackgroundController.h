@@ -57,6 +57,10 @@ class BackgroundCore {
         void set_pal_hi(std::uint8_t pal_hi) { m_pal_hi = pal_hi; }
         void set_enable(bool en) { m_enable = en; }
 
+        std::uint16_t get_tilemap_address() const { return m_tilemap_address; }
+        std::uint16_t get_tileset_address() const { return m_tileset_address; }
+        std::uint8_t get_pal_hi() const { return m_pal_hi; }
+
     private:
 
         std::uint8_t m_texture[800*525];
@@ -81,6 +85,10 @@ class BackgroundController {
 
         std::uint8_t* getBG0Texture(){ return m_bg0.get_texture(); }
         std::uint8_t* getBG1Texture(){ return m_bg1.get_texture(); }
+
+        const BackgroundCore& getBG0() const { return m_bg0; }
+        const BackgroundCore& getBG1() const { return m_bg1; }
+
 
     private:
         BackgroundCore m_bg0;

@@ -53,8 +53,8 @@ GFXCore::GFXCore()  :
     m_bg0_sem(0),
     m_bg1_sem(0)
 {
-    m_bg0_renderer = std::thread(bg0_render_th, this);
-    m_bg1_renderer = std::thread(bg1_render_th, this);
+//    m_bg0_renderer = std::thread(bg0_render_th, this);
+//    m_bg1_renderer = std::thread(bg1_render_th, this);
 }
 
 GFXCore::~GFXCore()

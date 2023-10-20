@@ -71,7 +71,7 @@ int main()
 
 	rtos_set_interrupt_handler(SLURM_INTERRUPT_VSYNC_IDX, my_vsync_handler);
 
-	while (frame < 256) ;
+//	while (frame < 256) ;
 
 
 	my_printf("Ready to start demo\r\n");

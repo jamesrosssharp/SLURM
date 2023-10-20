@@ -59,6 +59,7 @@ class GFXCore {
         static constexpr int kVideoMode320x240 = 1;
         static constexpr int kVideoMode640x480 = 0;
 
+        const BackgroundController& getBGCon() const { return m_bg; }
 
     private:
 

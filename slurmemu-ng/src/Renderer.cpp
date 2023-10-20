@@ -34,6 +34,8 @@ SOFTWARE.
 #include <fstream>
 #include <sstream>
 
+#include <cassert>
+
 #include "GFXConst.h"
 
 static const char* vertex_shader =
@@ -67,10 +69,15 @@ static const char* vanilla_fragment_shader  =
 "    FragColor = texture(texture1, TexCoord);                          \n"
 "}                                                                     \n";
 
-static constexpr float minTX = (float)H_BACK_PORCH / (float)TOTAL_X;
+/*static constexpr float minTX = (float)H_BACK_PORCH / (float)TOTAL_X;
 static constexpr float minTY = (float)V_BACK_PORCH / (float)TOTAL_Y;
 static constexpr float maxTX = 1.0 - ((float)H_FRONT_PORCH + (float)H_SYNC_PULSE) / (float)TOTAL_X;
 static constexpr float maxTY = 1.0 - ((float)V_FRONT_PORCH + (float)V_SYNC_PULSE) / (float)TOTAL_Y;
+*/
+static constexpr float minTX = 0.0;
+static constexpr float minTY = 0.0;
+static constexpr float maxTX = 1.0;
+static constexpr float maxTY = 1.0;
 
 Renderer::Renderer()    :
     m_vertexData{-1, -1, 0, minTX, maxTY,
@@ -98,6 +105,21 @@ Renderer::Renderer()    :
     }    
 
     m_layersShaderProgram = loadShaders(vertex_shader, fragmentShaderCode.c_str());
+
+    std::string bgFragmentShaderCode;
+    std::ifstream bgFragmentShaderStream("src/bg.frag", std::ios::in);
+    if(bgFragmentShaderStream.is_open()) {
+		std::stringstream sstr;
+		sstr << bgFragmentShaderStream.rdbuf();
+		bgFragmentShaderCode = sstr.str();
+		bgFragmentShaderStream.close();
+    }
+    else
+    {
+        throw std::runtime_error("Could not load fragment shader");
+    }    
+
+    m_backgroundShaderProgram = loadShaders(vertex_shader, bgFragmentShaderCode.c_str());
 
     // Create vertex array
 
@@ -170,7 +192,56 @@ void Renderer::renderScene(Slurm16SoC* soc, int w, int h)
     glBindVertexArray(m_vertexArrayID);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
+    // Render BG0
+   
+    
+    glUseProgram(m_backgroundShaderProgram);
 
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, m_textures[kPaletteTexture]);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST); 
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 525, 0,
+                 GL_BGRA, GL_UNSIGNED_SHORT_4_4_4_4_REV, soc->getGfxCore()->getPaletteTexture());
+
+    glUniform1i(glGetUniformLocation(m_backgroundShaderProgram, "palette"), 0);
+
+
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, m_textures[kMem4bppTexture]);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST); 
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0,
+                 GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4, soc->get_mem());
+    
+    int err = glGetError();
+    if (err)
+        printf("Error: %x\n", err);
+    assert(err == GL_NO_ERROR);
+    
+    glUniform1i(glGetUniformLocation(m_backgroundShaderProgram, "mem_4bpp"), 1);
+    assert(glGetError() == GL_NO_ERROR);
+
+    /*glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_1D, m_textures[kMem8bppTexture]);
+    glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_MAG_FILTER,GL_NEAREST); 
+    glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+    glTexImage1D(GL_TEXTURE_1D, 0, GL_RED, 65536*2, 0,
+                 GL_RED, GL_UNSIGNED_BYTE, soc->get_mem());
+
+    glUniform1i(glGetUniformLocation(m_backgroundShaderProgram, "mem_8bpp"), 2);
+*/
+    
+    glUniform1f(glGetUniformLocation(m_backgroundShaderProgram, "tilemap_addr"), (float)soc->getGfxCore()->getBGCon().getBG0().get_tilemap_address());
+    glUniform1f(glGetUniformLocation(m_backgroundShaderProgram, "tileset_addr"), (float)soc->getGfxCore()->getBGCon().getBG0().get_tileset_address());
+    glUniform1f(glGetUniformLocation(m_backgroundShaderProgram, "pal_hi"), (float)soc->getGfxCore()->getBGCon().getBG0().get_pal_hi() / 16.0);
+
+    glBindVertexArray(m_vertexArrayID);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+
+
+#if 0
     glEnable(GL_BLEND); //Enable blending.
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); //Set blending function.
 
@@ -220,7 +291,7 @@ void Renderer::renderScene(Slurm16SoC* soc, int w, int h)
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
     glDisable(GL_BLEND);
-
+#endif
 }
 
 GLuint Renderer::loadShaders(const char* vertex_shader, const char* fragment_shader)
