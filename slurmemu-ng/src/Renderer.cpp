@@ -157,6 +157,22 @@ Renderer::Renderer()    :
 
     glGenTextures(kNumTextures, m_textures);
 
+    // Create framebuffer
+
+    glGenFramebuffers(1, &m_framebuffer);
+
+    // Set up render to framebuffer for BG0
+
+    glBindTexture(GL_TEXTURE_2D, m_textures[kBG0TextureOut]);
+
+    // Give an empty image to OpenGL ( the last "0" )
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, TOTAL_X, TOTAL_Y, 0, GL_RED, GL_UNSIGNED_BYTE, 0);
+
+    // Poor filtering. Needed !
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+
 }
         
 Renderer::~Renderer()
@@ -193,19 +209,19 @@ void Renderer::renderScene(Slurm16SoC* soc, int w, int h)
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
     // Render BG0
+  
+    glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer);
+    glViewport(0, 0, TOTAL_X, TOTAL_Y); 
    
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_textures[kBG0TextureOut], 0);
+
+    // Set the list of draw buffers.
+    GLenum DrawBuffers[1] = {GL_COLOR_ATTACHMENT0};
+    glDrawBuffers(1, DrawBuffers);
+
+    assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
     
     glUseProgram(m_backgroundShaderProgram);
-
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, m_textures[kPaletteTexture]);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST); 
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 525, 0,
-                 GL_BGRA, GL_UNSIGNED_SHORT_4_4_4_4_REV, soc->getGfxCore()->getPaletteTexture());
-
-    glUniform1i(glGetUniformLocation(m_backgroundShaderProgram, "palette"), 0);
-
 
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, m_textures[kMem4bppTexture]);
@@ -240,10 +256,12 @@ void Renderer::renderScene(Slurm16SoC* soc, int w, int h)
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 
+#if 1
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glViewport(0, 0, w, h); 
 
-#if 0
-    glEnable(GL_BLEND); //Enable blending.
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); //Set blending function.
+//    glEnable(GL_BLEND); //Enable blending.
+//    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); //Set blending function.
 
     // Render layers
 
@@ -254,11 +272,9 @@ void Renderer::renderScene(Slurm16SoC* soc, int w, int h)
     
     // Load BG0 texture
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, m_textures[kBG0Texture]);
+    glBindTexture(GL_TEXTURE_2D, m_textures[kBG0TextureOut]);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST); 
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, 800, 525, 0,
-                 GL_RED, GL_UNSIGNED_BYTE, soc->getGfxCore()->getBG0Texture());
 
     glUniform1i(glGetUniformLocation(m_layersShaderProgram, "BG0Texture"), 0);
     

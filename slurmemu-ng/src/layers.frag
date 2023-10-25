@@ -16,6 +16,7 @@ void main()
 {
 	vec2 t = TexCoord;
 	t.x *= 0.5;
+	t.y = 1.0 - t.y;
 	float bg0 = texture(BG0Texture, t).r;
 	float bg1 = texture(BG0Texture, t).r;
 	vec2  pal;

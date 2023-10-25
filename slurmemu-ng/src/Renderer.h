@@ -33,6 +33,7 @@ SOFTWARE.
 
 #include <GL/gl.h>
 #include <GLES3/gl3.h>
+#include <GLES3/gl32.h>
 
 #include "Slurm16SoC.h"
 
@@ -65,10 +66,14 @@ class Renderer {
         static constexpr int kCopperTexture = 6;  
         static constexpr int kMem4bppTexture = 7;
         static constexpr int kMem8bppTexture = 8;
+        static constexpr int kBG0TextureOut  = 9;
 
-        static constexpr int kNumTextures = 9;
+        static constexpr int kNumTextures = 10;
 
         GLuint m_textures[kNumTextures];
+
+        GLuint m_framebuffer;
+
 
         std::vector<GLfloat> m_vertexData;
         std::vector<GLuint>  m_indexData;
