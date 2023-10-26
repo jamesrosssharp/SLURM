@@ -238,19 +238,24 @@ void Renderer::renderScene(Slurm16SoC* soc, int w, int h)
     glUniform1i(glGetUniformLocation(m_backgroundShaderProgram, "mem_4bpp"), 1);
     assert(glGetError() == GL_NO_ERROR);
 
-    /*glActiveTexture(GL_TEXTURE2);
-    glBindTexture(GL_TEXTURE_1D, m_textures[kMem8bppTexture]);
-    glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_MAG_FILTER,GL_NEAREST); 
-    glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
-    glTexImage1D(GL_TEXTURE_1D, 0, GL_RED, 65536*2, 0,
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, m_textures[kMem8bppTexture]);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST); 
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, 256, 512, 0,
                  GL_RED, GL_UNSIGNED_BYTE, soc->get_mem());
 
     glUniform1i(glGetUniformLocation(m_backgroundShaderProgram, "mem_8bpp"), 2);
-*/
+
     
     glUniform1f(glGetUniformLocation(m_backgroundShaderProgram, "tilemap_addr"), (float)soc->getGfxCore()->getBGCon().getBG0().get_tilemap_address());
     glUniform1f(glGetUniformLocation(m_backgroundShaderProgram, "tileset_addr"), (float)soc->getGfxCore()->getBGCon().getBG0().get_tileset_address());
     glUniform1f(glGetUniformLocation(m_backgroundShaderProgram, "pal_hi"), (float)soc->getGfxCore()->getBGCon().getBG0().get_pal_hi() / 16.0);
+    glUniform1f(glGetUniformLocation(m_backgroundShaderProgram, "tile_size"), (float)soc->getGfxCore()->getBGCon().getBG0().get_tile_size());
+    glUniform1f(glGetUniformLocation(m_backgroundShaderProgram, "tilemap_x"), (float)soc->getGfxCore()->getBGCon().getBG0().get_tilemap_x());
+    glUniform1f(glGetUniformLocation(m_backgroundShaderProgram, "tilemap_y"), (float)soc->getGfxCore()->getBGCon().getBG0().get_tilemap_y());
+    glUniform1f(glGetUniformLocation(m_backgroundShaderProgram, "enable"), (float)soc->getGfxCore()->getBGCon().getBG0().get_enable());
+
 
     glBindVertexArray(m_vertexArrayID);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);

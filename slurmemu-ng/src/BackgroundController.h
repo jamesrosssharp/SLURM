@@ -60,6 +60,10 @@ class BackgroundCore {
         std::uint16_t get_tilemap_address() const { return m_tilemap_address; }
         std::uint16_t get_tileset_address() const { return m_tileset_address; }
         std::uint8_t get_pal_hi() const { return m_pal_hi; }
+        float get_tile_size() const { if (m_tile_size == TILESIZE_8) return 8.0; else return 16.0; } 
+        float get_tilemap_x() const { return m_tilemap_x; }
+        float get_tilemap_y() const { return m_tilemap_y; }
+        bool get_enable() const { return m_enable; }
 
     private:
 
