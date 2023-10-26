@@ -35,7 +35,7 @@ void main()
 		if (tile != 255.0)
 		{
 
-			vec2 tilec = vec2(fract(tile / tile_size) * tile_size * tile_size, floor(tile/tile_size) * tile_size); 
+			vec2 tilec = vec2(fract(tile / (256.0 / tile_size)) * (256.0 / tile_size) * tile_size, floor(tile/(256.0 / tile_size)) * tile_size); 
 
 			float screen_X = TexCoord.x*800.0 + tilemap_x;
 			float screen_Y = floor(TexCoord.y*525.0 + tilemap_y);
@@ -61,7 +61,7 @@ void main()
 				val = texture(mem_4bpp, t).r;
 
 			if (val != 0.0)
-				color.r = (val * 15.0 / 255.0) + pal_hi;
+				color.r = (floor(val * 15.0) / 255.0) + pal_hi;
 			else
 				color.r = 0.0;
 		}

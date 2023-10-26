@@ -86,7 +86,7 @@ bool AudioCore::step(std::uint16_t* mem, bool & emitAudio, int16_t &audioLeft, i
     {
         m_ticks ++;
 
-        if (m_ticks == 1024)
+        if (m_ticks == /*1024*/ 512)
         {
             m_ticks = 0;
             emitAudio = true;
