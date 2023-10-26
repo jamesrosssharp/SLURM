@@ -265,8 +265,8 @@ void Renderer::renderScene(Slurm16SoC* soc, int w, int h)
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, w, h); 
 
-//    glEnable(GL_BLEND); //Enable blending.
-//    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); //Set blending function.
+    glEnable(GL_BLEND); //Enable blending.
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); //Set blending function.
 
     // Render layers
 

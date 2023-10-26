@@ -18,7 +18,6 @@ uniform float enable;
 
 void main()
 {
-
 	if (enable == 0.0)
 	{
 		color.r = 0;
@@ -39,7 +38,7 @@ void main()
 			vec2 tilec = vec2(fract(tile / tile_size) * tile_size * tile_size, floor(tile/tile_size) * tile_size); 
 
 			float screen_X = TexCoord.x*800.0 + tilemap_x;
-			float screen_Y = floor(TexCoord.y*525.0);
+			float screen_Y = floor(TexCoord.y*525.0 + tilemap_y);
 
 			float tile_X = fract(screen_X / tile_size) * tile_size;
 			float tile_Y = fract(screen_Y / tile_size) * tile_size;
