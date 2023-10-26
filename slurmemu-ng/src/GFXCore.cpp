@@ -74,7 +74,11 @@ std::uint16_t GFXCore::port_op(std::uint16_t port, bool write, std::uint16_t wr_
     if ((port & 0xff0) == 0xd20)
     {
         return m_copper.port_op(port, write, wr_val);
-    } 
+    }
+    else if ((port & 0xf00) <= 0x300)
+    {
+        return m_sp.port_op(port, write, wr_val);
+    }
     else if (((port & 0xf00) == 0x400) || ((port & 0xf00) == 0x500))
     {
         return m_copper.port_op(port, write, wr_val);

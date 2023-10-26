@@ -121,6 +121,21 @@ Renderer::Renderer()    :
 
     m_backgroundShaderProgram = loadShaders(vertex_shader, bgFragmentShaderCode.c_str());
 
+    std::string spFragmentShaderCode;
+    std::ifstream spFragmentShaderStream("src/sp.frag", std::ios::in);
+    if(spFragmentShaderStream.is_open()) {
+		std::stringstream sstr;
+		sstr << spFragmentShaderStream.rdbuf();
+		spFragmentShaderCode = sstr.str();
+		spFragmentShaderStream.close();
+    }
+    else
+    {
+        throw std::runtime_error("Could not load fragment shader");
+    }    
+
+    m_spriteShaderProgram = loadShaders(vertex_shader, spFragmentShaderCode.c_str());
+
     // Create vertex array
 
     glGenVertexArrays(1, &m_vertexArrayID);
@@ -165,10 +180,15 @@ Renderer::Renderer()    :
 
     glBindTexture(GL_TEXTURE_2D, m_textures[kBG0TextureOut]);
 
-    // Give an empty image to OpenGL ( the last "0" )
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, TOTAL_X, TOTAL_Y, 0, GL_RED, GL_UNSIGNED_BYTE, 0);
 
-    // Poor filtering. Needed !
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+    glBindTexture(GL_TEXTURE_2D, m_textures[kSpriteTextureOut]);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, TOTAL_X, TOTAL_Y, 0, GL_RED, GL_UNSIGNED_BYTE, 0);
+
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
@@ -261,7 +281,29 @@ void Renderer::renderScene(Slurm16SoC* soc, int w, int h)
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 
-#if 1
+    // Render sprites
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    
+    //glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_textures[kSpriteTextureOut], 0);
+
+    glUseProgram(m_spriteShaderProgram);
+
+    glActiveTexture(GL_TEXTURE3);
+    glBindTexture(GL_TEXTURE_2D, m_textures[kSpriteDataTexture]);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST); 
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, 8, 256, 0,
+                 GL_RED, GL_FLOAT, soc->getGfxCore()->getSpCon().getSpriteTexture());
+    
+
+    glUniform1i(glGetUniformLocation(m_spriteShaderProgram, "mem_4bpp"), 1);
+    glUniform1i(glGetUniformLocation(m_spriteShaderProgram, "sp_dat"), 3);
+
+    glBindVertexArray(m_vertexArrayID);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+#if 0
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, w, h); 
 
@@ -294,6 +336,14 @@ void Renderer::renderScene(Slurm16SoC* soc, int w, int h)
 
     glUniform1i(glGetUniformLocation(m_layersShaderProgram, "BG1Texture"), 1);
 
+    // Load Sprites texture
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, m_textures[kSpriteTextureOut]);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST); 
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+
+    glUniform1i(glGetUniformLocation(m_layersShaderProgram, "SpritesTexture"), 0);
+ 
     // Load palette texture
 
     glActiveTexture(GL_TEXTURE2);

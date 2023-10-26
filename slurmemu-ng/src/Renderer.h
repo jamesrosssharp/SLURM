@@ -52,6 +52,7 @@ class Renderer {
         GLuint m_layersShaderProgram;
         GLuint m_copperShaderProgram;
         GLuint m_backgroundShaderProgram;
+        GLuint m_spriteShaderProgram;
 
         GLuint m_vertexArrayID;
         GLuint m_vertexBufferID;
@@ -67,8 +68,11 @@ class Renderer {
         static constexpr int kMem4bppTexture = 7;
         static constexpr int kMem8bppTexture = 8;
         static constexpr int kBG0TextureOut  = 9;
+        static constexpr int kBG1TextureOut  = 10;
+        static constexpr int kSpriteTextureOut = 11;
+        static constexpr int kSpriteDataTexture = 12;
 
-        static constexpr int kNumTextures = 10;
+        static constexpr int kNumTextures = 13;
 
         GLuint m_textures[kNumTextures];
 

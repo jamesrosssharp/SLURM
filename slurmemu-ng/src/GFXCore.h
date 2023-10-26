@@ -39,6 +39,7 @@ SOFTWARE.
 #include "Copper.h"
 #include "BackgroundController.h"
 #include "GFXConst.h"
+#include "SpriteController.h"
 
 class GFXCore {
 
@@ -60,6 +61,7 @@ class GFXCore {
         static constexpr int kVideoMode640x480 = 0;
 
         const BackgroundController& getBGCon() const { return m_bg; }
+        const SpriteController& getSpCon() const { return m_sp; }
 
     private:
 
@@ -89,5 +91,7 @@ class GFXCore {
         static constexpr int kPaletteSize = 256;
         std::uint16_t m_palette[kPaletteSize];
         std::uint16_t m_paletteTexture[TOTAL_Y * kPaletteSize];
+
+        SpriteController m_sp;
 
 };
