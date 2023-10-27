@@ -283,27 +283,32 @@ void Renderer::renderScene(Slurm16SoC* soc, int w, int h)
 
     // Render sprites
 
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    //glBindFramebuffer(GL_FRAMEBUFFER, 0);
     
-    //glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_textures[kSpriteTextureOut], 0);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_textures[kSpriteTextureOut], 0);
 
     glUseProgram(m_spriteShaderProgram);
-
+/*
+    float myTexture[4][8] = {{100, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+                             {20, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+                             {30, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+                             {400, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+                            };
+*/
     glActiveTexture(GL_TEXTURE3);
     glBindTexture(GL_TEXTURE_2D, m_textures[kSpriteDataTexture]);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST); 
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, 8, 256, 0,
-                 GL_RED, GL_FLOAT, soc->getGfxCore()->getSpCon().getSpriteTexture());
+                 GL_RED, GL_FLOAT, soc->getGfxCore()->getSpCon().getSpriteTexture() /*myTexture*/);
     
-
     glUniform1i(glGetUniformLocation(m_spriteShaderProgram, "mem_4bpp"), 1);
     glUniform1i(glGetUniformLocation(m_spriteShaderProgram, "sp_dat"), 3);
 
     glBindVertexArray(m_vertexArrayID);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-#if 0
+#if 1
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, w, h); 
 
@@ -337,12 +342,12 @@ void Renderer::renderScene(Slurm16SoC* soc, int w, int h)
     glUniform1i(glGetUniformLocation(m_layersShaderProgram, "BG1Texture"), 1);
 
     // Load Sprites texture
-    glActiveTexture(GL_TEXTURE2);
+    glActiveTexture(GL_TEXTURE3);
     glBindTexture(GL_TEXTURE_2D, m_textures[kSpriteTextureOut]);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST); 
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
 
-    glUniform1i(glGetUniformLocation(m_layersShaderProgram, "SpritesTexture"), 0);
+    glUniform1i(glGetUniformLocation(m_layersShaderProgram, "SpritesTexture"), 3);
  
     // Load palette texture
 

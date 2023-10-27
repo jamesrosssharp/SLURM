@@ -30,6 +30,7 @@ SOFTWARE.
 */
 
 #include "SpriteController.h"
+#include <cstdio>
 
 /*
 		let sprite_x = self.x_ram[i] & 0x3ff;
@@ -47,8 +48,8 @@ SOFTWARE.
 void SpriteController::write_xram(std::uint16_t idx, std::uint16_t value)
 {
     m_sprite_texture[idx*kNumSpriteDataChannels + kSpriteDataChannelX]      = (float)(value & 0x3ff);
-    m_sprite_texture[idx*kNumSpriteDataChannels + kSpriteDataChannelEn]     = (value & 0x400) ? 1.0 : 0.0;
-    m_sprite_texture[idx*kNumSpriteDataChannels + kSpriteDataChannelPalHi]  = (value & 0x7800) >> 11;
+    m_sprite_texture[idx*kNumSpriteDataChannels + kSpriteDataChannelEn]     = (float)(value & 0x400) ? 1.0 : 0.0;
+    m_sprite_texture[idx*kNumSpriteDataChannels + kSpriteDataChannelPalHi]  = (float)((value & 0x7800) >> 11);
     m_sprite_texture[idx*kNumSpriteDataChannels + kSpriteDataChannelStride] = (value & 0x8000) ? 256.0 : 320.0;  
 
 }
