@@ -94,6 +94,7 @@ int main()
 			    effect3_applet_flash_size_lo >> 1);
 		applet_run();  
 
+		
 		applet_load(effect4_applet_flash_offset_lo, effect4_applet_flash_offset_hi, 
 			    effect4_applet_flash_size_lo >> 1);
 		applet_run();  

@@ -80,10 +80,10 @@ static constexpr float maxTX2 = 1.0;
 static constexpr float maxTY2 = 1.0;
 
 Renderer::Renderer()    :
-    m_vertexData{-1, -1, 0, minTX2, maxTY2,
-                  1, -1, 0, maxTX2, maxTY2,
-                  1,  1, 0, maxTX2, minTY2,
-                  -1, 1, 0, minTX2, minTY2},
+    m_vertexData{-1, -1, 0, minTX2, minTY2,
+                  1, -1, 0, maxTX2, minTY2,
+                  1,  1, 0, maxTX2, maxTY2,
+                  -1, 1, 0, minTX2, maxTY2},
     
    m_vertexData2{-1, -1, 0, minTX, maxTY,
                   1, -1, 0, maxTX, maxTY,
@@ -361,6 +361,17 @@ void Renderer::renderScene(Slurm16SoC* soc, int w, int h)
 
     glUniform1i(glGetUniformLocation(m_layersShaderProgram, "PaletteTexture"), 2);
 
+    // Load alpha override texture
+
+    glActiveTexture(GL_TEXTURE4);
+    glBindTexture(GL_TEXTURE_2D, m_textures[kAlphaOverrideTexture]);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST); 
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, 2, 525, 0,
+                 GL_RED, GL_FLOAT, soc->getGfxCore()->getCopper().getAlphaOverride());
+
+    glUniform1f(glGetUniformLocation(m_layersShaderProgram, "yFlip"), soc->getGfxCore()->getCopper().getYFlip());
+    glUniform1i(glGetUniformLocation(m_layersShaderProgram, "alphaOverride"), 4);
 
     // Draw
 

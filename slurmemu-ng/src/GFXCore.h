@@ -62,6 +62,7 @@ class GFXCore {
 
         const BackgroundController& getBGCon() const { return m_bg; }
         const SpriteController& getSpCon() const { return m_sp; }
+        const Copper& getCopper() const { return m_copper; }
 
     private:
 

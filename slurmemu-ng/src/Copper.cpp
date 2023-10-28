@@ -224,14 +224,12 @@ void Copper::step(std::uint16_t* mem, uint16_t x1, uint16_t y1, uint16_t x_in, u
     }
 
     int idx = (x1 + y1*800);
-/*    m_copperBG[idx + 0] = m_r;
-    m_copperBG[idx + 1] = m_g;
-    m_copperBG[idx + 2] = m_b;
-    m_copperBG[idx + 3] = m_globalAlpha;
-  */
+    
     m_copperBG[idx] = m_r + (m_g << 8) + (m_b << 16) + (m_globalAlpha << 24);
-
-    // TODO: Fix this
+   
+    m_alphaOverrideTexture[y1][0] = m_alphaOverride ? 1.0 : 0.0;
+    m_alphaOverrideTexture[y1][1] = m_globalAlpha / 240.0; 
+    
     x = x_in;
     y = y_in;
 }
