@@ -13,12 +13,17 @@ uniform sampler2D PaletteTexture;
 uniform float yFlip;
 uniform sampler2D alphaOverride;
 
+uniform float videoMode;
+
 void main()
 {
 	vec2 t = TexCoord;
-	t.x *= 0.5;
-	
-	t.y = t.y*0.5;
+
+	if (videoMode == 1.0)	
+	{
+		t.x *= 0.5;	
+		t.y = t.y*0.5;
+	}
 
 	vec2 tt = t;
 
@@ -50,6 +55,4 @@ void main()
 
 	if ((over == 1.0) && (pal.x != 0))
 		FragColor.a = alpha;
-
-//	FragColor = texture(alphaOverride, TexCoord);
 }

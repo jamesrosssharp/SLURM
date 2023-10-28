@@ -371,6 +371,7 @@ void Renderer::renderScene(Slurm16SoC* soc, int w, int h)
                  GL_RED, GL_FLOAT, soc->getGfxCore()->getCopper().getAlphaOverride());
 
     glUniform1f(glGetUniformLocation(m_layersShaderProgram, "yFlip"), soc->getGfxCore()->getCopper().getYFlip());
+    glUniform1f(glGetUniformLocation(m_layersShaderProgram, "videoMode"), soc->getGfxCore()->getVideoMode());
     glUniform1i(glGetUniformLocation(m_layersShaderProgram, "alphaOverride"), 4);
 
     // Draw
