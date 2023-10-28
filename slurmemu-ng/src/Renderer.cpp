@@ -69,21 +69,27 @@ static const char* vanilla_fragment_shader  =
 "    FragColor = texture(texture1, TexCoord);                          \n"
 "}                                                                     \n";
 
-/*static constexpr float minTX = (float)H_BACK_PORCH / (float)TOTAL_X;
+static constexpr float minTX = (float)H_BACK_PORCH / (float)TOTAL_X;
 static constexpr float minTY = (float)V_BACK_PORCH / (float)TOTAL_Y;
 static constexpr float maxTX = 1.0 - ((float)H_FRONT_PORCH + (float)H_SYNC_PULSE) / (float)TOTAL_X;
 static constexpr float maxTY = 1.0 - ((float)V_FRONT_PORCH + (float)V_SYNC_PULSE) / (float)TOTAL_Y;
-*/
-static constexpr float minTX = 0.0;
-static constexpr float minTY = 0.0;
-static constexpr float maxTX = 1.0;
-static constexpr float maxTY = 1.0;
+
+static constexpr float minTX2 = 0.0;
+static constexpr float minTY2 = 0.0;
+static constexpr float maxTX2 = 1.0;
+static constexpr float maxTY2 = 1.0;
 
 Renderer::Renderer()    :
-    m_vertexData{-1, -1, 0, minTX, maxTY,
+    m_vertexData{-1, -1, 0, minTX2, maxTY2,
+                  1, -1, 0, maxTX2, maxTY2,
+                  1,  1, 0, maxTX2, minTY2,
+                  -1, 1, 0, minTX2, minTY2},
+    
+   m_vertexData2{-1, -1, 0, minTX, maxTY,
                   1, -1, 0, maxTX, maxTY,
                   1,  1, 0, maxTX, minTY,
                   -1, 1, 0, minTX, minTY},
+   
     m_indexData{0, 1, 2, 0, 2, 3}
 {
 
@@ -203,36 +209,14 @@ Renderer::~Renderer()
 
 void Renderer::renderScene(Slurm16SoC* soc, int w, int h)
 {
-    glViewport(0, 0, w, h);
-
-    // Render copper
-
-        // bind shader
-    glUseProgram(m_copperShaderProgram);
-
-        // load vertex array
-    glBindBuffer(GL_ARRAY_BUFFER, m_vertexBufferID);
-    
-    glUniform1i(glGetUniformLocation(m_copperShaderProgram, "texture1"), 0);
-
-        // Load the Copper texture
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, m_textures[kCopperTexture]); 
-
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST); 
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 800, 525, 0,
-                 GL_RGBA, GL_UNSIGNED_BYTE, soc->getGfxCore()->getCopperBG());
-
-    glBindVertexArray(m_vertexArrayID);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
     // Render BG0
   
     glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer);
     glViewport(0, 0, TOTAL_X, TOTAL_Y); 
    
+    glBindBuffer(GL_ARRAY_BUFFER, m_vertexBufferID);
+	glBufferData(GL_ARRAY_BUFFER, m_vertexData.size() * sizeof(GLfloat), m_vertexData.data(), GL_STATIC_DRAW);
+
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_textures[kBG0TextureOut], 0);
 
     // Set the list of draw buffers.
@@ -283,18 +267,10 @@ void Renderer::renderScene(Slurm16SoC* soc, int w, int h)
 
     // Render sprites
 
-    //glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_textures[kSpriteTextureOut], 0);
 
     glUseProgram(m_spriteShaderProgram);
-/*
-    float myTexture[4][8] = {{100, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
-                             {20, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
-                             {30, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
-                             {400, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
-                            };
-*/
+    
     glActiveTexture(GL_TEXTURE3);
     glBindTexture(GL_TEXTURE_2D, m_textures[kSpriteDataTexture]);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST); 
@@ -308,9 +284,34 @@ void Renderer::renderScene(Slurm16SoC* soc, int w, int h)
     glBindVertexArray(m_vertexArrayID);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-#if 1
+    // Render copper
+    glViewport(0, 0, w, h);
+
+	glBindBuffer(GL_ARRAY_BUFFER, m_vertexBufferID);
+	glBufferData(GL_ARRAY_BUFFER, m_vertexData2.size() * sizeof(GLfloat), m_vertexData2.data(), GL_STATIC_DRAW);
+
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glViewport(0, 0, w, h); 
+
+        // bind shader
+    glUseProgram(m_copperShaderProgram);
+
+        // load vertex array
+    glBindBuffer(GL_ARRAY_BUFFER, m_vertexBufferID);
+    
+    glUniform1i(glGetUniformLocation(m_copperShaderProgram, "texture1"), 0);
+
+        // Load the Copper texture
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, m_textures[kCopperTexture]); 
+
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST); 
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 800, 525, 0,
+                 GL_RGBA, GL_UNSIGNED_BYTE, soc->getGfxCore()->getCopperBG());
+
+    glBindVertexArray(m_vertexArrayID);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
     glEnable(GL_BLEND); //Enable blending.
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); //Set blending function.
@@ -367,7 +368,6 @@ void Renderer::renderScene(Slurm16SoC* soc, int w, int h)
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
     glDisable(GL_BLEND);
-#endif
 }
 
 GLuint Renderer::loadShaders(const char* vertex_shader, const char* fragment_shader)

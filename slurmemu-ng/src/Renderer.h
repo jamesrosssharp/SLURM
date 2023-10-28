@@ -78,8 +78,8 @@ class Renderer {
 
         GLuint m_framebuffer;
 
-
         std::vector<GLfloat> m_vertexData;
+        std::vector<GLfloat> m_vertexData2;
         std::vector<GLuint>  m_indexData;
 };
 
