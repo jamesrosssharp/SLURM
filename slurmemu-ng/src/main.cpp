@@ -132,6 +132,50 @@ int main(int argc, char** argv)
                             SDL_SetWindowFullscreen(window, window_flags);
                         }
                         break;
+                    case 'a':
+                        soc->get_pcon().getGPIO().push_button(BUTTON_A);
+                        break;
+                    case 'b':
+                        soc->get_pcon().getGPIO().push_button(BUTTON_B);
+                        break;
+                    case SDLK_UP:
+                        soc->get_pcon().getGPIO().push_button(BUTTON_UP);
+                        break;
+                    case SDLK_DOWN:
+                        soc->get_pcon().getGPIO().push_button(BUTTON_DOWN);
+                        break;
+                    case SDLK_LEFT:
+                        soc->get_pcon().getGPIO().push_button(BUTTON_LEFT);
+                        break;
+                    case SDLK_RIGHT:
+                        soc->get_pcon().getGPIO().push_button(BUTTON_RIGHT);
+                        break;
+                    default:
+                        break;
+                }
+            }
+            else if (Event.type == SDL_KEYUP)
+            {
+                switch (Event.key.keysym.sym)
+                {
+                    case 'a':
+                        soc->get_pcon().getGPIO().release_button(BUTTON_A);
+                        break;
+                    case 'b':
+                        soc->get_pcon().getGPIO().release_button(BUTTON_B);
+                        break;
+                    case SDLK_UP:
+                        soc->get_pcon().getGPIO().release_button(BUTTON_UP);
+                        break;
+                    case SDLK_DOWN:
+                        soc->get_pcon().getGPIO().release_button(BUTTON_DOWN);
+                        break;
+                    case SDLK_LEFT:
+                        soc->get_pcon().getGPIO().release_button(BUTTON_LEFT);
+                        break;
+                    case SDLK_RIGHT:
+                        soc->get_pcon().getGPIO().release_button(BUTTON_RIGHT);
+                        break;
                     default:
                         break;
                 }

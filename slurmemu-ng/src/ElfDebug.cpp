@@ -37,7 +37,7 @@ ElfDebug::ElfDebug(const std::string& elf_file) :
 {
     ElfFile e;
 
-    e.load(elf_file.c_str());
+/*    e.load(elf_file.c_str());
 
     for (const auto& sym : e.getSymbols())
     {
@@ -49,7 +49,7 @@ ElfDebug::ElfDebug(const std::string& elf_file) :
         {
             ElfFunc f;
 
-            printf("Found func: %s\n", sym.name.c_str());
+           // printf("Found func: %s\n", sym.name.c_str());
 
             f.name = sym.name;
             f.offset = sym.value;
@@ -59,7 +59,7 @@ ElfDebug::ElfDebug(const std::string& elf_file) :
         } 
 
     }
-
+*/
     m_funcs.emplace_back("Applet", 0x5000, 0x3000);
 
 }

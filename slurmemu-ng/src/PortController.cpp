@@ -46,6 +46,7 @@ PortController::~PortController()
 }
 
 #define PORT_UART       0x0000
+#define PORT_GPIO       0x1000 
 #define PORT_AUDIO      0x3000
 #define PORT_SPI_FLASH  0x4000
 #define PORT_GFX        0x5000
@@ -60,6 +61,9 @@ void    PortController::port_wr(uint16_t port, uint16_t value)
     {
         case PORT_UART:  /* UART */
             uart_wr(port, value);
+            break;
+        case PORT_GPIO: /* GPIO */
+            m_gpio.port_op(port, true, value);
             break;
         case PORT_AUDIO: /* AUDIO */
             m_audio.port_op(port, true, value);
@@ -91,6 +95,8 @@ uint16_t PortController::port_rd(uint16_t port)
     {
         case PORT_UART:  /* UART */
             return uart_rd(port);
+        case PORT_GPIO: /* GPIO */
+            return m_gpio.port_op(port, false, 0);
         case PORT_AUDIO: /* audio */
             return m_audio.port_op(port, false, 0);
         case PORT_SPI_FLASH: /* FLASH DMA */
@@ -124,9 +130,9 @@ int PortController::step(std::uint16_t* mem, bool& emitAudio, std::int16_t& left
 {
     bool flash_int = m_flash.step(mem);
     bool timer = m_tim.step(mem);
-    bool gpio = false;
+    bool gpio = m_gpio.step(mem);
     bool audio = m_audio.step(mem, emitAudio, left, right); 
-
+  
     m_gfx.step(mem, hs, vs);
 
     return m_intcon.step(flash_int, vs, hs, timer, gpio, audio);     

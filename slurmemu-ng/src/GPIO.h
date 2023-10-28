@@ -1,9 +1,9 @@
 /* vim: set et ts=4 sw=4: */
 
 /*
-		slurmemu-ng : Next-Generation SlURM16 Emulator
+	$PROJECT
 
-Slurm16SoC.h: Top level SoC class
+$FILE: $DESC
 
 License: MIT License
 
@@ -32,34 +32,29 @@ SOFTWARE.
 #pragma once
 
 #include <cstdint>
-#include "Slurm16CPU.h"
-#include "PortController.h"
-#include "GFXCore.h"
 
-#include "ElfDebug.h"
-
-class Slurm16SoC {
-
-    public:
-    
-        Slurm16SoC(const char* boot_rom_file, const char* flash_rom_file);
-        ~Slurm16SoC();
-
-        void executeOneCycle(bool& emitAudio, std::int16_t &left, std::int16_t &right, ElfDebug& edbg, bool& hs, bool& vs);
-
-        const Slurm16CPU& get_cpu() { return m_cpu; }
-        GFXCore* getGfxCore() { return m_pcon.getGfxCore(); }
-
-        uint16_t* get_mem() { return m_memory; }
-
-        const PortController& get_pcon() { return m_pcon; }
-
-    private:
-
-        Slurm16CPU      m_cpu;
-        PortController  m_pcon;    
-    
-        uint16_t*       m_memory;
-
+enum GpioEnum {
+    BUTTON_A,
+    BUTTON_B,
+    BUTTON_UP,
+    BUTTON_DOWN,
+    BUTTON_LEFT,
+    BUTTON_RIGHT
 };
 
+class GPIO {
+
+    public:
+
+        void push_button(GpioEnum button) const;
+        void release_button(GpioEnum button) const;
+
+        std::uint16_t port_op(std::uint16_t port, bool write, std::uint16_t wr_val); 
+   
+        bool step(std::uint16_t* mem);
+
+    private:
+        mutable std::uint16_t m_button_bits;
+        std::uint16_t m_prev_button_bits;
+
+};

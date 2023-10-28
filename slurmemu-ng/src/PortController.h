@@ -38,6 +38,7 @@ SOFTWARE.
 #include "GFXCore.h"
 #include "AudioCore.h"
 #include "ScratchPad.h"
+#include "GPIO.h"
 
 class PortController {
 
@@ -53,6 +54,8 @@ class PortController {
 
         GFXCore* getGfxCore() { return &m_gfx; }
 
+        const GPIO& getGPIO() const { return m_gpio; }
+
     private:
 
         void    uart_wr(std::uint16_t port, std::uint16_t value);
@@ -64,5 +67,6 @@ class PortController {
         GFXCore  m_gfx;
         AudioCore m_audio;
         ScratchPad m_scratch;
+        GPIO m_gpio;
 };
 
