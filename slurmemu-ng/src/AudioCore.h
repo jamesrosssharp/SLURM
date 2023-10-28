@@ -59,4 +59,5 @@ class AudioCore {
         bool m_prev_left_read_high;
         std::int16_t m_left_accu;
         std::int16_t m_right_accu;
+        std::uint16_t m_max_ticks;
 };

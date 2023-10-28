@@ -26,7 +26,7 @@ void main()
 	{
 
 		float addrm = tilemap_addr*2 + (floor((TexCoord.y*525.0 + tilemap_y)/tile_size)*64.0);
-		addrm += ((TexCoord.x*800.0 + tilemap_x)/tile_size);
+		addrm += ((TexCoord.x*800.0 + tilemap_x - 16.0)/tile_size);
 
 		vec2 tm = vec2(fract(floor(addrm)/256.0), floor(addrm/256.0)/512.0);
 

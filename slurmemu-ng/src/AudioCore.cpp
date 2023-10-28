@@ -33,7 +33,8 @@ SOFTWARE.
 #include <cstdio>
 
 AudioCore::AudioCore()  :
-    m_run(false)
+    m_run(false),
+    m_max_ticks(1024)
 {
 
 }
@@ -86,7 +87,7 @@ bool AudioCore::step(std::uint16_t* mem, bool & emitAudio, int16_t &audioLeft, i
     {
         m_ticks ++;
 
-        if (m_ticks == 1024 /*512*/)
+        if (m_ticks == m_max_ticks)
         {
             m_ticks = 0;
             emitAudio = true;
@@ -121,7 +122,7 @@ bool AudioCore::step(std::uint16_t* mem, bool & emitAudio, int16_t &audioLeft, i
     {
         m_ticks ++;
 
-        if (m_ticks == 1024 /*512*/)
+        if (m_ticks == m_max_ticks)
         {
             m_ticks = 0;
             emitAudio = true;
