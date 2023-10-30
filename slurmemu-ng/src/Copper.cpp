@@ -223,6 +223,8 @@ void Copper::step(std::uint16_t* mem, uint16_t x1, uint16_t y1, uint16_t x_in, u
         }
     }
 
+    m_xpanTexture[y1] = m_xPan;
+
     int idx = (x1 + y1*800);
     
     m_copperBG[idx] = m_r + (m_g << 8) + (m_b << 16) + (m_globalAlpha << 24);

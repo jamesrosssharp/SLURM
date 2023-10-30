@@ -56,7 +56,7 @@ public:
 
     float getYFlip() const { if (m_yFlipEn) return m_yFlip; else return 525.0; }
     const float* getAlphaOverride() const { return &m_alphaOverrideTexture[0][0]; }
-   
+    const float* getXPanTexture() const { return m_xpanTexture; }
 
 private:
 
@@ -87,5 +87,6 @@ private:
 
     std::uint32_t m_copperBG[800*525];
     float m_alphaOverrideTexture[525][2];
+    float m_xpanTexture[525];
 };
 

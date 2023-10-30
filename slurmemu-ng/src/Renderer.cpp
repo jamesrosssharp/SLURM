@@ -370,9 +370,20 @@ void Renderer::renderScene(Slurm16SoC* soc, int w, int h)
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, 2, 525, 0,
                  GL_RED, GL_FLOAT, soc->getGfxCore()->getCopper().getAlphaOverride());
 
+    // Load x pan texture
+    glActiveTexture(GL_TEXTURE5);
+    glBindTexture(GL_TEXTURE_1D, m_textures[kXPanTexture]);
+    glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_MAG_FILTER,GL_NEAREST); 
+    glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+    glTexImage1D(GL_TEXTURE_1D, 0, GL_R32F, 525, 0,
+                 GL_RED, GL_FLOAT, soc->getGfxCore()->getCopper().getXPanTexture());
+
+
+
     glUniform1f(glGetUniformLocation(m_layersShaderProgram, "yFlip"), soc->getGfxCore()->getCopper().getYFlip());
     glUniform1f(glGetUniformLocation(m_layersShaderProgram, "videoMode"), soc->getGfxCore()->getVideoMode());
     glUniform1i(glGetUniformLocation(m_layersShaderProgram, "alphaOverride"), 4);
+    glUniform1i(glGetUniformLocation(m_layersShaderProgram, "xpan"), 5);
 
     // Draw
 

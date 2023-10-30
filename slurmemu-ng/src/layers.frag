@@ -8,16 +8,21 @@ uniform sampler2D BG0Texture;
 uniform sampler2D BG1Texture;
 uniform sampler2D SpritesTexture;
 uniform sampler2D PaletteTexture;
-//uniform sampler1D XPanTexture;
 
 uniform float yFlip;
 uniform sampler2D alphaOverride;
 
 uniform float videoMode;
 
+uniform sampler1D xpan;
+
 void main()
 {
 	vec2 t = TexCoord;
+
+	float xp = texture(xpan, t.y).r;
+
+	t.x += xp / 800.0;
 
 	if (videoMode == 1.0)	
 	{
