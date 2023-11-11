@@ -71,8 +71,9 @@ class Renderer {
         static constexpr int kBG1TextureOut  = 10;
         static constexpr int kSpriteTextureOut = 11;
         static constexpr int kSpriteDataTexture = 12;
+        static constexpr int kMem5bppTexture = 13;
 
-        static constexpr int kNumTextures = 13;
+        static constexpr int kNumTextures = 14;
 
         GLuint m_textures[kNumTextures];
 

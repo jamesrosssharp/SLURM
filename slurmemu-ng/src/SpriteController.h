@@ -56,8 +56,9 @@ class SpriteController
         static constexpr int kSpriteDataChannelW        = 5;
         static constexpr int kSpriteDataChannelEndY     = 6;
         static constexpr int kSpriteDataChannelAddress     = 7;
+        static constexpr int kSpriteDataChannel5bpp       = 8;
 
-        static constexpr int kNumSpriteDataChannels = 8;
+        static constexpr int kNumSpriteDataChannels = 9;
 
         float m_sprite_texture[256*kNumSpriteDataChannels]; 
 

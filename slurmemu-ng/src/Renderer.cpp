@@ -275,10 +275,18 @@ void Renderer::renderScene(Slurm16SoC* soc, int w, int h)
     glBindTexture(GL_TEXTURE_2D, m_textures[kSpriteDataTexture]);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST); 
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, 8, 256, 0,
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, 9, 256, 0,
                  GL_RED, GL_FLOAT, soc->getGfxCore()->getSpCon().getSpriteTexture() /*myTexture*/);
+   
+    glActiveTexture(GL_TEXTURE4);
+    glBindTexture(GL_TEXTURE_2D, m_textures[kMem5bppTexture]);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST); 
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0,
+                 GL_RGBA, GL_UNSIGNED_SHORT_1_5_5_5_REV, soc->get_mem());
     
     glUniform1i(glGetUniformLocation(m_spriteShaderProgram, "mem_4bpp"), 1);
+    glUniform1i(glGetUniformLocation(m_spriteShaderProgram, "mem_5bpp"), 4);
     glUniform1i(glGetUniformLocation(m_spriteShaderProgram, "sp_dat"), 3);
 
     glBindVertexArray(m_vertexArrayID);

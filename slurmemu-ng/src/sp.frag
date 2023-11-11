@@ -6,6 +6,7 @@ in vec2 TexCoord;
 out vec4 color; 
 
 uniform sampler2D mem_4bpp;
+uniform sampler2D mem_5bpp;
 uniform sampler2D sp_dat;
 
 
@@ -18,16 +19,19 @@ uniform sampler2D sp_dat;
         static constexpr int kSpriteDataChannelW        = 5;
         static constexpr int kSpriteDataChannelEndY     = 6;
         static constexpr int kSpriteDataChannelAddress     = 7;
+        static constexpr int kSpriteDataChannel5bpp       = 8;
 */
 
-const float kSpriteDataChannelX 	= 0.5 / 8.0;
-const float kSpriteDataChannelEn 	= 1.5 / 8.0;
-const float kSpriteDataChannelPalHi 	= 2.5 / 8.0;
-const float kSpriteDataChannelStride 	= 3.5 / 8.0;
-const float kSpriteDataChannelY 	= 4.5 / 8.0;
-const float kSpriteDataChannelW 	= 5.5 / 8.0;
-const float kSpriteDataChannelEndY 	= 6.5 / 8.0;
-const float kSpriteDataChannelAddress 	= 7.5 / 8.0;
+const float kSpriteDataChannelX 	= 0.5 / 9.0;
+const float kSpriteDataChannelEn 	= 1.5 / 9.0;
+const float kSpriteDataChannelPalHi 	= 2.5 / 9.0;
+const float kSpriteDataChannelStride 	= 3.5 / 9.0;
+const float kSpriteDataChannelY 	= 4.5 / 9.0;
+const float kSpriteDataChannelW 	= 5.5 / 9.0;
+const float kSpriteDataChannelEndY 	= 6.5 / 9.0;
+const float kSpriteDataChannelAddress 	= 7.5 / 9.0;
+const float kSpriteDataChannel5bpp 	= 8.5 / 9.0;
+
 
 void main()
 {
@@ -48,33 +52,60 @@ void main()
 			float pal_hi = texture(sp_dat, vec2(kSpriteDataChannelPalHi, spr)).r;
 			float stride = texture(sp_dat, vec2(kSpriteDataChannelStride, spr)).r;
 			float address = texture(sp_dat, vec2(kSpriteDataChannelAddress, spr)).r; 
+			float fivebpp = texture(sp_dat, vec2(kSpriteDataChannel5bpp, spr)).r; 
 
 			float screen_X = TexCoord.x * 800.0;
 			float screen_Y = TexCoord.y * 525.0;
 
-			if ((screen_X >= x) && (screen_X <= x + w + 1.0) && (screen_Y >= y) && (screen_Y <= y2))
+			if (fivebpp == 0.0)
 			{
-				float addr = address + (floor(screen_Y - y)*stride/4.0);
-				addr += (screen_X - x)/4.0; 
+				if ((screen_X >= x) && (screen_X <= x + w + 1.0) && (screen_Y >= y) && (screen_Y <= y2))
+				{
+					float addr = address + (floor(screen_Y - y)*stride/4.0);
+					addr += (screen_X - x)/4.0; 
 
-				float frac = fract(addr) * 4.0;
+					float frac = fract(addr) * 4.0;
 
-				vec2 t = vec2(fract(floor(addr) / 256.0), floor(addr/256.0) / 256.0);
-				
-				float val = 0;
-				if ((0 < frac) && (frac <= 1))
-					val = texture(mem_4bpp, t).a;
-				else if ((1 < frac) && (frac <= 2))
-					val = texture(mem_4bpp, t).b;
-				else if ((2 < frac) && (frac <= 3))
-					val = texture(mem_4bpp, t).g;
-				else if ((3 < frac) && (frac <= 4))
-					val = texture(mem_4bpp, t).r;
+					vec2 t = vec2(fract(floor(addr) / 256.0), floor(addr/256.0) / 256.0);
+					
+					float val = 0;
+					if ((0 < frac) && (frac <= 1))
+						val = texture(mem_4bpp, t).a;
+					else if ((1 < frac) && (frac <= 2))
+						val = texture(mem_4bpp, t).b;
+					else if ((2 < frac) && (frac <= 3))
+						val = texture(mem_4bpp, t).g;
+					else if ((3 < frac) && (frac <= 4))
+						val = texture(mem_4bpp, t).r;
 
-				if (val != 0.0)
-					color.r = (floor(val * 15.0) / 255.0) + (pal_hi / 16.0);
+					if (val != 0.0)
+						color.r = (floor(val * 15.0) / 255.0) + (pal_hi / 16.0);
+				}
+			}
+			else
+			{
+				if ((screen_X >= x) && (screen_X <= x + (w*3.0/4.0) + 1.0) && (screen_Y >= y) && (screen_Y <= y2))
+				{
 
-				//color.r = 1.0;
+					float addr = address + (floor(floor(screen_Y - y)*stride/4.0));
+					addr += (screen_X - x)/3.0; 
+
+					float frac = fract(addr) * 3.0;
+
+					vec2 t = vec2(fract(floor(addr) / 256.0), floor(addr/256.0) / 256.0);
+					
+					float val = 0;
+					if ((0 < frac) && (frac < 1))
+						val = texture(mem_5bpp, t).r;
+					else if ((1 <= frac) && (frac < 2))
+						val = texture(mem_5bpp, t).g;
+					else if ((2 <= frac) && (frac < 3))
+						val = texture(mem_5bpp, t).b;
+
+					if (val != 0.0)
+						color.r = (floor(val * 31.5) / 255.0) + (floor(pal_hi / 2.0) / 8.0);
+
+				}
 			}
 		}
 	}

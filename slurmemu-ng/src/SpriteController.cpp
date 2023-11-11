@@ -30,19 +30,6 @@ SOFTWARE.
 */
 
 #include "SpriteController.h"
-#include <cstdio>
-
-/*
-		let sprite_x = self.x_ram[i] & 0x3ff;
-        let sprite_enable : bool = (self.x_ram[i] & 0x400) == 0x400;
-        let pal_hi = (self.x_ram[i] & 0x7800) >> 11;
-        let stride = (self.x_ram[i] & 0x8000) >> 15;
-        let sprite_y = self.y_ram[i] & 0x3ff;
-        let sprite_width = (self.y_ram[i] & 0xfc00) >> 10;
-        let sprite_end_y = self.h_ram[i] & 0x3ff; 
-        let sprite_address = self.a_ram[i];
-        let bpp5 = (self.h_ram[i] & 0x8000) == 0x8000;
-*/
 
 
 void SpriteController::write_xram(std::uint16_t idx, std::uint16_t value)
@@ -65,7 +52,7 @@ void SpriteController::write_hram(std::uint16_t idx, std::uint16_t value)
 {
 
     m_sprite_texture[idx*kNumSpriteDataChannels + kSpriteDataChannelEndY]      = (float)(value & 0x3ff);
-
+    m_sprite_texture[idx*kNumSpriteDataChannels + kSpriteDataChannel5bpp]      = (value & 0x8000) ? 1.0 : 0.0;
 }
 
 void SpriteController::write_aram(std::uint16_t idx, std::uint16_t value)

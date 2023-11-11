@@ -59,15 +59,7 @@ Slurm16SoC::~Slurm16SoC()
 
 void Slurm16SoC::executeOneCycle(bool& emitAudio, std::int16_t &left, std::int16_t &right, ElfDebug& edbg, bool& hs, bool& vs)
 {
-   // static int tick = 0;
-
     int irq = m_pcon.step(m_memory, emitAudio, left, right, hs, vs);
-
-   // tick ++;
-
-   // if (tick < 7)
-        m_cpu.execute_one_instruction(&m_pcon, m_memory, irq, edbg);
-   // if (tick == 10)
-   //     tick = 0;
+    m_cpu.execute_one_instruction(&m_pcon, m_memory, irq, edbg);
 }
 
