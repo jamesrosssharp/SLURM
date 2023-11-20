@@ -32,7 +32,7 @@ const float kSpriteDataChannelEndY 	= 6.5 / 9.0;
 const float kSpriteDataChannelAddress 	= 7.5 / 9.0;
 const float kSpriteDataChannel5bpp 	= 8.5 / 9.0;
 
-layout(std140, binding=0) buffer SSBOBlock {
+layout(binding=0) buffer SSBOBlock {
    int collide[256]; 
 };
 
@@ -40,7 +40,7 @@ void main()
 {
 	color.r = 0.0;
 
-	int prevSp = 255;
+	int prevSp = 15;
 
 	for (float spr = 0.0; spr < 1.0; spr += 1/256.0)
 	{
@@ -86,11 +86,11 @@ void main()
 					if (val != 0.0)
 				        {
 						color.r = (floor(val * 15.0) / 255.0) + (pal_hi / 16.0);
-						if (prevSp != 255)
+						if (prevSp != 15)
 						{
-							atomicOr(collide[prevSp], 1 << int(spr * 16.0));
+							atomicOr(collide[int(spr * 256.0)], 1 << prevSp);
 						}
-						prevSp = int(spr*256.0);
+						prevSp = int(spr*16.0);
 					}	
 				}
 			}
@@ -118,11 +118,11 @@ void main()
 					{
 					
 						color.r = (floor(val * 31.5) / 255.0) + (floor(pal_hi / 2.0) / 8.0);
-						if (prevSp != 255)
+						if (prevSp != 15)
 						{
-							atomicOr(collide[prevSp], 1 << int(spr * 16.0));
+							atomicOr(collide[int(spr * 256.0)], 1 << prevSp);
 						}
-						prevSp = int(spr*256.0);
+						prevSp = int(spr*16.0);
 					}
 
 				}

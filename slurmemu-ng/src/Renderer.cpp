@@ -223,11 +223,11 @@ float Renderer::renderScene(Slurm16SoC* soc, int w, int h)
     if (f != 0)
     {
 
-        //uint32_t *collide = (uint32_t*)glMapNamedBuffer(m_ssbo, GL_READ_ONLY);
+        uint32_t *collide = (uint32_t*)glMapNamedBuffer(m_ssbo, GL_READ_ONLY);
 
-       // soc->getGfxCore()->getSpConMut().setCollisionMap(collide);
+        soc->getGfxCore()->getSpConMut().setCollisionMap(collide);
 
-        //glUnmapNamedBuffer(m_ssbo);
+        glUnmapNamedBuffer(m_ssbo);
     }
 
     f = 1;

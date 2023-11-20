@@ -31,6 +31,7 @@ SOFTWARE.
 
 #include "SpriteController.h"
 
+#include <stdio.h>
 
 void SpriteController::write_xram(std::uint16_t idx, std::uint16_t value)
 {
@@ -82,10 +83,10 @@ std::uint16_t SpriteController::port_op(std::uint16_t port, bool write, std::uin
                 break;
         }
     }
-    //else if ((port & 0xf00) == 0x700)
-    //{
-    //    return m_collisionMap[port & 0xff];
-    //}
+    else if ((port & 0xf00) == 0x700)
+    {
+        return m_collisionMap[port & 0xff];
+    }
 
     return 0;    
 }
