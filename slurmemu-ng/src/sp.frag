@@ -1,9 +1,9 @@
-#version 330 core
+#version 430 core
 
 in vec2 TexCoord;
 
-//layout(location = 0) out vec4 color;
-out vec4 color; 
+layout(location = 0) out vec4 color;
+//out vec4 color; 
 
 uniform sampler2D mem_4bpp;
 uniform sampler2D mem_5bpp;
@@ -32,10 +32,15 @@ const float kSpriteDataChannelEndY 	= 6.5 / 9.0;
 const float kSpriteDataChannelAddress 	= 7.5 / 9.0;
 const float kSpriteDataChannel5bpp 	= 8.5 / 9.0;
 
+layout(std140, binding=0) buffer SSBOBlock {
+   int collide[256]; 
+};
 
 void main()
 {
 	color.r = 0.0;
+
+	int prevSp = 255;
 
 	for (float spr = 0.0; spr < 1.0; spr += 1/256.0)
 	{
@@ -79,7 +84,14 @@ void main()
 						val = texture(mem_4bpp, t).r;
 
 					if (val != 0.0)
+				        {
 						color.r = (floor(val * 15.0) / 255.0) + (pal_hi / 16.0);
+						if (prevSp != 255)
+						{
+							atomicOr(collide[prevSp], 1 << int(spr * 16.0));
+						}
+						prevSp = int(spr*256.0);
+					}	
 				}
 			}
 			else
@@ -103,7 +115,15 @@ void main()
 						val = texture(mem_5bpp, t).b;
 
 					if (val != 0.0)
+					{
+					
 						color.r = (floor(val * 31.5) / 255.0) + (floor(pal_hi / 2.0) / 8.0);
+						if (prevSp != 255)
+						{
+							atomicOr(collide[prevSp], 1 << int(spr * 16.0));
+						}
+						prevSp = int(spr*256.0);
+					}
 
 				}
 			}

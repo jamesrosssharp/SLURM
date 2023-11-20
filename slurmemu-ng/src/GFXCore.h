@@ -64,6 +64,7 @@ class GFXCore {
         const SpriteController& getSpCon() const { return m_sp; }
         const Copper& getCopper() const { return m_copper; }
 
+        SpriteController& getSpConMut() { return m_sp; }
         float getVideoMode() const { if (m_videoMode == kVideoMode320x240) return 1.0; else return 0.0; }  
 
     private:

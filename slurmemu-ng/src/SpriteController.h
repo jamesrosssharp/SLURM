@@ -32,6 +32,7 @@ SOFTWARE.
 #pragma once
 
 #include <cstdint>
+#include <string.h>
 
 class SpriteController 
 {
@@ -39,6 +40,8 @@ class SpriteController
         std::uint16_t port_op(std::uint16_t port, bool write, std::uint16_t wr_val);
 
         const float* getSpriteTexture() const { return &m_sprite_texture[0]; }
+
+        void setCollisionMap(uint32_t* collisionMap) { memcpy(m_collisionMap, collisionMap, sizeof(m_collisionMap)); }
 
     private:
 
@@ -61,5 +64,7 @@ class SpriteController
         static constexpr int kNumSpriteDataChannels = 9;
 
         float m_sprite_texture[256*kNumSpriteDataChannels]; 
+
+        uint32_t m_collisionMap[256];
 
 };

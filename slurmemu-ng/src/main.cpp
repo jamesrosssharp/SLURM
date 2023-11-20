@@ -185,14 +185,8 @@ int main(int argc, char** argv)
                 running = false;
             }
         }
-     
-        float fps = getFPS();
-
-        std::stringstream s;
-
-        s << "slurmemu-ng : " << fps << " FPS, PC = " << std::hex << std::setw(4) << std::setfill('0') << soc->get_cpu().get_pc();
-
-        SDL_SetWindowTitle(window, s.str().c_str());
+    
+        float msecs = 0;
 
         for (int i = 0; i < 418750; i++)
         {
@@ -211,39 +205,23 @@ int main(int argc, char** argv)
 
                 SDL_GetWindowSize(window, &w, &h);
 
-                /*glViewport(0, 0, w, h);
-                glClearColor(1.f, 0.f, 0.f, 0.f);
-                glClear(GL_COLOR_BUFFER_BIT);
-
-                glBindTexture(GL_TEXTURE_2D, tex);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, 800, 525, 0,  GL_RED, GL_UNSIGNED_BYTE, soc->getGfxCore()->getBG0Texture());
-                glBindTexture(GL_TEXTURE_2D, 0);
-
-                glBindTexture(GL_TEXTURE_2D, tex);
-                glEnable(GL_TEXTURE_2D);
-                glBegin(GL_QUADS);
-                glTexCoord2i(0, 1); glVertex2f(-1, -1);
-                glTexCoord2i(1, 1); glVertex2f(1, -1);
-                glTexCoord2i(1, 0); glVertex2f(1, 1);
-                glTexCoord2i(0, 0); glVertex2f(-1, 1);
-                glEnd();
-                glDisable(GL_TEXTURE_2D);
-                glBindTexture(GL_TEXTURE_2D, 0);
-
-                glFlush();
-                */
-
-                r.renderScene(soc, w, h);
+                msecs = r.renderScene(soc, w, h);
     
                 SDL_GL_SwapWindow(window);
 
+
+                
             }
-        
         }
+        
+        float fps = getFPS();
+        
+        std::stringstream s;
+
+        s << "slurmemu-ng : " << fps << " FPS, PC = " << std::hex << std::setw(4) << std::setfill('0') << soc->get_cpu().get_pc() << " R: " << msecs << " ms";
+
+        SDL_SetWindowTitle(window, s.str().c_str());
+
 
     }
 

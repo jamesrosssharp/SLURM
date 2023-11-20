@@ -35,8 +35,10 @@ SOFTWARE.
 #include <sstream>
 
 #include <cassert>
+#include <chrono>
 
 #include "GFXConst.h"
+#include <string.h>
 
 static const char* vertex_shader =
 "#version 330 core                                                     \n"
@@ -188,16 +190,18 @@ Renderer::Renderer()    :
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, TOTAL_X, TOTAL_Y, 0, GL_RED, GL_UNSIGNED_BYTE, 0);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
     glBindTexture(GL_TEXTURE_2D, m_textures[kSpriteTextureOut]);
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, TOTAL_X, TOTAL_Y, 0, GL_RED, GL_UNSIGNED_BYTE, 0);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
+    glGenBuffers(1, &m_ssbo);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, m_ssbo);
 
 }
         
@@ -207,8 +211,28 @@ Renderer::~Renderer()
 
 }
 
-void Renderer::renderScene(Slurm16SoC* soc, int w, int h)
+float Renderer::renderScene(Slurm16SoC* soc, int w, int h)
 {
+    
+    std::chrono::time_point<std::chrono::high_resolution_clock> oldTime = std::chrono::high_resolution_clock::now();
+
+    // Map the collision memory
+
+    static int f = 0;
+
+    if (f != 0)
+    {
+
+        //uint32_t *collide = (uint32_t*)glMapNamedBuffer(m_ssbo, GL_READ_ONLY);
+
+       // soc->getGfxCore()->getSpConMut().setCollisionMap(collide);
+
+        //glUnmapNamedBuffer(m_ssbo);
+    }
+
+    f = 1;
+
+
     // Render BG0
   
     glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer);
@@ -288,6 +312,9 @@ void Renderer::renderScene(Slurm16SoC* soc, int w, int h)
     glUniform1i(glGetUniformLocation(m_spriteShaderProgram, "mem_4bpp"), 1);
     glUniform1i(glGetUniformLocation(m_spriteShaderProgram, "mem_5bpp"), 4);
     glUniform1i(glGetUniformLocation(m_spriteShaderProgram, "sp_dat"), 3);
+
+    memset(m_collisionSSBO, 0, sizeof(m_collisionSSBO));
+    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(m_collisionSSBO), &m_collisionSSBO, GL_DYNAMIC_DRAW);
 
     glBindVertexArray(m_vertexArrayID);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
@@ -399,6 +426,10 @@ void Renderer::renderScene(Slurm16SoC* soc, int w, int h)
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
     glDisable(GL_BLEND);
+
+       
+    auto msecs = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - oldTime);
+    return msecs.count();
 }
 
 GLuint Renderer::loadShaders(const char* vertex_shader, const char* fragment_shader)
