@@ -34,7 +34,6 @@ SOFTWARE.
 
 #include <cstdint>
 #include <thread>
-#include <semaphore>
 
 #include "Copper.h"
 #include "BackgroundController.h"
@@ -69,22 +68,12 @@ class GFXCore {
 
     private:
 
-        static void bg0_render_th(void* gfx);
-        static void bg1_render_th(void* gfx);
-        void bg0_render_loop();
-        void bg1_render_loop();
-
         std::uint16_t m_x;
         std::uint16_t m_y;
 
         Copper m_copper; 
    
         int m_videoMode;  
-
-        std::thread m_bg0_renderer;
-        std::binary_semaphore m_bg0_sem;
-        std::thread m_bg1_renderer;
-        std::binary_semaphore m_bg1_sem;
 
         std::uint16_t m_y_thread;
         std::uint16_t m_y_thread_actual;

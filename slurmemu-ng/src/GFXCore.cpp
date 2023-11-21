@@ -33,28 +33,10 @@ SOFTWARE.
 #include <cstdint>
 #include <string.h>
 
-void GFXCore::bg0_render_th(void* gfx)
-{
-   GFXCore* core = (GFXCore*)gfx;
-   core->bg0_render_loop(); 
-}
-
-void GFXCore::bg1_render_th(void* gfx)
-{
-   GFXCore* core = (GFXCore*)gfx;
-   core->bg1_render_loop(); 
-}
-
-
-
 GFXCore::GFXCore()  :
     m_x(0),
-    m_y(0),
-    m_bg0_sem(0),
-    m_bg1_sem(0)
+    m_y(0)
 {
-//    m_bg0_renderer = std::thread(bg0_render_th, this);
-//    m_bg1_renderer = std::thread(bg1_render_th, this);
 }
 
 GFXCore::~GFXCore()
@@ -124,9 +106,6 @@ void GFXCore::step(std::uint16_t* mem, bool& hs_int, bool& vs_int)
     if (hs_int)
     {
         memcpy(&m_paletteTexture[kPaletteSize*m_y], m_palette, kPaletteSize); 
-        // Wake render threads
-        //m_bg0_sem.release();
-        //m_bg1_sem.release();
     }
 
     m_x ++;
@@ -141,20 +120,3 @@ void GFXCore::step(std::uint16_t* mem, bool& hs_int, bool& vs_int)
     }
 }
 
-void GFXCore::bg0_render_loop()
-{
-    while (true)
-    {
-        m_bg0_sem.acquire();
-        m_bg.render_bg0(m_y_thread, m_y_thread_actual, m_mem_thread);
-    }
-}
-
-void GFXCore::bg1_render_loop()
-{
-    while (true)
-    {
-        m_bg1_sem.acquire();
-        m_bg.render_bg1(m_y_thread, m_y_thread_actual, m_mem_thread);
-    }
-}
