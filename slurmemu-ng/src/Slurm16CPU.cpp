@@ -770,10 +770,22 @@ void Slurm16CPU::single_reg_alu_op(Slurm16CPU* cpu, std::uint16_t instruction, s
             cpu->m_s = 1;
             break;
         case 13: /* STF */
-            throw std::runtime_error("STF not implemented!\n");
+            {
+                uint16_t v = 0;
+                if (cpu->m_c) v |= 2;
+                if (cpu->m_z) v |= 1;
+                if (cpu->m_s) v |= 4;
+                if (cpu->m_v) v |= 8;
+                *r_srcdest = v;
+            }
             break;
         case 14: /* RSF */
-            throw std::runtime_error("STF not implemented!\n");
+            {
+                if (*r_srcdest & 2) cpu->m_c = 1; else cpu->m_c = 0;
+                if (*r_srcdest & 1) cpu->m_z = 1; else cpu->m_z = 0;
+                if (*r_srcdest & 4) cpu->m_s = 1; else cpu->m_s = 0;
+                if (*r_srcdest & 8) cpu->m_v = 1; else cpu->m_v = 0;
+            } 
             break;
         default: break;
     } 
