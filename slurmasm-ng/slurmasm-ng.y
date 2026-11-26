@@ -219,6 +219,7 @@ int main(int argc, char** argv) {
 	if (optind == argc)
 	{
 		std::cout << "ERROR: no input files" << std::endl;
+		exit(EXIT_FAILURE);
 	}
 
 	// open a file handle to a particular file:
