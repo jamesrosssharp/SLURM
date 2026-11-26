@@ -1,7 +1,14 @@
+#include <game_io.h>
 
 #define COUNT_OF(x) (sizeof(x)/sizeof(x[0]))
 
 extern void load_palette(short* palette, int offset, int len);
+
+/* Implemented in sprite.asm */
+void load_sprite_x(short sprite, short x);
+void load_sprite_y(short sprite, short y);
+void load_sprite_h(short sprite, short h);
+void load_sprite_a(short sprite, short a);
 
 extern short mandelbrot_palette;
 

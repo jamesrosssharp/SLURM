@@ -14,6 +14,7 @@ uniform float tile_size;
 uniform float tilemap_x;
 uniform float tilemap_y;
 uniform float enable;
+uniform float row_tiles;	// tile map row length (stride) in tiles
 
 
 void main()
@@ -25,8 +26,10 @@ void main()
 	else
 	{
 
-		float addrm = tilemap_addr*2 + (floor((TexCoord.y*525.0 + tilemap_y)/tile_size)*64.0);
-		addrm += ((TexCoord.x*800.0 + tilemap_x - 16.0)/tile_size);
+		// As background_controller2.v: the X position wraps within a row
+		float column = mod(floor((TexCoord.x*800.0 + tilemap_x - 16.0)/tile_size), row_tiles);
+		float addrm = tilemap_addr*2 + (floor((TexCoord.y*525.0 + tilemap_y)/tile_size)*row_tiles);
+		addrm += column;
 
 		vec2 tm = vec2(fract(floor(addrm)/256.0), floor(addrm/256.0)/512.0);
 

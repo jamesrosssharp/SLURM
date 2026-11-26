@@ -37,6 +37,7 @@ SOFTWARE.
  */
 
 #include <malloc.h>
+#include "printf.h"
 
 struct heap_block 
 {

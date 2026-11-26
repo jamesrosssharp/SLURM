@@ -1,3 +1,4 @@
+	.section text
 //
 //
 //	Multiply 32 bit frequency by c5 speed and divide to get frequency for playing 	
@@ -84,3 +85,7 @@ note_mul_asm_hi:
 
 
 
+
+	.global note_mul_asm
+	.global note_mul_asm_hi
+	.end

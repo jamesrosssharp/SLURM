@@ -2,3 +2,6 @@ assets.asm
 *.bin
 bundle.h
 map1.map
+frames.h
+spawns.h
+sprites_preview.png

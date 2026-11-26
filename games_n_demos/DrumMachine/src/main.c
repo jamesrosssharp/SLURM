@@ -1,4 +1,5 @@
 
+#include <game_io.h>
 #include <slurmsng.h>
 #include <slurminterrupt.h>
 #include <slurmflash.h>

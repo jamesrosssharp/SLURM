@@ -1,3 +1,8 @@
+#include <game_io.h>
+
+/* Implemented in mix.asm */
+struct Wave;
+void __asm_mix_audio(unsigned short target_address, struct Wave* wave);
 
 extern void load_copper_list(short* list, int len);
 extern void load_palette(short* palette, int offset, int len);

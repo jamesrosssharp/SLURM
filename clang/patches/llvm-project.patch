@@ -1,0 +1,237 @@
+diff --git a/clang/lib/Basic/CMakeLists.txt b/clang/lib/Basic/CMakeLists.txt
+index f8a31c890..06a6e1943 100644
+--- a/clang/lib/Basic/CMakeLists.txt
++++ b/clang/lib/Basic/CMakeLists.txt
+@@ -108,6 +108,7 @@ add_clang_library(clangBasic
+   Targets/LoongArch.cpp
+   Targets/M68k.cpp
+   Targets/MSP430.cpp
++  Targets/Slurm16.cpp
+   Targets/Mips.cpp
+   Targets/NVPTX.cpp
+   Targets/OSTargets.cpp
+diff --git a/clang/lib/Basic/Targets.cpp b/clang/lib/Basic/Targets.cpp
+index 5d1157889..ecfa7606c 100644
+--- a/clang/lib/Basic/Targets.cpp
++++ b/clang/lib/Basic/Targets.cpp
+@@ -26,6 +26,7 @@
+ #include "Targets/LoongArch.h"
+ #include "Targets/M68k.h"
+ #include "Targets/MSP430.h"
++#include "Targets/Slurm16.h"
+ #include "Targets/Mips.h"
+ #include "Targets/NVPTX.h"
+ #include "Targets/OSTargets.h"
+@@ -275,6 +276,9 @@ std::unique_ptr<TargetInfo> AllocateTarget(const llvm::Triple &Triple,
+   case llvm::Triple::msp430:
+     return std::make_unique<MSP430TargetInfo>(Triple, Opts);
+ 
++  case llvm::Triple::slurm16:
++    return std::make_unique<Slurm16TargetInfo>(Triple, Opts);
++
+   case llvm::Triple::mips:
+     switch (os) {
+     case llvm::Triple::Linux:
+diff --git a/clang/lib/CodeGen/CMakeLists.txt b/clang/lib/CodeGen/CMakeLists.txt
+index a05b31f97..0ef8d54ed 100644
+--- a/clang/lib/CodeGen/CMakeLists.txt
++++ b/clang/lib/CodeGen/CMakeLists.txt
+@@ -142,6 +142,7 @@ add_clang_library(clangCodeGen
+   Targets/LoongArch.cpp
+   Targets/M68k.cpp
+   Targets/MSP430.cpp
++  Targets/Slurm16.cpp
+   Targets/Mips.cpp
+   Targets/NVPTX.cpp
+   Targets/PNaCl.cpp
+diff --git a/clang/lib/CodeGen/CodeGenModule.cpp b/clang/lib/CodeGen/CodeGenModule.cpp
+index 678be0718..91a4c0c9c 100644
+--- a/clang/lib/CodeGen/CodeGenModule.cpp
++++ b/clang/lib/CodeGen/CodeGenModule.cpp
+@@ -223,6 +223,9 @@ createTargetCodeGenInfo(CodeGenModule &CGM) {
+   case llvm::Triple::msp430:
+     return createMSP430TargetCodeGenInfo(CGM);
+ 
++  case llvm::Triple::slurm16:
++    return createSlurm16TargetCodeGenInfo(CGM);
++
+   case llvm::Triple::riscv32:
+   case llvm::Triple::riscv64: {
+     StringRef ABIStr = Target.getABI();
+diff --git a/clang/lib/CodeGen/TargetInfo.h b/clang/lib/CodeGen/TargetInfo.h
+index b4057d369..ab6d91828 100644
+--- a/clang/lib/CodeGen/TargetInfo.h
++++ b/clang/lib/CodeGen/TargetInfo.h
+@@ -542,6 +542,9 @@ createWindowsMIPSTargetCodeGenInfo(CodeGenModule &CGM, bool IsOS32);
+ std::unique_ptr<TargetCodeGenInfo>
+ createMSP430TargetCodeGenInfo(CodeGenModule &CGM);
+ 
++std::unique_ptr<TargetCodeGenInfo>
++createSlurm16TargetCodeGenInfo(CodeGenModule &CGM);
++
+ std::unique_ptr<TargetCodeGenInfo>
+ createNVPTXTargetCodeGenInfo(CodeGenModule &CGM);
+ 
+diff --git a/clang/lib/Driver/CMakeLists.txt b/clang/lib/Driver/CMakeLists.txt
+index 0268ec49e..839ff4ee7 100644
+--- a/clang/lib/Driver/CMakeLists.txt
++++ b/clang/lib/Driver/CMakeLists.txt
+@@ -70,6 +70,7 @@ add_clang_library(clangDriver
+   ToolChains/MipsLinux.cpp
+   ToolChains/MinGW.cpp
+   ToolChains/MSP430.cpp
++  ToolChains/Slurm16.cpp
+   ToolChains/MSVC.cpp
+   ToolChains/NaCl.cpp
+   ToolChains/NetBSD.cpp
+diff --git a/clang/lib/Driver/Driver.cpp b/clang/lib/Driver/Driver.cpp
+index 55748c0bc..bdc06fbd3 100644
+--- a/clang/lib/Driver/Driver.cpp
++++ b/clang/lib/Driver/Driver.cpp
+@@ -32,6 +32,7 @@
+ #include "ToolChains/Lanai.h"
+ #include "ToolChains/Linux.h"
+ #include "ToolChains/MSP430.h"
++#include "ToolChains/Slurm16.h"
+ #include "ToolChains/MSVC.h"
+ #include "ToolChains/Managarm.h"
+ #include "ToolChains/MinGW.h"
+@@ -6958,6 +6959,10 @@ const ToolChain &Driver::getToolChain(const ArgList &Args,
+       case llvm::Triple::msp430:
+         TC = std::make_unique<toolchains::MSP430ToolChain>(*this, Target, Args);
+         break;
++      case llvm::Triple::slurm16:
++        TC = std::make_unique<toolchains::Slurm16ToolChain>(*this, Target,
++                                                            Args);
++        break;
+       case llvm::Triple::riscv32:
+       case llvm::Triple::riscv64:
+         TC = std::make_unique<toolchains::BareMetal>(*this, Target, Args);
+diff --git a/clang/lib/Driver/ToolChain.cpp b/clang/lib/Driver/ToolChain.cpp
+index 07a3ae925..7a670cf87 100644
+--- a/clang/lib/Driver/ToolChain.cpp
++++ b/clang/lib/Driver/ToolChain.cpp
+@@ -74,7 +74,8 @@ static ToolChain::RTTIMode CalculateRTTIMode(const ArgList &Args,
+   }
+ 
+   // -frtti is default, except for the PS4/PS5 and DriverKit.
+-  bool NoRTTI = Triple.isPS() || Triple.isDriverKit();
++  bool NoRTTI = Triple.isPS() || Triple.isDriverKit() ||
++                Triple.getArch() == llvm::Triple::slurm16;
+   return NoRTTI ? ToolChain::RM_Disabled : ToolChain::RM_Enabled;
+ }
+ 
+diff --git a/clang/lib/Driver/ToolChains/Clang.cpp b/clang/lib/Driver/ToolChains/Clang.cpp
+index 626133223..d8e5dae98 100644
+--- a/clang/lib/Driver/ToolChains/Clang.cpp
++++ b/clang/lib/Driver/ToolChains/Clang.cpp
+@@ -193,6 +193,7 @@ static bool addExceptionArgs(const ArgList &Args, types::ID InputType,
+   if (types::isCXX(InputType)) {
+     // Disable C++ EH by default on XCore and PS4/PS5.
+     bool CXXExceptionsEnabled = Triple.getArch() != llvm::Triple::xcore &&
++                                Triple.getArch() != llvm::Triple::slurm16 &&
+                                 !Triple.isPS() && !Triple.isDriverKit();
+     Arg *ExceptionArg = Args.getLastArg(
+         options::OPT_fcxx_exceptions, options::OPT_fno_cxx_exceptions,
+diff --git a/clang/lib/Driver/ToolChains/CommonArgs.cpp b/clang/lib/Driver/ToolChains/CommonArgs.cpp
+index 8d3775de9..0e500e44b 100644
+--- a/clang/lib/Driver/ToolChains/CommonArgs.cpp
++++ b/clang/lib/Driver/ToolChains/CommonArgs.cpp
+@@ -80,6 +80,7 @@ static bool useFramePointerForTargetByDefault(const llvm::opt::ArgList &Args,
+   case llvm::Triple::wasm32:
+   case llvm::Triple::wasm64:
+   case llvm::Triple::msp430:
++  case llvm::Triple::slurm16:
+     // XCore never wants frame pointers, regardless of OS.
+     // WebAssembly never wants frame pointers.
+     return false;
+diff --git a/llvm/include/llvm/TargetParser/Triple.h b/llvm/include/llvm/TargetParser/Triple.h
+index 657f42303..33157acd9 100644
+--- a/llvm/include/llvm/TargetParser/Triple.h
++++ b/llvm/include/llvm/TargetParser/Triple.h
+@@ -108,7 +108,8 @@ public:
+     renderscript32, // 32-bit RenderScript
+     renderscript64, // 64-bit RenderScript
+     ve,             // NEC SX-Aurora Vector Engine
+-    LastArchType = ve
++    slurm16,        // SLURM16: slurm16
++    LastArchType = slurm16
+   };
+   enum SubArchType {
+     NoSubArch,
+diff --git a/llvm/lib/TargetParser/Triple.cpp b/llvm/lib/TargetParser/Triple.cpp
+index 0584c941d..0aaf4b758 100644
+--- a/llvm/lib/TargetParser/Triple.cpp
++++ b/llvm/lib/TargetParser/Triple.cpp
+@@ -53,6 +53,7 @@ StringRef Triple::getArchTypeName(ArchType Kind) {
+   case mips:           return "mips";
+   case mipsel:         return "mipsel";
+   case msp430:         return "msp430";
++  case slurm16:        return "slurm16";
+   case nvptx64:        return "nvptx64";
+   case nvptx:          return "nvptx";
+   case ppc64:          return "powerpc64";
+@@ -443,6 +444,7 @@ Triple::ArchType Triple::getArchTypeForLLVMName(StringRef Name) {
+     .Case("mips64", mips64)
+     .Case("mips64el", mips64el)
+     .Case("msp430", msp430)
++    .Case("slurm16", slurm16)
+     .Case("ppc64", ppc64)
+     .Case("ppc32", ppc)
+     .Case("ppc", ppc)
+@@ -587,6 +589,7 @@ static Triple::ArchType parseArch(StringRef ArchName) {
+           .Case("avr", Triple::avr)
+           .Case("m68k", Triple::m68k)
+           .Case("msp430", Triple::msp430)
++          .Case("slurm16", Triple::slurm16)
+           .Cases("mips", "mipseb", "mipsallegrex", "mipsisa32r6", "mipsr6",
+                  Triple::mips)
+           .Cases("mipsel", "mipsallegrexel", "mipsisa32r6el", "mipsr6el",
+@@ -958,6 +961,7 @@ static Triple::ObjectFormatType getDefaultFormat(const Triple &T) {
+   case Triple::mips64:
+   case Triple::mips64el:
+   case Triple::mips:
++  case Triple::slurm16:
+   case Triple::msp430:
+   case Triple::nvptx64:
+   case Triple::nvptx:
+@@ -1667,6 +1671,7 @@ unsigned Triple::getArchPointerBitWidth(llvm::Triple::ArchType Arch) {
+ 
+   case llvm::Triple::avr:
+   case llvm::Triple::msp430:
++  case llvm::Triple::slurm16:
+     return 16;
+ 
+   case llvm::Triple::aarch64_32:
+@@ -1771,6 +1776,7 @@ Triple Triple::get32BitArchVariant() const {
+   case Triple::avr:
+   case Triple::bpfeb:
+   case Triple::bpfel:
++  case Triple::slurm16:
+   case Triple::msp430:
+   case Triple::systemz:
+   case Triple::ve:
+@@ -1854,6 +1860,7 @@ Triple Triple::get64BitArchVariant() const {
+   case Triple::kalimba:
+   case Triple::lanai:
+   case Triple::m68k:
++  case Triple::slurm16:
+   case Triple::msp430:
+   case Triple::r600:
+   case Triple::shave:
+@@ -1939,6 +1946,7 @@ Triple Triple::getBigEndianArchVariant() const {
+   case Triple::kalimba:
+   case Triple::loongarch32:
+   case Triple::loongarch64:
++  case Triple::slurm16:
+   case Triple::msp430:
+   case Triple::nvptx64:
+   case Triple::nvptx:
+@@ -2044,6 +2052,7 @@ bool Triple::isLittleEndian() const {
+   case Triple::loongarch64:
+   case Triple::mips64el:
+   case Triple::mipsel:
++  case Triple::slurm16:
+   case Triple::msp430:
+   case Triple::nvptx64:
+   case Triple::nvptx:

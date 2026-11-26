@@ -124,6 +124,12 @@ void Linker::consumeFileSections(LinkerSection& lsec, ElfFile* e, const std::vec
 
 						if (m_symtab.find(lsym.name) != m_symtab.end())
 						{
+							// Several weak definitions of a symbol (e.g. C++ inline
+							// functions, templates and vtables emitted in every object
+							// that uses them) are allowed: the first one is used.
+							if (sym.is_weak())
+								continue;
+
 							std::stringstream ss;
 							ss << "Error: duplicate symbol '" << lsym.name << "' redefined in " << e->getFileName() << std::endl;
 							throw std::runtime_error(ss.str());  
@@ -488,7 +494,9 @@ void Linker::link(const char* outFile)
 				{
 					// The symbol exists only as a weak symbol. Rename it for the output writing.
 					LinkerSymbol *sym = &(*m_symtab.find(weak)).second; 
-					sym->name = sym->name.substr(6);
+					// (only once: it may be referenced by several relocations)
+					if (sym->name.compare(0, 6, ".weak.") == 0)
+						sym->name = sym->name.substr(6);
 					rela.resolve(sym);
 				}
 			}
@@ -644,6 +652,11 @@ bool Linker::includedSectionUsed(LinkerSection& sec)
 					if (rela.symbol == psym.second.name)
 						return true; 
 
+					// Weak symbols are stored as ".weak.<name>", but are referenced
+					// by their plain name.
+					if (psym.second.name.compare(0, 6, ".weak.") == 0 &&
+					    rela.symbol == psym.second.name.substr(6))
+						return true;
 				}
 			}
 		}
@@ -776,6 +789,12 @@ void Linker::analyzeFileSections(ElfFile* e, const std::vector<std::string>& sec
 
 						if (m_includedSymtab.find(lsym.name) != m_includedSymtab.end())
 						{
+							// Several weak definitions of a symbol (e.g. C++ inline
+							// functions, templates and vtables emitted in every object
+							// that uses them) are allowed: the first one is used.
+							if (sym.is_weak())
+								continue;
+
 							std::stringstream ss;
 							ss << "Error: duplicate symbol '" << lsym.name << "' redefined in " << e->getFileName() << std::endl;
 							throw std::runtime_error(ss.str());  

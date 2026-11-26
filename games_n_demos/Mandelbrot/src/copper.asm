@@ -1,3 +1,4 @@
+	.section text
 
 /* r4 = Copper list address
  * r5 = Copper list length */
@@ -14,7 +15,7 @@ load_copper_list.loop:
 
 load_bl_copper_list:
 	mov r4, bloodlust_copper_list
-	mov r5, (end_bl_copper_list - bloodlust_copper_list) >> 1
+	mov r5, 71 // (end_bl_copper_list - bloodlust_copper_list) >> 1: slurmasm-ng cannot subtract labels
 	mov r2, r0
 load_bl_copper_list.loop:
 	ld r1, [r4, 0]
@@ -151,7 +152,18 @@ start_mirror:
 		dw 0xce55
 start_wave:
 		.times 16 dw 0xb000
-		dw 0x1000 | ((start_mirror - bloodlust_copper_list)>>1) // jump to start mirror
+		dw 0x1000 + 34 // 0x1000 | ((start_mirror - bloodlust_copper_list) >> 1) // jump to start mirror (offset < 0x1000)
 		dw 0x2fff // wait forever
 end_bl_copper_list:
 
+
+	.global load_copper_list
+	.global load_bl_copper_list
+	.global update_bl_copper_list
+	.global wave
+	.global wave_phase
+	.global bloodlust_copper_list
+	.global start_mirror
+	.global start_wave
+	.global end_bl_copper_list
+	.end

@@ -1,39 +1,13 @@
-CC=../../slurmcc/lcc/lcc/build/rcc
-CPP=cpp
-AS=../../slurmasm/slurmasm
+NAME = captor
 
-SRC_DIR=src
+LEGACY_ASM = assets/assets.asm
+BUNDLE     = assets/bundle.bin
+EXTRA_DEPS = assets/frames.h assets/spawns.h assets/bundle.h
 
-TARGET=build/captor.bin
+include ../game.mk
 
-all: $(TARGET)
+ASSETS_SRC = assets/sprites1.png assets/bg_tiles_256x256x16.png assets/Background.tmx \
+	     assets/title.png assets/magnus.png assets/Ace1.png assets/Ace2.png
 
-SRCS = $(wildcard src/*.c)
-PREPROCESSED = $(patsubst %.c,build/%.c1,$(SRCS))
-ASM_SRCS = $(wildcard src/*.asm)
-
-ASSETS_SRC = assets/sprites1.png assets/bg_tiles_256x256x16.png assets/Background.tmx assets/bg_tiles.tsx
-ASSETS_ASM = assets/assets.asm
-ASSETS_BIN = assets/bundle.bin
-
-$(ASSETS_ASM): $(ASSETS_SRC) assets/gen-assets.py
+assets/assets.asm assets/bundle.bin assets/frames.h assets/spawns.h assets/bundle.h: $(ASSETS_SRC) assets/gen-assets.py
 	cd assets; python3 gen-assets.py
-
-$(TARGET): $(PREPROCESSED) $(ASM_SRCS) $(ASSETS_ASM) $(ASSETS_BIN) src/top.s
-	cat $(PREPROCESSED) > build/all.c1
-	$(CC) -target=slurm16 -c build/all.c1 -o build/all.asm
-	cat src/top.s $(ASM_SRCS) build/all.asm $(ASSETS_ASM)  > build/all_complete.asm
-	echo "\n\n\t.end" >> build/all_complete.asm
-	$(AS) -o build/all_complete.bin build/all_complete.asm
-	# Generate bundle
-	dd if=/dev/zero of=$@ bs=1M count=3
-	dd if=build/all_complete.bin of=$@ 
-	dd if=$(ASSETS_BIN) of=$@ bs=65024 seek=1	
-
-
-build/%.c1: %.c
-	mkdir -p build/src
-	$(CPP) $^ -o $@
-
-clean:
-	rm -r build

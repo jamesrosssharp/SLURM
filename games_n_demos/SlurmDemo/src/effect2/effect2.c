@@ -34,6 +34,10 @@ SOFTWARE.
 #include <applet.h>
 #include <bundle.h>
 
+/* Defined below / in effect2.asm */
+void blit_text(unsigned short fb_upper_lo, unsigned short text_upper_lo, const char* text, int x, int y, int n);
+void clear_fb(unsigned short fb_upper_lo);
+
 struct applet_vectors *vtors = (struct applet_vectors*)(APPLET_CODE_BASE);
 
 #define COPPER_BAR_HEIGHT 16
@@ -51,7 +55,8 @@ struct copper_bar bar2 = {0, 0, 0, 0, 1};
 
 short cpr_idx = 0;
 
-unsigned short the_copper_list[512];
+/* do_sound_copper_bars() writes 2 + 128 * 4 + 2 = 516 entries */
+unsigned short the_copper_list[516];
 
 unsigned short bar1_colors[COPPER_BAR_HEIGHT] = {
 	0x0000,	// 0

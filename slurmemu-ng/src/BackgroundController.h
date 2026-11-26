@@ -64,6 +64,8 @@ class BackgroundCore {
         float get_tilemap_x() const { return m_tilemap_x; }
         float get_tilemap_y() const { return m_tilemap_y; }
         bool get_enable() const { return m_enable; }
+        // Tile map row length in tiles: stride 0 = 256, 1 = 128, 2 = 64, 3 = 32
+        float get_tilemap_row_tiles() const { return (float)(256 >> (m_tilemap_stride & 3)); }
 
     private:
 

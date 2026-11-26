@@ -115,8 +115,8 @@ tunnel_render_asm:
 	st [r13, 16], r12
 	st [r13, 18], r15
 
-	ld r11, [r13, 0x30]
-	ld r12, [r13, 0x34]
+	ld r11, [r13, 0x20] // 5th argument (shiftU): [sp + 0] on entry, clang calling convention
+	ld r12, [r13, 0x22] // 6th argument (shiftV): [sp + 2] on entry
 
 
 	mov r15, r4

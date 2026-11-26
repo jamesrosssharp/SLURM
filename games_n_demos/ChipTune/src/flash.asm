@@ -1,3 +1,4 @@
+	.section text
 
 /*
  *
@@ -78,3 +79,8 @@ add_offset:
 	add r13, 16
 	ret
 
+
+	.global calculate_flash_offset_hi
+	.global calculate_flash_offset_lo
+	.global add_offset
+	.end

@@ -1,3 +1,4 @@
+	.section text
 
 /* r4 = Copper list address
  * r5 = Copper list length */
@@ -14,7 +15,7 @@ load_copper_list.loop:
 
 load_bl_copper_list:
 	mov r4, bloodlust_copper_list
-	mov r5, (end_bl_copper_list - bloodlust_copper_list) >> 1
+	mov r5, 73 // (end_bl_copper_list - bloodlust_copper_list) >> 1: slurmasm-ng cannot subtract labels
 	mov r2, r0
 load_bl_copper_list.loop:
 	ld r1, [r4, 0]
@@ -97,63 +98,76 @@ bloodlust_copper_list:
 		dw 0xd00f
 		dw 0xb001
 		dw 0x6000
-		dw 0x7008
+		dw 0x7009
 		dw 0x6100
-		dw 0x7008
+		dw 0x7009
 		dw 0x6200
-		dw 0x7008
+		dw 0x7009
 		dw 0x6300
-		dw 0x7008
+		dw 0x7009
 		dw 0x6400
-		dw 0x7008
+		dw 0x7009
 		dw 0x6500
-		dw 0x7008
+		dw 0x7009
 		dw 0x6600
-		dw 0x7008
+		dw 0x7009
 		dw 0x6700
-		dw 0x7008
+		dw 0x7009
 		dw 0x6800
-		dw 0x7008
+		dw 0x7009
 		dw 0x6900
-		dw 0x7008
+		dw 0x7009
 		dw 0x6a00
-		dw 0x7008
+		dw 0x7009
 		dw 0x6b00
-		dw 0x7008
+		dw 0x7009
 		dw 0x6c00
-		dw 0x7008
+		dw 0x7009
 		dw 0x6d00
-		dw 0x7008
+		dw 0x7009
 		dw 0x6e00
-		dw 0x7008
+		dw 0x7009
 		dw 0x6f00
-		dw 0x7008
-		dw 0x2096
+		dw 0x7009
+		dw 0x20b0	// wait for the water line: raster 176 = WATER_LINE + RASTER_Y_OFS (video.h)
 		
 start_mirror:
+		/* The water gets lighter towards the water line: the colour is the
+		 * one after the last "skip if v >= n" not taken. Raster lines. */
 		dw 0xd007
 		dw 0xc055
-		dw 0x40f0 // skip if v > 240
+		dw 0x4100 // skip if v >= 256
 		dw 0xc655
-		dw 0x40e8 // skip if v > 232 
+		dw 0x40f8 // skip if v >= 248
 		dw 0xc755
-		dw 0x40e0 
+		dw 0x40f0
 		dw 0xc855
-		dw 0x40d8 
+		dw 0x40e8
 		dw 0xc955
-		dw 0x40d0 
+		dw 0x40e0
 		dw 0xca55
-		dw 0x40c8 
+		dw 0x40d8
 		dw 0xcb55
-		dw 0x40c0 
+		dw 0x40d0
 		dw 0xcc55
-		dw 0x40b8 
+		dw 0x40c8
 		dw 0xcd55
-		dw 0x40b0 // skip if v > 160 
+		dw 0x40c0 // skip if v >= 192
 		dw 0xce55
 start_wave:
 		.times 16 dw 0xb000
-		dw 0x1000 | ((start_mirror - bloodlust_copper_list)>>1) // jump to start mirror
+		dw 0x1000 + 35 // 0x1000 | ((start_mirror - bloodlust_copper_list) >> 1) // jump to start mirror (offset < 0x1000)
 		dw 0x2fff // wait forever
 end_bl_copper_list:
 
+
+	.global load_copper_list
+	.global load_bl_copper_list
+	.global update_bl_copper_list
+	.global wave
+	.global wave_phase
+	.global bloodlust_copper_list
+	.global start_mirror
+	.global start_wave
+	.global end_bl_copper_list
+	.end

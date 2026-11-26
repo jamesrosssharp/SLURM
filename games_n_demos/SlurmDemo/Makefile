@@ -1,9 +1,5 @@
-CC=../../slurmcc/lcc/lcc/build/rcc
-CPP=cpp
-AS=../../slurmasm-ng/slurmasm-ng
-LD=../../slurmlink/slurmlink
-OBJDUMP=../../slurm-objdump/slurm-objdump
-OBJCOPY=../../slurm-objcopy/slurm-objcopy
+# The toolchain (clang, slurmasm-ng, slurmlink) is set up by
+# common/clang.mk, included from slurmos.mk below.
 
 SRC_DIR=src
 
@@ -17,9 +13,7 @@ C_SRC	= $(wildcard $(SRC_DIR)/*.c)
 ASM_SRC	= $(wildcard $(SRC_DIR)/*.asm)
 HEADERS	= $(wildcard $(SRC_DIR)/*.h)
 
-CPP_SRC = $(patsubst %.c,$(BUILD_DIR)/%.c1,$(notdir $(C_SRC)))
-C_ASM_SRC = $(patsubst %.c1,%.asm,$(CPP_SRC))
-C_OBJ = $(patsubst %.asm,%.o,$(C_ASM_SRC))
+C_OBJ = $(patsubst %.c,$(BUILD_DIR)/%.o,$(notdir $(C_SRC)))
 
 CPP_ASM = $(patsubst %.asm,$(BUILD_DIR)/%.asm1,$(notdir $(ASM_SRC)))
 ASM_OBJ = $(patsubst %.asm1,$(BUILD_DIR)/%.asmo,$(notdir $(CPP_ASM)))
@@ -37,7 +31,7 @@ APP_BUNDLE = $(BUILD_DIR)/applet_bundle.bin
 
 include ../../common/slurmos/slurmos.mk
 
-.PRECIOUS: $(SLURMOS_C_ASM_SRC) $(C_ASM_SRC) $(CPP_SRC) $(CPP_ASM)
+.PRECIOUS: $(CPP_ASM)
 
 APPLETS=$(SRC_DIR)/effect1 \
 	$(SRC_DIR)/effect2 \
@@ -49,8 +43,11 @@ APPLETS=$(SRC_DIR)/effect1 \
 all: $(TARGET)
 
 .PHONY: $(APPLETS)
-$(APPLETS): 
+$(APPLETS): $(ASSETS_H)
 	make -C $@
+
+# The applet bundle is generated together with its header.
+$(APP_BUNDLE): $(APPLETS_H)
 
 $(CHIPTUNE_SLMSNG): $(CHIPTUNE) Makefile
 	mkdir -p $(BUILD_DIR)
@@ -63,25 +60,19 @@ $(ASSETS_H): assets/gen-assets.py $(CHIPTUNE_SLMSNG)
 $(APPLETS_H): $(APPLETS) assets/gen-applets.py
 	cd assets; python3 gen-applets.py
 
-$(BUILD_DIR)/%.c1: $(SRC_DIR)/%.c $(ASSETS_H) $(APPLETS_H) $(HEADERS)
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c $(ASSETS_H) $(APPLETS_H) $(HEADERS)
 	mkdir -p $(BUILD_DIR)
-	$(CPP) -o $@ -I../../include -I$(SRC_DIR) -I$(BUILD_DIR) -I$(SLURMOS_DIR) $<
+	$(CC) $(CFLAGS) -I../../include -I$(SRC_DIR) -I$(BUILD_DIR) -I$(SLURMOS_DIR) -c -o $@ $<
 
 $(BUILD_DIR)/%.asm1: $(SRC_DIR)/%.asm $(HEADERS)
 	mkdir -p $(BUILD_DIR)
 	$(CPP) -o $@ -I../../include -I$(BUILD_DIR) $<
 
-$(BUILD_DIR)/%.asm: $(BUILD_DIR)/%.c1
-	$(CC) -target=slurm16_ng -c $< -o $@
-
-$(BUILD_DIR)/%.o : $(BUILD_DIR)/%.asm
-	$(AS) -o $@ $<
-
 $(BUILD_DIR)/%.asmo : $(BUILD_DIR)/%.asm1
 	$(AS) -o $@ $<
 
 $(TARGET_ELF): $(C_OBJ) $(ASM_OBJ) $(SLURMOS_OBJ) $(LINKER_SCRIPT)
-	$(LD) -s $(LINKER_SCRIPT) -o $@ $(ASM_OBJ) $(C_OBJ) $(SLURMOS_OBJ)
+	$(LD) -s $(LINKER_SCRIPT) -o $@ $(ASM_OBJ) $(C_OBJ) $(SLURMOS_OBJ) $(CLANG_RT_OBJS)
 
 $(TARGET): $(TARGET_ELF) $(BUNDLE) $(APP_BUNDLE)
 	$(OBJCOPY) $< $(BUILD_DIR)/app.bin

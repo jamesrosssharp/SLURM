@@ -1,3 +1,4 @@
+	.section text
 /*
  *
  *	Square wave mixer
@@ -95,3 +96,6 @@ __asm_mix_audio.no_decay_wrap2:
 	add r13, 32
 	ret
 
+
+	.global __asm_mix_audio
+	.end

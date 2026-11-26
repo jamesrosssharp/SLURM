@@ -1,34 +1,10 @@
-CC=../../slurmcc/lcc/lcc/build/rcc
-CPP=cpp
-AS=../../slurmasm/slurmasm
+NAME = mandelbrot
 
-SRC_DIR=src
+LEGACY_ASM = assets/assets.asm
 
-TARGET=build/mandelbrot.bin
+include ../game.mk
 
-all: $(TARGET)
+ASSETS_SRC = assets/Palette.png
 
-SRCS = $(wildcard src/*.c)
-PREPROCESSED = $(patsubst %.c,build/%.c1,$(SRCS))
-ASM_SRCS = $(wildcard src/*.asm)
-
-ASSETS_SRC = assets/Palette.png 
-ASSETS_ASM = assets/assets.asm
-
-$(ASSETS_ASM): $(ASSETS_SRC) assets/gen-assets.py
+assets/assets.asm: $(ASSETS_SRC) assets/gen-assets.py
 	cd assets; python3 gen-assets.py
-
-$(TARGET): $(PREPROCESSED) $(ASM_SRCS) $(ASSETS_ASM) src/top.s
-	cat $(PREPROCESSED) > build/all.c1
-	$(CC) -target=slurm16 -c build/all.c1 -o build/all.asm
-	cat src/top.s $(ASM_SRCS) build/all.asm $(ASSETS_ASM)  > build/all_complete.asm
-	echo "\n\n\t.end" >> build/all_complete.asm
-	$(AS) -o $@ build/all_complete.asm
-
-
-build/%.c1: %.c
-	mkdir -p build/src
-	$(CPP) $^ -o $@
-
-clean:
-	rm -r build

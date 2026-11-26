@@ -28,6 +28,7 @@ SOFTWARE.
 */
 
 #include "copper.h"
+#include "cpu.h"
 
 #define COPPER_CTL 	0x5d20
 #define COPPER_Y_FLIP 	0x5d21

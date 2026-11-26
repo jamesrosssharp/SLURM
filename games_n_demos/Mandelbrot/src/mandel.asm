@@ -1,3 +1,4 @@
+	.section text
 //
 //	mandelbrot inner loop
 //
@@ -94,3 +95,6 @@ mandel_loop.done:
 
 	add r13, 32
 	ret
+
+	.global mandel_loop
+	.end
