@@ -29,6 +29,8 @@ fi
 # Link the SLURM16 sources into the LLVM tree and apply the registration
 # patch (adds the slurm16 triple, the clang target and toolchain).
 ln -sfn ../../../../llvm/lib/Target/Slurm16 llvm-project/llvm/lib/Target/Slurm16
+ln -sfn ../../../../../clang/lib/CodeGen/Targets/Slurm16.cpp \
+  llvm-project/clang/lib/CodeGen/Targets/Slurm16.cpp
 for f in Slurm16.h Slurm16.cpp; do
   ln -sfn ../../../../../clang/lib/Basic/Targets/$f \
     llvm-project/clang/lib/Basic/Targets/$f

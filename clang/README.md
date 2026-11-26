@@ -56,6 +56,7 @@ Layout
 | `llvm/lib/Target/Slurm16/` | The LLVM backend |
 | `clang/lib/Basic/Targets/Slurm16.*` | clang target info (type sizes, macros) |
 | `clang/lib/Driver/ToolChains/Slurm16.*` | clang driver toolchain (runs slurmasm-ng / slurmlink) |
+| `clang/lib/CodeGen/Targets/Slurm16.cpp` | clang ABI lowering (`va_arg`) |
 | `patches/llvm-project.patch` | Registration of the above in LLVM / clang (triple, CMake, driver) |
 | `runtime/` | crt0, default linker script, mini libc, C++ ABI support |
 | `tools/slurm16-sim/` | Instruction set simulator used by the tests |

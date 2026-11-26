@@ -32,6 +32,46 @@ index 5d1157889..ecfa7606c 100644
    case llvm::Triple::mips:
      switch (os) {
      case llvm::Triple::Linux:
+diff --git a/clang/lib/CodeGen/CMakeLists.txt b/clang/lib/CodeGen/CMakeLists.txt
+index a05b31f97..0ef8d54ed 100644
+--- a/clang/lib/CodeGen/CMakeLists.txt
++++ b/clang/lib/CodeGen/CMakeLists.txt
+@@ -142,6 +142,7 @@ add_clang_library(clangCodeGen
+   Targets/LoongArch.cpp
+   Targets/M68k.cpp
+   Targets/MSP430.cpp
++  Targets/Slurm16.cpp
+   Targets/Mips.cpp
+   Targets/NVPTX.cpp
+   Targets/PNaCl.cpp
+diff --git a/clang/lib/CodeGen/CodeGenModule.cpp b/clang/lib/CodeGen/CodeGenModule.cpp
+index 678be0718..91a4c0c9c 100644
+--- a/clang/lib/CodeGen/CodeGenModule.cpp
++++ b/clang/lib/CodeGen/CodeGenModule.cpp
+@@ -223,6 +223,9 @@ createTargetCodeGenInfo(CodeGenModule &CGM) {
+   case llvm::Triple::msp430:
+     return createMSP430TargetCodeGenInfo(CGM);
+ 
++  case llvm::Triple::slurm16:
++    return createSlurm16TargetCodeGenInfo(CGM);
++
+   case llvm::Triple::riscv32:
+   case llvm::Triple::riscv64: {
+     StringRef ABIStr = Target.getABI();
+diff --git a/clang/lib/CodeGen/TargetInfo.h b/clang/lib/CodeGen/TargetInfo.h
+index b4057d369..ab6d91828 100644
+--- a/clang/lib/CodeGen/TargetInfo.h
++++ b/clang/lib/CodeGen/TargetInfo.h
+@@ -542,6 +542,9 @@ createWindowsMIPSTargetCodeGenInfo(CodeGenModule &CGM, bool IsOS32);
+ std::unique_ptr<TargetCodeGenInfo>
+ createMSP430TargetCodeGenInfo(CodeGenModule &CGM);
+ 
++std::unique_ptr<TargetCodeGenInfo>
++createSlurm16TargetCodeGenInfo(CodeGenModule &CGM);
++
+ std::unique_ptr<TargetCodeGenInfo>
+ createNVPTXTargetCodeGenInfo(CodeGenModule &CGM);
+ 
 diff --git a/clang/lib/Driver/CMakeLists.txt b/clang/lib/Driver/CMakeLists.txt
 index 0268ec49e..839ff4ee7 100644
 --- a/clang/lib/Driver/CMakeLists.txt
