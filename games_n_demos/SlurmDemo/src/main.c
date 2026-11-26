@@ -42,6 +42,7 @@ SOFTWARE.
 #include "demo.h"
 #include <rtos.h>
 #include <gfx.h>
+#include <copper.h>
 
 #include <applet.h>
 #include <applet_bundle.h>

@@ -19,6 +19,11 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include "rtos.h"
 #include "printf.h"
 #include "bool.h"
+#include "cpu.h"
+
+/* Implemented in storage.asm */
+short calculate_flash_offset_hi(unsigned short base_lo, unsigned short base_hi, unsigned short offset_lo, unsigned short offset_hi);
+short calculate_flash_offset_lo(unsigned short base_lo, unsigned short base_hi, unsigned short offset_lo, unsigned short offset_hi);
 
 extern unsigned short _sstoragestack[];
 extern unsigned short _estoragestack[];

@@ -227,7 +227,7 @@ calculate_distance:
 	st [r13, 16], r12
 	st [r13, 18], r15
 	
-	ld r8, [r13, 0x30] // r8 = &_y1
+	ld r8, [r13, 0x20] // r8 = &_y1 (5th argument: [sp + 0] on entry, clang calling convention)
 
 	// Compute dx
 	//d1 = my_cos(p_ang, sine_table)*(x1 - p.x()) - my_sin(p_ang, sine_table)*(y1 - p.y())
@@ -410,7 +410,7 @@ draw_textured_vline:
 	lsr r7
 	lsr r7 // r7 = 5 bits texture U	
 
-	ld r2, [r13, 0x30]
+	ld r2, [r13, 0x20] // 5th argument (texture_p): [sp + 0] on entry, clang calling convention
 	mov r15, r7
 
 	lsr r7

@@ -28,6 +28,7 @@ SOFTWARE.
 */
 
 #include <gfx.h>
+#include "cpu.h"
 
 #define GFX_FRAME_COUNT_REG 0x5f00
 #define GFX_Y_COUNT_REG     0x5f01

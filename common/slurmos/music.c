@@ -26,6 +26,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 #include "slide_tables.h"
 #include "rtos.h"
+#include "cpu.h"
+#include "printf.h"
 
 unsigned short note_table_hi[] = {
 	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
@@ -138,6 +140,12 @@ struct channel_t {
 };
 
 extern struct channel_t channel_info[]; 
+
+/* Implemented in mixer3.asm */
+void mix_audio_3(unsigned short buf_offset, unsigned short count);
+void mix_audio_3_update(void);
+
+void chip_tune_play();
 
 short my_add(short a, short b)
 {

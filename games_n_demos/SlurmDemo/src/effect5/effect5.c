@@ -37,6 +37,11 @@ SOFTWARE.
 #include "map.h"
 #include <bundle.h>
 
+/* Implemented in math.asm / effect5.asm */
+short mult_div_8_8(short a, short m, short d);
+void enter_critical(void);
+void leave_critical(void);
+
 unsigned short the_copper_list[] = {
 	COPPER_ALPHA(0xf),
 	COPPER_BG(0x0000),

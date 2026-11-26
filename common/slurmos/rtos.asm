@@ -271,13 +271,17 @@ rtos_unlock_mutex:
 	st [r1, TASK_STRUCTURE_TICKS_TOTAL_HI], r3
 
 	sub r13, 2
+	// The mutex pointer (r4) must survive the call: r4 is not preserved by C
+	// functions, r10 is (and all registers are restored when the next task
+	// resumes, so r10 can be used freely here).
+	mov r10, r4
 	bl rtos_reschedule_wait_object_released
 
 	or r2, r2
 	bnz lock1
 
 	// Unlock mutex - it was not consumed
-	stb [r4, MUTEX_VAR], r0
+	stb [r10, MUTEX_VAR], r0
 
 lock1:
 
@@ -295,6 +299,9 @@ rtos_unlock_mutex_from_isr:
 	
 	sub r13, 8
 	st [r13, 4], r15
+	// Keep the mutex pointer in r10 (preserved by C functions) across the call
+	st [r13, 6], r10
+	mov r10, r4
 
 	bl rtos_reschedule_wait_object_released
 
@@ -302,11 +309,12 @@ rtos_unlock_mutex_from_isr:
 	bnz lock
 
 	// Unlock mutex - it was not consumed
-	stb [r4, MUTEX_VAR], r0
+	stb [r10, MUTEX_VAR], r0
 
 lock:
 
 	ld r15, [r13, 4]
+	ld r10, [r13, 6]
 	add r13, 8
 
 	ret

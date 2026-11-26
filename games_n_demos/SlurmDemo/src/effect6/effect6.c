@@ -42,6 +42,11 @@ mutex_t eff6_mutex = RTOS_MUTEX_INITIALIZER;
 
 #include <applet.h>
 
+/* Implemented in math.asm / effect6.asm */
+short mult_div_8_8(short a, short m, short d);
+void enter_critical(void);
+void leave_critical(void);
+
 struct applet_vectors *vtors = (struct applet_vectors*)(APPLET_CODE_BASE);
 
 unsigned short tunnel_palette[16];

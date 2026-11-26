@@ -65,11 +65,11 @@ BLIT_HEIGHT equ 8
 
 blit_rect_clip:
 
-	// [r13, 0x10] = x_from, [r13, 0x14] = y_from
+	// clang calling convention: [r13, 0] = x_from, [r13, 2] = y_from
 
 	sub r13, 32
 
-	// [r13, 0x30] = x_from, [r13, 0x34] = y_from
+	// [r13, 0x20] = x_from, [r13, 0x22] = y_from
 	
 	st [r13, 0], r4 // fb_upper_lo
 	st [r13, 2], r5 // x
@@ -83,8 +83,8 @@ blit_rect_clip:
 	st [r13, 18], r15
 
 	mov r9, BLIT_HEIGHT
-	ld  r2, [r13, 0x30] // x_from
-	ld  r3, [r13, 0x34] // y_from
+	ld  r2, [r13, 0x20] // x_from
+	ld  r3, [r13, 0x22] // y_from
 
 	// Compute blit from address
 	mov r10, r3

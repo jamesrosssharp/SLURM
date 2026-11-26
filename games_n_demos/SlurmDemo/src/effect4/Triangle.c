@@ -30,6 +30,10 @@ SOFTWARE.
 #include "Triangle.h"
 #include <bool.h>
 
+/* Implemented in math.asm / Triangle.asm */
+short mult_8_8_div_16(short a, short b);
+void draw_scanline(unsigned short framebuffer, short x1, short width, unsigned short col);
+
 void triangle_rasterize(unsigned short framebuffer, struct Vertex* v0, struct Vertex* v1, struct Vertex* v2, unsigned short color)
 {
 

@@ -33,6 +33,7 @@ SOFTWARE.
 
 #include <slurminterrupt.h>
 #include <malloc.h>
+#include "cpu.h"
 
 // WARNING: If you change this structure, you must change the assembly version
 // of the structure
