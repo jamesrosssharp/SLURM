@@ -86,7 +86,7 @@ with open("assets.asm", "w") as theAsmFile:
 
 
 bundle_start = 65536
-bundle_files = [("sprites.bin", "spritesheet"), ("tiles.bin", "tileset")]
+bundle_files = [("sprites.bin", "spritesheet"), ("tiles.bin", "tileset"), ("sprites2.bin", "spritesheet2")]
 bundle_load_address = 1024*1024 + bundle_start
 
 offset = bundle_load_address
