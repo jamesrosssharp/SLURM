@@ -9,7 +9,10 @@
 
 #define SCREEN_W	320
 #define SCREEN_H	240
-#define WATER_LINE	150	/* the screen is mirrored below this line */
+#define WATER_LINE	160	/* the screen is mirrored below this line: the top
+				 * two thirds are the playfield */
+#define RASTER_Y_OFS	16	/* screen line 0 is raster line 16 (sprite Y,
+				 * copper and mirror registers use raster lines) */
 
 /* Palette banks */
 #define PAL_SPRITES	0

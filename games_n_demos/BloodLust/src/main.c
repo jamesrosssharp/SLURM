@@ -1,7 +1,7 @@
 /*
  * BloodLust: a parallax scrolling shooter for the SLURM16.
  *
- * Controls: the d-pad moves the airship, A fires. Press A on the title
+ * Controls: the d-pad moves the jet, A fires. Press A on the title
  * screen to start; left alone, the title runs a demo game.
  */
 

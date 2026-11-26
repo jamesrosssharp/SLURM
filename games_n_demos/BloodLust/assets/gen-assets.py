@@ -43,6 +43,12 @@ with open("assets.asm", "w") as theAsmFile:
 		convertImage(im, theAsmFile, theBinFile, "bloodlust_tiles", im.width, im.height)
 
 	import xml.etree.ElementTree as ET
+
+	# Empty rows added above each map, so the maps can be scrolled down
+	# (src/video.c MAP_PAD_ROWS) to sit on a lower water line.
+	MAP_PAD_ROWS = 2
+	pad = ",".join(["0"] * (256 * MAP_PAD_ROWS)) + ","
+
 	tree = ET.parse('Background.tmx')
 	root = tree.getroot()
 
@@ -51,7 +57,7 @@ with open("assets.asm", "w") as theAsmFile:
 		d = l.find('data')
 		i = 0
 		word = 0
-		for dat in d.text.split(','):
+		for dat in (pad + d.text.strip()).split(','):
 			word >>= 8
 			dat2 = int(dat) - 1
 			if (dat2 < 0):
@@ -70,7 +76,7 @@ with open("assets.asm", "w") as theAsmFile:
 		d = l.find('data')
 		i = 0
 		word = 0
-		for dat in d.text.split(','):
+		for dat in (pad + d.text.strip()).split(','):
 			word >>= 8
 			dat2 = int(dat) - 1
 			if (dat2 < 0):

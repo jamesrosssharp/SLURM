@@ -1,8 +1,8 @@
 /*
  * game.c: BloodLust - a parallax scrolling shooter.
  *
- * The player's airship flies west over a blood red lake, at the foot of the
- * mountains of the demon lord. Dragons, bug-planes, skiffs and boomerangs
+ * The player's jet flies west over a blood red lake, at the foot of the
+ * mountains of the demon lord. Dragons, bug-planes, airships and boomerangs
  * attack in waves; giants wade through the lake. At the end of every stage
  * the demon rises from the water.
  *
@@ -83,7 +83,7 @@ enum obj_type {
 	OBJ_BOLT,	/* player shot */
 	OBJ_ORB,	/* enemy shot */
 	OBJ_BUG,
-	OBJ_SKIFF,
+	OBJ_AIRSHIP,
 	OBJ_BOOMERANG,
 	OBJ_DRAGON,
 	OBJ_GIANT,
@@ -152,7 +152,7 @@ static const struct sprite_frame* obj_frame(const struct obj* o)
 	case OBJ_BOLT:		return &FRAME_BOLT;
 	case OBJ_ORB:		return &FRAME_ORB;
 	case OBJ_BUG:		return &FRAME_BUG;
-	case OBJ_SKIFF:		return &FRAME_SKIFF;
+	case OBJ_AIRSHIP:		return &FRAME_AIRSHIP;
 	case OBJ_BOOMERANG:	return &FRAME_BOOMERANG;
 	case OBJ_DRAGON: {
 		static const struct sprite_frame* const flap[4] = {
@@ -224,6 +224,7 @@ enum { BANNER_NONE, BANNER_READY, BANNER_WARNING, BANNER_STAGE };
 
 #define PLAYFIELD_TOP		16
 #define PLAYFIELD_BOTTOM	(WATER_LINE - 4)
+#define DEMON_Y			(WATER_LINE - 122)	/* risen: waist deep in the lake */
 
 /*
  * Effects
@@ -265,8 +266,9 @@ static void add_score(unsigned long pts)
 /* Fire an orb from (x, y) towards the player */
 static void fire_orb(short x, short y, short speed)
 {
-	short dx = player.x - x;
-	short dy = player.y - y;
+	/* aim at the middle of the jet */
+	short dx = player.x + FX(15) - x;
+	short dy = player.y + FX(5) - y;
 	short m = abs16(dx) > abs16(dy) ? abs16(dx) : abs16(dy);
 	struct obj* o;
 
@@ -289,7 +291,7 @@ static short enemy_points(unsigned char type)
 	switch (type)
 	{
 	case OBJ_BUG:		return 100;
-	case OBJ_SKIFF:		return 200;
+	case OBJ_AIRSHIP:		return 200;
 	case OBJ_BOOMERANG:	return 150;
 	case OBJ_DRAGON:	return 500;
 	case OBJ_GIANT:		return 400;
@@ -311,8 +313,8 @@ static void spawn_enemy(unsigned char type, short y)
 		o->vx = 22 + difficulty * 2;
 		o->hp = 1;
 		break;
-	case OBJ_SKIFF:
-		o->x = FX(-32);
+	case OBJ_AIRSHIP:
+		o->x = FX(-28);
 		o->vx = 34 + difficulty * 3;
 		o->hp = 2;
 		o->param = 60 + rnd_n(120);	/* frames until it fires */
@@ -356,9 +358,9 @@ static void update_enemy(struct obj* o)
 		o->y = o->base_y + sine(o->t) * 5 / 2 * 4;
 		break;
 
-	case OBJ_SKIFF:
+	case OBJ_AIRSHIP:
 		if (--o->param == 0)
-			fire_orb(o->x + FX(15), o->y + FX(5), 40 + stage * 4);
+			fire_orb(o->x + FX(16), o->y + FX(12), 40 + stage * 4);
 		break;
 
 	case OBJ_BOOMERANG:
@@ -394,13 +396,13 @@ static void update_enemy(struct obj* o)
 		break;
 
 	case OBJ_DEMON:
-		if (o->vy < 0 && o->y <= FX(28))
+		if (o->vy < 0 && o->y <= FX(DEMON_Y))
 			o->vy = 0;		/* risen */
 		if (o->vy == 0)
 		{
 			short phase = o->t & 255;
 			/* bob up and down, lunge every so often */
-			o->y = FX(28) + sine(o->t >> 1) * 4;
+			o->y = FX(DEMON_Y) + sine(o->t >> 1) * 4;
 			o->param = phase >= 200 && phase < 232;	/* attack pose */
 			if (phase == 210 || phase == 220 || phase == 230)
 			{
@@ -465,17 +467,17 @@ struct wave {
 static const struct wave waves[] = {
 	{ 120,  OBJ_BUG,	40,  5, 14 },
 	{ 300,  OBJ_BUG,	100, 5, 14 },
-	{ 480,  OBJ_SKIFF,	30,  3, 40 },
+	{ 480,  OBJ_AIRSHIP,	30,  3, 40 },
 	{ 600,  OBJ_GIANT,	0,   1, 0  },
 	{ 720,  OBJ_BUG,	70,  6, 12 },
 	{ 900,  OBJ_DRAGON,	40,  1, 0  },
-	{ 1080, OBJ_SKIFF,	110, 3, 40 },
+	{ 1080, OBJ_AIRSHIP,	110, 3, 40 },
 	{ 1200, OBJ_BUG,	30,  4, 12 },
 	{ 1200, OBJ_BUG,	110, 4, 12 },
 	{ 1380, OBJ_GIANT,	0,   2, 140 },
 	{ 1500, OBJ_DRAGON,	30,  1, 0  },
 	{ 1560, OBJ_DRAGON,	90,  1, 0  },
-	{ 1800, OBJ_SKIFF,	60,  5, 30 },
+	{ 1800, OBJ_AIRSHIP,	60,  5, 30 },
 	{ 1980, OBJ_BUG,	50,  8, 10 },
 	{ 2200, OBJ_DRAGON,	60,  2, 90 },
 };
@@ -569,7 +571,7 @@ static void player_hit(void)
 {
 	if (player.invuln || !player.alive)
 		return;
-	explode(player.x + FX(12), player.y + FX(11), 12);
+	explode(player.x + FX(15), player.y + FX(5), 12);
 	sky_flash(8);
 	player.alive = 0;
 	player.respawn = 90;
@@ -643,12 +645,12 @@ static void update_player(unsigned short k)
 
 	if (player.x < FX(8))
 		player.x = FX(8);
-	if (player.x > FX(SCREEN_W - 28))
-		player.x = FX(SCREEN_W - 28);
+	if (player.x > FX(SCREEN_W - 32))
+		player.x = FX(SCREEN_W - 32);
 	if (player.y < FX(PLAYFIELD_TOP))
 		player.y = FX(PLAYFIELD_TOP);
-	if (player.y > FX(PLAYFIELD_BOTTOM - 22))
-		player.y = FX(PLAYFIELD_BOTTOM - 22);
+	if (player.y > FX(PLAYFIELD_BOTTOM - 11))
+		player.y = FX(PLAYFIELD_BOTTOM - 11);
 
 	if (player.cooldown)
 		player.cooldown--;
@@ -657,16 +659,16 @@ static void update_player(unsigned short k)
 		struct obj* b;
 		if (player.power)
 		{
-			b = spawn(OBJ_BOLT, player.x - FX(14), player.y + FX(3));
+			b = spawn(OBJ_BOLT, player.x - FX(14), player.y - FX(2));
 			if (b)
 				b->vx = -FX(6);
-			b = spawn(OBJ_BOLT, player.x - FX(14), player.y + FX(12));
+			b = spawn(OBJ_BOLT, player.x - FX(14), player.y + FX(6));
 			if (b)
 				b->vx = -FX(6);
 		}
 		else
 		{
-			b = spawn(OBJ_BOLT, player.x - FX(14), player.y + FX(8));
+			b = spawn(OBJ_BOLT, player.x - FX(14), player.y + FX(2));
 			if (b)
 				b->vx = -FX(6);
 		}
@@ -839,7 +841,7 @@ static void draw_hud(void)
 	sprite_draw(&FRAME_TEXT_SCORE, 6, 2, PAL_SPRITES);
 	draw_number(score, 7, 72, 3);
 	for (i = 0; i < lives && i < 5; i++)
-		sprite_draw(&FRAME_LIFE, SCREEN_W - 16 - i * 14, 3, PAL_SPRITES);
+		sprite_draw(&FRAME_LIFE, SCREEN_W - 20 - i * 18, 5, PAL_SPRITES);
 }
 
 static void draw_banner(void)
@@ -911,7 +913,7 @@ static void title_screen(void)
 		demon.type = OBJ_DEMON;
 		demon.t = state_t;
 		demon.param = (state_t & 255) > 200;
-		sprite_draw(obj_frame(&demon), 16, 30 + sine(state_t >> 2) / 8, PAL_SPRITES);
+		sprite_draw(obj_frame(&demon), 16, DEMON_Y + 2 + sine(state_t >> 2) / 8, PAL_SPRITES);
 	}
 
 	sprite_draw(&FRAME_TEXT_TITLE, 128, 20, PAL_SPRITES);

@@ -22,7 +22,7 @@ extern short bg2_tilemap;
 
 /* Screen position (0, 0) in sprite coordinates */
 #define SPRITE_X_OFS	24
-#define SPRITE_Y_OFS	16
+#define SPRITE_Y_OFS	RASTER_Y_OFS
 
 #define MAX_SPRITES	128
 
@@ -101,6 +101,17 @@ void sprite_end(void)
 static unsigned long far_x;
 static unsigned long near_x;
 static short near_px, far_px;	/* positions for the next frame */
+
+/*
+ * Vertical positions of the tile maps. The art meets a water line at raster
+ * line 150 when the maps are at Y 10 (near) and 0 (far); gen-assets.py adds
+ * MAP_PAD_ROWS empty rows above the maps so they can be moved down to the
+ * water line.
+ */
+#define MAP_PAD_ROWS	2
+#define MAP_SHIFT	(WATER_LINE + RASTER_Y_OFS - 150)
+#define NEAR_Y		(10 + MAP_PAD_ROWS * 16 - MAP_SHIFT)
+#define FAR_Y		(0 + MAP_PAD_ROWS * 16 - MAP_SHIFT)
 
 static void bg_layer(short base, short x, short y, short* tilemap)
 {
@@ -188,8 +199,8 @@ void video_vblank(void)
 		load_sprite_x(i, 0);
 	n_shown = n_ready;
 
-	bg_layer(0x5d00, near_px, 10, &bg2_tilemap);
-	bg_layer(0x5d05, far_px, 0, &bg1_tilemap);
+	bg_layer(0x5d00, near_px, NEAR_Y, &bg2_tilemap);
+	bg_layer(0x5d05, far_px, FAR_Y, &bg1_tilemap);
 
 	/* animate the water and upload the copper list */
 	update_bl_copper_list();
@@ -204,7 +215,7 @@ void video_init(void)
 	/* 320x240 mode */
 	__out(0x5f02, 1);
 	/* Mirror the screen below the water line */
-	__out(0x5d21, 0x8000 | WATER_LINE);
+	__out(0x5d21, 0x8000 | (WATER_LINE + RASTER_Y_OFS));
 	/* Enable the copper */
 	__out(0x5d20, 1);
 

@@ -132,11 +132,12 @@ add_frame("DEMON_ATTACK",
 #	Sheet 2 frames (generated)
 #
 
-# The game scrolls to the left: the player's airship and its bolt face left.
-place(mirror(crop(55, 3, 24, 22)), "PLAYER", 4)
+# The game scrolls to the left. The player's jet already faces left; its
+# bolt is mirrored to match.
+place(crop(82, 0, 30, 11), "PLAYER", 3)
 place(mirror(crop(113, 39, 19, 8)), "BOLT", 0)
-# The skiff faces left in the original: mirror it to fly with the dragons.
-place(mirror(crop(82, 0, 30, 11)), "SKIFF", 2)
+# The enemy airship faces right, flying with the dragons.
+place(crop(55, 3, 24, 22), "AIRSHIP", 4)
 
 # Digits, copied into 12 pixel cells so they can be drawn one per sprite
 for d in range(10):
@@ -152,8 +153,8 @@ for i, (a, b) in enumerate([(YELLOW, ORANGE), (ORANGE, RED), (WHITE, YELLOW)]):
 	e.putpixel((1, 1), a)
 	place(e, "EMBER%d" % i)
 
-# Small airship icon for the lives display (every other pixel of the player)
-icon = mirror(crop(55, 3, 24, 22)).resize((12, 11), Image.NEAREST)
+# Small jet icon for the lives display (every other pixel of the player)
+icon = crop(82, 0, 30, 11).resize((15, 6), Image.NEAREST)
 place(icon, "LIFE")
 
 #

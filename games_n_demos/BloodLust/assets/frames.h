@@ -84,19 +84,19 @@ static const struct sprite_part demon_attack_parts[] = {
 static const struct sprite_frame FRAME_DEMON_ATTACK = {3, demon_attack_parts, 60, 10, 60, 70};
 
 static const struct sprite_part player_parts[] = {
-	{0xe000, 24, 22, 0, 0},
+	{0xe000, 32, 11, 0, 0},
 };
-static const struct sprite_frame FRAME_PLAYER = {1, player_parts, 4, 4, 16, 14};
+static const struct sprite_frame FRAME_PLAYER = {1, player_parts, 3, 3, 24, 5};
 
 static const struct sprite_part bolt_parts[] = {
-	{0xe006, 20, 8, 0, 0},
+	{0xe008, 20, 8, 0, 0},
 };
 static const struct sprite_frame FRAME_BOLT = {1, bolt_parts, 0, 0, 19, 8};
 
-static const struct sprite_part skiff_parts[] = {
-	{0xe00b, 32, 11, 0, 0},
+static const struct sprite_part airship_parts[] = {
+	{0xe00d, 24, 22, 0, 0},
 };
-static const struct sprite_frame FRAME_SKIFF = {1, skiff_parts, 2, 2, 26, 7};
+static const struct sprite_frame FRAME_AIRSHIP = {1, airship_parts, 4, 4, 16, 14};
 
 static const struct sprite_part digit0_parts[] = {
 	{0xe013, 12, 12, 0, 0},
@@ -164,9 +164,9 @@ static const struct sprite_part ember2_parts[] = {
 static const struct sprite_frame FRAME_EMBER2 = {1, ember2_parts, 0, 0, 4, 4};
 
 static const struct sprite_part life_parts[] = {
-	{0xe034, 12, 11, 0, 0},
+	{0xe034, 16, 6, 0, 0},
 };
-static const struct sprite_frame FRAME_LIFE = {1, life_parts, 0, 0, 12, 11};
+static const struct sprite_frame FRAME_LIFE = {1, life_parts, 0, 0, 15, 6};
 
 static const struct sprite_part text_score_parts[] = {
 	{0xe580, 60, 15, 0, 0},
