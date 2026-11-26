@@ -16,7 +16,7 @@ OBJDUMP = $(SLURM_TOP)/slurm-objdump/slurm-objdump
 
 # -nostdlibinc: SlurmOS provides its own headers (printf.h, malloc.h, ...);
 # clang's freestanding headers (stdarg.h, stdint.h, ...) remain available.
-CFLAGS ?= -Os
+CFLAGS ?= -O3
 CFLAGS += --target=slurm16 -ffreestanding -nostdlibinc -Wno-unused-value
 
 # Compiler support routines from the clang SLURM16 runtime: division, wide
