@@ -112,21 +112,58 @@ add_rect("DRAGON3", 1, 177, 33, 66, 26, 6)
 add_rect("GIANT1", 1, 0, 32, 30, 55, 4)
 add_rect("GIANT2", 1, 34, 32, 27, 54, 4)
 add_rect("GIANT3", 1, 65, 32, 37, 55, 4)
-add_rect("LIGHTNING1", 1, 116, 66, 115, 28)
-add_rect("LIGHTNING2", 1, 114, 116, 62, 27)
-add_rect("LIGHTNING3", 1, 112, 147, 50, 28)
-
 # Digits 0-9 (y = 97, x as drawn)
 digit_x = [1, 18, 33, 50, 65, 82, 98, 112, 132, 147]
 digit_w = [9, 5, 9, 8, 9, 8, 8, 10, 6, 8]
 
-# Demon boss. The arm pose has a lightning bolt inside its bounding box
-# (x >= 112, y < 176), so it is made of explicit parts that avoid it.
-add_frame("DEMON_IDLE", rect_parts(1, 160, 117, 96, 139),
-		  (24, 10, 56, 70))
-add_frame("DEMON_ATTACK",
-		  rect_parts(1, 0, 113, 112, 143) + rect_parts(1, 112, 176, 40, 80, 112, 63),
-		  (60, 10, 60, 70))
+# Lightning bolts: the demon's lightning strike (exact bounds of the art)
+BOLTS = [(116, 66, 115, 28), (114, 117, 62, 26), (112, 150, 47, 25)]
+
+def in_bolt(x, y):
+	return any(bx <= x < bx + bw and by <= y < by + bh for (bx, by, bw, bh) in BOLTS)
+
+def clean_parts(x, y, w, h, own):
+	"""Parts covering the pixels of a sheet 1 rectangle for which own(x, y)
+	is true, and no other (non transparent) pixels. Rows are grouped into
+	bands; a new band starts where widening the band to the next row would
+	take in a foreign pixel."""
+	px = src.load()
+	def row_range(r):
+		xs = [c for c in range(x, x + w) if px[c, r] and own(c, r)]
+		return (min(xs) & ~3, (max(xs) + 4) & ~3) if xs else None
+	def clean(x0, x1, r0, r1):
+		return not any(px[c, r] and not own(c, r)
+			       for r in range(r0, r1) for c in range(x0, min(x1, 256)))
+	parts = []
+	band = None		# [x0, x1, first row, end row]
+	def flush():
+		if band:
+			parts.extend(rect_parts(1, band[0], band[2], band[1] - band[0],
+						band[3] - band[2], band[0] - x, band[2] - y))
+	for r in range(y, y + h):
+		rr = row_range(r)
+		if rr is None:
+			continue
+		if band:
+			x0, x1 = min(band[0], rr[0]), max(band[1], rr[1])
+			if band[3] == r and clean(x0, x1, band[2], r + 1):
+				band[0], band[1], band[3] = x0, x1, r + 1
+				continue
+			flush()
+		assert clean(rr[0], rr[1], r, r + 1), "foreign pixels inside a row at %d" % r
+		band = [rr[0], rr[1], r, r + 1]
+	flush()
+	return parts
+
+for i, (bx, by, bw, bh) in enumerate(BOLTS):
+	add_frame("LIGHTNING%d" % (i + 1), clean_parts(bx, by, bw, bh, in_bolt),
+		  (0, 8, bw, bh - 16))
+
+# Demon boss: everything in its box except the lightning bolts drawn beside
+# and above its arm
+not_bolt = lambda x, y: not in_bolt(x, y)
+add_frame("DEMON_IDLE", clean_parts(160, 117, 96, 139, not_bolt), (24, 10, 56, 70))
+add_frame("DEMON_ATTACK", clean_parts(0, 113, 152, 143, not_bolt), (60, 10, 60, 70))
 
 #
 #	Sheet 2 frames (generated)

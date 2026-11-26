@@ -57,31 +57,34 @@ static const struct sprite_part lightning1_parts[] = {
 	{0x909d, 60, 28, 0, 0},
 	{0x90ac, 56, 28, 60, 0},
 };
-static const struct sprite_frame FRAME_LIGHTNING1 = {2, lightning1_parts, 0, 0, 115, 28};
+static const struct sprite_frame FRAME_LIGHTNING1 = {2, lightning1_parts, 0, 8, 115, 12};
 
 static const struct sprite_part lightning2_parts[] = {
-	{0x9d1c, 60, 27, -2, 0},
-	{0x9d2b, 4, 27, 58, 0},
+	{0x9d5c, 60, 26, -2, 0},
+	{0x9d6b, 4, 26, 58, 0},
 };
-static const struct sprite_frame FRAME_LIGHTNING2 = {2, lightning2_parts, 0, 0, 62, 27};
+static const struct sprite_frame FRAME_LIGHTNING2 = {2, lightning2_parts, 0, 8, 62, 10};
 
 static const struct sprite_part lightning3_parts[] = {
-	{0xa4dc, 52, 28, 0, 0},
+	{0xa59c, 48, 25, 0, 0},
 };
-static const struct sprite_frame FRAME_LIGHTNING3 = {1, lightning3_parts, 0, 0, 50, 28};
+static const struct sprite_frame FRAME_LIGHTNING3 = {1, lightning3_parts, 0, 8, 47, 9};
 
 static const struct sprite_part demon_idle_parts[] = {
-	{0x9d68, 60, 139, 0, 0},
-	{0x9d77, 36, 139, 60, 0},
+	{0x9d73, 48, 30, 44, 0},
+	{0xa4e8, 60, 109, 0, 30},
+	{0xa4f7, 36, 109, 60, 30},
 };
-static const struct sprite_frame FRAME_DEMON_IDLE = {2, demon_idle_parts, 24, 10, 56, 70};
+static const struct sprite_frame FRAME_DEMON_IDLE = {3, demon_idle_parts, 24, 10, 56, 70};
 
 static const struct sprite_part demon_attack_parts[] = {
-	{0x9c40, 60, 143, 0, 0},
-	{0x9c4f, 52, 143, 60, 0},
-	{0xac1c, 40, 80, 112, 63},
+	{0x9c40, 60, 103, 0, 0},
+	{0x9c4f, 52, 103, 60, 0},
+	{0xb600, 60, 40, 0, 103},
+	{0xb60f, 60, 40, 60, 103},
+	{0xb61e, 32, 40, 120, 103},
 };
-static const struct sprite_frame FRAME_DEMON_ATTACK = {3, demon_attack_parts, 60, 10, 60, 70};
+static const struct sprite_frame FRAME_DEMON_ATTACK = {5, demon_attack_parts, 60, 10, 60, 70};
 
 static const struct sprite_part player_parts[] = {
 	{0xe000, 32, 11, 0, 0},

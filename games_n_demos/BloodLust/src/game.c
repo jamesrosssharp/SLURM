@@ -263,6 +263,8 @@ static void add_score(unsigned long pts)
 	}
 }
 
+static void player_hit(void);
+
 /* Fire an orb from (x, y) towards the player */
 static void fire_orb(short x, short y, short speed)
 {
@@ -350,6 +352,68 @@ static void spawn_enemy(unsigned char type, short y)
 	}
 }
 
+/*
+ * The demon's lightning strike: a warning crackle on the player's row, then
+ * a chain of bolts across the screen along that row.
+ */
+#define ZAP_CHARGE	45	/* frames of warning */
+#define ZAP_STRIKE	20	/* frames the bolt lasts */
+#define ZAP_REACH	7	/* half height of the deadly band, in pixels */
+
+static short zap_t;		/* frames left; striking while < ZAP_STRIKE */
+static short zap_x, zap_y;	/* bolt start and the middle of its row (pixels) */
+
+static void zap_start(const struct obj* demon)
+{
+	zap_t = ZAP_CHARGE + ZAP_STRIKE;
+	zap_x = PX(demon->x) + 92;	/* from the demon's side */
+	zap_y = PX(player.y) + 5;	/* the middle of the jet */
+	if (zap_y < PLAYFIELD_TOP + 8)
+		zap_y = PLAYFIELD_TOP + 8;
+	if (zap_y > PLAYFIELD_BOTTOM - 8)
+		zap_y = PLAYFIELD_BOTTOM - 8;
+}
+
+static void update_zap(void)
+{
+	if (zap_t == 0)
+		return;
+	zap_t--;
+	if (zap_t == ZAP_STRIKE - 1)
+		sky_flash(ZAP_STRIKE);
+	if (zap_t < ZAP_STRIKE && player.alive && !player.invuln &&
+	    abs16(PX(player.y) + 5 - zap_y) <= ZAP_REACH &&
+	    PX(player.x) + 30 > zap_x)
+		player_hit();
+}
+
+static void draw_zap(void)
+{
+	static const struct sprite_frame* const bolt[3] = {
+		&FRAME_LIGHTNING1, &FRAME_LIGHTNING2, &FRAME_LIGHTNING3 };
+
+	if (zap_t == 0)
+		return;
+	if (zap_t >= ZAP_STRIKE)
+	{
+		/* warning: a small bolt crackles on the row about to be struck */
+		if (zap_t & 4)
+			sprite_draw(&FRAME_LIGHTNING3, zap_x, zap_y - 12, PAL_SPRITES);
+	}
+	else
+	{
+		/* the strike: bolts end to end across the screen, flickering */
+		short x = zap_x;
+		short k = zap_t >> 1;
+		while (x < SCREEN_W)
+		{
+			const struct sprite_frame* f = bolt[k++ % 3];
+			sprite_draw(f, x, zap_y - (f->hy + f->hh / 2), PAL_SPRITES);
+			x += f->hw - 2;
+		}
+	}
+}
+
 static void update_enemy(struct obj* o)
 {
 	switch (o->type)
@@ -420,8 +484,10 @@ static void update_enemy(struct obj* o)
 			}
 			if ((o->t & 63) == 0)
 				fire_orb(o->x + FX(70), o->y + FX(40), 44 + stage * 4);
-			if (phase == 0)
-				sky_flash(12);	/* lightning */
+			/* lightning strikes along the player's row */
+			if ((phase == 64 || (stage > 0 && phase == 160)) && zap_t == 0 &&
+			    player.alive)
+				zap_start(o);
 		}
 		break;
 	}
@@ -442,6 +508,7 @@ static void kill_enemy(struct obj* o)
 			explode(o->x + FX(30 + rnd_n(70)), o->y + FX(20 + rnd_n(90)), 6);
 		sky_flash(40);
 		boss_active = 0;
+		zap_t = 0;
 		banner = BANNER_STAGE;
 		banner_t = 0;
 	}
@@ -547,6 +614,7 @@ static void start_stage(void)
 	wave_t = 0;
 	wave_idx = 0;
 	boss_active = 0;
+	zap_t = 0;
 	for (i = 0; i < 4; i++)
 		pending[i].left = 0;
 	sky_set_stage(stage);
@@ -598,7 +666,7 @@ static unsigned short autopilot(void)
 			if (d < best)
 			{
 				best = d;
-				target_y = o->y + FX(obj_frame(o)->hy + obj_frame(o)->hh / 2) - FX(11);
+				target_y = o->y + FX(obj_frame(o)->hy + obj_frame(o)->hh / 2) - FX(5);
 			}
 		}
 	}
@@ -610,6 +678,9 @@ static unsigned short autopilot(void)
 		    abs16(o->y - player.y) < FX(24))
 			target_y = o->y > player.y ? o->y - FX(40) : o->y + FX(40);
 	}
+	/* get off the row the lightning is about to strike */
+	if (zap_t && abs16(PX(player.y) + 5 - zap_y) < ZAP_REACH + 12)
+		target_y = FX(zap_y - 5) + (zap_y > (PLAYFIELD_TOP + PLAYFIELD_BOTTOM) / 2 ? -FX(36) : FX(36));
 	if (target_y < player.y - FX(2))
 		k |= KEY_UP;
 	else if (target_y > player.y + FX(2))
@@ -683,6 +754,8 @@ static void update_player(unsigned short k)
 static void update_objects(void)
 {
 	short i, j;
+
+	update_zap();
 
 	for (i = 0; i < MAX_OBJS; i++)
 	{
@@ -817,6 +890,8 @@ static void draw_objects(void)
 			sprite_draw(obj_frame(o), PX(o->x), PX(o->y),
 				    o->flash ? PAL_FLASH : PAL_SPRITES);
 		}
+
+	draw_zap();
 
 	for (i = 0; i < MAX_OBJS; i++)
 	{
