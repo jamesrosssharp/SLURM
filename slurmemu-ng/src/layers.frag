@@ -38,16 +38,18 @@ void main()
 		t.y = (2.0*yf) - t.y;
 
 	float bg0 = texture(BG0Texture, t).r;
-	float bg1 = texture(BG0Texture, t).r;
+	float bg1 = texture(BG1Texture, t).r;
 	float sp = texture(SpritesTexture, t).r;
 	vec2  pal;
 
 	pal.x = 0;
 
-	if (bg0 != 0.0)
-		pal.x = bg0;
+	// Priority as gfx.v / background_controller2.v: sprites, then
+	// background layer 0, then background layer 1.
 	if (bg1 != 0.0)
 		pal.x = bg1;
+	if (bg0 != 0.0)
+		pal.x = bg0;
 	if (sp != 0.0)
 		pal.x = sp;
 

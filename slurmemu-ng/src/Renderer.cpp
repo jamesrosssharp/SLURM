@@ -193,6 +193,13 @@ Renderer::Renderer()    :
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
+    glBindTexture(GL_TEXTURE_2D, m_textures[kBG1TextureOut]);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, TOTAL_X, TOTAL_Y, 0, GL_RED, GL_UNSIGNED_BYTE, 0);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
     glBindTexture(GL_TEXTURE_2D, m_textures[kSpriteTextureOut]);
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, TOTAL_X, TOTAL_Y, 0, GL_RED, GL_UNSIGNED_BYTE, 0);
@@ -276,17 +283,25 @@ float Renderer::renderScene(Slurm16SoC* soc, int w, int h)
     glUniform1i(glGetUniformLocation(m_backgroundShaderProgram, "mem_8bpp"), 2);
 
     
-    glUniform1f(glGetUniformLocation(m_backgroundShaderProgram, "tilemap_addr"), (float)soc->getGfxCore()->getBGCon().getBG0().get_tilemap_address());
-    glUniform1f(glGetUniformLocation(m_backgroundShaderProgram, "tileset_addr"), (float)soc->getGfxCore()->getBGCon().getBG0().get_tileset_address());
-    glUniform1f(glGetUniformLocation(m_backgroundShaderProgram, "pal_hi"), (float)soc->getGfxCore()->getBGCon().getBG0().get_pal_hi() / 16.0);
-    glUniform1f(glGetUniformLocation(m_backgroundShaderProgram, "tile_size"), (float)soc->getGfxCore()->getBGCon().getBG0().get_tile_size());
-    glUniform1f(glGetUniformLocation(m_backgroundShaderProgram, "tilemap_x"), (float)soc->getGfxCore()->getBGCon().getBG0().get_tilemap_x());
-    glUniform1f(glGetUniformLocation(m_backgroundShaderProgram, "tilemap_y"), (float)soc->getGfxCore()->getBGCon().getBG0().get_tilemap_y());
-    glUniform1f(glGetUniformLocation(m_backgroundShaderProgram, "enable"), (float)soc->getGfxCore()->getBGCon().getBG0().get_enable());
+    // Render background layers 0 and 1 (each into its own texture)
+    for (int layer = 0; layer < 2; layer++)
+    {
+        auto& bg = layer == 0 ? soc->getGfxCore()->getBGCon().getBG0() : soc->getGfxCore()->getBGCon().getBG1();
 
+        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_textures[layer == 0 ? kBG0TextureOut : kBG1TextureOut], 0);
 
-    glBindVertexArray(m_vertexArrayID);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glUniform1f(glGetUniformLocation(m_backgroundShaderProgram, "tilemap_addr"), (float)bg.get_tilemap_address());
+        glUniform1f(glGetUniformLocation(m_backgroundShaderProgram, "tileset_addr"), (float)bg.get_tileset_address());
+        glUniform1f(glGetUniformLocation(m_backgroundShaderProgram, "pal_hi"), (float)bg.get_pal_hi() / 16.0);
+        glUniform1f(glGetUniformLocation(m_backgroundShaderProgram, "tile_size"), (float)bg.get_tile_size());
+        glUniform1f(glGetUniformLocation(m_backgroundShaderProgram, "tilemap_x"), (float)bg.get_tilemap_x());
+        glUniform1f(glGetUniformLocation(m_backgroundShaderProgram, "tilemap_y"), (float)bg.get_tilemap_y());
+        glUniform1f(glGetUniformLocation(m_backgroundShaderProgram, "row_tiles"), bg.get_tilemap_row_tiles());
+        glUniform1f(glGetUniformLocation(m_backgroundShaderProgram, "enable"), (float)bg.get_enable());
+
+        glBindVertexArray(m_vertexArrayID);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    }
 
 
     // Render sprites
@@ -368,11 +383,9 @@ float Renderer::renderScene(Slurm16SoC* soc, int w, int h)
     
     // Load BG1 texture
     glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, m_textures[kBG1Texture]);
+    glBindTexture(GL_TEXTURE_2D, m_textures[kBG1TextureOut]);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST); 
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, 800, 525, 0,
-                 GL_RED, GL_UNSIGNED_BYTE, soc->getGfxCore()->getBG1Texture());
 
 
     glUniform1i(glGetUniformLocation(m_layersShaderProgram, "BG1Texture"), 1);
