@@ -43,8 +43,11 @@ APPLETS=$(SRC_DIR)/effect1 \
 all: $(TARGET)
 
 .PHONY: $(APPLETS)
-$(APPLETS): 
+$(APPLETS): $(ASSETS_H)
 	make -C $@
+
+# The applet bundle is generated together with its header.
+$(APP_BUNDLE): $(APPLETS_H)
 
 $(CHIPTUNE_SLMSNG): $(CHIPTUNE) Makefile
 	mkdir -p $(BUILD_DIR)

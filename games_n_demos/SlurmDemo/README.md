@@ -30,8 +30,7 @@ Building
 The demo is built with the clang SLURM16 toolchain (see `clang/README.md`;
 run `clang/build.sh` first):
 
-    make build/applet_bundle.h   # builds the six effect applets
-    make                         # builds build/slurm_demo.bin
+    make        # builds the six effect applets and build/slurm_demo.bin
 
 The toolchain settings are in `common/clang.mk`, which `common/slurmos/slurmos.mk`
 includes. Assembly routines follow the clang calling convention: arguments in
