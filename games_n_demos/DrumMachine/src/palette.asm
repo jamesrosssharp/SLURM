@@ -1,3 +1,4 @@
+	.section text
 
 /* r4 = Palette
  * r5 = Offset
@@ -14,3 +15,6 @@ load_palette.loop:
 
 
 
+
+	.global load_palette
+	.end

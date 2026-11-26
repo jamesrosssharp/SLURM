@@ -1,7 +1,8 @@
+	.section text
 
 
 
-	.padto 0x8000
+	.section hidata
 
 // Pattern buffer A - 2k
 pattern_A: 
@@ -426,3 +427,14 @@ sound_stack:
 	.times 1024 dw 0
 sound_stack_end:
 
+
+	.global pattern_A
+	.global pattern_B
+	.global music_heap
+	.global old_stack
+	.global channel_info
+	.global pad
+	.global mix_audio_2
+	.global sound_stack
+	.global sound_stack_end
+	.end

@@ -1,4 +1,4 @@
-	.org 200h
+	.section vectors
 
 my_vector_table:
 RESET_VEC:
@@ -16,6 +16,7 @@ GPIO_VEC:
 VECTORS:
 	.times 20 dw 0x0000
 
+	.section text
 start:
 	// Zero regs (makes it easier to debug waveforms)
 	mov r1, r0
@@ -95,3 +96,25 @@ dummy_handler:
 	out [r0, 0x7001], r1
 	iret
 
+
+	.global my_vector_table
+	.global RESET_VEC
+	.global HSYNC_VEC
+	.global VSYNC_VEC
+	.global AUDIO_VEC
+	.global SPI_FLASH
+	.global GPIO_VEC
+	.global VECTORS
+	.global start
+	.global copy_loop
+	.global die
+	.global putc
+	.global trace_dec
+	.global trace_char
+	.global trace_hex
+	.global exit
+	.global __out
+	.global __in
+	.global __sleep
+	.global dummy_handler
+	.end

@@ -1,3 +1,4 @@
+	.section hidata
 
 
 
@@ -397,3 +398,11 @@ sound_stack:
 	.times 1024 dw 0
 sound_stack_end:
 
+
+	.global old_stack
+	.global channel_info
+	.global pad
+	.global mix_audio_2
+	.global sound_stack
+	.global sound_stack_end
+	.end

@@ -1,3 +1,7 @@
+#include <game_io.h>
+
+/* Implemented in top.asm: subtract v from the 32 bit value *hi:*lo */
+void __subtract32(short* hi, short* lo, short v);
 
 #define COUNT_OF(x) (sizeof(x)/sizeof(x[0]))
 

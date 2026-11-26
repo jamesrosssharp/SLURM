@@ -1,3 +1,4 @@
+	.section text
 //extern void load_sprite_x(short sprite, short x);
 
 load_sprite_x:
@@ -20,3 +21,9 @@ load_sprite_a:
 	ret
 
 
+
+	.global load_sprite_x
+	.global load_sprite_y
+	.global load_sprite_h
+	.global load_sprite_a
+	.end

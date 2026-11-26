@@ -1,3 +1,4 @@
+	.section text
 
 /* r4 = Copper list address
  * r5 = Copper list length */
@@ -14,3 +15,6 @@ load_copper_list.loop:
 
 
 
+
+	.global load_copper_list
+	.end

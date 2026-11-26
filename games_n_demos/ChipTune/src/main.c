@@ -1,4 +1,5 @@
 
+#include <game_io.h>
 #include <slurmsng.h>
 #include <slurminterrupt.h>
 #include <slurmflash.h>
@@ -11,6 +12,11 @@
 
 extern void load_copper_list(short* list, int len);
 extern void load_palette(short* palette, int offset, int len);
+
+/* Implemented in bottom.asm / notemul.asm */
+void mix_audio_2(void);
+short note_mul_asm(short lo, short hi, short c5speed);
+short note_mul_asm_hi(short lo, short hi, short c5speed);
 
 #define COUNT_OF(x) ((sizeof(x)) / (sizeof(x[0])))
 
@@ -188,7 +194,7 @@ int load_slurm_sng()
 	do_flash_dma(chiptune_rom_offset_lo, chiptune_rom_offset_hi, offset_lo, offset_hi, heap, pl_hdr.chunklen >> 1);
 
 	for (i = 0; i < sng_hdr.playlist_size; i++)
-		my_printf("Pl %d: %d\r\n", i, heap[i]);
+		my_printf("Pl %d: %d\r\n", i, (unsigned char)heap[i]);
 
 
 	pl.pl_len = sng_hdr.playlist_size;
@@ -521,7 +527,8 @@ int main()
 					cur_patt_buf = !cur_patt_buf;
 					row = 0;
 
-					pattern = pl.pl[ord++];
+					/* playlist entries are unsigned: 0xff marks the end */
+					pattern = (unsigned char)pl.pl[ord++];
 
 					my_printf("Pattern: %d ord: %d len: %d\r\n", pattern, ord, pl.pl_len);
 

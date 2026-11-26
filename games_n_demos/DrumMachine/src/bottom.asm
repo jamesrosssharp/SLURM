@@ -1,7 +1,8 @@
+	.section text
 
 
 
-	.padto 0x8000
+	.section hidata
 
 // Sound mixing routines + stack (located in this bank so we have easy fast to sample data)
 // Must fit in 4kB
@@ -492,3 +493,12 @@ sound_stack_end:
 // We will include samples here
 
 
+
+	.global channel_info
+	.global old_stack
+	.global audio_buffer_table
+	.global mix_audio
+	.global mix_audio_2
+	.global sound_stack
+	.global sound_stack_end
+	.end

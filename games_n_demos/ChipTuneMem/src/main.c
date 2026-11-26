@@ -1,4 +1,5 @@
 
+#include <game_io.h>
 #include <slurmsng.h>
 #include <slurminterrupt.h>
 #include <slurmflash.h>
@@ -11,6 +12,11 @@
 
 extern void load_copper_list(short* list, int len);
 extern void load_palette(short* palette, int offset, int len);
+
+/* Implemented in bottom.asm / notemul.asm */
+void mix_audio_2(void);
+short note_mul_asm(short lo, short hi, short c5speed);
+short note_mul_asm_hi(short lo, short hi, short c5speed);
 
 #define COUNT_OF(x) ((sizeof(x)) / (sizeof(x[0])))
 
