@@ -160,6 +160,11 @@ static short on_map(unsigned char type)
 	return type >= OBJ_GUNBOAT && type <= OBJ_AAGUN;
 }
 
+/* The squadron leader's barrel roll: frames, and frames shown each */
+#define LEADER_ROLL_FRAMES	16
+#define LEADER_ROLL_STEP	4
+#define LEADER_ROLL_TIME	(LEADER_ROLL_FRAMES * LEADER_ROLL_STEP)
+
 static const struct sprite_frame* obj_frame(const struct obj* o)
 {
 	switch (o->type)
@@ -176,7 +181,19 @@ static const struct sprite_frame* obj_frame(const struct obj* o)
 	}
 	case OBJ_WING:		return &FRAME_WING;
 	case OBJ_JET:		return (o->t & 4) ? &FRAME_JET1 : &FRAME_JET2;
-	case OBJ_LEADER:	return &FRAME_LEADER;
+	case OBJ_LEADER: {
+		/* level, over onto its back and round to level again; rolling
+		 * the other way plays the frames backwards */
+		static const struct sprite_frame* const f[LEADER_ROLL_FRAMES] = {
+			&FRAME_LEADER, &FRAME_LEADER_ROLL1, &FRAME_LEADER_ROLL2,
+			&FRAME_LEADER_ROLL3, &FRAME_LEADER_ROLL4, &FRAME_LEADER_ROLL5,
+			&FRAME_LEADER_ROLL6, &FRAME_LEADER_ROLL7, &FRAME_LEADER_ROLL8,
+			&FRAME_LEADER_ROLL9, &FRAME_LEADER_ROLL10, &FRAME_LEADER_ROLL11,
+			&FRAME_LEADER_ROLL12, &FRAME_LEADER_ROLL13, &FRAME_LEADER_ROLL14,
+			&FRAME_LEADER_ROLL15 };
+		short i = o->param ? (LEADER_ROLL_TIME - o->param) / LEADER_ROLL_STEP : 0;
+		return f[o->param2 > 0 ? i : (LEADER_ROLL_FRAMES - i) % LEADER_ROLL_FRAMES];
+	}
 	case OBJ_BOMBER:	return &FRAME_BOMBER;
 	case OBJ_GUNBOAT:	return o->vx < 0 ? &FRAME_GUNBOAT_L : &FRAME_GUNBOAT_R;
 	case OBJ_BUNKER: {
@@ -391,7 +408,21 @@ static void update_enemy(struct obj* o)
 		break;
 
 	case OBJ_LEADER:
-		if (o->y < FX(320) && (o->t % 50) == 25)
+		/* param: frames left of a barrel roll, param2: its direction */
+		if (o->param == 0 && (o->t == 50 || o->t == 170))
+		{
+			o->param = LEADER_ROLL_TIME;
+			o->param2 = o->x < FX(SCREEN_W / 2 - 17) ? 1 : -1;
+		}
+		if (o->param)
+		{
+			/* a corkscrew: slide sideways, fastest on its back */
+			o->param--;
+			o->vx = o->param2 * sine((LEADER_ROLL_TIME - o->param) / 2) * 3 / 2;
+			if (o->param == 0)
+				o->vx = 0;
+		}
+		else if (o->y < FX(320) && (o->t % 50) == 25)
 			fire_at_player(centre_x(o), centre_y(o) - FX(10), shot_speed());
 		break;
 
