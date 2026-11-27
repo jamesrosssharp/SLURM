@@ -296,6 +296,19 @@ static void map_update_regs(void)
 		 cam_x, sub_y, 16, MAP_W, map_buffer(front), TILE_SET);
 }
 
+/*
+ * The back buffer can't be refilled until the hardware has stopped showing
+ * it, which is only after the registers naming the new front buffer go out
+ * at the next vblank: the load waits in pending_row until then.
+ */
+static short pending_row = -1;
+
+/* The window shown after win_row: one row up, or the bottom of the map */
+static short next_row(short row)
+{
+	return row > 0 ? row - 1 : MAP_H - MAP_WIN_ROWS;
+}
+
 void map_start(short row)
 {
 	win_row = row;
@@ -304,8 +317,7 @@ void map_start(short row)
 	front = 0;
 	map_load(row, 0);
 	flash_wait();
-	if (row > 0)
-		map_load(row - 1, 1);
+	pending_row = next_row(row);	/* buffer 1, after the next vblank */
 	map_on = 1;
 	map_update_regs();
 }
@@ -324,19 +336,19 @@ static void map_step(void)
 		sub_y--;
 		return;
 	}
-	if (win_row == 0)
+	/* the next window is in the back buffer (at the top of the map, the
+	 * bottom, to start again) */
+	if (pending_row >= 0)
 	{
-		/* the top of the map: start again from the bottom */
-		map_start(MAP_H - MAP_WIN_ROWS);
-		sub_y = 15;
-		return;
+		/* not started yet (two steps in one frame): load it now */
+		map_load(pending_row, front ^ 1);
+		pending_row = -1;
 	}
-	flash_wait();		/* the window one row up is in the back buffer */
+	flash_wait();
 	front ^= 1;
-	win_row--;
+	win_row = next_row(win_row);
 	sub_y = 15;
-	if (win_row > 0)
-		map_load(win_row - 1, front ^ 1);
+	pending_row = next_row(win_row);
 }
 
 void map_scroll(short speed)
@@ -358,6 +370,18 @@ void video_vblank(void)
 {
 	short i, l;
 
+	/* the layers first, while still in the blank */
+	for (l = 0; l < 2; l++)
+		for (i = 0; i < 5; i++)
+			__out(0x5d00 + l * 5 + i, layer_reg[l][i]);
+
+	/* the old front buffer is out of use now */
+	if (pending_row >= 0 && map_on)
+	{
+		map_load(pending_row, front ^ 1);
+		pending_row = -1;
+	}
+
 	for (i = 0; i < n_ready; i++)
 	{
 		load_sprite_x(i, shadow_x[i]);
@@ -369,10 +393,6 @@ void video_vblank(void)
 	for (; i < n_shown; i++)
 		load_sprite_x(i, 0);
 	n_shown = n_ready;
-
-	for (l = 0; l < 2; l++)
-		for (i = 0; i < 5; i++)
-			__out(0x5d00 + l * 5 + i, layer_reg[l][i]);
 }
 
 /*
