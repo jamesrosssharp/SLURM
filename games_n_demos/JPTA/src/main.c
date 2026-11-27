@@ -1,5 +1,7 @@
 /*
- * JPTA: walk John around level 1 with the arrow keys; the view follows him.
+ * JPTA: John walks around level 1; the view follows him. Left and right
+ * walk, up and down climb ladders, A jumps (higher the longer it's held),
+ * and off a ledge he falls.
  *
  * The tile set has 512 tiles but a background layer can only name 256 (one
  * byte a tile), so the level is split over both background layers
@@ -42,6 +44,7 @@ volatile short flash_complete;
 #define KEY_DOWN	2
 #define KEY_LEFT	4
 #define KEY_RIGHT	8
+#define KEY_A		16
 
 /* John's speed, in 1/16 pixel (per frame, and per frame per frame) */
 #define MAX_SPEED	32
@@ -178,38 +181,8 @@ static void vblank(void)
 }
 
 /*
- * Movement
+ * Movement helpers
  */
-
-/* Position and speed along one axis, in 1/16 pixel */
-struct axis {
-	short pos, v;
-};
-
-static short approach(short v, short target)
-{
-	if (v < target)
-		return v + ACCEL < target ? v + ACCEL : target;
-	if (v > target)
-		return v - ACCEL > target ? v - ACCEL : target;
-	return v;
-}
-
-static void move(struct axis* a, short dir, short max)
-{
-	a->v = approach(a->v, dir * MAX_SPEED);
-	a->pos += a->v;
-	if (a->pos < 0)
-	{
-		a->pos = 0;
-		a->v = 0;
-	}
-	if (a->pos > FX(max))
-	{
-		a->pos = FX(max);
-		a->v = 0;
-	}
-}
 
 static short clamp(short v, short lo, short hi)
 {
@@ -221,13 +194,271 @@ static short abs16(short v)
 	return v < 0 ? -v : v;
 }
 
+static short approach(short v, short target)
+{
+	if (v < target)
+		return v + ACCEL < target ? v + ACCEL : target;
+	if (v > target)
+		return v - ACCEL > target ? v - ACCEL : target;
+	return v;
+}
+
+/*
+ * The level's collision map (level.h): what's solid at a pixel, and where
+ * the ladders are.
+ */
+
+static const unsigned char* const map0 = (const unsigned char*)level_bg0;
+static const unsigned char* const map1 = (const unsigned char*)level_bg1;
+
+/* The tile (0-511) in a map cell */
+static short tile_at(short px, short py)
+{
+	short cell = (py >> 4) * LEVEL_W + (px >> 4);
+	unsigned char t = map0[cell];
+	return t != 0xff ? t : 256 + map1[cell];
+}
+
+static short is_ladder(short tile)
+{
+	return (tile_ladder[tile >> 4] >> (tile & 15)) & 1;
+}
+
+static short ladder_at(short px, short py)
+{
+	if (px < 0 || py < 0 || px >= LEVEL_PX_W || py >= LEVEL_PX_H)
+		return 0;
+	return is_ladder(tile_at(px, py));
+}
+
+/* Is any of the rectangle x0-x1, y0-y1 (inclusive) solid? Outside the
+ * level is solid, except above it. */
+static short solid(short x0, short y0, short x1, short y1)
+{
+	short x, y;
+
+	if (x0 < 0 || x1 >= LEVEL_PX_W || y1 >= LEVEL_PX_H)
+		return 1;
+	if (y0 < 0)
+		y0 = 0;
+	if (y1 < y0)
+		return 0;
+	/* one test per 4x4 block, each block's top left corner */
+	for (y = y0 & ~3; y <= y1; y += 4)
+		for (x = x0 & ~3; x <= x1; x += 4)
+		{
+			short t = tile_at(x, y);
+			if ((tile_solid[t] >> (((y & 15) >> 2) * 4 + ((x & 15) >> 2))) & 1)
+				return 1;
+		}
+	return 0;
+}
+
+/*
+ * John. x, y is the top left of his sprite, in 1/16 pixels; he collides
+ * with the box HB_L-HB_R, HB_T-HB_B inside it (from his body to his feet).
+ */
+
+#define HB_L		8
+#define HB_R		24	/* exclusive */
+#define HB_T		12	/* below his hair: the level has 32 pixel gaps */
+#define HB_B		JOHN_H	/* exclusive: the row under his feet */
+#define STEP_UP		4	/* the highest bump he walks over */
+#define CENTRE		(JOHN_W / 2)
+
+#define GRAVITY		5	/* 1/16 pixel per frame per frame */
+#define MAX_FALL	80
+#define CLIMB_SPEED	16
+#define JUMP_SPEED	116	/* up to about 84 pixels high: onto the island and the ledges */
+#define JUMP_CUT	32	/* letting go of A early: rise no faster than this */
+
+struct john {
+	short x, y;		/* 1/16 pixel */
+	short vx, vy;
+	short on_ground;
+	short climbing;
+};
+
+#define PX(v)		((v) >> 4)
+
+/* Would John's box hit anything with his sprite at pixel x, y? Only the
+ * part above his feet's STEP_UP rows if 'body' */
+static short box_hits(struct john* j, short x, short y, short body)
+{
+	return solid(x + HB_L, y + HB_T, x + HB_R - 1, y + HB_B - 1 - (body ? STEP_UP : 0));
+}
+
+static short ground_under(struct john* j, short x, short y)
+{
+	return solid(x + HB_L, y + HB_B, x + HB_R - 1, y + HB_B);
+}
+
+/* Left and right, a pixel at a time, stepping up small bumps */
+static void move_x(struct john* j)
+{
+	short x = PX(j->x), y = PX(j->y);
+	short to = PX(j->x + j->vx);
+	short dir = to > x ? 1 : -1;
+
+	while (x != to)
+	{
+		short s;
+		if (box_hits(j, x + dir, y, 1))
+			break;
+		/* his feet are in something low: up onto it, if there's room */
+		for (s = 0; s <= STEP_UP && box_hits(j, x + dir, y - s, 0); s++)
+			;
+		if (s > STEP_UP || (s && !j->on_ground))
+			break;
+		x += dir;
+		y -= s;
+	}
+	if (x == to)
+		j->x += j->vx;
+	else
+	{
+		j->x = FX(x);
+		j->vx = 0;
+	}
+	if (y != PX(j->y))
+		j->y = FX(y);
+}
+
+/* Up and down, a pixel at a time: landing, or bumping his head */
+static void move_y(struct john* j)
+{
+	short x = PX(j->x), y = PX(j->y);
+	short to = PX(j->y + j->vy);
+	short dir = to > y ? 1 : -1;
+
+	while (y != to)
+	{
+		if (dir > 0 ? ground_under(j, x, y) : box_hits(j, x, y - 1, 0))
+			break;
+		y += dir;
+	}
+	if (y == to)
+		j->y += j->vy;
+	else
+	{
+		j->y = FX(y);
+		j->vy = 0;
+	}
+}
+
+/* The middle of the ladder at pixel px, py */
+static short ladder_middle(short px, short py)
+{
+	short left = (px & ~15) - ((tile_at(px, py) & 1) ? 16 : 0);
+	return left + 16;
+}
+
+/* dx, dy: the arrow keys (-1, 0, 1); jump: A was just pressed; held: A is down */
+static void update_john(struct john* j, short dx, short dy, short jump, short held)
+{
+	short x = PX(j->x), y = PX(j->y);
+	short cx = x + CENTRE;
+	short feet = y + HB_B;
+	short was_climbing = j->climbing;
+
+	/* Onto a ladder: up from in front of one, or down from the top of one */
+	if (!j->climbing && !dx &&
+	    ((dy < 0 && ladder_at(cx, feet - 1)) || (dy > 0 && ladder_at(cx, feet))))
+	{
+		short mid = ladder_middle(cx, dy < 0 ? feet - 1 : feet);
+		if (cx - mid < 8 && mid - cx < 8)
+		{
+			j->climbing = 1;
+			j->x = FX(mid - CENTRE);
+			j->vx = 0;
+		}
+	}
+	/* and off it by walking away, or jumping */
+	if (j->climbing && (dx || jump))
+		j->climbing = 0;
+
+	if (j->climbing)
+	{
+		x = PX(j->x);
+		cx = x + CENTRE;
+		j->vx = 0;
+		j->vy = dy * CLIMB_SPEED;
+		/* no higher than the top of the ladder */
+		if (dy < 0 && !ladder_at(cx, feet - 2))
+			j->vy = 0;
+		move_y(j);
+		y = PX(j->y);
+		feet = y + HB_B;
+		/* at the bottom: standing on the floor */
+		if (dy > 0 && !ladder_at(cx, feet) && ground_under(j, x, y))
+			j->climbing = 0;
+		j->on_ground = 0;
+		return;
+	}
+
+	/* just off a ladder at the bottom, his feet can be in its floor */
+	{
+		short s;
+		for (s = 0; s <= 8 && box_hits(j, x, y - s, 0); s++)
+			;
+		if (s && s <= 8)
+			j->y = FX(y - s);
+	}
+
+	if (jump && (j->on_ground || was_climbing))
+	{
+		j->vy = -JUMP_SPEED;
+		j->on_ground = 0;
+	}
+	else if (!held && j->vy < -JUMP_CUT)
+		j->vy = -JUMP_CUT;
+
+	j->vx = approach(j->vx, dx * MAX_SPEED);
+	if (j->vx)
+		move_x(j);
+
+	/* With a ladder at his middle he holds on: he can walk off it sideways
+	 * (or across the top of one) without falling through. Jumping up past
+	 * one, he doesn't. */
+	x = PX(j->x);
+	y = PX(j->y);
+	if (j->vy >= 0 && ladder_at(x + CENTRE, y + HB_B - 1))
+	{
+		j->vy = 0;
+		j->on_ground = 1;
+		return;
+	}
+
+	j->vy += GRAVITY;
+	if (j->vy > MAX_FALL)
+		j->vy = MAX_FALL;
+	if (j->on_ground && j->vy > 0)
+	{
+		/* walking down a slope or a step: keep his feet on the ground */
+		short s;
+		x = PX(j->x);
+		y = PX(j->y);
+		for (s = 0; s <= STEP_UP && !ground_under(j, x, y + s); s++)
+			;
+		if (s && s <= STEP_UP)
+		{
+			j->y = FX(y + s);
+			j->vy = 0;
+		}
+	}
+	move_y(j);
+	j->on_ground = ground_under(j, PX(j->x), PX(j->y));
+	if (j->on_ground && j->vy > 0)
+		j->vy = 0;
+}
+
 int main(void)
 {
-	/* John's top left corner in the level: on the floor of the bottom cave */
-	struct axis jx = { FX(3 * 16), 0 };
-	struct axis jy = { FX(28 * 16 - JOHN_H), 0 };
+	/* John starts on the grass at the top left, next to the first ladder */
+	struct john john = { FX(1 * 16), FX(9 * 16 - JOHN_H), 0, 0, 0, 0 };
 	short facing_left = 0;
 	short walk = 0, walked = 0;
+	unsigned short prev_keys = 0;
 	short i;
 
 	__out(0x5f02, 1);		/* 320x240 */
@@ -260,18 +491,18 @@ int main(void)
 			dy--;
 		if (keys & KEY_DOWN)
 			dy++;
-		move(&jx, dx, LEVEL_PX_W - JOHN_W);
-		move(&jy, dy, LEVEL_PX_H - JOHN_H);
+		update_john(&john, dx, dy, (keys & KEY_A) && !(prev_keys & KEY_A), (keys & KEY_A) != 0);
+		prev_keys = keys;
 
-		if (jx.v < 0)
+		if (dx < 0)
 			facing_left = 1;
-		if (jx.v > 0)
+		if (dx > 0)
 			facing_left = 0;
 
-		/* the walk cycle keeps pace with how far he goes */
-		if (jx.v || jy.v)
+		/* the walk cycle keeps pace with how far he walks or climbs */
+		if ((john.on_ground && john.vx) || (john.climbing && john.vy))
 		{
-			walked += abs16(jx.v) + abs16(jy.v);
+			walked += abs16(john.vx) + abs16(john.vy);
 			while (walked >= FX(STEP_PX))
 			{
 				walked -= FX(STEP_PX);
@@ -279,18 +510,20 @@ int main(void)
 			}
 			frame = JOHN_WALK + walk;
 		}
+		else if (john.climbing)
+			frame = JOHN_WALK + walk;	/* holding on */
 		else
 		{
 			walked = 0;
-			frame = JOHN_STAND;
+			frame = john.on_ground ? JOHN_STAND : JOHN_WALK + 2;	/* falling */
 		}
 		if (facing_left)
 			frame += JOHN_LEFT;
 		show_frame(frame);
 
 		/* the view follows John, up to the edges of the level */
-		x = jx.pos >> 4;
-		y = jy.pos >> 4;
+		x = PX(john.x);
+		y = PX(john.y);
 		cam_x = clamp(x + JOHN_W / 2 - SCREEN_W / 2, 0, LEVEL_PX_W - SCREEN_W);
 		cam_y = clamp(y + JOHN_H / 2 - SCREEN_H / 2, 0, LEVEL_PX_H - SCREEN_H);
 		set_camera(cam_x, cam_y);

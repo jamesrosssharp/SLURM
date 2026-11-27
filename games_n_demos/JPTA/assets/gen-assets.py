@@ -63,6 +63,47 @@ for name, gids in layers:
 bg = tmx2bg.split(w, h, firstgid, layers, tiles)
 
 #
+#	Collision: each tile is a 4x4 grid of 4x4 pixel blocks, solid where
+#	at least half the pixels are. Sky and the cave background are open; so
+#	are the trees and bushes, which are only decoration, and the ladders
+#	(the floor at the foot of a ladder is the tile below it).
+#
+
+def gids(*ranges):
+	out = set()
+	for r in ranges:
+		out |= set(range(r[0], r[1] + 1)) if isinstance(r, tuple) else {r}
+	return {g - 1 for g in out}
+
+OPEN = gids(1, 2, 17, 18, 109, 110, 125, 126, 134, 135, 150, 151, 205, 206, 221, 222,
+	       (385, 392), (401, 406), (417, 448))
+LADDERS = gids((291, 298), 303, 304, (307, 314), 319, 320, (397, 400), (413, 416))
+OPEN |= LADDERS
+
+pal = tiles.getpalette()
+def colour(i):
+	return pal[3 * i], pal[3 * i + 1], pal[3 * i + 2]
+def is_open(i):
+	r, g, b = colour(i)
+	return (b > r + 60 and b > g + 60) or r + g + b < 100	# sky, or dark: the cave
+
+tpx = tiles.load()
+tile_mask = []
+for t in range(512):
+	mask = 0
+	if t not in OPEN and (t // 16) * 16 < tiles.height:
+		for by in range(4):
+			for bx in range(4):
+				n = sum(1 for y in range(4) for x in range(4)
+					if not is_open(tpx[(t % 16) * 16 + bx * 4 + x, (t // 16) * 16 + by * 4 + y]))
+				if n >= 8:
+					mask |= 1 << (by * 4 + bx)
+	tile_mask.append(mask)
+ladder_bits = [0] * 32
+for t in LADDERS:
+	ladder_bits[t // 16] |= 1 << (t % 16)
+
+#
 #	John: the frames are cut from JohnSprites.png, which has them in rows
 #	about 43 pixels apart and 30-33 pixels across, close enough that a
 #	rectangle around one catches bits of its neighbours. So each frame is
@@ -167,6 +208,12 @@ with open("level.h", "w") as f:
 	f.write("\n/* One byte per tile, row by row, 0xff where the other background has the tile */\n")
 	f.write(c_array("level_bg0", words(bg[0])))
 	f.write(c_array("level_bg1", words(bg[1])))
+	f.write("\n/* Collision, for tiles 0-511: bit (y * 4 + x) is set where the 4x4 pixel\n")
+	f.write(" * block x, y of the tile is solid */\n")
+	f.write(c_array("tile_solid", tile_mask))
+	f.write("\n/* Ladders: bit (t %% 16) of word t / 16 is set for a ladder tile t; the\n")
+	f.write(" * left hand tile of each ladder is the even one */\n")
+	f.write(c_array("tile_ladder", ladder_bits))
 
 with open("john.h", "w") as f:
 	f.write("/* john.h: generated from JohnSprites.png by gen-assets.py, do not edit */\n\n")
