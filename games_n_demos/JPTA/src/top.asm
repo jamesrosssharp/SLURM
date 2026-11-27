@@ -97,6 +97,8 @@ dummy_handler:
 	iret
 
 flash_handler:
+	mov r1, 1
+	st [flash_complete], r1
 	mov r1, 8
 	out [r0, 0x7001], r1
 	iret
