@@ -39,7 +39,8 @@ SOFTWARE.
 #include <GL/glext.h>
 #include <GL/glcorearb.h>
 
-#include "Slurm16SoC.h"
+#include "FrameSnapshot.h"
+#include <vector>
 
 class Renderer {
 
@@ -47,7 +48,11 @@ class Renderer {
         Renderer();
         ~Renderer();
 
-        float renderScene(Slurm16SoC* soc, int w, int h);
+        /* Draw a frame. Returns the CPU time taken in ms. If the sprite
+         * collisions of an earlier frame are ready, they are copied to
+         * 'collisions' (256 words) and gotCollisions is set. */
+        float renderScene(const FrameSnapshot& s, int w, int h,
+                          std::uint32_t* collisions, bool& gotCollisions);
 
     private:
 
@@ -83,7 +88,11 @@ class Renderer {
 
         GLuint m_framebuffer;
 
-        GLuint m_ssbo;
+        /* Sprite collisions: two buffers, so last frame's can be read
+         * (once its fence says the GPU is done) while this frame's are drawn */
+        GLuint m_ssbo[2];
+        GLsync m_fence[2];
+        int m_frame;
 
         std::vector<GLfloat> m_vertexData;
         std::vector<GLfloat> m_vertexData2;

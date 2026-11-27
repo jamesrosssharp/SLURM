@@ -35,8 +35,15 @@ SOFTWARE.
 
 #include <cstdint>
 
+#include <atomic>
 #include <chrono>
+#include <condition_variable>
 #include <iostream>
+#include <memory>
+#include <mutex>
+#include <thread>
+#include <utility>
+#include <vector>
 
 #include <unistd.h>
 
@@ -54,28 +61,133 @@ SOFTWARE.
 
 #include "ElfDebug.h"
 
-float getFPS() {
-    static std::chrono::time_point<std::chrono::high_resolution_clock> oldTime = std::chrono::high_resolution_clock::now();
-    static int fps; fps++;
+/*
+ * The emulator runs on its own thread, paced by the clock at the speed of the
+ * hardware: 25 MHz, 800 x 525 cycles a frame. At each vsync it copies what
+ * the renderer needs into a frame snapshot. The main thread handles SDL
+ * events and draws the newest snapshot, so drawing and the buffer swap never
+ * hold up the emulation.
+ */
 
-    float ret = 0.0;
+static constexpr double kClockHz = 25000000.0;
+static constexpr double kFramePeriod = TOTAL_X * TOTAL_Y / kClockHz;   /* 16.8 ms: 59.52 Hz */
 
-    auto msecs = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - oldTime);
+/* Triple buffered frames: the emulator fills 'back', the renderer draws
+ * 'front', and 'ready' holds the newest finished frame between them */
+class FrameExchange {
 
-    if (msecs.count() != 0)
-        ret = fps * 1000.0 / msecs.count();
+    public:
 
-    if (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - oldTime) >= std::chrono::seconds{ 1 }) {
+        FrameExchange() :
+            m_back(new FrameSnapshot), m_ready(new FrameSnapshot), m_front(new FrameSnapshot) {}
 
-        oldTime = std::chrono::high_resolution_clock::now();
+        FrameSnapshot& back() { return *m_back; }
 
-        fps = 0;
+        /* emulator: the back frame is finished */
+        void publish()
+        {
+            {
+                std::lock_guard<std::mutex> lock(m_mutex);
+                std::swap(m_back, m_ready);
+                m_new = true;
+            }
+            m_cv.notify_one();
+        }
+
+        /* renderer: the newest frame, if there is one it hasn't drawn;
+         * waits up to 'timeout' for one */
+        const FrameSnapshot* take(std::chrono::milliseconds timeout)
+        {
+            std::unique_lock<std::mutex> lock(m_mutex);
+            if (!m_cv.wait_for(lock, timeout, [this] { return m_new; }))
+                return nullptr;
+            std::swap(m_ready, m_front);
+            m_new = false;
+            return m_front.get();
+        }
+
+    private:
+
+        std::unique_ptr<FrameSnapshot> m_back, m_ready, m_front;
+        std::mutex m_mutex;
+        std::condition_variable m_cv;
+        bool m_new = false;
+};
+
+/* Things the main thread hands to the emulator thread */
+struct EmulatorInput {
+    std::mutex mutex;
+    std::vector<std::pair<GpioEnum, bool>> buttons;     /* pushed (true) or released */
+    std::uint32_t collisions[256];
+    bool newCollisions = false;
+};
+
+static void emulate(Slurm16SoC* soc, ElfDebug* edbg, AudioSDL2* aud, FrameExchange* frames,
+                    EmulatorInput* input, std::atomic<bool>* running, std::atomic<int>* frameCount,
+                    std::atomic<std::uint16_t>* pc)
+{
+    using clock = std::chrono::steady_clock;
+    const auto period = std::chrono::duration_cast<clock::duration>(std::chrono::duration<double>(kFramePeriod));
+    auto next = clock::now();
+
+    std::vector<std::pair<GpioEnum, bool>> buttons;
+    std::uint32_t collisions[256];
+
+    while (*running)
+    {
+        bool newCollisions = false;
+        {
+            std::lock_guard<std::mutex> lock(input->mutex);
+            buttons.swap(input->buttons);
+            if (input->newCollisions)
+            {
+                memcpy(collisions, input->collisions, sizeof(collisions));
+                input->newCollisions = false;
+                newCollisions = true;
+            }
+        }
+        for (auto& b : buttons)
+        {
+            if (b.second)
+                soc->get_pcon().getGPIO().push_button(b.first);
+            else
+                soc->get_pcon().getGPIO().release_button(b.first);
+        }
+        buttons.clear();
+        if (newCollisions)
+            soc->setCollisionMap(collisions);
+
+        /* One frame, up to and including the vsync */
+        bool vs = false;
+        do
+        {
+            bool emitAudio, hs = false;
+            std::int16_t left = 20, right = 37;
+
+            vs = false;
+            soc->executeOneCycle(emitAudio, left, right, *edbg, hs, vs);
+
+            if (emitAudio)
+                aud->feedRingbuffer(left, right);
+        }
+        while (!vs);
+
+        soc->snapshot(frames->back());
+        frames->publish();
+        (*frameCount)++;
+        *pc = soc->get_cpu().get_pc();
+
+        /* Wait for the frame's time to be up. If we have fallen well behind
+         * (the machine was busy), start again from now rather than rushing
+         * to catch up */
+        next += period;
+        auto now = clock::now();
+        if (now > next + 6 * period)
+            next = now;
+        else
+            std::this_thread::sleep_until(next);
     }
-
-    return ret;
 }
-
-
 
 int main(int argc, char** argv)
 {
@@ -106,22 +218,43 @@ int main(int argc, char** argv)
 
     Renderer r;
 
-    bool running = true;
     bool full_screen = false;
+
+    FrameExchange frames;
+    EmulatorInput input;
+    std::atomic<bool> running = true;
+    std::atomic<int> emuFrames = 0;
+    std::atomic<std::uint16_t> pc = 0;
+
+    std::thread emulator(emulate, soc, &edbg, &aud, &frames, &input, &running, &emuFrames, &pc);
+
+    auto button = [&input](GpioEnum b, bool pushed) {
+        std::lock_guard<std::mutex> lock(input.mutex);
+        input.buttons.emplace_back(b, pushed);
+    };
+
+    int drawnFrames = 0;
+    float renderMs = 0;
+    auto statsTime = std::chrono::steady_clock::now();
 
     while (running)
     {
         SDL_Event Event;
         while (SDL_PollEvent(&Event))
         {
-            if (Event.type == SDL_KEYDOWN)
+            if (Event.type == SDL_KEYDOWN || Event.type == SDL_KEYUP)
             {
+                bool down = Event.type == SDL_KEYDOWN;
+
                 switch (Event.key.keysym.sym)
                 {
                     case SDLK_ESCAPE:
-                        running = 0;
+                        if (down)
+                            running = false;
                         break;
                     case 'f':
+                        if (!down || Event.key.repeat)
+                            break;
                         full_screen = !full_screen;
                         if (full_screen)
                         {
@@ -133,48 +266,22 @@ int main(int argc, char** argv)
                         }
                         break;
                     case 'a':
-                        soc->get_pcon().getGPIO().push_button(BUTTON_A);
+                        button(BUTTON_A, down);
                         break;
                     case 'b':
-                        soc->get_pcon().getGPIO().push_button(BUTTON_B);
+                        button(BUTTON_B, down);
                         break;
                     case SDLK_UP:
-                        soc->get_pcon().getGPIO().push_button(BUTTON_UP);
+                        button(BUTTON_UP, down);
                         break;
                     case SDLK_DOWN:
-                        soc->get_pcon().getGPIO().push_button(BUTTON_DOWN);
+                        button(BUTTON_DOWN, down);
                         break;
                     case SDLK_LEFT:
-                        soc->get_pcon().getGPIO().push_button(BUTTON_LEFT);
+                        button(BUTTON_LEFT, down);
                         break;
                     case SDLK_RIGHT:
-                        soc->get_pcon().getGPIO().push_button(BUTTON_RIGHT);
-                        break;
-                    default:
-                        break;
-                }
-            }
-            else if (Event.type == SDL_KEYUP)
-            {
-                switch (Event.key.keysym.sym)
-                {
-                    case 'a':
-                        soc->get_pcon().getGPIO().release_button(BUTTON_A);
-                        break;
-                    case 'b':
-                        soc->get_pcon().getGPIO().release_button(BUTTON_B);
-                        break;
-                    case SDLK_UP:
-                        soc->get_pcon().getGPIO().release_button(BUTTON_UP);
-                        break;
-                    case SDLK_DOWN:
-                        soc->get_pcon().getGPIO().release_button(BUTTON_DOWN);
-                        break;
-                    case SDLK_LEFT:
-                        soc->get_pcon().getGPIO().release_button(BUTTON_LEFT);
-                        break;
-                    case SDLK_RIGHT:
-                        soc->get_pcon().getGPIO().release_button(BUTTON_RIGHT);
+                        button(BUTTON_RIGHT, down);
                         break;
                     default:
                         break;
@@ -185,45 +292,52 @@ int main(int argc, char** argv)
                 running = false;
             }
         }
-    
-        float msecs = 0;
 
-        for (int i = 0; i < 418750; i++)
+        /* Draw the newest frame; if none has come, look at the events again */
+        const FrameSnapshot* frame = frames.take(std::chrono::milliseconds(20));
+
+        if (frame)
         {
-            bool emitAudio;
-            std::int16_t left = 20, right = 37;
-            bool hs = false, vs = false;
+            int w, h;
+            std::uint32_t collisions[256];
+            bool gotCollisions;
 
-            soc->executeOneCycle(emitAudio, left, right, edbg, hs, vs);
-       
-            if (emitAudio)
-                aud.feedRingbuffer(left, right);
-        
-            if (vs)
+            SDL_GetWindowSize(window, &w, &h);
+
+            renderMs = r.renderScene(*frame, w, h, collisions, gotCollisions);
+
+            if (gotCollisions)
             {
-                int w, h;
-
-                SDL_GetWindowSize(window, &w, &h);
-
-                msecs = r.renderScene(soc, w, h);
-    
-                SDL_GL_SwapWindow(window);
-
-
-                
+                std::lock_guard<std::mutex> lock(input.mutex);
+                memcpy(input.collisions, collisions, sizeof(collisions));
+                input.newCollisions = true;
             }
+
+            SDL_GL_SwapWindow(window);
+            drawnFrames++;
         }
-        
-        float fps = getFPS();
-        
-        std::stringstream s;
 
-        s << "slurmemu-ng : " << fps << " FPS, PC = " << std::hex << std::setw(4) << std::setfill('0') << soc->get_cpu().get_pc() << " R: " << msecs << " ms";
+        /* Once a second: emulated and drawn frames per second in the title */
+        auto now = std::chrono::steady_clock::now();
+        double secs = std::chrono::duration<double>(now - statsTime).count();
 
-        SDL_SetWindowTitle(window, s.str().c_str());
+        if (secs >= 1.0)
+        {
+            std::stringstream s;
 
+            s << "slurmemu-ng : " << std::fixed << std::setprecision(1)
+              << emuFrames.exchange(0) / secs << " FPS (" << drawnFrames / secs << " drawn), PC = "
+              << std::hex << std::setw(4) << std::setfill('0') << pc.load()
+              << std::dec << " R: " << renderMs << " ms";
 
+            SDL_SetWindowTitle(window, s.str().c_str());
+
+            drawnFrames = 0;
+            statsTime = now;
+        }
     }
+
+    emulator.join();
 
     printf("Bye!\n");
     exit(EXIT_SUCCESS);

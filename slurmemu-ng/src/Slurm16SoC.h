@@ -37,6 +37,7 @@ SOFTWARE.
 #include "GFXCore.h"
 
 #include "ElfDebug.h"
+#include "FrameSnapshot.h"
 
 class Slurm16SoC {
 
@@ -51,6 +52,12 @@ class Slurm16SoC {
         GFXCore* getGfxCore() { return m_pcon.getGfxCore(); }
 
         uint16_t* get_mem() { return m_memory; }
+
+        /* Copy what the renderer needs to draw the frame (call at vsync) */
+        void snapshot(FrameSnapshot& s);
+
+        /* Sprite collisions found by the renderer */
+        void setCollisionMap(std::uint32_t* collisions) { m_pcon.getGfxCore()->getSpConMut().setCollisionMap(collisions); }
 
         const PortController& get_pcon() { return m_pcon; }
 

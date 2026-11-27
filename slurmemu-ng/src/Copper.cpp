@@ -30,6 +30,7 @@ SOFTWARE.
 */
 
 #include "Copper.h"
+#include "GFXConst.h"
 //#include <stdio.h>
 
 Copper::Copper()    :
@@ -229,8 +230,13 @@ void Copper::step(std::uint16_t* mem, uint16_t x1, uint16_t y1, uint16_t x_in, u
     
     m_copperBG[idx] = m_r + (m_g << 8) + (m_b << 16) + (m_globalAlpha << 24);
    
-    m_alphaOverrideTexture[y1][0] = m_alphaOverride ? 1.0 : 0.0;
-    m_alphaOverrideTexture[y1][1] = m_globalAlpha / 240.0; 
+    /* one entry per line: the values at the end of the line, as when this
+     * was written on every pixel */
+    if (x1 == TOTAL_X - 1)
+    {
+        m_alphaOverrideTexture[y1][0] = m_alphaOverride ? 1.0 : 0.0;
+        m_alphaOverrideTexture[y1][1] = m_globalAlpha / 240.0;
+    }
     
     x = x_in;
     y = y_in;

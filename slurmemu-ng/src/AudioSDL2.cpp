@@ -37,8 +37,6 @@ SOFTWARE.
 
 #define PI 3.14159265358
 
-std::binary_semaphore m_sem{0};
-
 void audioCallback(void*  userdata,
                        Uint8* stream,
                        int    len)
@@ -53,23 +51,26 @@ void AudioSDL2::fillStream(std::uint8_t* stream, int len)
 {
 
     int consumed = 0;
+    int tail = m_rb_tail.load(std::memory_order_relaxed);
+    int head = m_rb_head.load(std::memory_order_acquire);
 
-    while ((len >= 4) && (m_rb_tail != m_rb_head))
+    /* each emulated sample is played twice: the device runs at twice the
+     * emulated rate */
+    while ((len >= 4) && (tail != head))
     {
-       
-
-        *stream++ = m_left_rb[m_rb_tail] >> 8;
-        *stream++ = m_right_rb[m_rb_tail] >> 8;
-        *stream++ = m_left_rb[m_rb_tail] >> 8;
-        *stream++ = m_right_rb[m_rb_tail] >> 8;
+        *stream++ = m_left_rb[tail] >> 8;
+        *stream++ = m_right_rb[tail] >> 8;
+        *stream++ = m_left_rb[tail] >> 8;
+        *stream++ = m_right_rb[tail] >> 8;
         
-        m_rb_tail++;
-        m_rb_tail %= kRBSize;
+        tail = (tail + 1) % kRBSize;
 
         len -= 4;
 
         consumed++;
     }
+
+    m_rb_tail.store(tail, std::memory_order_release);
 
  //   printf("Consumed: %d left: %d\n", consumed, len);
 
@@ -82,9 +83,6 @@ void AudioSDL2::fillStream(std::uint8_t* stream, int len)
         if (my_angle >= 2*3.14) my_angle -= 2*3.14;
     }
 
-
-    m_sem.release();
-
 }
 
 AudioSDL2::AudioSDL2()  :
@@ -94,10 +92,11 @@ AudioSDL2::AudioSDL2()  :
 
     
 
-    m_audioSpec.freq = 48000;
+    /* SDL converts to the device's own rate */
+    m_audioSpec.freq = 2 * kSampleRate;
     m_audioSpec.format = AUDIO_S8;
     m_audioSpec.channels = 2;
-    m_audioSpec.samples = 4096;
+    m_audioSpec.samples = 1024;
     m_audioSpec.callback = audioCallback;
     m_audioSpec.userdata = (void*)this;
 
@@ -122,19 +121,14 @@ AudioSDL2::~AudioSDL2()
 
 void AudioSDL2::feedRingbuffer(std::int16_t left, std::int16_t right)
 {
-    int space;
+    int head = m_rb_head.load(std::memory_order_relaxed);
+    int tail = m_rb_tail.load(std::memory_order_acquire);
 
-   // printf("Feed audio!\n");
+    if (((tail - head - 1) & (kRBSize - 1)) == 0)
+        return;     /* full */
 
-    while ((space = ((m_rb_tail - m_rb_head - 1) & (kRBSize - 1))) == 0)
-    {
-        m_sem.acquire();
-    }
+    m_left_rb[head] = left;
+    m_right_rb[head] = right;
 
-    m_left_rb[m_rb_head] = left;
-    m_right_rb[m_rb_head] = right;
-
-    m_rb_head++;
-
-    m_rb_head %= kRBSize;
+    m_rb_head.store((head + 1) % kRBSize, std::memory_order_release);
 }

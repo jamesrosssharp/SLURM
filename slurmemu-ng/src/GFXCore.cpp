@@ -105,7 +105,7 @@ void GFXCore::step(std::uint16_t* mem, bool& hs_int, bool& vs_int)
 
     if (hs_int)
     {
-        memcpy(&m_paletteTexture[kPaletteSize*m_y], m_palette, kPaletteSize); 
+        memcpy(&m_paletteTexture[kPaletteSize*m_y], m_palette, sizeof(m_palette)); 
     }
 
     m_x ++;

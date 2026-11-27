@@ -207,8 +207,9 @@ Renderer::Renderer()    :
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
-    glGenBuffers(1, &m_ssbo);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, m_ssbo);
+    glGenBuffers(2, m_ssbo);
+    m_fence[0] = m_fence[1] = 0;
+    m_frame = 0;
 
 }
         
@@ -218,26 +219,39 @@ Renderer::~Renderer()
 
 }
 
-float Renderer::renderScene(Slurm16SoC* soc, int w, int h)
+float Renderer::renderScene(const FrameSnapshot& s, int w, int h,
+                            std::uint32_t* collisions, bool& gotCollisions)
 {
     
     std::chrono::time_point<std::chrono::high_resolution_clock> oldTime = std::chrono::high_resolution_clock::now();
 
-    // Map the collision memory
+    // Read last frame's sprite collisions, if the GPU has finished with
+    // them: never wait for it
 
-    static int f = 0;
+    int cur = m_frame & 1, prev = cur ^ 1;
 
-    if (f != 0)
+    m_frame++;
+    gotCollisions = false;
+
+    if (m_fence[prev])
     {
+        GLenum r = glClientWaitSync(m_fence[prev], 0, 0);
 
-        uint32_t *collide = (uint32_t*)glMapNamedBuffer(m_ssbo, GL_READ_ONLY);
+        if (r == GL_ALREADY_SIGNALED || r == GL_CONDITION_SATISFIED)
+        {
+            void* p = glMapNamedBufferRange(m_ssbo[prev], 0, sizeof(m_collisionSSBO), GL_MAP_READ_BIT);
 
-        soc->getGfxCore()->getSpConMut().setCollisionMap(collide);
+            if (p)
+            {
+                memcpy(collisions, p, sizeof(m_collisionSSBO));
+                gotCollisions = true;
+            }
+            glUnmapNamedBuffer(m_ssbo[prev]);
+        }
 
-        glUnmapNamedBuffer(m_ssbo);
+        glDeleteSync(m_fence[prev]);
+        m_fence[prev] = 0;
     }
-
-    f = 1;
 
 
     // Render BG0
@@ -263,7 +277,7 @@ float Renderer::renderScene(Slurm16SoC* soc, int w, int h)
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST); 
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0,
-                 GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4, soc->get_mem());
+                 GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4, s.mem);
     
     int err = glGetError();
     if (err)
@@ -278,7 +292,7 @@ float Renderer::renderScene(Slurm16SoC* soc, int w, int h)
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST); 
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, 256, 512, 0,
-                 GL_RED, GL_UNSIGNED_BYTE, soc->get_mem());
+                 GL_RED, GL_UNSIGNED_BYTE, s.mem);
 
     glUniform1i(glGetUniformLocation(m_backgroundShaderProgram, "mem_8bpp"), 2);
 
@@ -286,18 +300,18 @@ float Renderer::renderScene(Slurm16SoC* soc, int w, int h)
     // Render background layers 0 and 1 (each into its own texture)
     for (int layer = 0; layer < 2; layer++)
     {
-        auto& bg = layer == 0 ? soc->getGfxCore()->getBGCon().getBG0() : soc->getGfxCore()->getBGCon().getBG1();
+        const BGLayerSnapshot& bg = s.bg[layer];
 
         glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_textures[layer == 0 ? kBG0TextureOut : kBG1TextureOut], 0);
 
-        glUniform1f(glGetUniformLocation(m_backgroundShaderProgram, "tilemap_addr"), (float)bg.get_tilemap_address());
-        glUniform1f(glGetUniformLocation(m_backgroundShaderProgram, "tileset_addr"), (float)bg.get_tileset_address());
-        glUniform1f(glGetUniformLocation(m_backgroundShaderProgram, "pal_hi"), (float)bg.get_pal_hi() / 16.0);
-        glUniform1f(glGetUniformLocation(m_backgroundShaderProgram, "tile_size"), (float)bg.get_tile_size());
-        glUniform1f(glGetUniformLocation(m_backgroundShaderProgram, "tilemap_x"), (float)bg.get_tilemap_x());
-        glUniform1f(glGetUniformLocation(m_backgroundShaderProgram, "tilemap_y"), (float)bg.get_tilemap_y());
-        glUniform1f(glGetUniformLocation(m_backgroundShaderProgram, "row_tiles"), bg.get_tilemap_row_tiles());
-        glUniform1f(glGetUniformLocation(m_backgroundShaderProgram, "enable"), (float)bg.get_enable());
+        glUniform1f(glGetUniformLocation(m_backgroundShaderProgram, "tilemap_addr"), bg.tilemap_addr);
+        glUniform1f(glGetUniformLocation(m_backgroundShaderProgram, "tileset_addr"), bg.tileset_addr);
+        glUniform1f(glGetUniformLocation(m_backgroundShaderProgram, "pal_hi"), bg.pal_hi);
+        glUniform1f(glGetUniformLocation(m_backgroundShaderProgram, "tile_size"), bg.tile_size);
+        glUniform1f(glGetUniformLocation(m_backgroundShaderProgram, "tilemap_x"), bg.tilemap_x);
+        glUniform1f(glGetUniformLocation(m_backgroundShaderProgram, "tilemap_y"), bg.tilemap_y);
+        glUniform1f(glGetUniformLocation(m_backgroundShaderProgram, "row_tiles"), bg.row_tiles);
+        glUniform1f(glGetUniformLocation(m_backgroundShaderProgram, "enable"), bg.enable);
 
         glBindVertexArray(m_vertexArrayID);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
@@ -315,24 +329,31 @@ float Renderer::renderScene(Slurm16SoC* soc, int w, int h)
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST); 
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, 9, 256, 0,
-                 GL_RED, GL_FLOAT, soc->getGfxCore()->getSpCon().getSpriteTexture() /*myTexture*/);
+                 GL_RED, GL_FLOAT, s.sprites);
    
     glActiveTexture(GL_TEXTURE4);
     glBindTexture(GL_TEXTURE_2D, m_textures[kMem5bppTexture]);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST); 
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0,
-                 GL_RGBA, GL_UNSIGNED_SHORT_1_5_5_5_REV, soc->get_mem());
+                 GL_RGBA, GL_UNSIGNED_SHORT_1_5_5_5_REV, s.mem);
     
     glUniform1i(glGetUniformLocation(m_spriteShaderProgram, "mem_4bpp"), 1);
     glUniform1i(glGetUniformLocation(m_spriteShaderProgram, "mem_5bpp"), 4);
     glUniform1i(glGetUniformLocation(m_spriteShaderProgram, "sp_dat"), 3);
 
     memset(m_collisionSSBO, 0, sizeof(m_collisionSSBO));
-    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(m_collisionSSBO), &m_collisionSSBO, GL_DYNAMIC_DRAW);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_ssbo[cur]);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(m_collisionSSBO), &m_collisionSSBO, GL_DYNAMIC_READ);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, m_ssbo[cur]);
 
     glBindVertexArray(m_vertexArrayID);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+    // The shader's writes to the collision buffer must be visible to the map
+    // next frame; the fence says when they are done
+    glMemoryBarrier(GL_BUFFER_UPDATE_BARRIER_BIT | GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT);
+    m_fence[cur] = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
 
     // Render copper
     glViewport(0, 0, w, h);
@@ -358,7 +379,7 @@ float Renderer::renderScene(Slurm16SoC* soc, int w, int h)
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 800, 525, 0,
-                 GL_RGBA, GL_UNSIGNED_BYTE, soc->getGfxCore()->getCopperBG());
+                 GL_RGBA, GL_UNSIGNED_BYTE, s.copperBG);
 
     glBindVertexArray(m_vertexArrayID);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
@@ -405,7 +426,7 @@ float Renderer::renderScene(Slurm16SoC* soc, int w, int h)
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST); 
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 525, 0,
-                 GL_BGRA, GL_UNSIGNED_SHORT_4_4_4_4_REV, soc->getGfxCore()->getPaletteTexture());
+                 GL_BGRA, GL_UNSIGNED_SHORT_4_4_4_4_REV, s.palette);
 
     glUniform1i(glGetUniformLocation(m_layersShaderProgram, "PaletteTexture"), 2);
 
@@ -416,7 +437,7 @@ float Renderer::renderScene(Slurm16SoC* soc, int w, int h)
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST); 
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, 2, 525, 0,
-                 GL_RED, GL_FLOAT, soc->getGfxCore()->getCopper().getAlphaOverride());
+                 GL_RED, GL_FLOAT, s.alphaOverride);
 
     // Load x pan texture
     glActiveTexture(GL_TEXTURE5);
@@ -424,12 +445,12 @@ float Renderer::renderScene(Slurm16SoC* soc, int w, int h)
     glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_MAG_FILTER,GL_NEAREST); 
     glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
     glTexImage1D(GL_TEXTURE_1D, 0, GL_R32F, 525, 0,
-                 GL_RED, GL_FLOAT, soc->getGfxCore()->getCopper().getXPanTexture());
+                 GL_RED, GL_FLOAT, s.xpan);
 
 
 
-    glUniform1f(glGetUniformLocation(m_layersShaderProgram, "yFlip"), soc->getGfxCore()->getCopper().getYFlip());
-    glUniform1f(glGetUniformLocation(m_layersShaderProgram, "videoMode"), soc->getGfxCore()->getVideoMode());
+    glUniform1f(glGetUniformLocation(m_layersShaderProgram, "yFlip"), s.yFlip);
+    glUniform1f(glGetUniformLocation(m_layersShaderProgram, "videoMode"), s.videoMode);
     glUniform1i(glGetUniformLocation(m_layersShaderProgram, "alphaOverride"), 4);
     glUniform1i(glGetUniformLocation(m_layersShaderProgram, "xpan"), 5);
 

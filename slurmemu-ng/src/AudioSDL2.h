@@ -33,7 +33,7 @@ SOFTWARE.
 
 #include <SDL2/SDL.h>
 #include <cstdint>
-#include <semaphore>
+#include <atomic>
 
 class AudioSDL2 {
 
@@ -42,17 +42,23 @@ class AudioSDL2 {
         AudioSDL2();
         ~AudioSDL2();
 
+        /* Never blocks (the emulator is paced by the clock, not by the
+         * audio): a sample is dropped if the buffer is full */
         void feedRingbuffer(std::int16_t left, std::int16_t right);
+
+        /* The emulated sample rate: one sample per 1024 cycles at 25 MHz */
+        static constexpr int kSampleRate = 25000000 / 1024;
 
         void fillStream(std::uint8_t* stream, int len);
 
     private:
         SDL_AudioSpec m_audioSpec;
 
-        int m_rb_head;
-        int m_rb_tail;
+        /* written by the emulator thread and the audio callback */
+        std::atomic<int> m_rb_head;
+        std::atomic<int> m_rb_tail;
     
-        static constexpr int kRBSize = 4096;
+        static constexpr int kRBSize = 2048;   /* ~80 ms */
 
         int16_t m_left_rb[kRBSize];
         int16_t m_right_rb[kRBSize];

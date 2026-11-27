@@ -90,7 +90,11 @@ int InterruptController::step(bool flash_int, bool vs, bool hs, bool timer, bool
     if (timer)
         m_interrupt_pending |= 1 << (TIMER_INTERRUPT - 1);
 
-    int arr[NUM_INTERRUPTS] = {HSYNC_INTERRUPT, VSYNC_INTERRUPT, AUDIO_INTERRUPT, FLASH_INTERRUPT, GPIO_INTERRUPT, TIMER_INTERRUPT}; 
+    /* the usual case, every cycle: nothing to take */
+    if (!(m_interrupt_pending & m_interrupt_enabled))
+        return 0;
+
+    static constexpr int arr[NUM_INTERRUPTS] = {HSYNC_INTERRUPT, VSYNC_INTERRUPT, AUDIO_INTERRUPT, FLASH_INTERRUPT, GPIO_INTERRUPT, TIMER_INTERRUPT}; 
 
     for (int i = 0; i < NUM_INTERRUPTS; i++)
         if ((m_interrupt_pending & m_interrupt_enabled) & (1 << (arr[i] - 1)))
