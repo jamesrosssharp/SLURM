@@ -10,11 +10,17 @@
 #	                                                    0x8000 and 0xc000
 #	                John's frames at 5 bpp              left in flash, loaded
 #	                                                    by DMA when needed
-#	  level.h     the two background maps (see tmx2bg.py) and the tile palette
+#	                the enemies, power ups and digits   loaded by DMA at the
+#	                from KakaduEnemies.png at 5 bpp     start to KAKADU_RAM
+#	  level.h     the two background maps (see tmx2bg.py), the tile palette
+#	              and the collision tables
 #	  john.h      John's frames: flash address, size and palette
+#	  kakadu.h    the enemy and power up frames: where they are and their size
 #
 #	The bottom 64 rows of the second tile set (tiles 448-511) are left free
-#	for John: the program copies the frame on show there by DMA.
+#	for John: the program copies the frame on show there by DMA. The
+#	KakaduEnemies.png frames go in the top half of the program's memory
+#	(words 0x4000-0x7fff), which the program doesn't use.
 #
 
 import os
@@ -186,12 +192,118 @@ for f in john_frames:
 	john_data += pack5(f)
 
 #
+#	Enemies and power ups: frames cut from KakaduEnemies.png, which has
+#	them packed close together, some touching. Most frames are the biggest
+#	shape in a rectangle (plus shapes wholly inside it); where neighbours
+#	touch, the whole rectangle. They are packed again, three pixels to a
+#	word, into a sheet 64 words (192 pixels) wide like the original, the
+#	sprites' 256 nibble stride.
+#
+
+KAKADU_RAM = 0x4000		# word address
+KAKADU_ROWS = 256		# the most that fits, to 0x7fff
+
+kak = Image.open("KakaduEnemies.png")
+assert kak.mode == "P"
+kpx = kak.load()
+
+def kshapes(x0, y0, w, h):
+	seen, out = set(), []
+	for y in range(y0, y0 + h):
+		for x in range(x0, x0 + w):
+			if kpx[x, y] == 0 or (x, y) in seen:
+				continue
+			g, todo = set(), [(x, y)]
+			seen.add((x, y))
+			while todo:
+				a, b = todo.pop()
+				g.add((a, b))
+				for dx in (-1, 0, 1):
+					for dy in (-1, 0, 1):
+						q = (a + dx, b + dy)
+						if (x0 <= q[0] < x0 + w and y0 <= q[1] < y0 + h and q not in seen
+						    and kpx[q] != 0):
+							seen.add(q)
+							todo.append(q)
+			out.append(g)
+	return out
+
+def kcut(x0, y0, w, h, plain):
+	if plain:
+		keep = {(x, y) for y in range(y0, y0 + h) for x in range(x0, x0 + w) if kpx[x, y]}
+	else:
+		gs = kshapes(x0, y0, w, h)
+		big = max(gs, key=len)
+		keep = set(big)
+		for g in gs:
+			if g is not big and all(x0 < x < x0 + w - 1 and y0 < y < y0 + h - 1 for x, y in g):
+				keep |= g
+	bx = min(x for x, _ in keep)
+	by = min(y for _, y in keep)
+	f = [[0] * (max(x for x, _ in keep) - bx + 1) for _ in range(max(y for _, y in keep) - by + 1)]
+	for x, y in keep:
+		f[y - by][x - bx] = kpx[x, y]
+	return f
+
+DIGIT_X = [0, 12, 21, 32, 44, 59, 71, 83, 95, 108]
+COIN_X = [0, 17, 29, 33, 46, 63, 75]
+HEART_X = [0, 16, 34, 50, 64, 76]
+KFRAMES = [
+	# name, rectangle (x, y, w, h), whole rectangle (for frames touching their neighbours)
+	("FLYER_R0", (0, 0, 57, 51), 0), ("FLYER_R1", (57, 2, 56, 48), 0),	# radioactive wombats
+	("FLYER_L0", (1, 146, 56, 47), 0), ("FLYER_L1", (57, 143, 57, 50), 0),
+	("WOMBAT_R", (113, 0, 55, 34), 0), ("WOMBAT_L", (113, 142, 53, 36), 0),
+	("BIRD_R_GLIDE", (0, 103, 36, 31), 0), ("BIRD_R_UP", (36, 103, 33, 41), 0),
+	("BIRD_R_CURL", (69, 103, 31, 40), 0), ("BIRD_L_CURL", (102, 103, 31, 40), 0),
+	("BIRD_L_UP", (132, 103, 34, 41), 0), ("BIRD_L_GLIDE", (144, 63, 37, 31), 0),
+] + [("COIN%d" % i, (COIN_X[i], 208, COIN_X[i + 1] - COIN_X[i], 16), 1) for i in range(6)] \
+  + [("HEART%d" % i, (HEART_X[i], 193, HEART_X[i + 1] - HEART_X[i], 15), 1) for i in range(5)] + [
+	("STAR0", (166, 99, 25, 19), 0), ("STAR1", (166, 119, 15, 21), 0),
+	("STAR2", (180, 119, 10, 20), 0), ("STAR3", (166, 139, 15, 21), 0),
+	("PUFF0", (93, 207, 20, 21), 0), ("PUFF1", (113, 208, 19, 22), 0),
+	("PUFF2", (132, 209, 19, 16), 0), ("PUFF3", (151, 209, 19, 12), 0),
+	("SHOT0", (108, 229, 9, 9), 1), ("SHOT1", (117, 229, 11, 11), 1), ("SHOT2", (128, 228, 12, 11), 1),
+] + [("DIGIT%d" % i, (DIGIT_X[i], 225, DIGIT_X[i + 1] - DIGIT_X[i], 14), 1) for i in range(9)] \
+  + [("DIGIT9", (0, 240, 11, 14), 1)]
+
+kframes = [(name, kcut(*r, plain)) for name, r, plain in KFRAMES]
+
+# Shelf packing, tallest first, each frame starting on a word (3 pixels)
+SHEET_W = 192
+kplace = {}
+shelf_y, shelf_h, cur_x = 0, 0, 0
+for name, f in sorted(kframes, key=lambda nf: -len(nf[1])):
+	fw, fh = len(f[0]), len(f)
+	ww = (fw + 2) // 3 * 3
+	if cur_x + ww > SHEET_W:
+		shelf_y += shelf_h
+		shelf_h, cur_x = 0, 0
+	kplace[name] = (cur_x, shelf_y)
+	cur_x += ww
+	shelf_h = max(shelf_h, fh)
+krows = shelf_y + shelf_h
+if krows > KAKADU_ROWS:
+	tmx2bg.fail("the enemy frames need %d rows, more than %d" % (krows, KAKADU_ROWS))
+ksheet = [[0] * SHEET_W for _ in range(krows)]
+for name, f in kframes:
+	x0, y0 = kplace[name]
+	for y, row in enumerate(f):
+		ksheet[y0 + y][x0:x0 + len(row)] = row
+kak_data = []
+for row in ksheet:
+	for x in range(0, SHEET_W, 3):
+		kak_data.append(row[x] | row[x + 1] << 5 | row[x + 2] << 10)
+
+#
 #	Bundle and headers
 #
 
 bundle = tmx2bg.pack4(tiles, 0) + tmx2bg.pack4(tiles, 256)
 john_offset = len(bundle)
 for v in john_data:
+	bundle += bytes((v & 0xff, v >> 8))
+kak_offset = len(bundle)
+for v in kak_data:
 	bundle += bytes((v & 0xff, v >> 8))
 with open("bundle.bin", "wb") as f:
 	f.write(bundle)
@@ -234,3 +346,31 @@ with open("john.h", "w") as f:
 	f.write("#define SPRITE_RAM\t0x%04x\n\n" % SPRITE_RAM)
 	f.write("/* 0xRGB, 4 bits a channel; colour 0 is see-through */\n")
 	f.write(c_array("john_palette", rgb444(john, 32)))
+	f.write("\n/* The same, half way to white: for flashing while he has a star */\n")
+	bright = []
+	for c in rgb444(john, 32):
+		ch = [(c >> k) & 15 for k in (8, 4, 0)]
+		ch = [v + (15 - v + 1) // 2 for v in ch]
+		bright.append(ch[0] << 8 | ch[1] << 4 | ch[2])
+	f.write(c_array("john_bright_palette", bright))
+
+with open("kakadu.h", "w") as f:
+	f.write("/* kakadu.h: generated from KakaduEnemies.png by gen-assets.py, do not edit */\n\n")
+	f.write("/* The frames, at 5 bpp in rows 64 words apart: copy KAKADU_WORDS words\n")
+	f.write(" * from flash at KAKADU_FLASH to KAKADU_RAM (word addresses) */\n")
+	f.write("#define KAKADU_FLASH\t0x%xUL\n" % (FLASH_IMAGE_WORD + (BUNDLE_OFFSET + kak_offset) // 2))
+	f.write("#define KAKADU_RAM\t0x%04x\n" % KAKADU_RAM)
+	f.write("#define KAKADU_WORDS\t%d\n\n" % len(kak_data))
+	f.write("struct kframe {\n\tunsigned short addr;\t/* word address of the top left corner */\n")
+	f.write("\tshort w, h;\t\t/* pixels */\n};\n\n")
+	f.write("enum {\n")
+	for name, _ in kframes:
+		f.write("\tK_%s,\n" % name)
+	f.write("\tK_FRAMES\n};\n\n")
+	f.write("static const struct kframe kframes[K_FRAMES] = {\n")
+	for name, fr in kframes:
+		x0, y0 = kplace[name]
+		f.write("\t{ 0x%04x, %2d, %2d },\t/* %s */\n" % (KAKADU_RAM + y0 * 64 + x0 // 3, len(fr[0]), len(fr), name))
+	f.write("};\n\n")
+	f.write("/* 0xRGB, 4 bits a channel; colour 0 is see-through */\n")
+	f.write(c_array("kakadu_palette", rgb444(kak, 32)))

@@ -1,7 +1,7 @@
 /*
  * JPTA: John walks around level 1; the view follows him. Left and right
- * walk, up and down climb ladders, A jumps (higher the longer it's held),
- * and off a ledge he falls.
+ * walk, up and down climb ladders, B jumps (higher the longer it's held),
+ * A fires his 10% GST ray, and off a ledge he falls. The enemies and power ups are in actors.c.
  *
  * The tile set has 512 tiles but a background layer can only name 256 (one
  * byte a tile), so the level is split over both background layers
@@ -13,12 +13,14 @@
  * Video memory (word addresses): tiles 0-255 at 0x8000 and tiles 256-511
  * at 0xc000, copied there from the asset bundle by the boot loader. That
  * fills it, except for the unused tiles 448-511 (SPRITE_RAM), so John's
- * frames stay in flash and the one on show is copied there by DMA.
+ * frames stay in flash and the one on show is copied there by DMA. The
+ * enemy and power up frames (kakadu.h) are copied by DMA at the start to
+ * KAKADU_RAM, in the top half of the program's memory, which it doesn't use.
  */
 
 #include <game_io.h>
-#include "level.h"
-#include "john.h"
+#include "jpta.h"
+#include "kakadu.h"
 
 extern void load_palette(const short* palette, int offset, int len);
 extern void load_sprite_x(short sprite, short x);
@@ -30,26 +32,22 @@ extern void load_sprite_a(short sprite, short a);
 volatile short vsync;
 volatile short flash_complete;
 
-#define SCREEN_W	320	/* 320x240 mode */
-#define SCREEN_H	240
 #define BG_LEFT		24	/* screen (0, 0) in background raster coordinates */
 #define BG_TOP		16
 #define SPRITE_LEFT	24	/* screen (0, 0) in sprite coordinates */
 #define SPRITE_TOP	16
-
-#define LEVEL_PX_W	(LEVEL_W * 16)
-#define LEVEL_PX_H	(LEVEL_H * 16)
 
 #define KEY_UP		1
 #define KEY_DOWN	2
 #define KEY_LEFT	4
 #define KEY_RIGHT	8
 #define KEY_A		16
+#define KEY_B		32
+#define SHOT_GAP	12	/* frames between shots */
 
 /* John's speed, in 1/16 pixel (per frame, and per frame per frame) */
 #define MAX_SPEED	32
 #define ACCEL		4
-#define FX(px)		((short)((px) * 16))
 #define STEP_PX		5	/* pixels walked per frame of the walk cycle */
 
 #define WORD_ADDR(p)	((unsigned short)(p) >> 1)
@@ -117,14 +115,12 @@ static void set_camera(short x, short y)
  * reading, and the sprite moves over to it at the next vblank.
  */
 
-#define JOHN_PAL	2		/* 5 bpp: colours 32-63 */
 #define SLOT_WORDS	16		/* slots side by side in the 64 word rows */
 #define SPRITE_ROW	64		/* words from one row of a slot to the next */
 
 static short slot_frame[2] = { -1, -1 };	/* frame in each slot */
 static short shown;				/* slot the hardware is showing */
 static short pending;				/* slot for the next vblank */
-static unsigned short sprite_reg[4];		/* x, y, h, a: written at the next vblank */
 
 static void load_frame(short slot, short frame)
 {
@@ -153,30 +149,90 @@ static void show_frame(short frame)
 	}
 }
 
+/*
+ * Sprites: each frame's are listed in a copy of the sprite registers,
+ * written to the hardware at the next vblank. Later ones are drawn on top.
+ * All are 5 bpp, in rows 64 words (256 nibbles) apart.
+ */
+
+#define MAX_SPRITES	64
+#define MAX_PART_W	48	/* pixels: the most the width field can count at 5 bpp */
+
+static unsigned short shadow_x[MAX_SPRITES], shadow_y[MAX_SPRITES];
+static unsigned short shadow_h[MAX_SPRITES], shadow_a[MAX_SPRITES];
+static short n_sprites;		/* in the frame being built */
+static short n_shown;		/* enabled in the hardware */
+
 /* The width field counts 4 per 3 pixels at 5 bpp (the last pixel's count) */
 #define WIDTH_5BPP(px)	(((px) - 1) / 3 * 4 + ((px) - 1) % 3)
 
-static void set_sprite(short x, short y)
+/* A w x h picture at word address addr, at screen x, y, clipped */
+static void sprite_raw(unsigned short addr, short x, short y, short w, short h, short pal)
 {
+	if (n_sprites == MAX_SPRITES || x >= SCREEN_W || y >= SCREEN_H)
+		return;
+	/* off the left of the raster: drop whole words (3 pixels) */
+	if (x < -SPRITE_LEFT)
+	{
+		short words = (-SPRITE_LEFT - x + 2) / 3;
+		addr += words;
+		x += words * 3;
+		w -= words * 3;
+	}
+	/* and off the top, whole rows */
+	if (y < -SPRITE_TOP)
+	{
+		short rows = -SPRITE_TOP - y;
+		addr += rows * SPRITE_ROW;
+		y += rows;
+		h -= rows;
+	}
+	if (y + h > SCREEN_H)
+		h = SCREEN_H - y;
+	if (w <= 0 || h <= 0)
+		return;
 	x += SPRITE_LEFT;
 	y += SPRITE_TOP;
-	sprite_reg[0] = (x & 0x3ff) | (1 << 10) | (JOHN_PAL << 11) | (1 << 15);
-	sprite_reg[1] = (y & 0x3ff) | (WIDTH_5BPP(JOHN_W) << 10);
-	sprite_reg[2] = ((y + JOHN_H - 1) & 0x3ff) | (1 << 15);
-	sprite_reg[3] = SPRITE_RAM + pending * SLOT_WORDS;
+	shadow_x[n_sprites] = (x & 0x3ff) | (1 << 10) | (pal << 11) | (1 << 15);
+	shadow_y[n_sprites] = (y & 0x3ff) | (WIDTH_5BPP(w) << 10);
+	shadow_h[n_sprites] = ((y + h - 1) & 0x3ff) | (1 << 15);
+	shadow_a[n_sprites] = addr;
+	n_sprites++;
 }
 
-/* At the start of vblank: the layers and the sprite together */
+/* A kakadu.h frame: wider ones are drawn as more than one sprite */
+void sprite_frame(short f, short x, short y, short pal)
+{
+	const struct kframe* k = &kframes[f];
+	unsigned short addr = k->addr;
+	short w = k->w;
+
+	while (w > 0)
+	{
+		sprite_raw(addr, x, y, w > MAX_PART_W ? MAX_PART_W : w, k->h, pal);
+		addr += MAX_PART_W / 3;
+		x += MAX_PART_W;
+		w -= MAX_PART_W;
+	}
+}
+
+/* At the start of vblank: the layers and the sprites together */
 static void vblank(void)
 {
 	short l, i;
 	for (l = 0; l < 2; l++)
 		for (i = 0; i < 5; i++)
 			__out(0x5d00 + l * 5 + i, layer_reg[l][i]);
-	load_sprite_x(0, sprite_reg[0]);
-	load_sprite_y(0, sprite_reg[1]);
-	load_sprite_h(0, sprite_reg[2]);
-	load_sprite_a(0, sprite_reg[3]);
+	for (i = 0; i < n_sprites; i++)
+	{
+		load_sprite_x(i, shadow_x[i]);
+		load_sprite_y(i, shadow_y[i]);
+		load_sprite_h(i, shadow_h[i]);
+		load_sprite_a(i, shadow_a[i]);
+	}
+	for (; i < n_shown; i++)
+		load_sprite_x(i, 0);
+	n_shown = n_sprites;
 	shown = pending;
 }
 
@@ -233,7 +289,7 @@ static short ladder_at(short px, short py)
 
 /* Is any of the rectangle x0-x1, y0-y1 (inclusive) solid? Outside the
  * level is solid, except above it. */
-static short solid(short x0, short y0, short x1, short y1)
+short solid(short x0, short y0, short x1, short y1)
 {
 	short x, y;
 
@@ -255,14 +311,9 @@ static short solid(short x0, short y0, short x1, short y1)
 }
 
 /*
- * John. x, y is the top left of his sprite, in 1/16 pixels; he collides
- * with the box HB_L-HB_R, HB_T-HB_B inside it (from his body to his feet).
+ * John (jpta.h)
  */
 
-#define HB_L		8
-#define HB_R		24	/* exclusive */
-#define HB_T		12	/* below his hair: the level has 32 pixel gaps */
-#define HB_B		JOHN_H	/* exclusive: the row under his feet */
 #define STEP_UP		4	/* the highest bump he walks over */
 #define CENTRE		(JOHN_W / 2)
 
@@ -271,15 +322,6 @@ static short solid(short x0, short y0, short x1, short y1)
 #define CLIMB_SPEED	16
 #define JUMP_SPEED	116	/* up to about 84 pixels high: onto the island and the ledges */
 #define JUMP_CUT	32	/* letting go of A early: rise no faster than this */
-
-struct john {
-	short x, y;		/* 1/16 pixel */
-	short vx, vy;
-	short on_ground;
-	short climbing;
-};
-
-#define PX(v)		((v) >> 4)
 
 /* Would John's box hit anything with his sprite at pixel x, y? Only the
  * part above his feet's STEP_UP rows if 'body' */
@@ -452,13 +494,21 @@ static void update_john(struct john* j, short dx, short dy, short jump, short he
 		j->vy = 0;
 }
 
+/* John starts on the grass at the top left, next to the first ladder */
+void john_start(void)
+{
+	john.x = FX(1 * 16);
+	john.y = FX(9 * 16 - JOHN_H);
+	john.vx = john.vy = 0;
+	john.on_ground = john.climbing = 0;
+}
+
 int main(void)
 {
-	/* John starts on the grass at the top left, next to the first ladder */
-	struct john john = { FX(1 * 16), FX(9 * 16 - JOHN_H), 0, 0, 0, 0 };
 	short facing_left = 0;
 	short walk = 0, walked = 0;
 	unsigned short prev_keys = 0;
+	short reload = 0;
 	short i;
 
 	__out(0x5f02, 1);		/* 320x240 */
@@ -468,7 +518,9 @@ int main(void)
 	 * shows there: make it the same colour */
 	__out(0x5d22, tiles_palette[0]);
 	load_palette((const short*)tiles_palette, 0, 16);
-	load_palette((const short*)john_palette, 32, 32);
+	load_palette((const short*)john_palette, PAL_JOHN * 16, 32);
+	load_palette((const short*)john_bright_palette, PAL_JOHN_BRIGHT * 16, 32);
+	load_palette((const short*)kakadu_palette, PAL_KAKADU * 16, 32);
 
 	for (i = 0; i < 256; i++)
 		load_sprite_x(i, 0);
@@ -476,6 +528,10 @@ int main(void)
 	/* vsync and flash DMA interrupts */
 	__out(0x7000, 0x2 | 0x8);
 	global_interrupt_enable();
+
+	flash_copy(KAKADU_FLASH, KAKADU_RAM, KAKADU_WORDS);
+	john_start();
+	actors_start();
 
 	while (1)
 	{
@@ -491,8 +547,18 @@ int main(void)
 			dy--;
 		if (keys & KEY_DOWN)
 			dy++;
-		update_john(&john, dx, dy, (keys & KEY_A) && !(prev_keys & KEY_A), (keys & KEY_A) != 0);
+		update_john(&john, dx, dy, (keys & KEY_B) && !(prev_keys & KEY_B), (keys & KEY_B) != 0);
+		if (reload)
+			reload--;
+		if ((keys & KEY_A) && !(prev_keys & KEY_A) && !reload)
+		{
+			/* from his gun, a little below the middle of him */
+			short gx = PX(john.x) + (facing_left ? 2 : JOHN_W - 2);
+			actors_shoot(gx, PX(john.y) + 25, facing_left ? -1 : 1);
+			reload = SHOT_GAP;
+		}
 		prev_keys = keys;
+		actors_update();
 
 		if (dx < 0)
 			facing_left = 1;
@@ -527,7 +593,14 @@ int main(void)
 		cam_x = clamp(x + JOHN_W / 2 - SCREEN_W / 2, 0, LEVEL_PX_W - SCREEN_W);
 		cam_y = clamp(y + JOHN_H / 2 - SCREEN_H / 2, 0, LEVEL_PX_H - SCREEN_H);
 		set_camera(cam_x, cam_y);
-		set_sprite(x - cam_x, y - cam_y);
+
+		n_sprites = 0;
+		actors_draw(cam_x, cam_y);
+		/* blinking after he's hurt; flashing with a star */
+		if (!(hurt & 4))
+			sprite_raw(SPRITE_RAM + pending * SLOT_WORDS, x - cam_x, y - cam_y, JOHN_W, JOHN_H,
+				   star && (star > 120 || (star & 8)) && (star & 4) ? PAL_JOHN_BRIGHT : PAL_JOHN);
+		hud_draw();
 
 		while (!vsync)
 			__sleep();
